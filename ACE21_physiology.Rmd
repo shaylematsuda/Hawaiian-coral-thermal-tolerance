@@ -1,0 +1,275 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+Data analysis for the All Coral Experiment #2021. Physiological variables:  
+AFDW
+Flow Cytometry (cell counts)
+Protien
+Biomass
+BW
+PAM
+
+
+#Data and libraries
+```{r}
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library('ggpubr')
+library(lmerTest)
+library(car)
+library(emmeans)
+```
+
+
+
+#AFDW
+```{r}
+# load in datasheets 
+#Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
+
+AFDW <- read.csv("Data/AFDW_TT17_20190409.csv")
+
+SA <- read.csv("Data/WaxDipping_Results_20190403.csv")
+SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
+
+
+Slurry <- read.csv("Data/TT17_airbrush_totalVol_20190420.csv")
+meta  <- read.csv("Data/Master_Metadata_20190402.csv")
+
+# merge AFDW and slurry
+AFDW.slurry <- merge(AFDW, Slurry)
+AFDW.slurry$AFDW.mg.ml <- AFDW.slurry$AFDW.g.mL*1000  # grams to mg
+AFDW.slurry$AFDWmg <-AFDW.slurry$AFDW.mg.ml*AFDW.slurry$TotalVolume # now we have mg of AFDW
+
+# SA cm2 and AFDW g/mL --> mg/cm2
+
+# merge
+biomass <- merge(AFDW.slurry, SA)
+biomass<- biomass[,c("Frag.ID", "AFDWmg", "Surface.area")] # keep only columns you need
+biomass$AFDWmg.cm2 <-biomass$AFDWmg/biomass$Surface.area # mg/cm2
+
+# merge with metadata to plot by treatments
+biomass2 <- merge(biomass, meta)
+
+
+# Mcap_biomass
+biomass2_mean <- ddply(biomass2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(AFDWmg.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+biomass2_mean #display table
+#Mcap_biomass_mean <-Mcap_biomass_mean[-3,] # Remove T0
+#biomass2_mean
+
+# Make "BOTH" into Ambeint and High...THIS IS UGLY CODE BUT IT WORKS
+# Mcap 
+Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora_capitata") #Subset Mcap
+
+Mcap_biomass_mean_Both<-Mcap_biomass_mean #copy df
+row.names.remove <- c("1","2","13","14") #remove high and amb by row numbers
+Mcap_biomass_mean_Both<-Mcap_biomass_mean_Both[!(row.names(Mcap_biomass_mean_Both) %in% row.names.remove), ] #remove
+
+Mcap_biomass_mean_Both2<-Mcap_biomass_mean_Both # make a copy of the BOTH df
+Mcap_biomass_mean_Both[Mcap_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
+Mcap_biomass_mean_Both2[Mcap_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
+
+row.names.remove <- c("9") #remove "high and amb by row numbers "both""
+Mcap_biomass_mean<-Mcap_biomass_mean[!(row.names(Mcap_biomass_mean) %in% row.names.remove), ]
+Mcap_biomass_mean<-rbind(Mcap_biomass_mean,Mcap_biomass_mean_Both,Mcap_biomass_mean_Both2) #bind together
+
+# Pcomp 
+Pcomp_biomass_mean<-subset(biomass2_mean, Species=="Porites_compressa") #Subset Pcomp
+
+Pcomp_biomass_mean_Both<-Pcomp_biomass_mean #copy df
+row.names.remove <- c("7","8","19","20") #remove high and amb by row numbers
+Pcomp_biomass_mean_Both<-Pcomp_biomass_mean_Both[!(row.names(Pcomp_biomass_mean_Both) %in% row.names.remove), ] #remove
+
+Pcomp_biomass_mean_Both2<-Pcomp_biomass_mean_Both # make a copy of the BOTH df
+Pcomp_biomass_mean_Both[Pcomp_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
+Pcomp_biomass_mean_Both2[Pcomp_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
+
+row.names.remove <- c("12") #remove "high and amb by row numbers "both""
+Pcomp_biomass_mean<-Pcomp_biomass_mean[!(row.names(Pcomp_biomass_mean) %in% row.names.remove), ]
+Pcomp_biomass_mean<-rbind(Pcomp_biomass_mean,Pcomp_biomass_mean_Both,Pcomp_biomass_mean_Both2) #bind together
+
+# Pacu 
+Pacu_biomass_mean<-subset(biomass2_mean, Species=="Pocillopora_acuta") #Subset Pacu
+
+Pacu_biomass_mean_Both<-Pacu_biomass_mean #copy df
+row.names.remove <- c("5","6","17","18") #remove high and amb by row numbers
+Pacu_biomass_mean_Both<-Pacu_biomass_mean_Both[!(row.names(Pacu_biomass_mean_Both) %in% row.names.remove), ] #remove
+
+Pacu_biomass_mean_Both2<-Pacu_biomass_mean_Both # make a copy of the BOTH df
+Pacu_biomass_mean_Both[Pacu_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
+Pacu_biomass_mean_Both2[Pacu_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
+
+row.names.remove <- c("11") #remove "high and amb by row numbers "both""
+Pacu_biomass_mean<-Pacu_biomass_mean[!(row.names(Pacu_biomass_mean) %in% row.names.remove), ]
+Pacu_biomass_mean<-rbind(Pacu_biomass_mean,Pacu_biomass_mean_Both,Pacu_biomass_mean_Both2) #bind together
+
+# Pvar 
+Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
+
+Pvar_biomass_mean_Both<-Pvar_biomass_mean #copy df
+row.names.remove <- c("3","4","15","16") #remove high and amb by row numbers
+Pvar_biomass_mean_Both<-Pvar_biomass_mean_Both[!(row.names(Pvar_biomass_mean_Both) %in% row.names.remove), ] #remove
+
+Pvar_biomass_mean_Both2<-Pvar_biomass_mean_Both # make a copy of the BOTH df
+Pvar_biomass_mean_Both[Pvar_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
+Pvar_biomass_mean_Both2[Pvar_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
+
+row.names.remove <- c("10") #remove "high and amb by row numbers "both""
+Pvar_biomass_mean<-Pvar_biomass_mean[!(row.names(Pvar_biomass_mean) %in% row.names.remove), ]
+Pvar_biomass_mean<-rbind(Pvar_biomass_mean,Pvar_biomass_mean_Both,Pvar_biomass_mean_Both2) #bind together
+
+
+
+#Stats
+# create dataframe with T0s turning into Amb and High. MAKE SURE THIS IS OK TO DO!
+
+Biomass_stats<-biomass2
+write.csv(Biomass_stats,"Biomass_stats.csv") #fixed by hand damn it
+
+
+
+
+hist(Biomass_stats$AFDWmg.cm2) 
+biomass2$AFDWmg.cm2_log<-log10(Biomass_stats$AFDWmg.cm2+1)
+hist(Biomass_stats$AFDWmg.cm2_log) #normal (use)
+
+Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID), biomass2)
+anova(Biomass_model) 
+qqPlot(residuals(Biomass_model)) 
+
+  emm<-emmeans(Biomass_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+
+###PLOTS
+
+#plot Mcap
+Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  ylim(0, 10) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("Montipora capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
+
+# Pcomp 
+
+Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  ylab("") + #Label the X Axis
+  ylim(0, 10) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("Porites compressa")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot
+
+# Pvar 
+
+Pvar_biomass_mean_plot<-ggplot(data=Pvar_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  ylim(2.5, 6) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("Pavona varians")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_mean_plot
+
+# Pacu 
+
+Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  ylab("") + #Label the Y Axis
+  ylim(0, 10) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        plot.background =element_blank(), #Set the plot background
+        text = element_text(size=18),  # set element text
+        legend.key = element_blank()) + #Set plot legend key
+  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("Pocillopora acuta")+
+  theme(plot.title = element_text(size=20,face = "italic"));Pacu_biomass_mean_plot
+
+
+###### All plots together
+
+### NOTE YOU MAY NOT WANT TO INCLUDE T0. CONSIDER. 
+
+AllPlots<-ggarrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pacu_biomass_mean_plot, Pvar_biomass_mean_plot , 
+                    labels = c("A", "B", "C", "D"),
+                    ncol = 2, nrow = 2)
+
+AllPlots
+# save figures
+ggsave("Figures/boiomass_2021.pdf", plot=AllPlots, height=8, width=10, units = c("in"), dpi=300) #output figure
+
+
+
+
+
+
+
+
+
+
+```
+
