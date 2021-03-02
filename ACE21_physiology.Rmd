@@ -28,13 +28,14 @@ library(emmeans)
 
 
 #AFDW
-```{r}
+```{r} 
 # load in datasheets 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
 AFDW <- read.csv("Data/AFDW_TT17_20190409.csv")
 
-SA <- read.csv("Data/WaxDipping_Results_20190403.csv")
+WaxDipping <- read.csv("Data/WaxDipping_Results_20190403.csv")
+SA<-WaxDipping
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 
 
@@ -138,14 +139,15 @@ Pvar_biomass_mean<-rbind(Pvar_biomass_mean,Pvar_biomass_mean_Both,Pvar_biomass_m
 Biomass_stats<-biomass2
 write.csv(Biomass_stats,"Biomass_stats.csv") #fixed by hand damn it
 
+Biomass_stats2 <- read.csv("Biomass_stats.csv") #upload fixed <- not a solution dude. FIX IT
 
 
 
-hist(Biomass_stats$AFDWmg.cm2) 
-biomass2$AFDWmg.cm2_log<-log10(Biomass_stats$AFDWmg.cm2+1)
-hist(Biomass_stats$AFDWmg.cm2_log) #normal (use)
+hist(Biomass_stats2$AFDWmg.cm2) 
+Biomass_stats2$AFDWmg.cm2_log<-log10(Biomass_stats2$AFDWmg.cm2+1)
+hist(Biomass_stats2$AFDWmg.cm2_log) #normal (use)
 
-Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID), biomass2)
+Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID), Biomass_stats2)
 anova(Biomass_model) 
 qqPlot(residuals(Biomass_model)) 
 
@@ -263,13 +265,233 @@ AllPlots
 ggsave("Figures/boiomass_2021.pdf", plot=AllPlots, height=8, width=10, units = c("in"), dpi=300) #output figure
 
 
-
-
-
-
-
-
-
-
 ```
 
+# Flow cytometry  cell counts
+```{r}
+#import data
+Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
+
+###notes: 2289 isn't anywhere. 
+
+PlateA <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateA.csv")
+PlateA <- subset(PlateA, Gate.Name == "Symbiodinium")       # keep only Symbiodinium rows
+keepA <- c("Sample.Name", "Concentration") # keep only Sample.name and concentration
+PlateA <- PlateA[keepA]
+A_meta <- read.csv("Data/TT17_FC_PlateA.csv") # load Plate A location data
+PlateA <- merge(PlateA, A_meta)   # merge with location data
+PlateA <-merge(PlateA, meta, all.x = TRUE) # merge with Sample metadata
+PlateA <- na.omit(PlateA) # omit NAs
+
+PlateB <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateB1.csv")
+PlateB$Concentration<-as.numeric(as.character(PlateB$Concentration)) # this is loading in as a factor, not sure why
+PlateB <- subset(PlateB, Gate.Name == "Symbiodinium")
+keepB <- c("Sample.Name", "Concentration")
+PlateB <- PlateB[keepB]
+B_meta <- read.csv("Data/TT17_FC_PlateB.csv") # lood Plate B location data
+PlateB <- merge(PlateB, B_meta)
+PlateB <-merge(PlateB, meta, all.x = TRUE)
+PlateB <- na.omit(PlateB)
+
+PlateC <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateCredo.csv")
+PlateC$Concentration<-as.numeric(as.character(PlateC$Concentration)) # this is loading in as a factor, not sure why
+PlateC <- subset(PlateC, Gate.Name == "Symbiodinium")
+keepC <- c("Sample.Name", "Concentration")
+PlateC <- PlateC[keepC]
+C_meta <- read.csv("Data/TT17_FC_PlateCredo.csv") # lood Plate C location data
+PlateC <- merge(PlateC, C_meta)
+PlateC <-merge(PlateC, meta, all.x = TRUE)
+PlateC <- na.omit(PlateC)
+#note: Frag.ID 403 Pacu seems abnormally high
+
+PlateE <- read.csv("Data/Symbio.Count.apr.02.2019.PlateE.csv")
+PlateE$Concentration<-as.numeric(as.character(PlateE$Concentration)) # this is loading in as a factor, not sure why
+PlateE <- subset(PlateE, Gate.Name == "Symbiodinium")
+keepE <- c("Sample.Name", "Concentration")
+PlateE <- PlateE[keepE]
+E_meta <- read.csv("Data/TT17_FC_PlateE.csv") # lood Plate A location data
+PlateE <- merge(PlateE, E_meta)
+PlateE <-merge(PlateE, meta, all.x = TRUE)
+PlateE <- na.omit(PlateE)
+
+
+# Bind all runs together
+tData <- rbind(PlateA, PlateB, PlateC, PlateE)
+tData$Parent.ID<- as.factor(tData$Parent.ID) #for some reason, "Concentration" was a chr not numeric. Check by calling str()
+
+# Create column to relate to standard curve
+tData$corrected <- tData$Concentration*3.2959 # <- also confirm you did this correctly. 
+
+# Use Slurry
+#merge with tdata
+tData <- merge(tData, Slurry)
+tData$TotalVolume <- tData$TotalVolume * 1000 # change total volume to from mL to uL
+
+#use SA for slurry
+
+#merge with tData, make numeric
+tData <- merge(tData, SA)
+tData$Surface.area<- as.numeric(as.character(tData$Surface.area))
+
+#Subset by Species and correct for 10% dilutions in Mcap and Pcomp
+Mcap_FC <- subset(tData, Species == "Montipora_capitata")
+Mcap_FC$corrected <- Mcap_FC$corrected*10 # to compensate for the 10% dultion
+
+Pcomp_FC <- subset(tData, Species == "Porites_compressa")
+Pcomp_FC$corrected <- Pcomp_FC$corrected*10 # to compensate for the 10% dultion
+
+Pvar_FC <- subset(tData, Species == "Pavona_varians") #not diluted
+Pacu_FC <- subset(tData, Species == "Pocillopora_acuta") #not diluted
+
+# Create new column for total cells in total slurry
+Mcap_FC$Tot.zoox <- Mcap_FC$corrected*(Mcap_FC$TotalVolume)
+Pcomp_FC$Tot.zoox <- Pcomp_FC$corrected*(Pcomp_FC$TotalVolume)
+Pvar_FC$Tot.zoox <- Pvar_FC$corrected*(Pvar_FC$TotalVolume)
+Pacu_FC$Tot.zoox <- Pacu_FC$corrected*(Pacu_FC$TotalVolume)
+
+# Calculate zoox/cm2
+Mcap_FC$zoox.cm2<-Mcap_FC$Tot.zoox/Mcap_FC$Surface.area
+Pcomp_FC$zoox.cm2<-Pcomp_FC$Tot.zoox/Pcomp_FC$Surface.area
+Pvar_FC$zoox.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$Surface.area
+Pacu_FC$zoox.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$Surface.area
+
+oData <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
+
+#analyze
+############## BY corrected to st curve and zoox.cm2
+
+#mean tables
+# Mcap
+Mcap_FC_Sum <- ddply(Mcap_FC, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Mcap_FC_Sum #display table
+
+# Pcomp
+Pcomp_FC_Sum <- ddply(Pcomp_FC, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pcomp_FC_Sum #display table
+
+
+# Pvar
+Pvar_FC_Sum <- ddply(Pvar_FC, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pvar_FC_Sum #display table
+
+# Pacu
+Pacu_FC_Sum <- ddply(Pacu_FC, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pacu_FC_Sum #display table
+
+
+#Bar plots
+par(mfrow=c(2,2))
+
+#Mcap
+Mcap_FC_Plot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
+  scale_fill_manual(values=c("blue", "purple","red"))+
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.05, position=position_dodge(0.9))+
+  theme_classic()+
+  theme(text = element_text(size = 18, color="black"))+
+  theme(axis.text = element_text(size = 18))+
+  theme(axis.title = element_text(size = 18))+
+  ylab(expression(paste("Symbiodinaceae (cells cm-2"))) +
+  ggtitle("Montipora capitata");Mcap_FC_Plot
+
+#ggsave("Figures/Mcap_20181222.pdf", plot=McapPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+
+
+#Pcomp
+Pcomp_FC_Plot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
+  scale_fill_manual(values=c("blue", "purple","red"))+
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.05, position=position_dodge(0.9))+
+  theme_classic()+
+  theme(text = element_text(size = 18, color="black"))+
+  theme(axis.text = element_text(size = 18))+
+  theme(axis.title = element_text(size = 18))+
+  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
+  ggtitle("Porites compressa");Pcomp_FC_Plot
+
+
+#ggsave("Figures/Pcomp_20181222.pdf", plot=PcompPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+
+#Pvar
+Pvar_FC_Plot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
+  scale_fill_manual(values=c("blue", "purple","red"))+
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.05, position=position_dodge(0.9))+
+  theme_classic()+
+  theme(text = element_text(size = 18, color="black"))+
+  theme(axis.text = element_text(size = 18))+
+  theme(axis.title = element_text(size = 18))+
+  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
+  ggtitle("Pavona varians");Pvar_FC_Plot
+
+#ggsave("Figures/Pvar_20181222.pdf", plot=PvarPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+
+#Pacu
+Pacu_FC_Plot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
+  scale_fill_manual(values=c("blue", "purple","red"))+
+  geom_bar(stat="identity", position=position_dodge())+
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.05, position=position_dodge(0.9))+
+  theme_classic()+
+  theme(text = element_text(size = 18, color="black"))+
+  theme(axis.text = element_text(size = 18))+
+  theme(axis.title = element_text(size = 18))+
+  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
+  ggtitle("Pocillopora acuta");Pacu_FC_Plot
+
+
+#ggsave("Figures/Pacu_20181222.pdf", plot=PacuPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+
+
+# just plot again
+par(mfrow=c(2,2))
+Mcap_FC_Plot
+Pcomp_FC_Plot
+Pvar_FC_Plot
+Pacu_FC_Plot
+
+
+
+
+
+
+
+
+
+
+START here with code for plotting together. 
+
+  
+  
+  
+  
+)```
+
+# 
