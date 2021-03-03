@@ -23,24 +23,36 @@ library('ggpubr')
 library(lmerTest)
 library(car)
 library(emmeans)
+library(gridExtra)
+library(multcomp)
+library(reshape)
+
 ```
 
+Load meta
+```{r}
+meta  <- read.csv("Data/Master_Metadata_20190402.csv")
+#remove frags that re duplicated or T3
+meta<-meta[!(meta$X=="REMOVE"),]
 
-
-#AFDW
-```{r} 
 # load in datasheets 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
 AFDW <- read.csv("Data/AFDW_TT17_20190409.csv")
 
 WaxDipping <- read.csv("Data/WaxDipping_Results_20190403.csv")
-SA<-WaxDipping
-SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
-
 
 Slurry <- read.csv("Data/TT17_airbrush_totalVol_20190420.csv")
-meta  <- read.csv("Data/Master_Metadata_20190402.csv")
+
+
+```
+
+
+#AFDW
+```{r} 
+
+SA<-WaxDipping
+SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 
 # merge AFDW and slurry
 AFDW.slurry <- merge(AFDW, Slurry)
@@ -51,6 +63,7 @@ AFDW.slurry$AFDWmg <-AFDW.slurry$AFDW.mg.ml*AFDW.slurry$TotalVolume # now we hav
 
 # merge
 biomass <- merge(AFDW.slurry, SA)
+biomass$Surface.area<-as.numeric(as.character(biomass$Surface.area))
 biomass<- biomass[,c("Frag.ID", "AFDWmg", "Surface.area")] # keep only columns you need
 biomass$AFDWmg.cm2 <-biomass$AFDWmg/biomass$Surface.area # mg/cm2
 
@@ -72,82 +85,40 @@ biomass2_mean #display table
 
 # Make "BOTH" into Ambeint and High...THIS IS UGLY CODE BUT IT WORKS
 # Mcap 
+#Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora_capitata") #Subset Mcap
+
+#Mcap_biomass_mean_Both<-Mcap_biomass_mean #copy df
+#row.names.remove <- c("1","2","13","14") #remove high and amb by row numbers
+#Mcap_biomass_mean_Both<-Mcap_biomass_mean_Both[!(row.names(Mcap_biomass_mean_Both) %in% row.names.remove), ] #remove
+
+#Mcap_biomass_mean_Both2<-Mcap_biomass_mean_Both # make a copy of the BOTH df
+#Mcap_biomass_mean_Both[Mcap_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
+#Mcap_biomass_mean_Both2[Mcap_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
+
+#row.names.remove <- c("9") #remove "high and amb by row numbers "both""
+#Mcap_biomass_mean<-Mcap_biomass_mean[!(row.names(Mcap_biomass_mean) %in% row.names.remove), ]
+#Mcap_biomass_mean<-rbind(Mcap_biomass_mean,Mcap_biomass_mean_Both,Mcap_biomass_mean_Both2) #bind together
+
+#Mcap 
 Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora_capitata") #Subset Mcap
-
-Mcap_biomass_mean_Both<-Mcap_biomass_mean #copy df
-row.names.remove <- c("1","2","13","14") #remove high and amb by row numbers
-Mcap_biomass_mean_Both<-Mcap_biomass_mean_Both[!(row.names(Mcap_biomass_mean_Both) %in% row.names.remove), ] #remove
-
-Mcap_biomass_mean_Both2<-Mcap_biomass_mean_Both # make a copy of the BOTH df
-Mcap_biomass_mean_Both[Mcap_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
-Mcap_biomass_mean_Both2[Mcap_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
-
-row.names.remove <- c("9") #remove "high and amb by row numbers "both""
-Mcap_biomass_mean<-Mcap_biomass_mean[!(row.names(Mcap_biomass_mean) %in% row.names.remove), ]
-Mcap_biomass_mean<-rbind(Mcap_biomass_mean,Mcap_biomass_mean_Both,Mcap_biomass_mean_Both2) #bind together
-
 # Pcomp 
 Pcomp_biomass_mean<-subset(biomass2_mean, Species=="Porites_compressa") #Subset Pcomp
-
-Pcomp_biomass_mean_Both<-Pcomp_biomass_mean #copy df
-row.names.remove <- c("7","8","19","20") #remove high and amb by row numbers
-Pcomp_biomass_mean_Both<-Pcomp_biomass_mean_Both[!(row.names(Pcomp_biomass_mean_Both) %in% row.names.remove), ] #remove
-
-Pcomp_biomass_mean_Both2<-Pcomp_biomass_mean_Both # make a copy of the BOTH df
-Pcomp_biomass_mean_Both[Pcomp_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
-Pcomp_biomass_mean_Both2[Pcomp_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
-
-row.names.remove <- c("12") #remove "high and amb by row numbers "both""
-Pcomp_biomass_mean<-Pcomp_biomass_mean[!(row.names(Pcomp_biomass_mean) %in% row.names.remove), ]
-Pcomp_biomass_mean<-rbind(Pcomp_biomass_mean,Pcomp_biomass_mean_Both,Pcomp_biomass_mean_Both2) #bind together
-
 # Pacu 
 Pacu_biomass_mean<-subset(biomass2_mean, Species=="Pocillopora_acuta") #Subset Pacu
-
-Pacu_biomass_mean_Both<-Pacu_biomass_mean #copy df
-row.names.remove <- c("5","6","17","18") #remove high and amb by row numbers
-Pacu_biomass_mean_Both<-Pacu_biomass_mean_Both[!(row.names(Pacu_biomass_mean_Both) %in% row.names.remove), ] #remove
-
-Pacu_biomass_mean_Both2<-Pacu_biomass_mean_Both # make a copy of the BOTH df
-Pacu_biomass_mean_Both[Pacu_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
-Pacu_biomass_mean_Both2[Pacu_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
-
-row.names.remove <- c("11") #remove "high and amb by row numbers "both""
-Pacu_biomass_mean<-Pacu_biomass_mean[!(row.names(Pacu_biomass_mean) %in% row.names.remove), ]
-Pacu_biomass_mean<-rbind(Pacu_biomass_mean,Pacu_biomass_mean_Both,Pacu_biomass_mean_Both2) #bind together
-
 # Pvar 
 Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
 
-Pvar_biomass_mean_Both<-Pvar_biomass_mean #copy df
-row.names.remove <- c("3","4","15","16") #remove high and amb by row numbers
-Pvar_biomass_mean_Both<-Pvar_biomass_mean_Both[!(row.names(Pvar_biomass_mean_Both) %in% row.names.remove), ] #remove
-
-Pvar_biomass_mean_Both2<-Pvar_biomass_mean_Both # make a copy of the BOTH df
-Pvar_biomass_mean_Both[Pvar_biomass_mean_Both=="Both"]<-"Ambient"  #rename "Both" to "Ambient"
-Pvar_biomass_mean_Both2[Pvar_biomass_mean_Both2=="Both"]<-"High"  #rename "Both" to "High"
-
-row.names.remove <- c("10") #remove "high and amb by row numbers "both""
-Pvar_biomass_mean<-Pvar_biomass_mean[!(row.names(Pvar_biomass_mean) %in% row.names.remove), ]
-Pvar_biomass_mean<-rbind(Pvar_biomass_mean,Pvar_biomass_mean_Both,Pvar_biomass_mean_Both2) #bind together
 
 
-
-#Stats
-# create dataframe with T0s turning into Amb and High. MAKE SURE THIS IS OK TO DO!
+#Stats - T0 is n=6, not n=12
 
 Biomass_stats<-biomass2
-write.csv(Biomass_stats,"Biomass_stats.csv") #fixed by hand damn it
 
-Biomass_stats2 <- read.csv("Biomass_stats.csv") #upload fixed <- not a solution dude. FIX IT
+hist(Biomass_stats$AFDWmg.cm2) 
+Biomass_stats$AFDWmg.cm2_log<-log10(Biomass_stats$AFDWmg.cm2+1)
+hist(Biomass_stats$AFDWmg.cm2_log) #normal (use)
 
-
-
-hist(Biomass_stats2$AFDWmg.cm2) 
-Biomass_stats2$AFDWmg.cm2_log<-log10(Biomass_stats2$AFDWmg.cm2+1)
-hist(Biomass_stats2$AFDWmg.cm2_log) #normal (use)
-
-Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID), Biomass_stats2)
+Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Biomass_stats)
 anova(Biomass_model) 
 qqPlot(residuals(Biomass_model)) 
 
@@ -155,9 +126,9 @@ qqPlot(residuals(Biomass_model))
 cld(emm)
 pairs(emm)
 
-
+```
 ###PLOTS
-
+```{r}
 #plot Mcap
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -253,17 +224,12 @@ Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean,
 
 
 ###### All plots together
+Mcap_biomass_plot_plot<-Mcap_biomass_plot+ theme(legend.position = "none") #remove legend
+Pcomp_biomass_plot<-Pcomp_biomass_plot+ theme(legend.position = "none") #remove legend
+Pvar_biomass_mean_plot<-Pvar_biomass_mean_plot+ theme(legend.position = "none") #remove legend
+Pacu_biomass_mean_plot<-Pacu_biomass_mean_plot+ theme(legend.position = "none") #remove legend
 
-### NOTE YOU MAY NOT WANT TO INCLUDE T0. CONSIDER. 
-
-AllPlots<-ggarrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pacu_biomass_mean_plot, Pvar_biomass_mean_plot , 
-                    labels = c("A", "B", "C", "D"),
-                    ncol = 2, nrow = 2)
-
-AllPlots
-# save figures
-ggsave("Figures/boiomass_2021.pdf", plot=AllPlots, height=8, width=10, units = c("in"), dpi=300) #output figure
-
+grid.arrange(Mcap_FC_Plot, Pcomp_FC_Plot, Pvar_FC_Plot,Pacu_FC_Plot, nrow = 2)
 
 ```
 
@@ -355,10 +321,34 @@ Pcomp_FC$zoox.cm2<-Pcomp_FC$Tot.zoox/Pcomp_FC$Surface.area
 Pvar_FC$zoox.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$Surface.area
 Pacu_FC$zoox.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$Surface.area
 
-oData <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
+FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
 
-#analyze
-############## BY corrected to st curve and zoox.cm2
+#Stats
+
+
+hist(FC_Data$zoox.cm2) 
+FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
+hist(FC_Data$zoox.cm2_log) #normal (use)
+
+CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_Data)
+anova(CellCount_model) 
+qqPlot(residuals(CellCount_model)) 
+
+  emm<-emmeans(CellCount_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+
+
+
+
+
+
+
+
+
+
+
 
 #mean tables
 # Mcap
@@ -402,96 +392,825 @@ Pacu_FC_Sum <- ddply(Pacu_FC, c("Treatment", "Species", "Time.Point"), summarise
 )
 Pacu_FC_Sum #display table
 
+```
 
-#Bar plots
-par(mfrow=c(2,2))
+#Line plots
+```{r}
+# Mcap 
 
-#Mcap
-Mcap_FC_Plot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
-  scale_fill_manual(values=c("blue", "purple","red"))+
-  geom_bar(stat="identity", position=position_dodge())+
+Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.05, position=position_dodge(0.9))+
-  theme_classic()+
-  theme(text = element_text(size = 18, color="black"))+
-  theme(axis.text = element_text(size = 18))+
-  theme(axis.title = element_text(size = 18))+
-  ylab(expression(paste("Symbiodinaceae (cells cm-2"))) +
-  ggtitle("Montipora capitata");Mcap_FC_Plot
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c('blue','red'))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       scale_y_log10()+
+      ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+  ggtitle("Mcap Flow Cytometry")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot
 
-#ggsave("Figures/Mcap_20181222.pdf", plot=McapPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+# Pcomp 
 
-
-#Pcomp
-Pcomp_FC_Plot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
-  scale_fill_manual(values=c("blue", "purple","red"))+
-  geom_bar(stat="identity", position=position_dodge())+
+Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.05, position=position_dodge(0.9))+
-  theme_classic()+
-  theme(text = element_text(size = 18, color="black"))+
-  theme(axis.text = element_text(size = 18))+
-  theme(axis.title = element_text(size = 18))+
-  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
-  ggtitle("Porites compressa");Pcomp_FC_Plot
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c('blue','red'))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       scale_y_log10()+
+    ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+  ggtitle("Pcomp Flow Cytometry")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
 
 
-#ggsave("Figures/Pcomp_20181222.pdf", plot=PcompPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+# Pvar 
 
-#Pvar
-Pvar_FC_Plot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
-  scale_fill_manual(values=c("blue", "purple","red"))+
-  geom_bar(stat="identity", position=position_dodge())+
+Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.05, position=position_dodge(0.9))+
-  theme_classic()+
-  theme(text = element_text(size = 18, color="black"))+
-  theme(axis.text = element_text(size = 18))+
-  theme(axis.title = element_text(size = 18))+
-  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
-  ggtitle("Pavona varians");Pvar_FC_Plot
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c('blue','red'))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       scale_y_log10()+
+    ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+  ggtitle("Pvar Flow Cytometry")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot
 
-#ggsave("Figures/Pvar_20181222.pdf", plot=PvarPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+# Pacu 
 
-#Pacu
-Pacu_FC_Plot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, fill= Treatment)) +
-  scale_fill_manual(values=c("blue", "purple","red"))+
-  geom_bar(stat="identity", position=position_dodge())+
+Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.05, position=position_dodge(0.9))+
-  theme_classic()+
-  theme(text = element_text(size = 18, color="black"))+
-  theme(axis.text = element_text(size = 18))+
-  theme(axis.title = element_text(size = 18))+
-  ylab(expression(paste("Symbiodinaceae (cells cm-2)"))) +
-  ggtitle("Pocillopora acuta");Pacu_FC_Plot
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c('blue','red'))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       scale_y_log10()+
+  ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+  ggtitle("Pacu Flow Cytometry")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_FC_lineplot
 
+###### All plots together
+Mcap_FC_lineplot<-Mcap_FC_lineplot+ theme(legend.position = "none") #remove legend
+Pcomp_FC_lineplot<-Pcomp_FC_lineplot+ theme(legend.position = "none") #remove legend
+Pvar_FC_lineplot<-Pvar_FC_lineplot+ theme(legend.position = "none") #remove legend
+Pacu_FC_lineplot<-Pacu_FC_lineplot+ theme(legend.position = "none") #remove legend
 
-#ggsave("Figures/Pacu_20181222.pdf", plot=PacuPlot, height=8, width=10, units = c("in"), dpi=300) #output figure
+grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot, nrow = 2)
 
+```
+#Buoyant Weight/Calcification
 
-# just plot again
-par(mfrow=c(2,2))
-Mcap_FC_Plot
-Pcomp_FC_Plot
-Pvar_FC_Plot
-Pacu_FC_Plot
+calibration (not sure what this does)
+```{r}
+BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
+#Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
 
+### Standard Cruve
+#plot relationship between temp and Standard in fresh and salt water
+plot(BWCalData$Temp, BWCalData$StandardSalt, col = 'red', ylab = 'Salt Weight (g)', xlab = 'Temp C')
+par(new=TRUE)
+plot(BWCalData$Temp, BWCalData$StandardFresh, col = 'blue',xaxt="n",yaxt="n",xlab="",ylab="")
+axis(4)
+mtext("'Fresh Weight (g)'",side=4,line=3)
+legend("topleft",col=c("red","blue"),lty=1,legend=c("Salt","Fresh"), bty = "n")
 
+#linear regression between temp and Standard
+#Salt
+StandardSaltModel <- lm(BWCalData$StandardSalt~BWCalData$Temp)
+summary(StandardSaltModel)
+summary(StandardSaltModel)$r.squared
+StandardSaltModel$coef
 
+#Fresh
+StandardFreshModel <- lm(BWCalData$StandardFresh~BWCalData$Temp)
+summary(StandardFreshModel)
+summary(StandardFreshModel)$r.squared
+StandardFreshModel$coef
 
+```
+Analysis 
+```{r}
 
+#load coral weight data
+BW.data <-read.csv('Data/BW_TT17.csv') # this is a file I compiled with all dates
 
+# merge to sample data for sorting
+AllBWdata<-merge(BW.data, meta, by = "Frag.ID")
 
+## Split data by species, change to numeric
+Mcap_BW<- subset(AllBWdata, Species =="Montipora_capitata")
+Mcap_BW$Temp.C <- as.numeric(as.character(Mcap_BW$Temp.C))
+BW_Mcap <- Mcap_BW$Mass.g
+Temp_Mcap <- Mcap_BW$Temp.C 
 
+Pcomp_BW<- subset(AllBWdata, Species =="Porites_compressa")
+Pcomp_BW$Temp.C <- as.numeric(as.character(Pcomp_BW$Temp.C))
+BW_Pcomp <- Pcomp_BW$Mass.g
+Temp_Pcomp <- Pcomp_BW$Temp.C 
 
+Pvar_BW<- subset(AllBWdata, Species =="Pavona_varians")
+Pvar_BW$Temp.C <- as.numeric(as.character(Pvar_BW$Temp.C))
+BW_Pvar <- Pvar_BW$Mass.g
+Temp_Pvar <- Pvar_BW$Temp.C 
 
-START here with code for plotting together. 
-
+Pacu_BW<- subset(AllBWdata, Species =="Pocillopora_acuta")
+BW_Pacu <- Pacu_BW$Mass.g
+Temp_Pacu <- Pacu_BW$Temp.C 
+```
+Montipora capitata
+```{r}
+BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
+  #Parameters---------------------------------------------------------------
+  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
+  # Temp is the temperature of the water during the coral measurement
+  # BW is the buoywant weight of the coral
+  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
+  #Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
+  # Porites asteroides T Hughes 1987 1.69 at 5m (KB got 1.82)
+  # below: Medellin-Maldonado et al 2016
+  # Pavona varians 1.04 +-0.07
+  # panama 8.5380° N, 80.7821° W, 
+  # coasta rica 9.7489° N, 83.7534° W
+  # mexico la entrega 15.7424° N, 96.1282° W
+  # hawaii 19.8968° N, 155.5828° W
+  # Pocillopora 1.78 +- 0.31
   
   
+  # You can change the density to literatrue values for the specific coral species of interest in the function. 
   
+  #Calculation------------------------------------------------------------
+  #Step 1: correct the Standard weights for temperature
+  # StandardFresh is the weight of the Standard in  fresh water at temp x
+  # StandardSalt is the weight of the Standard in salt water at temp x
   
-)```
+  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
+StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
+StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
+  
+  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
+  # the density of the Standard (Davies eq. 4)
+FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
+  
+  # Step 3: Calculate the density of seawater using the density of the Standard
+  # (Spencer Davies eq. 3)
+SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
+  
+  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
+CoralWeight <- BW_Mcap/(1-(SWDensity/CoralDensity))
+  
+  return(CoralWeight) #returns coral dry weights in g
+}
+  
+Mcap_BW$Dry.Weigh.g <- BWCalc_Mcap(BW=BW_Mcap, Temp=Temp_Mcap) #use function to calculate dry weight
+hist(Mcap_BW$Dry.Weigh.g) #not normal
+Mcap_BW$Dry.Weigh.g_log<-log10(Mcap_BW$Dry.Weigh.g+1)
+hist(Mcap_BW$Dry.Weigh.g_log) #better still tail
+boxplot(Mcap_BW$Dry.Weigh.g) #examine data
+Mcap_BW <- Mcap_BW[!(Mcap_BW$Frag.ID == "797"),] # remove sample 797, error in BW record (impossible value)
 
-# 
+# below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
+data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment"), direction="wide")
+
+# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
+data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
+data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
+
+# mean, standard dev, and sem
+time1_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time1.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time1_McapBW$Time <- "Time1"  # this puts these data in our "time1" dataframe
+
+time2_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time2_McapBW$Time <- "Time2"  # this puts these data in our "time1" dataframe
+
+#save this dataframe as "G"
+G_McapA <- rbind(time1_McapBW[1,],time2_McapBW[1,])# Greate a new column that we rename each row by treatment
+G_McapH <- rbind(time1_McapBW[2,],time2_McapBW[2,])# Greate a new column that we rename each row by treatment
+G_Mcap<-rbind(G_McapA, G_McapH)
+# Stress.Recovery column 
+ # make new column that renames "time" to Stress or Recovery
+G_Mcap$newtime = ifelse(G_Mcap$Time == "Time1", "Post-Stress", "Post-Recovery")
+G_Mcap <- within(G_Mcap, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
+
+
+
+Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Dry.Weigh.g"))) +
+  ggtitle("Calcification Mcap")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_BW_plot
+
+
+```
+Porites compressa
+```{r}
+
+################################     PORITES COMPRESSA
+BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
+  #Parameters---------------------------------------------------------------
+  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
+  # Temp is the temperature of the water during the coral measurement
+  # BW is the buoywant weight of the coral
+  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
+  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
+  
+  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
+  
+  # below: Medellin-Maldonado et al 2016
+  # Pavona varians 1.04 +-0.07
+  # panama 8.5380° N, 80.7821° W, 
+  # coasta rica 9.7489° N, 83.7534° W
+  # mexico la entrega 15.7424° N, 96.1282° W
+  # hawaii 19.8968° N, 155.5828° W
+  # Pocillopora 1.78 +- 0.31
+  
+  
+  # You can change the density to literatrue values for the specific coral species of interest in the function. 
+  
+  #Calculation------------------------------------------------------------
+  #Step 1: correct the Standard weights for temperature
+  # StandardFresh is the weight of the Standard in  fresh water at temp x
+  # StandardSalt is the weight of the Standard in salt water at temp x
+  
+  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
+  StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
+  StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
+  
+  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
+  # the density of the Standard (Davies eq. 4)
+  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+  StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
+  
+  # Step 3: Calculate the density of seawater using the density of the Standard
+  # (Spencer Davies eq. 3)
+  SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
+  
+  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
+  CoralWeight <- BW_Pcomp/(1-(SWDensity/CoralDensity))
+  
+  return(CoralWeight) #returns coral dry weights in g
+}
+
+
+Pcomp_BW$Dry.Weigh.g <- BWCalc_Pcomp(BW=BW_Pcomp, Temp=Temp_Pcomp) #use function to calculate dry weight
+hist(Pcomp_BW$Dry.Weigh.g) 
+Pcomp_BW$Dry.Weigh.g_log<-log10(Pcomp_BW$Dry.Weigh.g+1)
+hist(Pcomp_BW$Dry.Weigh.g_log) # normal
+boxplot(Pcomp_BW$Dry.Weigh.g_log) #examine data
+
+# below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
+data_PcompBW <- reshape(Pcomp_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X", "Time.Point", "Parent.ID", "Species", "Tank.num"), idvar=c("Frag.ID", "Treatment"), direction="wide")
+
+# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
+data_PcompBW$time1.growth <- (((data_PcompBW$Dry.Weigh.g.Time1 - data_PcompBW$Dry.Weigh.g.Time0)/data_PcompBW$Dry.Weigh.g.Time0)*100)/data_PcompBW$Days.Time1 #calculate growth rate for time1
+data_PcompBW$time2.growth <- (((data_PcompBW$Dry.Weigh.g.Time2 - data_PcompBW$Dry.Weigh.g.Time1)/data_PcompBW$Dry.Weigh.g.Time1)*100)/data_PcompBW$Days.Time2 #calculate growth rate for time2
+
+# mean, standard dev, and sem
+time1_PcompBW <-ddply(data_PcompBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time1.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time1_PcompBW$Time <- "Time1"  # this puts these data in our "time1" dataframe
+
+time2_PcompBW <-ddply(data_PcompBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time2_PcompBW$Time <- "Time2"  # this puts these data in our "time1" dataframe
+
+#save this dataframe as "G"
+G_PcompA <- rbind(time1_PcompBW[1,],time2_PcompBW[1,])# Greate a new column that we rename each row by treatment
+G_PcompH <- rbind(time1_PcompBW[2,],time2_PcompBW[2,])# Greate a new column that we rename each row by treatment
+G_Pcomp<-rbind(G_PcompA, G_PcompH)
+# Stress.Recovery column 
+ # make new column that renames "time" to Stress or Recovery
+G_Pcomp$newtime = ifelse(G_Pcomp$Time == "Time1", "Post-Stress", "Post-Recovery")
+G_Pcomp <- within(G_Pcomp, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
+
+
+
+Pcomp_BW_plot<-ggplot(data=G_Pcomp, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Dry.Weigh.g"))) +
+  ggtitle("Calcification Pcomp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_BW_plot
+
+```
+Pavona varians
+```{r}
+BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
+  #Parameters---------------------------------------------------------------
+  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
+  # Temp is the temperature of the water during the coral measurement
+  # BW is the buoywant weight of the coral
+  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
+  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
+  
+  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
+  
+  # below: Medellin-Maldonado et al 2016
+  # Pavona varians 1.04 +-0.07
+  # panama 8.5380° N, 80.7821° W, 
+  # coasta rica 9.7489° N, 83.7534° W
+  # mexico la entrega 15.7424° N, 96.1282° W
+  # hawaii 19.8968° N, 155.5828° W
+  # Pocillopora 1.78 +- 0.31
+  
+  
+  # You can change the density to literatrue values for the specific coral species of interest in the function. 
+  
+  #Calculation------------------------------------------------------------
+  #Step 1: correct the Standard weights for temperature
+  # StandardFresh is the weight of the Standard in  fresh water at temp x
+  # StandardSalt is the weight of the Standard in salt water at temp x
+  
+  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
+  StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
+  StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
+  
+  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
+  # the density of the Standard (Davies eq. 4)
+  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+  StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
+  
+  # Step 3: Calculate the density of seawater using the density of the Standard
+  # (Spencer Davies eq. 3)
+  SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
+  
+  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
+  CoralWeight <- BW_Pvar/(1-(SWDensity/CoralDensity))
+  
+  return(CoralWeight) #returns coral dry weights in g
+}
+
+Pvar_BW$Dry.Weigh.g <- BWCalc_Pvar(BW=BW_Pvar, Temp=Temp_Pvar) #use function to calculate dry weight
+hist(Pvar_BW$Dry.Weigh.g) #not normal
+
+boxplot(Pvar_BW$Dry.Weigh.g) #examine data
+Pvar_BW$Dry.Weigh.g_log<-log10(Pvar_BW$Dry.Weigh.g+1)
+hist(Pvar_BW$Dry.Weigh.g_log) #not normal
+
+
+# below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
+data_PvarBW <- reshape(Pvar_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment"), direction="wide")
+
+# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
+data_PvarBW$time1.growth <- (((data_PvarBW$Dry.Weigh.g.Time1 - data_PvarBW$Dry.Weigh.g.Time0)/data_PvarBW$Dry.Weigh.g.Time0)*100)/data_PvarBW$Days.Time1 #calculate growth rate for time1
+data_PvarBW$time2.growth <- (((data_PvarBW$Dry.Weigh.g.Time2 - data_PvarBW$Dry.Weigh.g.Time1)/data_PvarBW$Dry.Weigh.g.Time1)*100)/data_PvarBW$Days.Time2 #calculate growth rate for time2
+
+# mean, standard dev, and sem
+time1_PvarBW <-ddply(data_PvarBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time1.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time1_PvarBW$Time <- "Time1"  # this puts these data in our "time1" dataframe
+
+time2_PvarBW <-ddply(data_PvarBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time2_PvarBW$Time <- "Time2"  # this puts these data in our "time1" dataframe
+
+#save this dataframe as "G"
+G_PvarA <- rbind(time1_PvarBW[1,],time2_PvarBW[1,])# Greate a new column that we rename each row by treatment
+G_PvarH <- rbind(time1_PvarBW[2,],time2_PvarBW[2,])# Greate a new column that we rename each row by treatment
+G_Pvar<-rbind(G_PvarA, G_PvarH)
+# Stress.Recovery column 
+ # make new column that renames "time" to Stress or Recovery
+G_Pvar$newtime = ifelse(G_Pvar$Time == "Time1", "Post-Stress", "Post-Recovery")
+G_Pvar <- within(G_Pvar, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
+
+
+
+Pvar_BW_plot<-ggplot(data=G_Pvar, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Dry.Weigh.g"))) +
+  ggtitle("Calcification Pvar")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_BW_plot
+
+```
+P acuta
+```{r}
+BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
+  #Parameters---------------------------------------------------------------
+  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
+  # Temp is the temperature of the water during the coral measurement
+  # BW is the buoywant weight of the coral
+  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
+  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
+  
+  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
+  
+  # below: Medellin-Maldonado et al 2016
+  # Pavona varians 1.04 +-0.07
+  # panama 8.5380° N, 80.7821° W, 
+  # coasta rica 9.7489° N, 83.7534° W
+  # mexico la entrega 15.7424° N, 96.1282° W
+  # hawaii 19.8968° N, 155.5828° W
+  # Pocillopora 1.78 +- 0.31
+  
+  
+  # You can change the density to literatrue values for the specific coral species of interest in the function. 
+  
+  #Calculation------------------------------------------------------------
+  #Step 1: correct the Standard weights for temperature
+  # StandardFresh is the weight of the Standard in  fresh water at temp x
+  # StandardSalt is the weight of the Standard in salt water at temp x
+  
+  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
+  StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
+  StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
+  
+  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
+  # the density of the Standard (Davies eq. 4)
+  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+  StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
+  
+  # Step 3: Calculate the density of seawater using the density of the Standard
+  # (Spencer Davies eq. 3)
+  SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
+  
+  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
+  CoralWeight <- BW_Pacu/(1-(SWDensity/CoralDensity))
+  
+  return(CoralWeight) #returns coral dry weights in g
+}
+
+Pacu_BW$Dry.Weigh.g <- BWCalc_Pacu(BW=BW_Pacu, Temp=Temp_Pacu) #use function to calculate dry weight
+hist(Pacu_BW$Dry.Weigh.g) #not normal
+Pacu_BW$Dry.Weigh.g_log<-log10(Pacu_BW$Dry.Weigh.g+1)
+hist(Pacu_BW$Dry.Weigh.g_log) #better still tail
+boxplot(Pacu_BW$Dry.Weigh.g) #examine data
+
+# below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
+data_PacuBW <- reshape(Pacu_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment"), direction="wide")
+
+# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
+data_PacuBW$time1.growth <- (((data_PacuBW$Dry.Weigh.g.Time1 - data_PacuBW$Dry.Weigh.g.Time0)/data_PacuBW$Dry.Weigh.g.Time0)*100)/data_PacuBW$Days.Time1 #calculate growth rate for time1
+data_PacuBW$time2.growth <- (((data_PacuBW$Dry.Weigh.g.Time2 - data_PacuBW$Dry.Weigh.g.Time1)/data_PacuBW$Dry.Weigh.g.Time1)*100)/data_PacuBW$Days.Time2 #calculate growth rate for time2
+
+
+
+# mean, standard dev, and sem
+time1_PacuBW <-ddply(data_PacuBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time1.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time1_PacuBW$Time <- "Time1"  # this puts these data in our "time1" dataframe
+
+time2_PacuBW <-ddply(data_PacuBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time2_PacuBW$Time <- "Time2"  # this puts these data in our "time1" dataframe
+
+#save this dataframe as "G"
+G_PacuA <- rbind(time1_PacuBW[1,],time2_PacuBW[1,])# Greate a new column that we rename each row by treatment
+G_PacuH <- rbind(time1_PacuBW[2,],time2_PacuBW[2,])# Greate a new column that we rename each row by treatment
+G_Pacu<-rbind(G_PacuA, G_PacuH)
+# Stress.Recovery column 
+ # make new column that renames "time" to Stress or Recovery
+G_Pacu$newtime = ifelse(G_Pacu$Time == "Time1", "Post-Stress", "Post-Recovery")
+G_Pacu <- within(G_Pacu, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
+
+
+
+Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Dry.Weigh.g"))) +
+  ggtitle("Calcification Pacu")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_BW_plot
+
+```
+
+stats
+```{r}
+Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
+GrowthKeep<- c("Frag.ID","time1.growth","time2.growth", "Treatment")
+Growth <- Growth[GrowthKeep]
+
+Grow_m <- melt(Growth, id=c("Frag.ID","Treatment")) #melt
+names(Grow_m)[names(Grow_m) == "value"] <- "percent.change"
+names(Grow_m)[names(Grow_m) == "variable"] <- "Time.point"
+
+Growth2<-merge(Grow_m, meta) #merge metadata
+GrowthKeep2<- c("Frag.ID","Time.point", "Treatment", "Tank.num","Parent.ID","Species","percent.change")
+Growth3 <- Growth2[GrowthKeep2]
+Growth3<-na.omit(Growth3)
+
+hist(Growth3$percent.change) 
+Growth3$percent.change_log<-log10(Growth3$percent.change+1)
+hist(Growth3$percent.change_log) #normal 
+
+BW_model<-lmer(percent.change_log~Time.point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Growth3)
+anova(BW_model) 
+qqPlot(residuals(BW_model)) 
+
+  emm<-emmeans(BW_model,  ~ Time.point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+```
+
+
+
+#Chl-a
+dfs: Slurry=airbrush, SA=wax dip, 
+```{r}
+
+ # Plate 1
+
+Chla_plate1<- read.csv("Data/Chla_plate1.csv")
+
+#merge 
+ChlaData1 <- merge(meta, Chla_plate1)
+ChlaData1 <- merge(ChlaData1, Slurry)
+ChlaData1 <- merge(ChlaData1, SA)
+ChlaData1$Parent.ID<-as.factor(as.character(ChlaData1$Parent.ID))
+ChlaData1$Tank.num<-as.factor(as.character(ChlaData1$Tank.num))
+ChlaData1$Surface.area<-as.numeric(as.character(ChlaData1$Surface.area))
+
+
+ChlaData1$totChla1<-ChlaData1$Rep1*ChlaData1$TotalVolume
+ChlaData1$chlaSA1 <- ChlaData1$totChla1/ChlaData1$Surface.area
+
+ChlaData1$totChla2<-ChlaData1$Rep2*ChlaData1$TotalVolume
+ChlaData1$chlaSA2 <- ChlaData1$totChla2/ChlaData1$Surface.area
+
+plate1<-plot(ChlaData1$chlaSA1,ChlaData1$chlaSA2)
+
+# Plate 2
+Chla_plate2<- read.csv("Data/Chla_plate2.csv")
+
+#merge 
+ChlaData2 <- merge(meta, Chla_plate2)
+ChlaData2 <- merge(ChlaData2, Slurry)
+ChlaData2 <- merge(ChlaData2, SA)
+ChlaData2$Parent.ID<-as.factor(as.character(ChlaData2$Parent.ID))
+ChlaData2$Tank.num<-as.factor(as.character(ChlaData2$Tank.num))
+ChlaData2$Surface.area<-as.numeric(as.character(ChlaData2$Surface.area))
+
+ChlaData2$totChla1<-ChlaData2$Rep1*ChlaData2$TotalVolume
+ChlaData2$chlaSA1 <- ChlaData2$totChla1/ChlaData2$Surface.area
+
+ChlaData2$totChla2<-ChlaData2$Rep2*ChlaData2$TotalVolume
+ChlaData2$chlaSA2 <- ChlaData2$totChla2/ChlaData2$Surface.area
+
+plate2<-plot(ChlaData2$chlaSA1,ChlaData2$chlaSA2)
+
+# Plate 3
+Chla_plate3<- read.csv("Data/Chla_plate3.csv")
+
+#merge 
+ChlaData3 <- merge(meta, Chla_plate3)
+ChlaData3 <- merge(ChlaData3, Slurry)
+ChlaData3 <- merge(ChlaData3, SA)
+ChlaData3$Parent.ID<-as.factor(as.character(ChlaData3$Parent.ID))
+ChlaData3$Tank.num<-as.factor(as.character(ChlaData3$Tank.num))
+ChlaData3$Surface.area<-as.numeric(as.character(ChlaData3$Surface.area))
+
+ChlaData3$totChla1<-ChlaData3$Rep1*ChlaData3$TotalVolume
+ChlaData3$chlaSA1 <- ChlaData3$totChla1/ChlaData3$Surface.area
+
+ChlaData3$totChla2<-ChlaData3$Rep2*ChlaData3$TotalVolume
+ChlaData3$chlaSA2 <- ChlaData3$totChla2/ChlaData3$Surface.area
+
+plate3<-plot(ChlaData3$chlaSA1,ChlaData3$chlaSA2) #check
+
+# Plate 4 
+Chla_plate4<- read.csv("Data/test_plate4.csv")
+
+#merge 
+ChlaData4 <- merge(meta, Chla_plate4)
+ChlaData4 <- merge(ChlaData4, Slurry)
+ChlaData4 <- merge(ChlaData4, SA)
+ChlaData4$Parent.ID<-as.factor(as.character(ChlaData4$Parent.ID))
+ChlaData4$Tank.num<-as.factor(as.character(ChlaData4$Tank.num))
+ChlaData4$Surface.area<-as.numeric(as.character(ChlaData4$Surface.area))
+
+
+ChlaData4$totChla1<-ChlaData4$Rep1*ChlaData4$TotalVolume
+ChlaData4$chlaSA1 <- ChlaData4$totChla1/ChlaData4$Surface.area
+
+ChlaData4$totChla2<-ChlaData4$Rep2*ChlaData4$TotalVolume
+ChlaData4$chlaSA2 <- ChlaData4$totChla2/ChlaData4$Surface.area
+
+plate4<-plot(ChlaData4$chlaSA1,ChlaData4$chlaSA2)
+
+# Plate 5 20190319
+Chla_plate5<- read.csv("Data/Chla_20190319_plate5.csv")
+
+#merge 
+ChlaData5 <- merge(meta, Chla_plate5)
+ChlaData5 <- merge(ChlaData5, Slurry)
+ChlaData5 <- merge(ChlaData5, SA)
+ChlaData5$Parent.ID<-as.factor(as.character(ChlaData5$Parent.ID))
+ChlaData5$Tank.num<-as.factor(as.character(ChlaData5$Tank.num))
+ChlaData5$Surface.area<-as.numeric(as.character(ChlaData5$Surface.area))
+
+
+ChlaData5$totChla1<-ChlaData5$Rep1*ChlaData5$TotalVolume
+ChlaData5$chlaSA1 <- ChlaData5$totChla1/ChlaData5$Surface.area
+
+ChlaData5$totChla2<-ChlaData5$Rep2*ChlaData5$TotalVolume
+ChlaData5$chlaSA2 <- ChlaData5$totChla2/ChlaData5$Surface.area
+
+plate5<-plot(ChlaData5$chlaSA1,ChlaData5$chlaSA2) #some not close, check 
+
+```
+
+means
+```{r}
+Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5)
+
+
+
+# figure out how to qc this data, how close do numbers need to be and then cut the ones that don't make it. Also make sure no duplicates for frag.ids. THen figure out means. 
+
+
+
+
+
+
+
+
+
+# divide by species
+Mcap_chla<-subset(Chla, Species =="Montipora_capitata")
+Pcomp_chla<-subset(Chla, Species =="Porites_compressa")
+Pvar_chla<-subset(Chla, Species =="Pavona_varians")
+Pacu_chla<-subset(Chla, Species =="Pocillopora_acuta")
+
+# Mcap
+Mcap_chla_Sum <- ddply(Mcap_chla, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Mcap_chla_Sum #display table
+
+# Pcomp
+PcompSum <- ddply(Pcomp, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PcompSum #display table
+
+
+# Pvar
+PvarSum <- ddply(Pvar, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PvarSum #display table
+
+# Pacu
+PacuSum <- ddply(Pacu, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PacuSum #display table
+
+
+
+
+
+
+```
