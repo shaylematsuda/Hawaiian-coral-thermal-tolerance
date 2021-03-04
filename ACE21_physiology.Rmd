@@ -668,7 +668,7 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("Dry.Weigh.g"))) +
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
   ggtitle("Calcification Mcap")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_BW_plot
 
@@ -781,7 +781,7 @@ Pcomp_BW_plot<-ggplot(data=G_Pcomp, aes(x=newtime, y=mean, group = Treatment, co
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("Dry.Weigh.g"))) +
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
   ggtitle("Calcification Pcomp")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_BW_plot
 
@@ -892,7 +892,7 @@ Pvar_BW_plot<-ggplot(data=G_Pvar, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("Dry.Weigh.g"))) +
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
   ggtitle("Calcification Pvar")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_BW_plot
 
@@ -1003,10 +1003,20 @@ Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("Dry.Weigh.g"))) +
-  ggtitle("Calcification Pacu")+
+  ylab(expression(paste("% Change Dry.Weigh.g"))) + 
+  ggtitle("Calcification Pacu")+ 
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_BW_plot
+ 
+```
+Plots together
+```{r}
+###### All plots together
+Mcap_BW_plot<-Mcap_BW_plot+ theme(legend.position = "none") #remove legend
+Pcomp_BW_plot<-Pcomp_BW_plot+ theme(legend.position = "none") #remove legend
+Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
+Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
 
+grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
 ```
 
 stats
@@ -1143,74 +1153,187 @@ ChlaData5$chlaSA2 <- ChlaData5$totChla2/ChlaData5$Surface.area
 
 plate5<-plot(ChlaData5$chlaSA1,ChlaData5$chlaSA2) #some not close, check 
 
+
+
+# Plate 6 20190321
+Chla_plate6<- read.csv("Data/Chla_plate6.csv")
+
+#merge 
+ChlaData6 <- merge(meta, Chla_plate6)
+ChlaData6 <- merge(ChlaData6, Slurry)
+ChlaData6 <- merge(ChlaData6, SA)
+ChlaData6$Parent.ID<-as.factor(as.character(ChlaData6$Parent.ID))
+ChlaData6$Tank.num<-as.factor(as.character(ChlaData6$Tank.num))
+ChlaData6$Surface.area<-as.numeric(as.character(ChlaData6$Surface.area))
+
+
+ChlaData6$totChla1<-ChlaData6$Rep1*ChlaData6$TotalVolume
+ChlaData6$chlaSA1 <- ChlaData6$totChla1/ChlaData6$Surface.area
+
+ChlaData6$totChla2<-ChlaData6$Rep2*ChlaData6$TotalVolume
+ChlaData6$chlaSA2 <- ChlaData6$totChla2/ChlaData6$Surface.area
+
+plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check 
+
+
+
 ```
 
-means
+means for plots
 ```{r}
-Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5)
+Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
+Chla$Chla_RepDiff<-Chla$chlaSA1-Chla$chlaSA2
+Chla$ChlaSA<-(Chla$chlaSA1+Chla$chlaSA2)/2
 
-
-
-# figure out how to qc this data, how close do numbers need to be and then cut the ones that don't make it. Also make sure no duplicates for frag.ids. THen figure out means. 
-
-
-
-
-
-
-
-
-
-# divide by species
-Mcap_chla<-subset(Chla, Species =="Montipora_capitata")
-Pcomp_chla<-subset(Chla, Species =="Porites_compressa")
-Pvar_chla<-subset(Chla, Species =="Pavona_varians")
-Pacu_chla<-subset(Chla, Species =="Pocillopora_acuta")
+#2285, 3491, N141 Remove sample where reps are >1 apart
+Chla<-Chla[!(Chla$Frag.ID=="2285"),]
+Chla<-Chla[!(Chla$Frag.ID=="3491"),]
+Chla<-Chla[!(Chla$Frag.ID=="N141"),]
 
 # Mcap
-Mcap_chla_Sum <- ddply(Mcap_chla, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
+Chla_mean <- ddply(Chla, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(ChlaSA[!is.na(ChlaSA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(ChlaSA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(ChlaSA, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
-                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+                   max = max(ChlaSA, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
-Mcap_chla_Sum #display table
+Chla_mean #display table
 
-# Pcomp
-PcompSum <- ddply(Pcomp, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
-                   se   = sd / sqrt(N), #calculate standard error
-                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-PcompSum #display table
+# divide by species
+Mcap_chla<-subset(Chla_mean, Species =="Montipora_capitata")
+Pcomp_chla<-subset(Chla_mean, Species =="Porites_compressa")
+Pvar_chla<-subset(Chla_mean, Species =="Pavona_varians")
+Pacu_chla<-subset(Chla_mean, Species =="Pocillopora_acuta")
+
+#Mcap plot
+
+Mcap_Chla_plot<-ggplot(data=Mcap_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 8)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  ggtitle("Mcap Chla")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot
+
+#Pcomp plot
+
+Pcomp_Chla_plot<-ggplot(data=Pcomp_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 8)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  ggtitle("Pcomp Chla")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot
+
+#Pvar plot
+
+Pvar_Chla_plot<-ggplot(data=Pvar_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 8)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  ggtitle("Pvar Chla")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot
 
 
-# Pvar
-PvarSum <- ddply(Pvar, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
-                   se   = sd / sqrt(N), #calculate standard error
-                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-PvarSum #display table
+#Pacu plot
 
-# Pacu
-PacuSum <- ddply(Pacu, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                   N    = length(chla.SA[!is.na(chla.SA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                   mean = mean(chla.SA, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                   sd   = sd(chla.SA, na.rm=TRUE), #calculate standard deviation
-                   se   = sd / sqrt(N), #calculate standard error
-                   max = max(chla.SA, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-PacuSum #display table
+Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 5)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  ggtitle("Pacu Chla")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot
 
 
 
+```
+
+Plots together
+```{r}
+###### All plots together
+Mcap_Chla_plot<-Mcap_Chla_plot+ theme(legend.position = "none") #remove legend
+Pcomp_Chla_plot<-Pcomp_Chla_plot+ theme(legend.position = "none") #remove legend
+Pvar_Chla_plot<-Pvar_Chla_plot+ theme(legend.position = "none") #remove legend
+Pacu_Chla_plot<-Pacu_Chla_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 2)
+```
+
+stats <- there are 2 smaples that come up negative chla when averaged across reps. they get cut out when transforming the data, which is fine. 
+```{r}
+
+hist(Chla$ChlaSA) 
+Chla$ChlaSA_log<-log10(Chla$ChlaSA+1)
+hist(Chla$ChlaSA_log) #pos skew this ok?
+Chla$ChlaSA_sqrt<-sqrt(Chla$ChlaSA) 
+hist(Chla$ChlaSA_sqrt) #I think better
 
 
+Chla_model<-lmer(ChlaSA_sqrt~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla)
+anova(Chla_model) 
+qqPlot(residuals(Chla_model)) 
+
+emm<-emmeans(Chla_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
 
 ```
