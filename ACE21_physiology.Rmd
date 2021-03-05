@@ -26,6 +26,7 @@ library(emmeans)
 library(gridExtra)
 library(multcomp)
 library(reshape)
+library(tidyverse)
 
 ```
 
@@ -1045,7 +1046,7 @@ qqPlot(residuals(BW_model))
   emm<-emmeans(BW_model,  ~ Time.point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
-
+ 
 ```
 
 
@@ -1180,7 +1181,7 @@ plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check
 ```
 
 means for plots
-```{r}
+```{r} 
 Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
 Chla$Chla_RepDiff<-Chla$chlaSA1-Chla$chlaSA2
 Chla$ChlaSA<-(Chla$chlaSA1+Chla$chlaSA2)/2
@@ -1190,7 +1191,7 @@ Chla<-Chla[!(Chla$Frag.ID=="2285"),]
 Chla<-Chla[!(Chla$Frag.ID=="3491"),]
 Chla<-Chla[!(Chla$Frag.ID=="N141"),]
 
-# Mcap
+# 
 Chla_mean <- ddply(Chla, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(ChlaSA[!is.na(ChlaSA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(ChlaSA, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -1325,15 +1326,446 @@ hist(Chla$ChlaSA)
 Chla$ChlaSA_log<-log10(Chla$ChlaSA+1)
 hist(Chla$ChlaSA_log) #pos skew this ok?
 Chla$ChlaSA_sqrt<-sqrt(Chla$ChlaSA) 
-hist(Chla$ChlaSA_sqrt) #I think better
+hist(Chla$ChlaSA_sqrt) #nope
 
+Chla$ChlaSA_cube<-Chla$ChlaSA^(1/3)
+hist(Chla$ChlaSA_cube) #better but no
+shapiro.test(Chla$ChlaSA_cube)
 
-Chla_model<-lmer(ChlaSA_sqrt~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla)
+Chla$ChlaSA_quart<-Chla$ChlaSA^(1/4)
+hist(Chla$ChlaSA_quart) #best
+shapiro.test(Chla$ChlaSA_quart) # p=0.5
+
+Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla)
 anova(Chla_model) 
 qqPlot(residuals(Chla_model)) 
+
 
 emm<-emmeans(Chla_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
 ```
+
+
+#PAM
+```{r}
+#Load PAM data
+Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
+Time0<-merge(Time0, meta)
+Time1 <- read.csv("Data/PAM_20170321.csv", header=T) #load data
+Time1<-merge(Time1, meta)
+Time2 <- read.csv("Data/PAM_20170322.csv", header=T) #load data
+Time2<-merge(Time2, meta)
+Time3 <- read.csv("Data/PAM_20170323.csv", header=T) #load data
+Time3<-merge(Time3, meta)
+#Time3b <- read.csv("Data/PAM_new_20170323b.csv", header=T) #load data
+Time4 <- read.csv("Data/PAM_20170406.csv", header=T) #load data
+Time4<-merge(Time4, meta)
+Time5 <- read.csv("Data/PAM_20170413.csv", header=T) #load data
+Time5<-merge(Time5, meta)
+Time6 <- read.csv("Data/PAM_6test.csv", header=T) #load data had to remove rows with no data bc wouldn't upload
+Time6<-merge(Time6, meta)
+Time7 <- read.csv("Data/PAM_20170427.csv", header=T) #load data
+Time7<-merge(Time7, meta)
+Time8 <- read.csv("Data/PAM_20170504.csv", header=T) #load data
+Time8<-merge(Time8, meta)
+Time9 <- read.csv("Data/PAM_20170511.csv", header=T) #load data
+Time9<-merge(Time9, meta)
+Time10 <- read.csv("Data/PAM_20170517.csv", header=T) #load data
+Time10<-merge(Time1, meta)
+
+# combine all data files
+PAMdata<-rbind(Time0, Time1, Time2, Time3, Time4, Time5, Time6, Time7, Time8, Time9, Time10)
+# F0/FM: change F0, yield, and FM to numeric
+PAMdata$F0<-as.numeric(as.character(PAMdata$F0))
+PAMdata$FM<-as.numeric(as.character(PAMdata$FM))
+PAMdata$Tank<-as.factor(as.character(PAMdata$Tank))
+PAMdata$Tank.num<-as.factor(as.character(PAMdata$Tank.num))
+
+# Date - change date to R format and then to numeric
+PAMdata$Date <- as.Date(PAMdata$Date, format="%e-%b-%y")
+#PAMdata$Date[PAMdata$Date<"2017-03-24"]<-"2017-03-20" # make all T0 same starte date to get average
+PAMdata$Days <- as.numeric(PAMdata$Date - as.Date("2017-03-20"))
+PAMdata$Days[PAMdata$Days<4]<- 0  #If you want to make T0 all the same start time do this
+
+# make yield ratio
+PAMdata <- transform(PAMdata, Yield = PAMdata$Yield/1000)
+str(PAMdata) # check
+
+#check yield calculations versus records and build dataframe
+checks <- (PAMdata[,(1:9)]) #add samples to dataframe
+checks$Yield.Check <- PAMdata$Yield - ((PAMdata$FM-PAMdata$F0)/PAMdata$FM)
+checks$checks <- ifelse(abs(checks$Yield.Check-checks$Yield) < 1, TRUE, FALSE) # check to see if Yield matches check
+checks[checks$checks==FALSE,]#pull out FALSE
+#remove 3 misrecorded 2284 4/27, 3204 5/4
+PAMdata <- PAMdata[!(PAMdata$Frag.ID == "2284" & PAMdata$Date == "2017-04-27" ) ,] 
+PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3204" & PAMdata$Date == "2017-05-04" ) ,] 
+
+# check for outliers
+#boxplot(checks$Yield.Check, main="Times") #check F0r outliers
+
+#Check notes manulaly and remove data points as needed
+#check for duplicate rows
+DUP<-duplicated(PAMdata) #look for duplicate entries
+PAMdata<-unique(PAMdata) #remove any duplicate entries 
+PAMdata <- PAMdata[!(PAMdata$Frag.ID == "N150" & PAMdata$Date == "2017-04-13" ) ,]  #no data
+PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3481" & PAMdata$Date == "2017-04-27" ) ,] 
+
+
+
+
+
+
+```
+Stats
+```{r} 
+#remove notes
+
+PAMdata_stats<-PAMdata[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
+PAMdata_stats$Days<-as.factor(as.character(PAMdata_stats$Days))
+
+# Historgam
+hist(PAMdata_stats$Yield)
+
+#transform
+PAMdata_stats$Yield_sq<-(PAMdata_stats$Yield)^2
+hist(PAMdata_stats$Yield_sq)
+
+PAMdata_stats$Yield_cu<-(PAMdata_stats$Yield)^3
+hist(PAMdata_stats$Yield_cu) #beter
+
+
+#lmer with ^3
+PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID)+(1|Tank.num), PAMdata_stats)
+anova(PAMdata_stats_model) 
+qqPlot(residuals(PAMdata_stats_model)) 
+
+
+#glmer????
+#PAMdata_glmer<-glmer(Yield~Days*Treatment*Species+(1|Parent.ID)+(1|Tank.num), family = "poisson", PAMdata_stats)
+#Anova(PAMdata_glmer)
+#qqPlot(residuals(PAMdata_glmer)) 
+
+
+#is the data still not normal by species
+
+Mcap_PAM<-subset(PAMdata_stats, Species=="Montipora_capitata")
+hist(Mcap_PAM$Yield_cu)
+Mcap_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Mcap_PAM)
+anova(Mcap_PAMdata_stats_model) 
+qqPlot(residuals(Mcap_PAMdata_stats_model))
+
+Pcomp_PAM<-subset(PAMdata_stats, Species=="Porites_compressa")
+hist(Pcomp_PAM$Yield_cu)
+Pcomp_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pcomp_PAM)
+anova(Pcomp_PAMdata_stats_model) 
+qqPlot(residuals(Pcomp_PAMdata_stats_model))
+
+Pvar_PAM<-subset(PAMdata_stats, Species=="Pavona_varians") #normal AF
+hist(Pvar_PAM$Yield_cu)
+Pvar_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pvar_PAM)
+anova(Pvar_PAMdata_stats_model) 
+qqPlot(residuals(Pvar_PAMdata_stats_model))
+
+Pacu_PAM<-subset(PAMdata_stats, Species=="Pocillopora_acuta")
+hist(Pacu_PAM$Yield_cu)
+Pacu_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pacu_PAM)
+anova(Pacu_PAMdata_stats_model) 
+qqPlot(residuals(Pacu_PAMdata_stats_model))
+
+
+
+```
+Plots
+```{r}
+PAMdata_mean <- ddply(PAMdata, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
+                   N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Yield, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Yield, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PAMdata_mean #display table
+
+# divide by species
+Mcap_PAM_mean<-subset(PAMdata_mean, Species =="Montipora_capitata")
+Pcomp_PAM_mean<-subset(PAMdata_mean, Species =="Porites_compressa")
+Pvar_PAM_mean<-subset(PAMdata_mean, Species =="Pavona_varians")
+Pacu_PAM_mean<-subset(PAMdata_mean, Species =="Pocillopora_acuta")
+
+#Mcap plot
+
+Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 1)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("fv/fm"))) +
+  ggtitle("Mcap PAM")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PAM_plot
+
+#Pcomp plot
+
+Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean, aes(x=Days, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 1)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("fv/fm"))) +
+  ggtitle("Pcomp PAM")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
+
+#Pvar plot
+
+Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean, aes(x=Days, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 1)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("fv/fm"))) +
+  ggtitle("Pvar PAM")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PAM_plot
+
+#Pacu plot
+Pacu_PAM_mean<-Pacu_PAM_mean[!(Pacu_PAM_mean$N<5),] #remove time points if n<5
+
+Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean, aes(x=Days, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, 1)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("fv/fm"))) +
+  ggtitle("Pacu PAM")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PAM_plot
+
+```
+Plots together
+```{r}
+###### All plots together
+Mcap_PAM_plot<-Mcap_PAM_plot+ theme(legend.position = "none") #remove legend
+Pcomp_PAM_plot<-Pcomp_PAM_plot+ theme(legend.position = "none") #remove legend
+Pvar_PAM_plot<-Pvar_PAM_plot+ theme(legend.position = "none") #remove legend
+Pacu_PAM_plot<-Pacu_PAM_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 2)
+```
+
+#Protein
+```{r}
+Protein <- read.csv("Data/Protein_TT17_20190214.csv")
+keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
+Protein<-Protein[keepPr]
+
+Protein<-merge(Protein, Slurry) #merge with slurry
+Protein<-merge(Protein, SA) # merge with SA
+Protein$Surface.area<-as.numeric(as.character(Protein$Surface.area))
+Protein<-merge(Protein, meta) #merge with metadata
+Protein$Parent.ID<-as.factor(as.character(Protein$Parent.ID))
+Protein$Tank.num<-as.factor(as.character(Protein$Tank.num))
+
+# calculate total prot per total vol of slurry
+Protein$prot.ml<- Protein$mg.prot.ml*Protein$TotalVolume
+
+# create a new column to calculate per surface area (mg/mm2)
+Protein$mg.mm2 <- Protein$prot.ml/Protein$Surface.area
+
+PRotcheck<-merge(Protein, meta, all=T)
+#write.csv(PRotcheck, "Proteincheck.csv")
+
+#calc means
+Protein_mean <- ddply(Protein, c("Treatment", "Species", "Time.Point"), summarise, #summarize prot
+                   N    = length(mg.mm2[!is.na(mg.mm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(mg.mm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(mg.mm2, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(mg.mm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Protein_mean
+
+#stats
+
+hist(Protein$mg.mm2)
+Protein$mg.mm2_log<-log10(Protein$mg.mm2+1)
+hist(Protein$mg.mm2_log)
+Protein$mg.mm2_sqrt<-sqrt(Protein$mg.mm2)
+hist(Protein$mg.mm2_sqrt) #better
+
+
+
+Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Protein)
+anova(Protein_model) 
+qqPlot(residuals(Protein_model)) #not awful
+
+  emm<-emmeans(Protein_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+```
+plots
+```{r}
+Mcap_Protein_mean<-subset(Protein_mean, Species=="Montipora_capitata")
+Pcomp_Protein_mean<-subset(Protein_mean, Species=="Porites_compressa")
+Pvar_Protein_mean<-subset(Protein_mean, Species=="Pavona_varians")
+Pacu_Protein_mean<-subset(Protein_mean, Species=="Pocillopora_acuta")
+
+
+#Mcap
+Mcap_Protein_plot<-ggplot(data=Mcap_Protein_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("mg/mm2"))) +
+  ggtitle("Protein Mcap")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Protein_plot
+
+#Pcomp
+Pcomp_Protein_plot<-ggplot(data=Pcomp_Protein_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+     # ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("mg/mm2"))) +
+  ggtitle("Protein Pcomp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Protein_plot
+
+#Pvar
+Pvar_Protein_plot<-ggplot(data=Pvar_Protein_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+     # ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("mg/mm2"))) +
+  ggtitle("Protein Pvar")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Protein_plot
+
+
+#Pacu
+Pacu_Protein_plot<-ggplot(data=Pacu_Protein_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .7)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("mg/mm2"))) +
+  ggtitle("Protein Pacu")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Protein_plot
+
+
+###### All plots together
+Mcap_Protein_plot<-Mcap_Protein_plot+ theme(legend.position = "none") #remove legend
+Pcomp_Protein_plot<-Pcomp_Protein_plot+ theme(legend.position = "none") #remove legend
+Pvar_Protein_plot<-Pvar_Protein_plot+ theme(legend.position = "none") #remove legend
+Pacu_Protein_plot<-Pacu_Protein_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot, nrow = 2)
+```
+
+
+
+
+
