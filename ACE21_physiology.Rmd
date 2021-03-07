@@ -27,6 +27,7 @@ library(gridExtra)
 library(multcomp)
 library(reshape)
 library(tidyverse)
+library(factoextra)
 
 ```
 
@@ -587,7 +588,7 @@ BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   
   # You can change the density to literatrue values for the specific coral species of interest in the function. 
   
-  #Calculation------------------------------------------------------------
+ #Calculation------------------------------------------------------------
   #Step 1: correct the Standard weights for temperature
   # StandardFresh is the weight of the Standard in  fresh water at temp x
   # StandardSalt is the weight of the Standard in salt water at temp x
@@ -621,9 +622,13 @@ Mcap_BW <- Mcap_BW[!(Mcap_BW$Frag.ID == "797"),] # remove sample 797, error in B
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
 data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment"), direction="wide")
 
-# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
+# This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0 and then divides by number of days , times 100
 data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
+
+
+
+
 
 # mean, standard dev, and sem
 time1_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -659,7 +664,7 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-      ylim(0, .7)+
+     # ylim(0, .7)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -1018,7 +1023,7 @@ Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
 Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
-```
+``` 
 
 stats
 ```{r}
@@ -1768,4 +1773,49 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 
+
+
+
+#COMBINE all physio dfs
+
+```{r}
+#biomass: keep Frag.ID and AFDW.cm2_log
+Biomass_psy<- Biomass_stats[,c("Frag.ID","AFDWmg.cm2_log")] # keep only columns you need
+#cell counts:FC_Data df and keep  Frag.ID and zoox.cm2_log
+CellCounts_psy<- FC_Data[,c("Frag.ID","zoox.cm2_log")] # keep only columns you need
+names(CellCounts_psy)[names(CellCounts_psy) == "zoox.cm2_log"] <- "Cellcounts_zoox.cm2_log"
+
+#Calcification, Growth and percent.change_log
+Calcification_psy<- Growth3[,c("Frag.ID","percent.change_log")] # keep only columns you need
+names(Calcification_psy)[names(Calcification_psy) == "percent.change_log"] <- "Calcification_percent.change_log"
+
+#Chla Chla df ChlaSA_quart
+Chla_psy<- Chla[,c("Frag.ID","ChlaSA_quart")] # keep only columns you need
+names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
+
+#PAM df PAMdata_stats Yield_cu
+PAM_psy<- PAMdata_stats[,c("Frag.ID","Yield_cu")] # keep only columns you need\
+names(PAM_psy)[names(PAM_psy) == "Yield_cu"] <- "PAM_fv.fm_cu"
+
+#Protein Protein$mg.mm2_sqrt
+Protein_psy<- Protein[,c("Frag.ID","mg.mm2_sqrt")] # keep only columns you need
+names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
+
+#merg: this is EVERYTHING. BUT what will not work is that you have WAY more PAM data points. 
+PhysioData<-merge(Biomass_psy,meta)
+PhysioData<-merge(PhysioData,CellCounts_psy)
+PhysioData<-merge(PhysioData,Calcification_psy)
+PhysioData<-merge(PhysioData,Chla_psy)
+PhysioData<-merge(PhysioData,PAM_psy)
+PhysioData<-merge(PhysioData,Protein_psy)
+            
+
+# Make a DF based on T0, T1 and TF only. HOW TO SET THIS UP WITH VARIABLES WITH ONE TIME POINT VS MULTIPLE (PAM AND BW), WOULD I DO THIS BY PARENT? SOMEHOW> 
+
+PhysioData2<-merge(Biomass_psy,meta, all=T)
+PhysioData2<-merge(PhysioData2,CellCounts_psy, all=T)
+PhysioData2<-merge(PhysioData2,Chla_psy, all=T)
+PhysioData2<-merge(PhysioData2,Protein_psy, all=T)
+
+```
 

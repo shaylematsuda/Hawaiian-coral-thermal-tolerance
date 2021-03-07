@@ -1,11 +1,112 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
 
 This Notebook is for senosor data analysis for ACE21. 
-
 ```{r}
+library(lubridate)
+library(tidyverse)
+```
+
+Apex Neptune system temp
+```{r}
+
+#Load Apex data
+Tank1234 <- read.csv("Data/Tanks1234_full.csv") #load data
+#Tank1234$Date <- as.Date(Tank1234$Date, format="%d-%m-%y H%:M%")
+Tank1234$Date <- strptime(Tank1234$Date, format="%d/%m/%y %H:%M") #convert date format to characters
+Tank1234$Date2<-as.character(Tank1234$Date)
+  Tank1234A<- Tank1234[,c("Tmp.1", "Tmp.2", "Tmp.3","Tmp.4","Date2")] # keep only columns you need
+
+  
+  Tank1234_quarter <- (Tank1234[as.numeric(format(Tank1234$Date, "%M")==0)
+        | as.numeric(format(Tank1234$Date, "%M")==15),])
+  
+  
+  
+Tank5678 <- read.csv("Data/Tanks5678_full.csv") #load data
+Tank5678$Date <- strptime(Tank5678$Date, format="%m/%d/%y %H:%M") #convert date format to characters
+Tank5678$Date2<-as.character(Tank5678$Date)
+  Tank5678A<- Tank5678[,c("Tmp.5", "Tmp.6", "Tmp.7","Tmp.8","Date2")] # keep only columns you need
+Tank5677_quarter <- (Tank5678[as.numeric(format(Tank5678$Date, "%M")==0)
+        | as.numeric(format(Tank5678$Date, "%M")==15),])
+
+Tank911 <- read.csv("Data/Tanks911_full.csv") #load data
+Tank911$Date <- strptime(Tank911$Date, format="%m/%d/%y %H:%M") #convert date format to characters
+Tank911$Date2<-as.character(Tank911$Date)
+
+  Tank911A<- Tank911[,c("Tmp.9", "Tmp.11","Date2")] # keep only columns you need
+Tank911_quarter <- (Tank911[as.numeric(format(Tank911$Date, "%M")==0)
+        | as.numeric(format(Tank911$Date, "%M")==15),])
+
+Tank911_quarter$Date <- strptime(Tank911_quarter$Date, format="%m/%d/%y %H:%M") #convert date format to characters
+Tank911_quarter$Date2<-as.character(Tank911_quarter$Date)
+
+
+
+  TdataPos<-merge(Tank1234_quarter, Tank5677_quarter)
+
+  
+  
+#combine
+Tdata<-merge(Tank1234A, Tank5678A)
+ Tdata<-merge(Tdata, Tank911A)
+ #write.csv(Tdata, "Apextemp.csv")
+ Tdata_long<-melt(Tdata, by=c("Date2")) #melt
+ names(Tdata_long)[names(Tdata_long) == "value"] <- "Temp"
+names(Tdata_long)[names(Tdata_long) == "variable"] <- "Tank"
+ 
+#24 hour temp plot
+Apex_lineplot<-ggplot(data=Tdata_long, aes(x=Date2, y=Temp, group = Tank, color=Tank)) +
+  geom_line(aes(color=Tank))+
+  #scale_color_manual(values=c('blue','red'))+
+   #geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("days") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Temp C"))) +
+  ggtitle("Apex Temp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Apex_lineplot
+
+
+#just tanks 1-4
+#24 hour temp plot
+  Tank1<- Tank1234A[,c("Tmp.1", "Date2")] # keep only columns you need
+
+ Tank1234A_long<-melt(Tank1234A, by=c("Date2")) #melt
+ names(Tank1234A_long)[names(Tank1234A_long) == "value"] <- "Temp"
+names(Tank1234A_long)[names(Tank1234A_long) == "variable"] <- "Tank"
+
+
+#not really working
+Tank1plot<-ggplot(data=Tank1, aes(x=Date2, y=Tmp.1)) +
+  geom_line()+
+  #scale_color_manual(values=c('blue','red'))+
+   #geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("days") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Temp C"))) +
+  ggtitle("Apex Temp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Tank1plot
+
 ```
 
 
