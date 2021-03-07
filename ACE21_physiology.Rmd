@@ -28,6 +28,8 @@ library(multcomp)
 library(reshape)
 library(tidyverse)
 library(factoextra)
+library(reshape2)
+
 
 ```
 
@@ -1026,7 +1028,7 @@ grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
 ``` 
 
 stats
-```{r}
+```{r} 
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth", "Treatment")
 Growth <- Growth[GrowthKeep]
@@ -1052,6 +1054,11 @@ qqPlot(residuals(BW_model))
 cld(emm)
 pairs(emm)
  
+
+# make DF for BW for Physio, Cast so 2 columns 
+
+Growth.Percent.day<-merge(Growth, meta, all=T)
+
 ```
 
 
@@ -1424,7 +1431,7 @@ PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3481" & PAMdata$Date == "2017-04-27" ) 
 
 ```
 Stats
-```{r} 
+```{r}  
 #remove notes
 
 PAMdata_stats<-PAMdata[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -1478,6 +1485,22 @@ hist(Pacu_PAM$Yield_cu)
 Pacu_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pacu_PAM)
 anova(Pacu_PAMdata_stats_model) 
 qqPlot(residuals(Pacu_PAMdata_stats_model))
+
+
+#set up df for physio\
+  keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu") #keep cols you need
+PAMdata_stats2<-PAMdata_stats[keepPAM] #keep cols you want
+PAMdata_stats2$Parent.ID<-as.factor(as.character(PAMdata_stats2$Parent.ID))
+PAMdata_physio<-dcast(PAMdata_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
+
+names(PAMdata_physio)[names(PAMdata_physio) == "0"] <- "T0.PAM"
+names(PAMdata_physio)[names(PAMdata_physio) == "24"] <- "T1.PAM"
+names(PAMdata_physio)[names(PAMdata_physio) == "52"] <- "TF.PAM"
+
+
+#keep only T0 (day 0), T1 (day 24), and TF (day 52)
+keepPAMdata_physio<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","T0.PAM","T1.PAM","TF.PAM") #keep cols you need
+PAMdata_physio<-PAMdata_physio[keepPAMdata_physio] #keep cols you want
 
 
 
@@ -1785,37 +1808,34 @@ Biomass_psy<- Biomass_stats[,c("Frag.ID","AFDWmg.cm2_log")] # keep only columns 
 CellCounts_psy<- FC_Data[,c("Frag.ID","zoox.cm2_log")] # keep only columns you need
 names(CellCounts_psy)[names(CellCounts_psy) == "zoox.cm2_log"] <- "Cellcounts_zoox.cm2_log"
 
-#Calcification, Growth and percent.change_log
-Calcification_psy<- Growth3[,c("Frag.ID","percent.change_log")] # keep only columns you need
-names(Calcification_psy)[names(Calcification_psy) == "percent.change_log"] <- "Calcification_percent.change_log"
+#Calcification, Growth and percent.change_log do for each time point
+Calcification_psy1<- Growth.Percent.day[,c("Frag.ID","time1.growth")] # keep only columns you need
+names(Calcification_psy1)[names(Calcification_psy1) == "Calcification_psy1"] <- "T1_Calc_percent.change_log"
+Calcification_psy2<- Growth.Percent.day[,c("Frag.ID","time2.growth")] # keep only columns you need
+names(Calcification_psy2)[names(Calcification_psy2) == "Calcification_psy2"] <- "TF_Calc_percent.change_log"
 
 #Chla Chla df ChlaSA_quart
 Chla_psy<- Chla[,c("Frag.ID","ChlaSA_quart")] # keep only columns you need
 names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
 
-#PAM df PAMdata_stats Yield_cu
-PAM_psy<- PAMdata_stats[,c("Frag.ID","Yield_cu")] # keep only columns you need\
-names(PAM_psy)[names(PAM_psy) == "Yield_cu"] <- "PAM_fv.fm_cu"
+#PAM df PAMdata_stats make for T0, T1, TF
+PAM_psy<- PAMdata_physio[,c("Frag.ID","T0.PAM","T1.PAM","TF.PAM")] # keep only columns you need\
 
 #Protein Protein$mg.mm2_sqrt
 Protein_psy<- Protein[,c("Frag.ID","mg.mm2_sqrt")] # keep only columns you need
 names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 
-#merg: this is EVERYTHING. BUT what will not work is that you have WAY more PAM data points. 
+#merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
 PhysioData<-merge(Biomass_psy,meta)
 PhysioData<-merge(PhysioData,CellCounts_psy)
-PhysioData<-merge(PhysioData,Calcification_psy)
+PhysioData<-merge(PhysioData,Calcification_psy1)
+PhysioData<-merge(PhysioData,Calcification_psy2)
 PhysioData<-merge(PhysioData,Chla_psy)
-PhysioData<-merge(PhysioData,PAM_psy)
 PhysioData<-merge(PhysioData,Protein_psy)
-            
+PhysioData<-merge(PhysioData,PAM_psy)
 
-# Make a DF based on T0, T1 and TF only. HOW TO SET THIS UP WITH VARIABLES WITH ONE TIME POINT VS MULTIPLE (PAM AND BW), WOULD I DO THIS BY PARENT? SOMEHOW> 
 
-PhysioData2<-merge(Biomass_psy,meta, all=T)
-PhysioData2<-merge(PhysioData2,CellCounts_psy, all=T)
-PhysioData2<-merge(PhysioData2,Chla_psy, all=T)
-PhysioData2<-merge(PhysioData2,Protein_psy, all=T)
+
 
 ```
 
