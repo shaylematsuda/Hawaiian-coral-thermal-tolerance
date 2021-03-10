@@ -34,7 +34,7 @@ library(reshape2)
 ```
 
 Load meta
-```{r}
+```{r}  
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
@@ -42,18 +42,40 @@ meta<-meta[!(meta$X=="REMOVE"),]
 # load in datasheets 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
-AFDW <- read.csv("Data/AFDW_TT17_20190409.csv")
+AFDW <- read.csv("Data/ACE21_AFDW_20210308.csv")
+AFDW <- AFDW[!(AFDW$Frag.ID == "1195"),]
+AFDW <- AFDW[!(AFDW$Frag.ID == "N49"),]
+AFDW <- AFDW[!(AFDW$Frag.ID == "3149"),]
+AFDW <- AFDW[!(AFDW$Frag.ID == "634"),]
+
 
 WaxDipping <- read.csv("Data/WaxDipping_Results_20190403.csv")
+WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "1195"),]
+WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "N49"),]
+WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "3149"),]
+WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "634"),]
 
 Slurry <- read.csv("Data/TT17_airbrush_totalVol_20190420.csv")
+Slurry <- Slurry[!(Slurry$Frag.ID == "1195"),]
+Slurry <- Slurry[!(Slurry$Frag.ID == "N49"),]
+Slurry <- Slurry[!(Slurry$Frag.ID == "3149"),]
+Slurry <- Slurry[!(WaxDipping$Frag.ID == "634"),]
+
+
+#merge 
+#testAFDW<-merge(AFDW, meta, all=T)
+#testSlurry<-merge(Slurry, meta, all.y=T)
+#testflow<-merge(tData, meta, all.y=T)
+#testWax<-merge(SA, meta, all.y=T)
+
+
 
 
 ```
 
 
-#AFDW
-```{r} 
+#Biomass (AFDW and SA)
+```{r}   
 
 SA<-WaxDipping
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
@@ -62,6 +84,9 @@ SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 AFDW.slurry <- merge(AFDW, Slurry)
 AFDW.slurry$AFDW.mg.ml <- AFDW.slurry$AFDW.g.mL*1000  # grams to mg
 AFDW.slurry$AFDWmg <-AFDW.slurry$AFDW.mg.ml*AFDW.slurry$TotalVolume # now we have mg of AFDW
+
+
+DUP2<-duplicated(AFDW.slurry$Frag.ID) #look for duplicate entries
 
 # SA cm2 and AFDW g/mL --> mg/cm2
 
@@ -126,12 +151,12 @@ Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1
 anova(Biomass_model) 
 qqPlot(residuals(Biomass_model)) 
 
-  emm<-emmeans(Biomass_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+  emm<-emmeans(Biomass_model,  ~ Time.Point|Treatment*Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
 ```
-###PLOTS
+PLOTS
 ```{r}
 #plot Mcap
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
@@ -238,7 +263,7 @@ grid.arrange(Mcap_FC_Plot, Pcomp_FC_Plot, Pvar_FC_Plot,Pacu_FC_Plot, nrow = 2)
 ```
 
 # Flow cytometry  cell counts
-```{r}
+```{r}  
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
 
@@ -252,6 +277,9 @@ A_meta <- read.csv("Data/TT17_FC_PlateA.csv") # load Plate A location data
 PlateA <- merge(PlateA, A_meta)   # merge with location data
 PlateA <-merge(PlateA, meta, all.x = TRUE) # merge with Sample metadata
 PlateA <- na.omit(PlateA) # omit NAs
+PlateA<- PlateA[!(PlateC$Frag.ID == "1133"),] # redid in plate E
+PlateA<- PlateA[!(PlateC$Frag.ID == "172"),] # redid in plate E
+
 
 PlateB <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateB1.csv")
 PlateB$Concentration<-as.numeric(as.character(PlateB$Concentration)) # this is loading in as a factor, not sure why
@@ -262,6 +290,7 @@ B_meta <- read.csv("Data/TT17_FC_PlateB.csv") # lood Plate B location data
 PlateB <- merge(PlateB, B_meta)
 PlateB <-merge(PlateB, meta, all.x = TRUE)
 PlateB <- na.omit(PlateB)
+PlateB<- PlateB[!(PlateC$Frag.ID == "428"),] # redid in plate E
 
 PlateC <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateCredo.csv")
 PlateC$Concentration<-as.numeric(as.character(PlateC$Concentration)) # this is loading in as a factor, not sure why
@@ -272,6 +301,8 @@ C_meta <- read.csv("Data/TT17_FC_PlateCredo.csv") # lood Plate C location data
 PlateC <- merge(PlateC, C_meta)
 PlateC <-merge(PlateC, meta, all.x = TRUE)
 PlateC <- na.omit(PlateC)
+PlateC<- PlateC[!(PlateC$Frag.ID == "3481"),] # redid in plate E
+
 #note: Frag.ID 403 Pacu seems abnormally high
 
 PlateE <- read.csv("Data/Symbio.Count.apr.02.2019.PlateE.csv")
@@ -297,12 +328,15 @@ tData$corrected <- tData$Concentration*3.2959 # <- also confirm you did this cor
 tData <- merge(tData, Slurry)
 tData$TotalVolume <- tData$TotalVolume * 1000 # change total volume to from mL to uL
 
+
 #use SA for slurry
 
 #merge with tData, make numeric
 tData <- merge(tData, SA)
 tData$Surface.area<- as.numeric(as.character(tData$Surface.area))
 
+
+write.csv(tData, "tdataCHECK.csv")
 #Subset by Species and correct for 10% dilutions in Mcap and Pcomp
 Mcap_FC <- subset(tData, Species == "Montipora_capitata")
 Mcap_FC$corrected <- Mcap_FC$corrected*10 # to compensate for the 10% dultion
@@ -398,9 +432,9 @@ Pacu_FC_Sum #display table
 
 ```
 
-#Line plots
-```{r}
-# Mcap 
+Line plots
+```{r} 
+# Mcap  
 
 Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -487,7 +521,7 @@ Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        scale_y_log10()+
-  ylim(0, 4000000)+
+  #ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -513,7 +547,7 @@ grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_linep
 #Buoyant Weight/Calcification
 
 calibration (not sure what this does)
-```{r}
+```{r}  
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
 #Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
 
@@ -541,7 +575,7 @@ StandardFreshModel$coef
 
 ```
 Analysis 
-```{r}
+```{r} 
 
 #load coral weight data
 BW.data <-read.csv('Data/BW_TT17.csv') # this is a file I compiled with all dates
@@ -567,7 +601,7 @@ Temp_Pvar <- Pvar_BW$Temp.C
 
 Pacu_BW<- subset(AllBWdata, Species =="Pocillopora_acuta")
 BW_Pacu <- Pacu_BW$Mass.g
-Temp_Pacu <- Pacu_BW$Temp.C 
+Temp_Pacu <- Pacu_BW$Temp.C  
 ```
 Montipora capitata
 ```{r}
@@ -1065,7 +1099,7 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 #Chl-a
 dfs: Slurry=airbrush, SA=wax dip, 
-```{r}
+```{r} 
 
  # Plate 1
 
@@ -1195,13 +1229,24 @@ plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check
 means for plots
 ```{r} 
 Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
+
+DUPtest<-duplicated(Chla) #look for duplicate entries
+Chla<-unique(Chla) #remove any duplicate entries 
+
 Chla$Chla_RepDiff<-Chla$chlaSA1-Chla$chlaSA2
 Chla$ChlaSA<-(Chla$chlaSA1+Chla$chlaSA2)/2
+checkChla<-merge(Chla,meta, all.y=T)
 
-#2285, 3491, N141 Remove sample where reps are >1 apart
+#write.csv(checkChla,"checkChla.csv")
+
+#2285, 3491, N141 Remove sample where reps are >2 apart
 Chla<-Chla[!(Chla$Frag.ID=="2285"),]
-Chla<-Chla[!(Chla$Frag.ID=="3491"),]
-Chla<-Chla[!(Chla$Frag.ID=="N141"),]
+Chla<-Chla[!(Chla$Frag.ID=="N138"),]
+Chla<-Chla[!(Chla$Frag.ID=="N211"),]
+
+
+#make slightly neg values 0 
+Chla$ChlaSA[Chla$ChlaSA < 0] <- 0 
 
 # 
 Chla_mean <- ddply(Chla, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
@@ -1410,9 +1455,6 @@ checks <- (PAMdata[,(1:9)]) #add samples to dataframe
 checks$Yield.Check <- PAMdata$Yield - ((PAMdata$FM-PAMdata$F0)/PAMdata$FM)
 checks$checks <- ifelse(abs(checks$Yield.Check-checks$Yield) < 1, TRUE, FALSE) # check to see if Yield matches check
 checks[checks$checks==FALSE,]#pull out FALSE
-#remove 3 misrecorded 2284 4/27, 3204 5/4
-PAMdata <- PAMdata[!(PAMdata$Frag.ID == "2284" & PAMdata$Date == "2017-04-27" ) ,] 
-PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3204" & PAMdata$Date == "2017-05-04" ) ,] 
 
 # check for outliers
 #boxplot(checks$Yield.Check, main="Times") #check F0r outliers
@@ -1421,8 +1463,11 @@ PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3204" & PAMdata$Date == "2017-05-04" ) 
 #check for duplicate rows
 DUP<-duplicated(PAMdata) #look for duplicate entries
 PAMdata<-unique(PAMdata) #remove any duplicate entries 
-PAMdata <- PAMdata[!(PAMdata$Frag.ID == "N150" & PAMdata$Date == "2017-04-13" ) ,]  #no data
-PAMdata <- PAMdata[!(PAMdata$Frag.ID == "3481" & PAMdata$Date == "2017-04-27" ) ,] 
+#write.csv(PAMdata,"PAMdatacheck.csv")
+
+# if NA in YIELD remove
+PAMdata<-PAMdata[!is.na(PAMdata$Yield), ]
+
 
 
 
@@ -1449,15 +1494,14 @@ hist(PAMdata_stats$Yield_cu) #beter
 
 
 #lmer with ^3
-PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID)+(1|Tank.num), PAMdata_stats)
+PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata_stats)
 anova(PAMdata_stats_model) 
 qqPlot(residuals(PAMdata_stats_model)) 
 
+emm<-emmeans(PAMdata_stats_model,  ~ Species*Treatment|Days, adjust="Tukey")
+cld(emm)
+pairs(emm)
 
-#glmer????
-#PAMdata_glmer<-glmer(Yield~Days*Treatment*Species+(1|Parent.ID)+(1|Tank.num), family = "poisson", PAMdata_stats)
-#Anova(PAMdata_glmer)
-#qqPlot(residuals(PAMdata_glmer)) 
 
 
 #is the data still not normal by species
@@ -1673,13 +1717,18 @@ hist(Protein$mg.mm2_sqrt) #better
 
 
 
-Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Protein)
+Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Protein)
 anova(Protein_model) 
 qqPlot(residuals(Protein_model)) #not awful
 
   emm<-emmeans(Protein_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
+
+  emm<-emmeans(Protein_model,  ~ Species*Treatment|Time.Point, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
 
 ```
 plots
@@ -1800,8 +1849,8 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 #COMBINE all physio dfs
-
-```{r}
+Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
+```{r} 
 #biomass: keep Frag.ID and AFDW.cm2_log
 Biomass_psy<- Biomass_stats[,c("Frag.ID","AFDWmg.cm2_log")] # keep only columns you need
 #cell counts:FC_Data df and keep  Frag.ID and zoox.cm2_log
@@ -1813,6 +1862,19 @@ Calcification_psy1<- Growth.Percent.day[,c("Frag.ID","time1.growth")] # keep onl
 names(Calcification_psy1)[names(Calcification_psy1) == "Calcification_psy1"] <- "T1_Calc_percent.change_log"
 Calcification_psy2<- Growth.Percent.day[,c("Frag.ID","time2.growth")] # keep only columns you need
 names(Calcification_psy2)[names(Calcification_psy2) == "Calcification_psy2"] <- "TF_Calc_percent.change_log"
+
+Calcification_psy<- Growth.Percent.day
+Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment)
+Calcification_psy<- Calcification_psy[,c("Code","Parent.ID","Frag.ID","time1.growth","time2.growth")] # keep only columns you need
+#write.csv(Calcification_psy,"Calcification_psy.csv")
+
+Calcification_psy$GROWTH<-group_by(Parent.ID, Code) %>% mutate(mean=mean(time1.growth))
+
+
+
+
+
+
 
 #Chla Chla df ChlaSA_quart
 Chla_psy<- Chla[,c("Frag.ID","ChlaSA_quart")] # keep only columns you need
@@ -1826,13 +1888,409 @@ Protein_psy<- Protein[,c("Frag.ID","mg.mm2_sqrt")] # keep only columns you need
 names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
-PhysioData<-merge(Biomass_psy,meta)
+
+metaPhysio<-subset(meta, select= -X)#remove X from df
+PhysioData<-merge(metaPhysio,Biomass_psy)
 PhysioData<-merge(PhysioData,CellCounts_psy)
 PhysioData<-merge(PhysioData,Calcification_psy1)
 PhysioData<-merge(PhysioData,Calcification_psy2)
 PhysioData<-merge(PhysioData,Chla_psy)
 PhysioData<-merge(PhysioData,Protein_psy)
 PhysioData<-merge(PhysioData,PAM_psy)
+
+PhysioData$Parent.ID<-as.factor(as.character(PhysioData$Parent.ID))
+PhysioData$Tank.num<-as.factor(as.character(PhysioData$Tank.num))
+
+PhysioData3<-PhysioData #remove NaNs
+PhysioData3$T0.PAM[PhysioData3$T0.PAM == "NaN"] <- NA #change NaN to NA
+PhysioData3$T1.PAM[PhysioData3$T1.PAM == "NaN"] <- NA #change NaN to NA
+PhysioData3$TF.PAM[PhysioData3$TF.PAM == "NaN"] <- NA #change NaN to NA
+PhysioData3$Chla_ug.chla.cm2[PhysioData3$Chla_ug.chla.cm2 == "NaN"] <- NA #change NaN to NA
+
+#write_csv(PhysioData3,"PhysioData3.csv")
+
+
+#physio without PAM and BW
+PhysioData4<-merge(metaPhysio,Biomass_psy)
+PhysioData4<-merge(PhysioData4,CellCounts_psy)
+PhysioData4<-merge(PhysioData4,Chla_psy)
+PhysioData4<-merge(PhysioData4,Protein_psy)
+
+PhysioData4$Parent.ID<-as.factor(as.character(PhysioData4$Parent.ID))
+PhysioData4$Tank.num<-as.factor(as.character(PhysioData4$Tank.num))
+
+PhysioData4$Chla_ug.chla.cm2[PhysioData4$Chla_ug.chla.cm2 == "NaN"] <- NA #change NaN to NA
+
+
+```
+
+nMDS of physio
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Physio PCA
+```{r} 
+PhysioData4.pr <- prcomp(PhysioData4[c(8:11)], center = TRUE, scale = TRUE)
+summary(PhysioData.pr)
+
+library(VIM)
+library(FactoMineR)
+library(missMDA) #lets you do with incomplete dataset
+library(naniar)
+gg_miss_var(PhysioData)
+res<-summary(aggr(PhysioData, sortVar=TRUE))$combinations
+
+
+nb <- estim_ncpPCA(PhysioData,method.cv = "Kfold", verbose = FALSE) # estimate the number of components from incomplete data
+#(available methods include GCV to approximate CV)
+nb$ncp #2
+
+res <- cor(PhysioData)
+round(res, 2)
+
+
+library("PerformanceAnalytics")
+my_data <- PhysioData[, c(8:16)]
+chart.Correlation(my_data, histogram=TRUE, pch=19)
+
+
+#Display Pearson correlation: testing physio (normal data) correlations
+
+cor.test(PhysioData3$AFDWmg.cm2_log, PhysioData3$Cellcounts_zoox.cm2_log, method=c("pearson")) #
+
+PhysioData3$Treatment_level <- factor(PhysioData3$Treatment, levels = c("Ambient", "High")) #make new col
+
+Cor1<-ggplot(PhysioData3, aes(x=AFDWmg.cm2_log, y=Cellcounts_zoox.cm2_log)) + 
+  geom_point(aes(color=Treatment, shape=Treatment), size=6) +
+   #scale_color_manual(name="Nutrition",
+        #            values=c("orange", "purple"), 
+          #          labels=c("Fed", "Unfed"))+
+  scale_shape_manual(values = c(19,21))+
+  theme_classic()+
+  geom_text(x=800, y=20, label="r=0.50, p<0.001", size=9, color="black") +
+  theme(text = element_text(size = 20))+
+  theme(axis.text = element_text(size = 20, color="black"))+
+  theme(axis.title = element_text(size = 20, face="bold"))+
+  theme(legend.title = element_text(size = 20, face="bold"))+
+  theme(legend.text = element_text(size = 20, color="black"))+
+  ylab(expression(bold(paste("AFDWmg.cm2_log")))) +
+  xlab(expression(bold(paste("Cellcounts_zoox.cm2_log"))));Cor1
+
+corrModel<-lmer(AFDWmg.cm2_log~Cellcounts_zoox.cm2_log * Treatment * Species + (1|Tank.num) + (1|Parent.ID), data=PhysioData3)
+summary(corrModel)
+anova(corrModel, type=2)
+
+
+##### trying correlations with only complete data (no PAM or BW)
+correlation<-PhysioData4
+correlation<-correlation[complete.cases(correlation), ] #only full data (2 samps no chla)
+
+correlation_Mcap<-subset(correlation, Species=="Montipora_capitata")
+correlation_Mcap_T1<-subset(correlation_Mcap, Time.Point=="T1")
+
+#not workin
+corrplots<-ggplot(correlation_Mcap_T1, aes(x=Treatment, y=Frag.ID))+
+  geom_point()+
+  facet_wrap(~compound, scales="free")+
+  geom_smooth(method='lm', color='red')+
+  theme_classic()+
+  theme(text=element_text(size=14, face="bold"))
+corrplots
+
+
+#back to PCA with the shorter coor dataset that is full
+PhysioData5<-PhysioData4
+PhysioData5<-PhysioData5[complete.cases(PhysioData5), ] #only full data (2 samps no chla)
+
+PhysioData5.pr <- prcomp(PhysioData5[c(8:11)], center = TRUE, scale = TRUE)
+summary(PhysioData5.pr)
+
+#amount of variance explained
+screeplot(PhysioData5.pr, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
+abline(h = 1, col="red", lty=5)
+legend("topright", legend=c("Eigenvalue = 1"),
+       col=c("red"), lty=5, cex=0.6)
+cumpro <- cumsum(PhysioData5.pr$sdev^2 / sum(PhysioData5.pr$sdev^2))
+plot(cumpro[0:15], xlab = "PC #", ylab = "Amount of explained variance", main = "Cumulative variance plot")
+abline(v = 6, col="blue", lty=5)
+abline(h = 0.88759, col="blue", lty=5)
+legend("topleft", legend=c("Cut-off @ PC6"),
+       col=c("blue"), lty=5, cex=0.6)
+
+
+#try plotting PC1 and 2 (how to get the percents?????)
+plot(PhysioData5.pr$x[,1],PhysioData5.pr$x[,2], xlab="PC1 ()", ylab = "PC2 ()", main = "PC1 / PC2 - plot")
+
+
+library("factoextra")
+fviz_pca_ind(PhysioData5.pr, geom.ind = "point", pointshape = 21, 
+             pointsize = 2, 
+             fill.ind = PhysioData5$Treatment, 
+             col.ind = "black", 
+             palette = "jco", 
+             addEllipses = TRUE,
+             label = "var",
+             col.var = "black",
+             repel = TRUE,
+             legend.title = "Treatment") +
+  ggtitle("") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+PhysioData5_mat<-PhysioData5[c(8:11)]
+cor.res <- cor(PhysioData5_mat)
+corrplot.mixed(cor.res, tl.cex = 0.7, tl.col = "black", addCoefasPercent = TRUE)
+
+```
+
+
+
+PCA hannah use physio data
+```{r}
+##PCA with imputation using PPCA (Probabilistic PCA, can handle ~15% missing data)
+
+##Use the pcaMethods package for imputing
+#BiocManager::install("pcaMethods")
+library(pcaMethods)
+sum(is.na(PhysioData)) #385
+data<-PhysioData #make copy
+View(data)
+
+data$time1.growth[data$time1.growth == "NaN"] <- NA #change NaN to NA
+data$time1.growth[data$Chla_ug.chla.cm2 == "NaN"] <- NA #change NaN to NA
+
+data$T1.PAM[data$T1.PAM == "NaN"] <- NA #change NaN to NA
+data$TF.PAM[data$TF.PAM == "NaN"] <- NA #change NaN to NA
+data$T0.PAM[data$T0.PAM == "NaN"] <- NA #change NaN to NA
+
+#Now we get the estimated data set by using PPCA and two principal components
+#But you can use nPCs = 3 or however many principal components you want to use.
+
+pc <- pca(data, nPcs=2, method="ppca") #probabilistic PCA
+imputed <- completeObs(pc) #This creates a new dataframe with imputed values based on your probability pca
+
+#Then you can run a pca on the imputed datafram
+pca <- prcomp(imputed, center = TRUE, scale. = TRUE)
+summary(pca)
+View(pca)
+
+#you can view it this way
+library(devtools)
+#install_github("vqv/ggbiplot")
+library(ggbiplot)
+ggbiplot(pca)
+
+#Or extract the scores and make a ggplot
+#Then add your metadata
+library(ggplot2)
+Miss_scores <- as.data.frame(pca$x)
+Miss_scores$frag.id <- data$Frag.ID
+Miss_scores$parent.id <- data$Parent.ID
+Miss_scores$treatment <- data$Treatment
+Miss_scores$species <- data$Species
+Miss_scores$time.point <- data$Time.Point
+
+#Plot
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
+
+#plot by time and species
+Miss_scores$treatSpecies<-paste0(Miss_scores$species, Miss_scores$treatment )
+Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
+
+
+#subset by T0
+Miss_scores_T0<-subset(Miss_scores, time.point=="T0")
+
+Miss_scores_T0_plot<-ggplot(Miss_scores_T0, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=0.25) +
+  theme_classic();Miss_scores_T0_plot
+
+#subset by T1
+Miss_scores_T1<-subset(Miss_scores, time.point=="T1")
+Miss_scores_T1_plot<-ggplot(Miss_scores_T1, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=.25) +
+  theme_classic();Miss_scores_T1_plot
+
+#subset by TF
+Miss_scores_TF<-subset(Miss_scores, time.point=="TF")
+Miss_scores_TF_plot<-ggplot(Miss_scores_TF, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  #stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
+  theme_classic();Miss_scores_TF_plot
+
+#plot all time plots
+Miss_scores_T0_plot<-Miss_scores_T0_plot+ theme(legend.position = "none") #remove legend
+Miss_scores_T1_plot<-Miss_scores_T1_plot+ theme(legend.position = "none") #remove legend
+Miss_scores_TF_plot<-Miss_scores_TF_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Miss_scores_T0_plot, Miss_scores_T1_plot, Miss_scores_TF_plot, nrow = 1)
+
+#Subset MCAP
+Miss_scores_Mcap<-subset(Miss_scores, species=="Montipora_capitata")
+
+Miss_Mcap_pca<-ggplot(Miss_scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+ 
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+   ggtitle("Mcap") +
+  theme_classic();Miss_Mcap_pca
+
+#Subset Pcomp
+Miss_scores_Pcomp<-subset(Miss_scores, species=="Porites_compressa")
+Miss_Pcomp_pca<-ggplot(Miss_scores_Pcomp, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+      ggtitle("Pcomp") +
+  theme_classic();Miss_Pcomp_pca
+
+#Subset Pvar
+Miss_scores_Pvar<-subset(Miss_scores, species=="Pavona_varians")
+Miss_Pvar_pca<-ggplot(Miss_scores_Pvar, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+    ggtitle("Pvar") +
+  theme_classic();Miss_Pvar_pca
+
+#Subset Pacu
+Miss_scores_Pacu<-subset(Miss_scores, species=="Pocillopora_acuta")
+Miss_Pacu_pca<-ggplot(Miss_scores_Pacu, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+  ggtitle("Pacuta") +
+  theme_classic();Miss_Pacu_pca
+
+#plot all species plots
+Miss_Mcap_pca<-Miss_Mcap_pca+ theme(legend.position = "none") #remove legend
+Miss_Pcomp_pca<-Miss_Pcomp_pca+ theme(legend.position = "none") #remove legend
+Miss_Pvar_pca<-Miss_Pvar_pca+ theme(legend.position = "none") #remove legend
+Miss_Pacu_pca<-Miss_Pacu_pca+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Miss_Mcap_pca, Miss_Pcomp_pca, Miss_Pvar_pca,Miss_Pacu_pca, nrow = 2)
+
+```
+
+
+PCA not alive measurements' not PAM.BW
+```{r}
+#PhysioData5
+
+PhysioData5.pca <- prcomp(PhysioData5[,c(8:11)], center = TRUE,scale. = TRUE)
+summary(PhysioData5.pca)
+str(PhysioData5.pca)
+
+
+scores <- as.data.frame(PhysioData5.pca$x)
+scores$frag.id <- data$Frag.ID
+scores$parent.id <- data$Parent.ID
+scores$treatment <- data$Treatment
+scores$species <- data$Species
+scores$time.point <- data$Time.Point
+scores$treatSpecies<-paste0(scores$species, scores$treatment )
+scores$treatTime<-paste0(scores$treatment, scores$time.point )
+
+
+ggplot(scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
+
+
+#subset by T0
+scores_T0<-subset(scores, time.point=="T0")
+scores_T0_plot<-ggplot(scores_T0, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=0.25) +
+  theme_classic();scores_T0_plot
+
+#subset by T1
+scores_T1<-subset(scores, time.point=="T1")
+scores_T1_plot<-ggplot(scores_T1, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=0.25) +
+  theme_classic();scores_T1_plot
+
+#subset by TFs
+scores_TF<-subset(scores, time.point=="TF")
+scores_TF_plot<-ggplot(scores_TF, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=.25) +
+  theme_classic();scores_TF_plot
+
+#plot all time plots
+scores_T0_plot<-scores_T0_plot+ theme(legend.position = "none") #remove legend
+scores_T1_plot<-scores_T1_plot+ theme(legend.position = "none") #remove legend
+scores_TF_plot<-scores_TF_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(scores_T0_plot, scores_T1_plot, scores_TF_plot, nrow = 1)
+
+
+#Subset MCAP
+scores_Mcap<-subset(scores, species=="Montipora_capitata")
+
+Mcap_pca<-ggplot(scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+ 
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+   ggtitle("Mcap") +
+  theme_classic();Mcap_pca
+
+#Subset Pcomp
+scores_Pcomp<-subset(scores, species=="Porites_compressa")
+Pcomp_pca<-ggplot(scores_Pcomp, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+      ggtitle("Pcomp") +
+  theme_classic();Pcomp_pca
+
+#Subset Pvar
+scores_Pvar<-subset(scores, species=="Pavona_varians")
+Pvar_pca<-ggplot(scores_Pvar, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+    ggtitle("Pvar") +
+  theme_classic();Pvar_pca
+
+#Subset Pacu
+scores_Pacu<-subset(scores, species=="Pocillopora_acuta")
+Pacu_pca<-ggplot(scores_Pacu, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
+  ggtitle("Pacuta") +
+  theme_classic();Pacu_pca
+
+#plot all species plots
+Mcap_pca<-Mcap_pca+ theme(legend.position = "none") #remove legend
+Pcomp_pca<-Pcomp_pca+ theme(legend.position = "none") #remove legend
+Pvar_pca<-Pvar_pca+ theme(legend.position = "none") #remove legend
+Pacu_pca<-Pacu_pca+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_pca, Pcomp_pca, Pvar_pca,Pacu_pca, nrow = 2)
+```
+Lets try the PCA by Parent.ID, collapse the df by parent. 
+```{r} 
+ PhysioData6<-PhysioData #make a copy
+
+
+Testing <- cbind(
+  aggregate(PhysioData6$AFDWmg.cm2_log, by = list(PhysioData6$ParentID, PhysioData6$Treatment, PhysioData6$Species,PhysioData6$Time.Point,PhysioData6$Depth,PhysioData6$Tank.num), FUN=mean, na.rm = F))
+  
+  
+  
+  
 
 
 
