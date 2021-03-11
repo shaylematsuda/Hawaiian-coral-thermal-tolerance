@@ -29,7 +29,7 @@ library(reshape)
 library(tidyverse)
 library(factoextra)
 library(reshape2)
-
+ 
 
 ```
 
@@ -138,9 +138,9 @@ Pacu_biomass_mean<-subset(biomass2_mean, Species=="Pocillopora_acuta") #Subset P
 Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
 
 
-
-#Stats - T0 is n=6, not n=12
-
+```
+Stats - T0 is n=6, not n=12
+```{r}
 Biomass_stats<-biomass2
 
 hist(Biomass_stats$AFDWmg.cm2) 
@@ -277,8 +277,8 @@ A_meta <- read.csv("Data/TT17_FC_PlateA.csv") # load Plate A location data
 PlateA <- merge(PlateA, A_meta)   # merge with location data
 PlateA <-merge(PlateA, meta, all.x = TRUE) # merge with Sample metadata
 PlateA <- na.omit(PlateA) # omit NAs
-PlateA<- PlateA[!(PlateC$Frag.ID == "1133"),] # redid in plate E
-PlateA<- PlateA[!(PlateC$Frag.ID == "172"),] # redid in plate E
+PlateA<- PlateA[!(PlateA$Frag.ID == "1133"),] # redid in plate E
+PlateA<- PlateA[!(PlateA$Frag.ID == "N172"),] # redid in plate E
 
 
 PlateB <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateB1.csv")
@@ -290,7 +290,7 @@ B_meta <- read.csv("Data/TT17_FC_PlateB.csv") # lood Plate B location data
 PlateB <- merge(PlateB, B_meta)
 PlateB <-merge(PlateB, meta, all.x = TRUE)
 PlateB <- na.omit(PlateB)
-PlateB<- PlateB[!(PlateC$Frag.ID == "428"),] # redid in plate E
+PlateB<- PlateB[!(PlateB$Frag.ID == "428"),] # redid in plate E
 
 PlateC <- read.csv("Data/Symbio.Counts.Dec.14.2018.PlateCredo.csv")
 PlateC$Concentration<-as.numeric(as.character(PlateC$Concentration)) # this is loading in as a factor, not sure why
@@ -315,7 +315,6 @@ PlateE <- merge(PlateE, E_meta)
 PlateE <-merge(PlateE, meta, all.x = TRUE)
 PlateE <- na.omit(PlateE)
 
-
 # Bind all runs together
 tData <- rbind(PlateA, PlateB, PlateC, PlateE)
 tData$Parent.ID<- as.factor(tData$Parent.ID) #for some reason, "Concentration" was a chr not numeric. Check by calling str()
@@ -334,9 +333,10 @@ tData$TotalVolume <- tData$TotalVolume * 1000 # change total volume to from mL t
 #merge with tData, make numeric
 tData <- merge(tData, SA)
 tData$Surface.area<- as.numeric(as.character(tData$Surface.area))
+duplicated(tData$Frag.ID) #check 428 Pacu TF, N172mcap T1,1133 mcap t1
 
 
-write.csv(tData, "tdataCHECK.csv")
+#write.csv(tData, "tdataCHECK.csv")
 #Subset by Species and correct for 10% dilutions in Mcap and Pcomp
 Mcap_FC <- subset(tData, Species == "Montipora_capitata")
 Mcap_FC$corrected <- Mcap_FC$corrected*10 # to compensate for the 10% dultion
@@ -360,33 +360,6 @@ Pvar_FC$zoox.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$Surface.area
 Pacu_FC$zoox.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$Surface.area
 
 FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
-
-#Stats
-
-
-hist(FC_Data$zoox.cm2) 
-FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
-hist(FC_Data$zoox.cm2_log) #normal (use)
-
-CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_Data)
-anova(CellCount_model) 
-qqPlot(residuals(CellCount_model)) 
-
-  emm<-emmeans(CellCount_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
-cld(emm)
-pairs(emm)
-
-
-
-
-
-
-
-
-
-
-
-
 
 #mean tables
 # Mcap
@@ -430,6 +403,23 @@ Pacu_FC_Sum <- ddply(Pacu_FC, c("Treatment", "Species", "Time.Point"), summarise
 )
 Pacu_FC_Sum #display table
 
+```
+Stats
+```{r}
+
+
+
+hist(FC_Data$zoox.cm2) 
+FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
+hist(FC_Data$zoox.cm2_log) #normal (use)
+
+CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_Data)
+anova(CellCount_model) 
+qqPlot(residuals(CellCount_model)) 
+
+  emm<-emmeans(CellCount_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
 ```
 
 Line plots
@@ -1062,7 +1052,7 @@ grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
 ``` 
 
 stats
-```{r} 
+```{r}  
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth", "Treatment")
 Growth <- Growth[GrowthKeep]
@@ -1099,7 +1089,7 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 #Chl-a
 dfs: Slurry=airbrush, SA=wax dip, 
-```{r} 
+```{r}   
 
  # Plate 1
 
@@ -1230,13 +1220,13 @@ means for plots
 ```{r} 
 Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
 
-DUPtest<-duplicated(Chla) #look for duplicate entries
+duplicated(Chla) #look for duplicate entries
 Chla<-unique(Chla) #remove any duplicate entries 
 
 Chla$Chla_RepDiff<-Chla$chlaSA1-Chla$chlaSA2
 Chla$ChlaSA<-(Chla$chlaSA1+Chla$chlaSA2)/2
 checkChla<-merge(Chla,meta, all.y=T)
-
+duplicated(checkChla)
 #write.csv(checkChla,"checkChla.csv")
 
 #2285, 3491, N141 Remove sample where reps are >2 apart
@@ -1375,11 +1365,11 @@ Pacu_Chla_plot<-Pacu_Chla_plot+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 2)
 ```
+ 
+stats <- 
+```{r} 
 
-stats <- there are 2 smaples that come up negative chla when averaged across reps. they get cut out when transforming the data, which is fine. 
-```{r}
-
-hist(Chla$ChlaSA) 
+hist (Chla$ChlaSA) 
 Chla$ChlaSA_log<-log10(Chla$ChlaSA+1)
 hist(Chla$ChlaSA_log) #pos skew this ok?
 Chla$ChlaSA_sqrt<-sqrt(Chla$ChlaSA) 
@@ -1391,7 +1381,7 @@ shapiro.test(Chla$ChlaSA_cube)
 
 Chla$ChlaSA_quart<-Chla$ChlaSA^(1/4)
 hist(Chla$ChlaSA_quart) #best
-shapiro.test(Chla$ChlaSA_quart) # p=0.5
+shapiro.test(Chla$ChlaSA_quart) # p=0.08
 
 Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla)
 anova(Chla_model) 
@@ -1406,7 +1396,7 @@ pairs(emm)
 
 
 #PAM
-```{r}
+```{r}  
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -1445,6 +1435,7 @@ PAMdata$Date <- as.Date(PAMdata$Date, format="%e-%b-%y")
 #PAMdata$Date[PAMdata$Date<"2017-03-24"]<-"2017-03-20" # make all T0 same starte date to get average
 PAMdata$Days <- as.numeric(PAMdata$Date - as.Date("2017-03-20"))
 PAMdata$Days[PAMdata$Days<4]<- 0  #If you want to make T0 all the same start time do this
+
 
 # make yield ratio
 PAMdata <- transform(PAMdata, Yield = PAMdata$Yield/1000)
@@ -1541,10 +1532,6 @@ names(PAMdata_physio)[names(PAMdata_physio) == "0"] <- "T0.PAM"
 names(PAMdata_physio)[names(PAMdata_physio) == "24"] <- "T1.PAM"
 names(PAMdata_physio)[names(PAMdata_physio) == "52"] <- "TF.PAM"
 
-
-#keep only T0 (day 0), T1 (day 24), and TF (day 52)
-keepPAMdata_physio<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","T0.PAM","T1.PAM","TF.PAM") #keep cols you need
-PAMdata_physio<-PAMdata_physio[keepPAMdata_physio] #keep cols you want
 
 
 
@@ -1676,7 +1663,7 @@ grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 
 ```
 
 #Protein
-```{r}
+```{r} 
 Protein <- read.csv("Data/Protein_TT17_20190214.csv")
 keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
 Protein<-Protein[keepPr]
@@ -1716,7 +1703,9 @@ Protein$mg.mm2_sqrt<-sqrt(Protein$mg.mm2)
 hist(Protein$mg.mm2_sqrt) #better
 
 
-
+```
+Stats
+```{r}
 Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Protein)
 anova(Protein_model) 
 qqPlot(residuals(Protein_model)) #not awful
@@ -1850,56 +1839,180 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 #COMBINE all physio dfs
 Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
-```{r} 
+```{r}  
 #biomass: keep Frag.ID and AFDW.cm2_log
-Biomass_psy<- Biomass_stats[,c("Frag.ID","AFDWmg.cm2_log")] # keep only columns you need
+Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","AFDWmg.cm2_log")] # keep only columns you need
+  #create duplicate T0 for H or A that isn't there for each parent. id
+  Biomass_psyT0<-Biomass_psy #copy
+  Biomass_psyT0<-subset(Biomass_psyT0, Time.Point=="T0")
+  Biomass_psyT0Amb<-Biomass_psyT0
+  Biomass_psyT0Amb$Treatment[Biomass_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+  Biomass_psyT0High<-Biomass_psyT0
+  Biomass_psyT0High$Treatment[v$Treatment == "Ambient"] <- "High" #change 
+  Biomass_psyT02<-rbind(Biomass_psyT0Amb,Biomass_psyT0High) #now oyu have T0 for Amb and High
+
+  Biomass_psy<-Biomass_psy[!(Biomass_psy$Time.Point=="T0"),] #remove T0s
+  Biomass_psy<-rbind(Biomass_psy,Biomass_psyT02) # add the full T0 dataset
+
+  Biomass_psy$Code<-paste(Biomass_psy$Species,Biomass_psy$Treatment,Biomass_psy$Parent.ID, Biomass_psy$Time.Point)
+
+  Biomass_psy<- Biomass_psy[,c("Code" ,"AFDWmg.cm2_log")] # keep only columns you need
+duplicated(Biomass_psy) #check
+Biomass_psy<-unique(Biomass_psy) # remove dups
+
 #cell counts:FC_Data df and keep  Frag.ID and zoox.cm2_log
-CellCounts_psy<- FC_Data[,c("Frag.ID","zoox.cm2_log")] # keep only columns you need
-names(CellCounts_psy)[names(CellCounts_psy) == "zoox.cm2_log"] <- "Cellcounts_zoox.cm2_log"
+CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","zoox.cm2_log")] # keep only columns you need
 
-#Calcification, Growth and percent.change_log do for each time point
-Calcification_psy1<- Growth.Percent.day[,c("Frag.ID","time1.growth")] # keep only columns you need
-names(Calcification_psy1)[names(Calcification_psy1) == "Calcification_psy1"] <- "T1_Calc_percent.change_log"
-Calcification_psy2<- Growth.Percent.day[,c("Frag.ID","time2.growth")] # keep only columns you need
-names(Calcification_psy2)[names(Calcification_psy2) == "Calcification_psy2"] <- "TF_Calc_percent.change_log"
+#create duplicate T0 for H or A that isn't there for each parent. id
+  CellCounts_psyT0<-CellCounts_psy #copy
+  CellCounts_psyT0<-subset(CellCounts_psyT0, Time.Point=="T0")
+  CellCounts_psyT0Amb<-CellCounts_psyT0
+  CellCounts_psyT0Amb$Treatment[CellCounts_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+  CellCounts_psyT0High<-CellCounts_psyT0
+  CellCounts_psyT0High$Treatment[CellCounts_psyT0High$Treatment == "Ambient"] <- "High" #change 
+  CellCounts_psyT02<-rbind(CellCounts_psyT0Amb,CellCounts_psyT0High) #now oyu have T0 for Amb and High
 
-Calcification_psy<- Growth.Percent.day
-Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment)
-Calcification_psy<- Calcification_psy[,c("Code","Parent.ID","Frag.ID","time1.growth","time2.growth")] # keep only columns you need
-#write.csv(Calcification_psy,"Calcification_psy.csv")
+  CellCounts_psy<-CellCounts_psy[!(CellCounts_psy$Time.Point=="T0"),] #remove T0s
+  CellCounts_psy<-rbind(CellCounts_psy,CellCounts_psyT02) # add the full T0 dataset
 
-Calcification_psy$GROWTH<-group_by(Parent.ID, Code) %>% mutate(mean=mean(time1.growth))
+  CellCounts_psy$Code<-paste(CellCounts_psy$Species,CellCounts_psy$Treatment,CellCounts_psy$Parent.ID, CellCounts_psy$Time.Point)
 
+  CellCounts_psy<- CellCounts_psy[,c("Code" ,"zoox.cm2_log")] # keep only columns you need
 
-
-
-
+  duplicated(CellCounts_psy)
+  CellCounts_psy<-unique(CellCounts_psy) #keep uniques
 
 
 #Chla Chla df ChlaSA_quart
-Chla_psy<- Chla[,c("Frag.ID","ChlaSA_quart")] # keep only columns you need
+Chla_psy<- Chla[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
 names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
 
-#PAM df PAMdata_stats make for T0, T1, TF
-PAM_psy<- PAMdata_physio[,c("Frag.ID","T0.PAM","T1.PAM","TF.PAM")] # keep only columns you need\
+#create duplicate T0 for H or A that isn't there for each parent. id
+  Chla_psyT0<-Chla_psy #copy
+  Chla_psyT0<-subset(Chla_psyT0, Time.Point=="T0")
+  Chla_psyT0Amb<-Chla_psyT0
+  Chla_psyT0Amb$Treatment[Chla_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+  Chla_psyT0High<-Chla_psyT0
+  Chla_psyT0High$Treatment[Chla_psyT0High$Treatment == "Ambient"] <- "High" #change 
+  Chla_psyT02<-rbind(Chla_psyT0Amb,Chla_psyT0High) #now oyu have T0 for Amb and High
+
+  Chla_psy<-Chla_psy[!(Chla_psy$Time.Point=="T0"),] #remove T0s
+  Chla_psy<-rbind(Chla_psy,Chla_psyT02) # add the full T0 dataset
+
+  Chla_psy$Code<-paste(Chla_psy$Species,Chla_psy$Treatment,Chla_psy$Parent.ID, Chla_psy$Time.Point)
+Chla_psy<- Chla_psy[,c("Code","Chla_ug.chla.cm2")] # keep only columns you need
+
+duplicated(Chla_psy)
+
 
 #Protein Protein$mg.mm2_sqrt
-Protein_psy<- Protein[,c("Frag.ID","mg.mm2_sqrt")] # keep only columns you need
+Protein_psy<- Protein[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
 names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 
+#create duplicate T0 for H or A that isn't there for each parent. id
+  Protein_psyT0<-Protein_psy #copy
+  Protein_psyT0<-subset(Protein_psyT0, Time.Point=="T0")
+  Protein_psyAmb<-Protein_psyT0
+  Protein_psyAmb$Treatment[Protein_psyAmb$Treatment == "High"] <- "Ambient" #change 
+  Protein_psyHigh<-Protein_psyT0
+  Protein_psyHigh$Treatment[Protein_psyHigh$Treatment == "Ambient"] <- "High" #change 
+  Protein_psy2<-rbind(Protein_psyAmb,Protein_psyHigh) #now oyu have T0 for Amb and High
+
+  Protein_psy<-Protein_psy[!(Protein_psy$Time.Point=="T0"),] #remove T0s
+  Protein_psy<-rbind(Protein_psy,Protein_psy2) # add the full T0 dataset
+
+  Protein_psy$Code<-paste(Protein_psy$Species,Protein_psy$Treatment,Protein_psy$Parent.ID, Protein_psy$Time.Point)
+Protein_psy<- Protein_psy[,c("Code","Protein_mg.mm2_sqrt")] # keep only columns you need
+duplicated(Protein_psy)
+
+#Repeate measures
+#Calcification, Growth and percent.change_log do for each time point
+
+Calcification_psy<- Growth3 #copy df
+
+Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point) #change to character to replace
+Calcification_psy$Time.point[Calcification_psy$Time.point == "time1.growth"] <- "T1" #change 
+Calcification_psy$Time.point[Calcification_psy$Time.point == "time2.growth"] <- "TF" #change 
+Calcification_psy$Time.point<-as.factor(Calcification_psy$Time.point)
+names(Calcification_psy)[names(Calcification_psy) == "Time.point"] <- "Time.Point" #change name
+
+Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment,Calcification_psy$Parent.ID,Calcification_psy$Time.Point) #make code
+
+Calcification_psy<- Calcification_psy[,c("Code","percent.change_log","Parent.ID", "Treatment","Species","Time.Point")] # keep only columns you need
+Calcification_psy<-Calcification_psy %>% group_by(Code) %>% mutate(mean=mean(percent.change_log)) # mean by code, this worked
+names(Calcification_psy)[names(Calcification_psy) == "mean"] <- "calc.percentchange" #change name
+Calcification_psy<-Calcification_psy[,c("Code","Parent.ID", "Treatment","Species","calc.percentchange")] #remove col
+Calcification_psy<-unique(Calcification_psy) #remove duplicates, now you have 
+
+#PAM df PAMdata_stats make for T0, T1, TF
+PAM_psy<- PAMdata_stats
+
+PAM_psy$Days<-as.character(PAM_psy$Days)
+PAM_psy$Days[PAM_psy$Days == "0"] <- "T0" #change 
+PAM_psy$Days[PAM_psy$Days == "17"] <- "T1" #change 
+PAM_psy$Days[PAM_psy$Days == "52"] <- "TF" #change 
+
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="17"),] #remove other days by name
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="31"),] #remove other days by name
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="38"),] #remove other days by name
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="45"),] #remove other days by name
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="24"),] #remove other days by name
+
+#now you need to figure out the sample 'day' for each parent.id, and subset out only those. 
+names(PAM_psy)[names(PAM_psy) == "Days"] <- "Time.Point" #change name
+
+PAM_psy$Code<-paste(PAM_psy$Species,PAM_psy$Treatment,PAM_psy$Parent.ID,PAM_psy$Time.Point) #make code
+PAM_psy$Code<-as.factor(PAM_psy$Code)
+
+PAM_psy<- PAM_psy[,c("Code","Yield_cu","Parent.ID", "Treatment","Species","Time.Point")] # keep only columns you need
+PAM_psy<-PAM_psy %>% group_by(Code) %>% mutate(mean=mean(Yield_cu)) # mean by code, this worked
+names(PAM_psy)[names(PAM_psy) == "mean"] <- "PAM.Yield_cu" #change name
+PAM_psy<-PAM_psy[,c("Code","Parent.ID", "Treatment","Species","PAM.Yield_cu","Time.Point")] #remove col
+PAM_psy<-unique(PAM_psy) #remove duplicates, now you have 
+
+
+```
+#merging full physio
+```{r}
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
 
+#prep metadata for by Parent.ID df for ordinations
 metaPhysio<-subset(meta, select= -X)#remove X from df
-PhysioData<-merge(metaPhysio,Biomass_psy)
-PhysioData<-merge(PhysioData,CellCounts_psy)
-PhysioData<-merge(PhysioData,Calcification_psy1)
-PhysioData<-merge(PhysioData,Calcification_psy2)
-PhysioData<-merge(PhysioData,Chla_psy)
-PhysioData<-merge(PhysioData,Protein_psy)
-PhysioData<-merge(PhysioData,PAM_psy)
+metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
+metaPhysio<-subset(metaPhysio, select= -Frag.ID)#remove tank from df
+
+#create duplicate T0 for H or A that isn't there for each parent. id
+MetaT0<-metaPhysio #copy
+MetaT0<-subset(MetaT0, Time.Point=="T0")
+MetaT0Amb<-MetaT0
+MetaT0Amb$Treatment[MetaT0Amb$Treatment == "High"] <- "Ambient" #change 
+MetaT0High<-MetaT0
+MetaT0High$Treatment[MetaT0High$Treatment == "Ambient"] <- "High" #change 
+MetaT02<-rbind(MetaT0Amb,MetaT0High) #now oyu have T0 for Amb and High
+metaPhysio<-metaPhysio[!(metaPhysio$Time.Point=="T0"),] #remove T0s
+metaPhysio<-rbind(metaPhysio,MetaT02) # add the full T0 dataset
+metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID,metaPhysio$Time.Point) #make code
+
+
+#MERGE
+PhysioData<-merge(metaPhysio,Biomass_psy, all.x=T)
+PhysioData<-merge(PhysioData,CellCounts_psy,all.x=T)
+PhysioData<-merge(PhysioData,Calcification_psy,all.x=T)
+PhysioData<-merge(PhysioData,Chla_psy,all.x=T)
+PhysioData<-merge(PhysioData,Protein_psy,all.x=T)
+PhysioData<-merge(PhysioData,PAM_psy,all.x=T)
+
+#check
+duplicated(PhysioData$Code)
+PhysioData$Code[duplicated(PhysioData$Code)]
+PhysioData<-unique(PhysioData) #this is the df. 
 
 PhysioData$Parent.ID<-as.factor(as.character(PhysioData$Parent.ID))
-PhysioData$Tank.num<-as.factor(as.character(PhysioData$Tank.num))
+PhysioData$Code<-as.factor(as.character(PhysioData$Code))
+
+
+
+
 
 PhysioData3<-PhysioData #remove NaNs
 PhysioData3$T0.PAM[PhysioData3$T0.PAM == "NaN"] <- NA #change NaN to NA
@@ -1909,17 +2022,6 @@ PhysioData3$Chla_ug.chla.cm2[PhysioData3$Chla_ug.chla.cm2 == "NaN"] <- NA #chang
 
 #write_csv(PhysioData3,"PhysioData3.csv")
 
-
-#physio without PAM and BW
-PhysioData4<-merge(metaPhysio,Biomass_psy)
-PhysioData4<-merge(PhysioData4,CellCounts_psy)
-PhysioData4<-merge(PhysioData4,Chla_psy)
-PhysioData4<-merge(PhysioData4,Protein_psy)
-
-PhysioData4$Parent.ID<-as.factor(as.character(PhysioData4$Parent.ID))
-PhysioData4$Tank.num<-as.factor(as.character(PhysioData4$Tank.num))
-
-PhysioData4$Chla_ug.chla.cm2[PhysioData4$Chla_ug.chla.cm2 == "NaN"] <- NA #change NaN to NA
 
 
 ```
@@ -1959,7 +2061,7 @@ nMDS of physio
 ```{r} 
 PhysioData4.pr <- prcomp(PhysioData4[c(8:11)], center = TRUE, scale = TRUE)
 summary(PhysioData.pr)
-
+ 
 library(VIM)
 library(FactoMineR)
 library(missMDA) #lets you do with incomplete dataset
@@ -2195,7 +2297,7 @@ grid.arrange(Miss_Mcap_pca, Miss_Pcomp_pca, Miss_Pvar_pca,Miss_Pacu_pca, nrow = 
 
 PCA not alive measurements' not PAM.BW
 ```{r}
-#PhysioData5
+#PhysioData5 
 
 PhysioData5.pca <- prcomp(PhysioData5[,c(8:11)], center = TRUE,scale. = TRUE)
 summary(PhysioData5.pca)
