@@ -29,45 +29,46 @@ library(reshape)
 library(tidyverse)
 library(factoextra)
 library(reshape2)
- 
+library(vegan)
 
 ```
 
 Load meta
-```{r}  
+```{r}   
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
+meta<- meta[!(meta$Frag.ID == "3149"),] # dup
 
 # load in datasheets 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
 AFDW <- read.csv("Data/ACE21_AFDW_20210308.csv")
-AFDW <- AFDW[!(AFDW$Frag.ID == "1195"),]
-AFDW <- AFDW[!(AFDW$Frag.ID == "N49"),]
-AFDW <- AFDW[!(AFDW$Frag.ID == "3149"),]
-AFDW <- AFDW[!(AFDW$Frag.ID == "634"),]
-
+#AFDW <- AFDW[!(AFDW$Frag.ID == "1195"),]
+#AFDW <- AFDW[!(AFDW$Frag.ID == "N49"),]
+#AFDW <- AFDW[!(AFDW$Frag.ID == "3149"),]
+AFDWtest<-merge(meta, AFDW, all = T)
+#write.csv(AFDWtest,"AFDWtest.csv")
 
 WaxDipping <- read.csv("Data/WaxDipping_Results_20190403.csv")
-WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "1195"),]
-WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "N49"),]
-WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "3149"),]
-WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "634"),]
+#WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "1195"),]
+#WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "N49"),]
+#WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "3149"),]
+#WaxDipping <- WaxDipping[!(WaxDipping$Frag.ID == "634"),]
 
 Slurry <- read.csv("Data/TT17_airbrush_totalVol_20190420.csv")
-Slurry <- Slurry[!(Slurry$Frag.ID == "1195"),]
-Slurry <- Slurry[!(Slurry$Frag.ID == "N49"),]
-Slurry <- Slurry[!(Slurry$Frag.ID == "3149"),]
-Slurry <- Slurry[!(WaxDipping$Frag.ID == "634"),]
-
+#Slurry <- Slurry[!(Slurry$Frag.ID == "1195"),]
+#Slurry <- Slurry[!(Slurry$Frag.ID == "N49"),]
+#Slurry <- Slurry[!(Slurry$Frag.ID == "3149"),]
+#Slurry <- Slurry[!(WaxDipping$Frag.ID == "634"),]
+Slurrytest<-merge(meta, Slurry, all.x = T)
 
 #merge 
-#testAFDW<-merge(AFDW, meta, all=T)
+testAFDW<-merge(AFDW, meta, all=T)
 #testSlurry<-merge(Slurry, meta, all.y=T)
 #testflow<-merge(tData, meta, all.y=T)
-#testWax<-merge(SA, meta, all.y=T)
-
+#SurfaceArea<-merge(SA, meta, all.y=T)
+#write.csv(SurfaceArea, "SurfaceAreaACE21.csv")
 
 
 
@@ -79,6 +80,7 @@ Slurry <- Slurry[!(WaxDipping$Frag.ID == "634"),]
 
 SA<-WaxDipping
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
+#WaxDippingtest<-merge(meta, SA, all.x = T)
 
 # merge AFDW and slurry
 AFDW.slurry <- merge(AFDW, Slurry)
@@ -98,7 +100,7 @@ biomass$AFDWmg.cm2 <-biomass$AFDWmg/biomass$Surface.area # mg/cm2
 
 # merge with metadata to plot by treatments
 biomass2 <- merge(biomass, meta)
-
+#write.csv(biomass2, "biomass2.csv")
 
 # Mcap_biomass
 biomass2_mean <- ddply(biomass2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
@@ -258,8 +260,8 @@ Pcomp_biomass_plot<-Pcomp_biomass_plot+ theme(legend.position = "none") #remove 
 Pvar_biomass_mean_plot<-Pvar_biomass_mean_plot+ theme(legend.position = "none") #remove legend
 Pacu_biomass_mean_plot<-Pacu_biomass_mean_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_FC_Plot, Pcomp_FC_Plot, Pvar_FC_Plot,Pacu_FC_Plot, nrow = 2)
-
+grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot, nrow = 2)
+ 
 ```
 
 # Flow cytometry  cell counts
@@ -302,6 +304,8 @@ PlateC <- merge(PlateC, C_meta)
 PlateC <-merge(PlateC, meta, all.x = TRUE)
 PlateC <- na.omit(PlateC)
 PlateC<- PlateC[!(PlateC$Frag.ID == "3481"),] # redid in plate E
+PlateC<- PlateC[!(PlateC$Frag.ID == "49"),] # redid in plate E
+PlateC<- PlateC[!(PlateC$Frag.ID == "N49"),] # redid in plate E
 
 #note: Frag.ID 403 Pacu seems abnormally high
 
@@ -327,7 +331,7 @@ tData$corrected <- tData$Concentration*3.2959 # <- also confirm you did this cor
 tData <- merge(tData, Slurry)
 tData$TotalVolume <- tData$TotalVolume * 1000 # change total volume to from mL to uL
 
-
+write.csv(tData,"FLOW.csv")
 #use SA for slurry
 
 #merge with tData, make numeric
@@ -435,7 +439,7 @@ Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        scale_y_log10()+
-      ylim(0, 4000000)+
+    #  ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -460,7 +464,7 @@ Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = T
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        scale_y_log10()+
-    ylim(0, 4000000)+
+   # ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -486,7 +490,7 @@ Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        scale_y_log10()+
-    ylim(0, 4000000)+
+   # ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -537,7 +541,7 @@ grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_linep
 #Buoyant Weight/Calcification
 
 calibration (not sure what this does)
-```{r}  
+```{r}   
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
 #Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
 
@@ -565,11 +569,10 @@ StandardFreshModel$coef
 
 ```
 Analysis 
-```{r} 
+```{r}  
 
 #load coral weight data
 BW.data <-read.csv('Data/BW_TT17.csv') # this is a file I compiled with all dates
-
 # merge to sample data for sorting
 AllBWdata<-merge(BW.data, meta, by = "Frag.ID")
 
@@ -592,9 +595,11 @@ Temp_Pvar <- Pvar_BW$Temp.C
 Pacu_BW<- subset(AllBWdata, Species =="Pocillopora_acuta")
 BW_Pacu <- Pacu_BW$Mass.g
 Temp_Pacu <- Pacu_BW$Temp.C  
+
+
 ```
 Montipora capitata
-```{r}
+```{r} 
 BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -707,8 +712,8 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
 
 ```
 Porites compressa
-```{r}
-
+```{r} 
+ 
 ################################     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
   #Parameters---------------------------------------------------------------
@@ -768,6 +773,9 @@ data_PcompBW <- reshape(Pcomp_BW, timevar = "TimePoint", drop = c("Mass.g","Temp
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
 data_PcompBW$time1.growth <- (((data_PcompBW$Dry.Weigh.g.Time1 - data_PcompBW$Dry.Weigh.g.Time0)/data_PcompBW$Dry.Weigh.g.Time0)*100)/data_PcompBW$Days.Time1 #calculate growth rate for time1
 data_PcompBW$time2.growth <- (((data_PcompBW$Dry.Weigh.g.Time2 - data_PcompBW$Dry.Weigh.g.Time1)/data_PcompBW$Dry.Weigh.g.Time1)*100)/data_PcompBW$Days.Time2 #calculate growth rate for time2
+
+data_PcompBW$time1.growth[data_PcompBW$time1.growth < 0] <- 0 
+data_PcompBW$time2.growth[data_PcompBW$time2.growth < 0] <- 0 
 
 # mean, standard dev, and sem
 time1_PcompBW <-ddply(data_PcompBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -880,6 +888,10 @@ data_PvarBW <- reshape(Pvar_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C
 data_PvarBW$time1.growth <- (((data_PvarBW$Dry.Weigh.g.Time1 - data_PvarBW$Dry.Weigh.g.Time0)/data_PvarBW$Dry.Weigh.g.Time0)*100)/data_PvarBW$Days.Time1 #calculate growth rate for time1
 data_PvarBW$time2.growth <- (((data_PvarBW$Dry.Weigh.g.Time2 - data_PvarBW$Dry.Weigh.g.Time1)/data_PvarBW$Dry.Weigh.g.Time1)*100)/data_PvarBW$Days.Time2 #calculate growth rate for time2
 
+data_PvarBW$time1.growth[data_PvarBW$time1.growth < 0] <- 0 # neg values to 0 (chipped frags)
+data_PvarBW$time2.growth[data_PvarBW$time2.growth < 0] <- 0 
+
+
 # mean, standard dev, and sem
 time1_PvarBW <-ddply(data_PvarBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
               N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
@@ -988,6 +1000,8 @@ data_PacuBW <- reshape(Pacu_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
 data_PacuBW$time1.growth <- (((data_PacuBW$Dry.Weigh.g.Time1 - data_PacuBW$Dry.Weigh.g.Time0)/data_PacuBW$Dry.Weigh.g.Time0)*100)/data_PacuBW$Days.Time1 #calculate growth rate for time1
 data_PacuBW$time2.growth <- (((data_PacuBW$Dry.Weigh.g.Time2 - data_PacuBW$Dry.Weigh.g.Time1)/data_PacuBW$Dry.Weigh.g.Time1)*100)/data_PacuBW$Days.Time2 #calculate growth rate for time2
+data_PacuBW$time1.growth[data_PacuBW$time1.growth < 0] <- 0 # neg values to 0 (chipped frags)
+data_PacuBW$time2.growth[data_PacuBW$time2.growth < 0] <- 0 
 
 
 
@@ -1042,7 +1056,7 @@ Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, colo
 ```
 Plots together
 ```{r}
-###### All plots together
+###### All plots together 
 Mcap_BW_plot<-Mcap_BW_plot+ theme(legend.position = "none") #remove legend
 Pcomp_BW_plot<-Pcomp_BW_plot+ theme(legend.position = "none") #remove legend
 Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
@@ -1203,7 +1217,7 @@ ChlaData6$Parent.ID<-as.factor(as.character(ChlaData6$Parent.ID))
 ChlaData6$Tank.num<-as.factor(as.character(ChlaData6$Tank.num))
 ChlaData6$Surface.area<-as.numeric(as.character(ChlaData6$Surface.area))
 
-
+ 
 ChlaData6$totChla1<-ChlaData6$Rep1*ChlaData6$TotalVolume
 ChlaData6$chlaSA1 <- ChlaData6$totChla1/ChlaData6$Surface.area
 
@@ -1211,14 +1225,17 @@ ChlaData6$totChla2<-ChlaData6$Rep2*ChlaData6$TotalVolume
 ChlaData6$chlaSA2 <- ChlaData6$totChla2/ChlaData6$Surface.area
 
 plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check 
+  
+Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
 
-
+chlatest<-merge(meta, Chla, all = T)
 
 ```
 
 means for plots
 ```{r} 
-Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
+
+chlatest<-merge(meta, Chla, all.x = T)
 
 duplicated(Chla) #look for duplicate entries
 Chla<-unique(Chla) #remove any duplicate entries 
@@ -1663,8 +1680,9 @@ grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 
 ```
 
 #Protein
-```{r} 
+```{r}  
 Protein <- read.csv("Data/Protein_TT17_20190214.csv")
+prottest<-merge(meta, Protein, all=T)
 keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
 Protein<-Protein[keepPr]
 
@@ -1848,12 +1866,12 @@ Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tan
   Biomass_psyT0Amb<-Biomass_psyT0
   Biomass_psyT0Amb$Treatment[Biomass_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
   Biomass_psyT0High<-Biomass_psyT0
-  Biomass_psyT0High$Treatment[v$Treatment == "Ambient"] <- "High" #change 
+  Biomass_psyT0High$Treatment[Biomass_psyT0High$Treatment == "Ambient"] <- "High" #change 
   Biomass_psyT02<-rbind(Biomass_psyT0Amb,Biomass_psyT0High) #now oyu have T0 for Amb and High
 
   Biomass_psy<-Biomass_psy[!(Biomass_psy$Time.Point=="T0"),] #remove T0s
   Biomass_psy<-rbind(Biomass_psy,Biomass_psyT02) # add the full T0 dataset
-
+duplicated(Biomass_psy)
   Biomass_psy$Code<-paste(Biomass_psy$Species,Biomass_psy$Treatment,Biomass_psy$Parent.ID, Biomass_psy$Time.Point)
 
   Biomass_psy<- Biomass_psy[,c("Code" ,"AFDWmg.cm2_log")] # keep only columns you need
@@ -1944,6 +1962,10 @@ names(Calcification_psy)[names(Calcification_psy) == "mean"] <- "calc.percentcha
 Calcification_psy<-Calcification_psy[,c("Code","Parent.ID", "Treatment","Species","calc.percentchange")] #remove col
 Calcification_psy<-unique(Calcification_psy) #remove duplicates, now you have 
 
+Calcification_psy<-merge(metaPhysio, Calcification_psy, all.x = T)
+Calcification_psy$calc.percentchange[is.na(Calcification_psy$calc.percentchange)] <- 0 #change T0 growth to 0s
+
+
 #PAM df PAMdata_stats make for T0, T1, TF
 PAM_psy<- PAMdata_stats
 
@@ -1970,7 +1992,7 @@ names(PAM_psy)[names(PAM_psy) == "mean"] <- "PAM.Yield_cu" #change name
 PAM_psy<-PAM_psy[,c("Code","Parent.ID", "Treatment","Species","PAM.Yield_cu","Time.Point")] #remove col
 PAM_psy<-unique(PAM_psy) #remove duplicates, now you have 
 
-
+ 
 ```
 #merging full physio
 ```{r}
@@ -2011,23 +2033,22 @@ PhysioData$Parent.ID<-as.factor(as.character(PhysioData$Parent.ID))
 PhysioData$Code<-as.factor(as.character(PhysioData$Code))
 
 
+PhysioData_noMissing<-na.omit(PhysioData)
+#write.csv(PhysioData,"PhysioData_20210310.csv")
+```
 
+nMDS of physio, PhysioData df, by Parent.ID
+```{r}
+PhysioData_nmds<-PhysioData_noMissing[, c(7:12)]
+set.seed(2)
 
-
-PhysioData3<-PhysioData #remove NaNs
-PhysioData3$T0.PAM[PhysioData3$T0.PAM == "NaN"] <- NA #change NaN to NA
-PhysioData3$T1.PAM[PhysioData3$T1.PAM == "NaN"] <- NA #change NaN to NA
-PhysioData3$TF.PAM[PhysioData3$TF.PAM == "NaN"] <- NA #change NaN to NA
-PhysioData3$Chla_ug.chla.cm2[PhysioData3$Chla_ug.chla.cm2 == "NaN"] <- NA #change NaN to NA
-
-#write_csv(PhysioData3,"PhysioData3.csv")
+example_NMDS=metaMDS(PhysioData_nmds, # Our community-by-species matrix
+                     k=2, na.rm=T) # The number of reduced dimensions
 
 
 
 ```
 
-nMDS of physio
-#
 
 
 
