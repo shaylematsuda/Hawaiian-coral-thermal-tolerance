@@ -30,6 +30,7 @@ library(tidyverse)
 library(factoextra)
 library(reshape2)
 library(vegan)
+library(pairwiseAdonis)
 
 ```
 
@@ -1125,6 +1126,7 @@ ChlaData1$totChla2<-ChlaData1$Rep2*ChlaData1$TotalVolume
 ChlaData1$chlaSA2 <- ChlaData1$totChla2/ChlaData1$Surface.area
 
 plate1<-plot(ChlaData1$chlaSA1,ChlaData1$chlaSA2)
+ChlaData1<-ChlaData1[!(ChlaData1$Frag.ID=="314"),] #redid plate 8
 
 # Plate 2
 Chla_plate2<- read.csv("Data/Chla_plate2.csv")
@@ -1144,6 +1146,8 @@ ChlaData2$totChla2<-ChlaData2$Rep2*ChlaData2$TotalVolume
 ChlaData2$chlaSA2 <- ChlaData2$totChla2/ChlaData2$Surface.area
 
 plate2<-plot(ChlaData2$chlaSA1,ChlaData2$chlaSA2)
+ChlaData2<-ChlaData2[!(ChlaData2$Frag.ID=="3476"),] #redid plate 8
+ChlaData2<-ChlaData2[!(ChlaData2$Frag.ID=="N211"),] #redid plate 8
 
 # Plate 3
 Chla_plate3<- read.csv("Data/Chla_plate3.csv")
@@ -1163,6 +1167,7 @@ ChlaData3$totChla2<-ChlaData3$Rep2*ChlaData3$TotalVolume
 ChlaData3$chlaSA2 <- ChlaData3$totChla2/ChlaData3$Surface.area
 
 plate3<-plot(ChlaData3$chlaSA1,ChlaData3$chlaSA2) #check
+ChlaData3<-ChlaData3[!(ChlaData3$Frag.ID=="N158"),] #redid plate 8
 
 # Plate 4 
 Chla_plate4<- read.csv("Data/test_plate4.csv")
@@ -1183,6 +1188,7 @@ ChlaData4$totChla2<-ChlaData4$Rep2*ChlaData4$TotalVolume
 ChlaData4$chlaSA2 <- ChlaData4$totChla2/ChlaData4$Surface.area
 
 plate4<-plot(ChlaData4$chlaSA1,ChlaData4$chlaSA2)
+ChlaData4<-ChlaData4[!(ChlaData4$Frag.ID=="N30"),] #redid plate 8
 
 # Plate 5 20190319
 Chla_plate5<- read.csv("Data/Chla_20190319_plate5.csv")
@@ -1225,11 +1231,32 @@ ChlaData6$totChla2<-ChlaData6$Rep2*ChlaData6$TotalVolume
 ChlaData6$chlaSA2 <- ChlaData6$totChla2/ChlaData6$Surface.area
 
 plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check 
+ChlaData6<-ChlaData6[!(ChlaData6$Frag.ID=="3484"),] #redid plate 8
+
+# Plate 8 20190321
+Chla_plate8<- read.csv("Data/Chla_plate8.csv")
+
+#merge 
+ChlaData8 <- merge(meta, Chla_plate8)
+ChlaData8 <- merge(ChlaData8, Slurry)
+ChlaData8 <- merge(ChlaData8, SA)
+ChlaData8$Parent.ID<-as.factor(as.character(ChlaData8$Parent.ID))
+ChlaData8$Tank.num<-as.factor(as.character(ChlaData8$Tank.num))
+ChlaData8$Surface.area<-as.numeric(as.character(ChlaData8$Surface.area))
+
+ 
+ChlaData8$totChla1<-ChlaData8$Rep1*ChlaData8$TotalVolume
+ChlaData8$chlaSA1 <- ChlaData8$totChla1/ChlaData8$Surface.area
+
+ChlaData8$totChla2<-ChlaData8$Rep2*ChlaData8$TotalVolume
+ChlaData8$chlaSA2 <- ChlaData8$totChla2/ChlaData8$Surface.area
+
+plate8<-plot(ChlaData8$chlaSA1,ChlaData8$chlaSA2) #some not close, check 
   
-Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6)
+Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6,ChlaData8)
 
-chlatest<-merge(meta, Chla, all = T)
-
+chlatest<-merge(meta, Chla, all = T) 
+  
 ```
 
 means for plots
@@ -1247,9 +1274,7 @@ duplicated(checkChla)
 #write.csv(checkChla,"checkChla.csv")
 
 #2285, 3491, N141 Remove sample where reps are >2 apart
-Chla<-Chla[!(Chla$Frag.ID=="2285"),]
-Chla<-Chla[!(Chla$Frag.ID=="N138"),]
-Chla<-Chla[!(Chla$Frag.ID=="N211"),]
+#Chla<-Chla[!(Chla$Frag.ID=="N138"),]
 
 
 #make slightly neg values 0 
@@ -1413,7 +1438,7 @@ pairs(emm)
 
 
 #PAM
-```{r}  
+```{r}   
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -1437,7 +1462,7 @@ Time8<-merge(Time8, meta)
 Time9 <- read.csv("Data/PAM_20170511.csv", header=T) #load data
 Time9<-merge(Time9, meta)
 Time10 <- read.csv("Data/PAM_20170517.csv", header=T) #load data
-Time10<-merge(Time1, meta)
+Time10<-merge(Time10, meta)
 
 # combine all data files
 PAMdata<-rbind(Time0, Time1, Time2, Time3, Time4, Time5, Time6, Time7, Time8, Time9, Time10)
@@ -1720,7 +1745,7 @@ hist(Protein$mg.mm2_log)
 Protein$mg.mm2_sqrt<-sqrt(Protein$mg.mm2)
 hist(Protein$mg.mm2_sqrt) #better
 
-
+ 
 ```
 Stats
 ```{r}
@@ -1971,14 +1996,14 @@ PAM_psy<- PAMdata_stats
 
 PAM_psy$Days<-as.character(PAM_psy$Days)
 PAM_psy$Days[PAM_psy$Days == "0"] <- "T0" #change 
-PAM_psy$Days[PAM_psy$Days == "17"] <- "T1" #change 
-PAM_psy$Days[PAM_psy$Days == "52"] <- "TF" #change 
+PAM_psy$Days[PAM_psy$Days == "24"] <- "T1" #change 
+PAM_psy$Days[PAM_psy$Days == "58"] <- "TF" #change 
 
 PAM_psy<-PAM_psy[!(PAM_psy$Days=="17"),] #remove other days by name
 PAM_psy<-PAM_psy[!(PAM_psy$Days=="31"),] #remove other days by name
 PAM_psy<-PAM_psy[!(PAM_psy$Days=="38"),] #remove other days by name
 PAM_psy<-PAM_psy[!(PAM_psy$Days=="45"),] #remove other days by name
-PAM_psy<-PAM_psy[!(PAM_psy$Days=="24"),] #remove other days by name
+PAM_psy<-PAM_psy[!(PAM_psy$Days=="52"),] #remove other days by name
 
 #now you need to figure out the sample 'day' for each parent.id, and subset out only those. 
 names(PAM_psy)[names(PAM_psy) == "Days"] <- "Time.Point" #change name
@@ -2011,7 +2036,7 @@ MetaT0Amb$Treatment[MetaT0Amb$Treatment == "High"] <- "Ambient" #change
 MetaT0High<-MetaT0
 MetaT0High$Treatment[MetaT0High$Treatment == "Ambient"] <- "High" #change 
 MetaT02<-rbind(MetaT0Amb,MetaT0High) #now oyu have T0 for Amb and High
-metaPhysio<-metaPhysio[!(metaPhysio$Time.Point=="T0"),] #remove T0s
+metaPhysio<-metaPhysio[!(metaPhysio$Time.Point=="T0"),] #remove T0s 
 metaPhysio<-rbind(metaPhysio,MetaT02) # add the full T0 dataset
 metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID,metaPhysio$Time.Point) #make code
 
@@ -2032,18 +2057,823 @@ PhysioData<-unique(PhysioData) #this is the df.
 PhysioData$Parent.ID<-as.factor(as.character(PhysioData$Parent.ID))
 PhysioData$Code<-as.factor(as.character(PhysioData$Code))
 
+duplicated(PhysioData$Code)
+PhysioData$Code[duplicated(PhysioData$Code)]
 
-PhysioData_noMissing<-na.omit(PhysioData)
+PhysioData_noMissing<-na.omit(PhysioData) #this removes 9 samples (partent/time/species)
+# 1 AFDW
+# 3 Flow Cy
+# 2 prot  N107 pcomp t0 
+
+
 #write.csv(PhysioData,"PhysioData_20210310.csv")
 ```
 
-nMDS of physio, PhysioData df, by Parent.ID
+#nMDS of physio, PhysioData df, by Parent.ID, all data
 ```{r}
-PhysioData_nmds<-PhysioData_noMissing[, c(7:12)]
-set.seed(2)
+Phy_nmds<-PhysioData_noMissing
 
-example_NMDS=metaMDS(PhysioData_nmds, # Our community-by-species matrix
-                     k=2, na.rm=T) # The number of reduced dimensions
+
+library(vegan)  #hannah code below, edited
+set.seed(30)
+
+Phy_nmds.MDS<-metaMDS(PhysioData_noMissing[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds.MDS)
+Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds.MDS.scores$Parent.ID <- Phy_nmds$Parent.ID
+Phy_nmds.MDS.scores$Treatment <- Phy_nmds$Treatment
+Phy_nmds.MDS.scores$Species <- Phy_nmds$Species
+Phy_nmds.MDS.scores$Time.Point <- Phy_nmds$Time.Point
+Phy_nmds.MDS.scores$Code <- Phy_nmds$Code # move the code 
+Phy_nmds.MDS.scores$Code2 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment,Phy_nmds.MDS.scores$Time.Point) # create new code species, time point treatment 
+Phy_nmds.MDS.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
+
+Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
+Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
+
+##You can make hulls for your data clouds to group them by a variable
+Phy_MY.hull <- Phy_nmds.MDS.scores %>% group_by(Species) %>%
+  do({
+    x = .
+    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+  })
+
+##or you can make 95% ellipses using the following commands:
+
+#first make the function veganCovEllipse:
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds.MDS.scores)
+
+#Make your ellipse:
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds.MDS.scores$Species)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Species==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##Next we plot the nMDS:
+
+##With hulls:
+#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
+#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
+#  theme_classic() 
+
+##With ellipses:
+
+ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices+Time+Treatment")
+
+
+# DO BY TREATMENT
+#Make elippses by TREATMENT
+
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices+Time+Treatment")
+
+# DO BY CODE
+#Make elippses by CODE
+
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices+Time+Treatment")
+
+#################### Subset PLOTS (do not rerun nmds) for T1 and TF visualizations
+
+
+Phy_nmds.MDS.scores_T1<-subset(Phy_nmds.MDS.scores, Time.Point=="T1")
+
+
+
+#first make the function veganCovEllipse:
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds.MDS.scores)
+
+#Make your ellipse:
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds.MDS.scores_T1$Code3)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores_T1[Phy_nmds.MDS.scores_T1$Code3==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##Next we plot the nMDS:
+
+##With hulls:
+#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
+#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
+#  theme_classic() 
+
+##With ellipses:
+cbp1 <- c("blue", "red", "green4", "green",
+          "darkviolet", "hotpink", "darkorange3", "gold","turquoise4", "turquoise")
+
+ggplot(Phy_nmds.MDS.scores_T1, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape=Treatment)) +
+   scale_color_manual(values = cbp1)+
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices T1")
+
+
+#################### Subset PLOTS (do not rerun nmds) for TF visualizations
+
+
+Phy_nmds.MDS.scores_TF<-subset(Phy_nmds.MDS.scores, Time.Point=="TF")
+
+
+
+#first make the function veganCovEllipse:
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds.MDS.scores)
+
+#Make your ellipse:
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds.MDS.scores_TF$Code3)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores_TF[Phy_nmds.MDS.scores_TF$Code3==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##Next we plot the nMDS:
+
+##With hulls:
+#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
+#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
+#  theme_classic() 
+
+##With ellipses:
+cbp1 <- c("blue", "red", "green4", "green",
+          "darkviolet", "hotpink", "darkorange3", "gold","turquoise4", "turquoise")
+
+ggplot(Phy_nmds.MDS.scores_TF, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape=Treatment)) +
+   scale_color_manual(values = cbp1)+
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices TF")
+
+```
+#### By SPECIES. Make a NEW ordination for each species. 
+Mcap
+```{r}
+Phy_nmds_Mcap<-PhysioData_noMissing
+
+
+Phy_nmds_Mcap<-subset(Phy_nmds_Mcap, Species=="Montipora_capitata")
+
+set.seed(30)
+
+Phy_nmds_Mcap.MDS<-metaMDS(Phy_nmds_Mcap[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_Mcap.MDS)
+Phy_nmds_Mcap.MDS.scores <- as.data.frame(scores(Phy_nmds_Mcap.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_Mcap.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds_Mcap.MDS.scores$Parent.ID <- Phy_nmds_Mcap$Parent.ID
+Phy_nmds_Mcap.MDS.scores$Treatment <- Phy_nmds_Mcap$Treatment
+Phy_nmds_Mcap.MDS.scores$Species <- Phy_nmds_Mcap$Species
+Phy_nmds_Mcap.MDS.scores$Time.Point <- Phy_nmds_Mcap$Time.Point
+Phy_nmds_Mcap.MDS.scores$Code <- Phy_nmds_Mcap$Code # move the code 
+Phy_nmds_Mcap.MDS.scores$Code2 <- paste(Phy_nmds_Mcap.MDS.scores$Treatment,Phy_nmds_Mcap.MDS.scores$Time.Point) # create new code species, time point treatment 
+Phy_nmds_Mcap.MDS.scores$Code2<-as.factor(Phy_nmds_Mcap.MDS.scores$Code2)
+
+##You can make hulls for your data clouds to group them by a variable
+Phy_MY.hull <- Phy_nmds_Mcap.MDS.scores %>% group_by(Treatment) %>%
+  do({
+    x = .
+    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+  })
+
+##or you can make 95% ellipses using the following commands:
+
+#first make the function veganCovEllipse:
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Mcap.MDS.scores)
+
+#Make your ellipse:
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Mcap.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Mcap.MDS.scores[Phy_nmds_Mcap.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##Next we plot the nMDS:
+
+##With hulls:
+#ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
+#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
+#  theme_classic() 
+
+##With ellipses:
+
+ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Time.Point, shape =Time.Point)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Mcap Time+Treatment")
+
+
+####################################### DO BY Code
+# DO BY CODE
+#Make elippses by CODE
+
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Mcap.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Mcap.MDS.scores[Phy_nmds_Mcap.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+
+ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Speices+Time+Treatment")
+
+
+```
+Pcomp
+```{r}
+Phy_nmds_Pcomp<-PhysioData_noMissing
+Phy_nmds_Pcomp<-subset(Phy_nmds_Pcomp, Species=="Porites_compressa")
+
+set.seed(30)
+
+Phy_nmds_Pcomp.MDS<-metaMDS(Phy_nmds_Pcomp[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_Pcomp.MDS)
+Phy_nmds_Pcomp.MDS.scores <- as.data.frame(scores(Phy_nmds_Pcomp.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_Pcomp.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds_Pcomp.MDS.scores$Parent.ID <- Phy_nmds_Pcomp$Parent.ID
+Phy_nmds_Pcomp.MDS.scores$Treatment <- Phy_nmds_Pcomp$Treatment
+Phy_nmds_Pcomp.MDS.scores$Species <- Phy_nmds_Pcomp$Species
+Phy_nmds_Pcomp.MDS.scores$Time.Point <- Phy_nmds_Pcomp$Time.Point
+Phy_nmds_Pcomp.MDS.scores$Code <- Phy_nmds_Pcomp$Code # move the code 
+Phy_nmds_Pcomp.MDS.scores$Code2 <- paste(Phy_nmds_Pcomp.MDS.scores$Treatment,Phy_nmds_Pcomp.MDS.scores$Time.Point) # create new code species, time point treatment 
+Phy_nmds_Pcomp.MDS.scores$Code2<-as.factor(Phy_nmds_Pcomp.MDS.scores$Code2)
+
+##You can make hulls for your data clouds to group them by a variable
+#Phy_MY.hull <- Phy_nmds_Pcomp.MDS.scores %>% group_by(Treatment) %>%
+#  do({
+#    x = .
+#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+#  })
+
+
+
+############################################# BY TREATMENT
+
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pcomp.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pcomp.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pcomp.MDS.scores[Phy_nmds_Pcomp.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pcomp.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Time.Point)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pcomp Time+Treatment")
+
+############################################# BY TIME
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pcomp.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pcomp.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pcomp.MDS.scores[Phy_nmds_Pcomp.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pcomp.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2, shape =Code2)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pcomp Time+Treatment")
+
+```
+Pvar
+```{r}
+Phy_nmds_Pvar<-PhysioData_noMissing
+Phy_nmds_Pvar<-subset(Phy_nmds_Pvar, Species=="Pavona_varians")
+
+set.seed(30)
+
+Phy_nmds_Pvar.MDS<-metaMDS(Phy_nmds_Pvar[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_Pvar.MDS)
+Phy_nmds_Pvar.MDS.scores <- as.data.frame(scores(Phy_nmds_Pvar.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_Pvar.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds_Pvar.MDS.scores$Parent.ID <- Phy_nmds_Pvar$Parent.ID
+Phy_nmds_Pvar.MDS.scores$Treatment <- Phy_nmds_Pvar$Treatment
+Phy_nmds_Pvar.MDS.scores$Species <- Phy_nmds_Pvar$Species
+Phy_nmds_Pvar.MDS.scores$Time.Point <- Phy_nmds_Pvar$Time.Point
+Phy_nmds_Pvar.MDS.scores$Code <- Phy_nmds_Pvar$Code # move the code 
+Phy_nmds_Pvar.MDS.scores$Code2 <- paste(Phy_nmds_Pvar.MDS.scores$Treatment,Phy_nmds_Pvar.MDS.scores$Time.Point) # create new code species, time point treatment 
+Phy_nmds_Pvar.MDS.scores$Code2<-as.factor(Phy_nmds_Pvar.MDS.scores$Code2)
+
+##You can make hulls for your data clouds to group them by a variable
+#Phy_MY.hull <- Phy_nmds_Pvar.MDS.scores %>% group_by(Treatment) %>%
+#  do({
+#    x = .
+#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+#  })
+
+
+
+############################################# BY TREATMENT
+
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pvar.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pvar.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pvar.MDS.scores[Phy_nmds_Pvar.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pvar.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Time.Point)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pvar Time+Treatment")
+
+############################################# BY TIME
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pvar.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pvar.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pvar.MDS.scores[Phy_nmds_Pvar.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pvar.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2, shape =Code2)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pvar Time+Treatment")
+
+
+```
+P acuta
+```{r}
+
+Phy_nmds_Pacu<-PhysioData_noMissing
+Phy_nmds_Pacu<-subset(Phy_nmds_Pacu, Species=="Pocillopora_acuta")
+
+set.seed(30)
+
+Phy_nmds_Pacu.MDS<-metaMDS(Phy_nmds_Pacu[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_Pacu.MDS)
+Phy_nmds_Pacu.MDS.scores <- as.data.frame(scores(Phy_nmds_Pacu.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_Pacu.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds_Pacu.MDS.scores$Parent.ID <- Phy_nmds_Pacu$Parent.ID
+Phy_nmds_Pacu.MDS.scores$Treatment <- Phy_nmds_Pacu$Treatment
+Phy_nmds_Pacu.MDS.scores$Species <- Phy_nmds_Pacu$Species
+Phy_nmds_Pacu.MDS.scores$Time.Point <- Phy_nmds_Pacu$Time.Point
+Phy_nmds_Pacu.MDS.scores$Code <- Phy_nmds_Pacu$Code # move the code 
+Phy_nmds_Pacu.MDS.scores$Code2 <- paste(Phy_nmds_Pacu.MDS.scores$Treatment,Phy_nmds_Pacu.MDS.scores$Time.Point) # create new code species, time point treatment 
+Phy_nmds_Pacu.MDS.scores$Code2<-as.factor(Phy_nmds_Pacu.MDS.scores$Code2)
+
+##You can make hulls for your data clouds to group them by a variable
+#Phy_MY.hull <- Phy_nmds_Pacu.MDS.scores %>% group_by(Treatment) %>%
+#  do({
+#    x = .
+#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+#  })
+
+
+
+############################################# BY TREATMENT
+
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pacu.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pacu.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pacu.MDS.scores[Phy_nmds_Pacu.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pacu.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Time.Point)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pacu Treatment")
+
+############################################# BY TIME
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_Pacu.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_Pacu.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pacu.MDS.scores[Phy_nmds_Pacu.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_Pacu.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2, shape =Code2)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS Pacu Time+Treatment")
+
+```
+
+T1- only all species: RERUN NMDS
+```{r}
+
+Phy_nmds_T1only<-PhysioData_noMissing
+Phy_nmds_T1only<-subset(Phy_nmds_T1only, Time.Point=="T1")
+
+set.seed(30)
+
+Phy_nmds_T1only.MDS<-metaMDS(Phy_nmds_T1only[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_T1only.MDS)
+Phy_nmds_T1only.MDS.scores <- as.data.frame(scores(Phy_nmds_T1only.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_T1only.MDS #get summary info, stress is 0.096 great
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds_T1only.MDS.scores$Parent.ID <- Phy_nmds_T1only$Parent.ID
+Phy_nmds_T1only.MDS.scores$Treatment <- Phy_nmds_T1only$Treatment
+Phy_nmds_T1only.MDS.scores$Species <- Phy_nmds_T1only$Species
+Phy_nmds_T1only.MDS.scores$Time.Point <- Phy_nmds_T1only$Time.Point
+Phy_nmds_T1only.MDS.scores$Code <- Phy_nmds_T1only$Code # move the code 
+Phy_nmds_T1only.MDS.scores$Code2 <- paste(Phy_nmds_T1only.MDS.scores$Treatment,Phy_nmds_T1only.MDS.scores$Species) # create new code species, time point treatment 
+Phy_nmds_T1only.MDS.scores$Code2<-as.factor(Phy_nmds_T1only.MDS.scores$Code2)
+
+##You can make hulls for your data clouds to group them by a variable
+#Phy_MY.hull <- Phy_nmds_T1only.MDS.scores %>% group_by(Treatment) %>%
+#  do({
+#    x = .
+#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
+#  })
+
+
+
+############################################# BY TREATMENT
+
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_T1only.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_T1only.MDS.scores$Treatment)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_T1only.MDS.scores[Phy_nmds_T1only.MDS.scores$Treatment==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_T1only.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Time.Point)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS T1only Treatment")
+
+############################################# BY TIME
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#Next, make sure that your variable you are after is a factor:
+str(Phy_nmds_T1only.MDS.scores)
+
+## make 95% ellipses using the following commands: CODE2
+phy_ell <- data.frame()
+for(g in levels(Phy_nmds_T1only.MDS.scores$Code2)){
+  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_T1only.MDS.scores[Phy_nmds_T1only.MDS.scores$Code2==g,],
+                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
+                                ,group=g))
+}
+#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
+str(phy_ell)
+
+
+##plot the nMDS:
+##With ellipses:
+
+ggplot(Phy_nmds_T1only.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Treatment)) +
+  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
+  theme_classic()+
+  ggtitle("NMDS T1only Species and Treatment")
+
+```
+
+#PERMANOVA on physio only
+
+```{r}
+
+#ALL THE DATA
+
+phy.dist <- vegdist(PhysioData_noMissing [7:12], method="bray") #make dist matrix
+phy.div <- adonis2(PhysioData_noMissing [7:12] ~ Species*Treatment*Time.Point, data = PhysioData_noMissing [1:6], permutations = 999, method="bray")
+phy.div #view, everything is significant
+
+#not sure how this works but the internet suggested it.
+adonis2(PhysioData_noMissing [7:12] ~ Species*Treatment*Time.Point, data = PhysioData_noMissing [1:6], permutations = 999, method="bray", by = NULL)
+
+#this isnt' running for a single effect or multiple
+##Check for homogeneity of dispersions (you want this to be insignificant)
+phy.dist.disp <- betadisper(phy.dist, phy.dist$Treatment, type = "centroid")
+#par(pty = 's')
+#boxplot(phy.dist.disp) #visualise your dispersion
+#permutest(phy.dist.disp) #this is your PERMDISP test
+
+#this runs but it's only univariate so not helpful. 
+pairwise.adonis(PhysioData_noMissing [7:12], PhysioData_noMissing$Species)
+
+
+#krissy code
+adonis(PhysioData_noMissing [7:12]~ Species + Treatment+ Time.Point+ Species:Treatment:Time.Point, data=PhysioData_noMissing [1:6], contr.unordered = "contr.treatment", by = "margin", distance = "bray")
+#all significant. 
+
+
+
+## let's try adonis 2
+
+```
+
+
+##By SPECIES
+```{r}
+#Mcap, Phy_nmds_Mcap
+phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [7:12], method="bray") #make dist matrix
+phy_Mcap.div <- adonis2(Phy_nmds_Mcap [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:6], permutations = 999, method="bray")
+phy_Mcap.div #view, Time is significant
+
+#not sure how this works but the internet suggested it.
+adonis2(Phy_nmds_Mcap [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:6], permutations = 999, method="bray", by = NULL)
+
+#Pcomp, Phy_nmds_Pcomp
+phy_Pcomp.dist <- vegdist(Phy_nmds_Pcomp [7:12], method="bray") #make dist matrix
+phy_Pcomp.div <- adonis2(Phy_nmds_Pcomp [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pcomp [1:6], permutations = 999, method="bray")
+phy_Pcomp.div #view, all is significant
+
+#not sure how this works but the internet suggested it.
+adonis2(Phy_nmds_Pcomp [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pcomp [1:6], permutations = 999, method="bray", by = NULL)
+
+#Pvar, Phy_nmds_Pvar
+phy_Pvar.dist <- vegdist(Phy_nmds_Pvar [7:12], method="bray") #make dist matrix
+phy_Pvar.div <- adonis2(Phy_nmds_Pvar [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pvar [1:6], permutations = 999, method="bray")
+phy_Pvar.div #view, all is significant
+
+#not sure how this works but the internet suggested it.
+adonis2(Phy_nmds_Pvar [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pvar [1:6], permutations = 999, method="bray", by = NULL)
+
+#Pacu, Phy_nmds_Pacu
+phy_Pacu.dist <- vegdist(Phy_nmds_Pacu [7:12], method="bray") #make dist matrix
+phy_Pacu.div <- adonis2(Phy_nmds_Pacu [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pacu [1:6], permutations = 999, method="bray")
+phy_Pacu.div #view, all is significant
+
+#not sure how this works but the internet suggested it.
+adonis2(Phy_nmds_Pacu [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pacu [1:6], permutations = 999, method="bray", by = NULL)
+
+```
+
+
+
+
+
+##next steps FOR OTU/DIV data
+```{r}
+
+###Checking which taxa are driving the significance####
+
+##Using the mvabund package
+
+dat.mv <- mvabund(ac_or[,2:18]) # makes an mvabund object with the bacterial data (matrix of RAW COUNTS)
+Fac1 <- ac_or[,18:32] # makes a separate data sheet with all the metadata
+# We will use RAW COUNTS but we still need to account for differences in sequencing depth
+# We will follow the approach proposed by McMurdie & Holmes 2014 (PLOS Comput. Biol.), which is to
+# include the total number of counts per sample explicitly in the model
+
+# Lets add a column to Fac1 (the spreadsheet with covariates) of sums of counts per sample 
+Fac1$Counts = rowSums(ac_or[,2:18])
+
+# Have a look at the data by plotting 
+plot(dat.mv ~ Fac1$MonthYear, cex.axis=0.55) # Raw data plot
+plot(dat.mv ~ Fac1$MonthYear, type="bx", cex.axis=0.55, legend=F) # Box plot
+
+
+# check the mean-variance relationship
+meanvar.plot(dat.mv ~ Fac1$MonthYear, pch=19)
+# mean increases with the variance - useful to use a negative binomial distribution
+
+
+# Lets fit the model
+dat.nb = manyglm(dat.mv ~ Counts + MonthYear, family="negative.binomial", data=Fac1)
+#The order you put your variables in matters because R uses Type 1 Sums of Squares, so first 
+#you want to take into account the bias in counts, followed by looking at differences in species
+#what you really care about should go last
+#Family = type of data distribution (e.g. poisson, normal, binomial) but for sequencing data
+#it is standard to use negative binomial
+
+# Note: you could also fit Counts as an 'offset', which assumes a proportional increase
+# it should be 'log' of the Counts as the link function for neg.binom. is log
+# dat.nb = manyglm(dat.mv ~ Species + offset(log(Counts)), family="negative.binomial", data=Fac1)
+
+
+# Check the model fit by plotting the residuals
+plot(dat.nb,n.vars=15) # involves some randomisation, repeat it a couple of times
+# No obvious pattern among multiple plots = a good model fit.
+
+
+# The model is fit so now we need to run the statistical test
+dat.aov = anova(dat.nb, nBoot=999, p.uni="adjusted") # uses bootstraps-can take a long time to run
+#We can use nBoot = 100 for trial, but should use 999 for publication
+
+#if you want to save this as an .RData file so you don't have to run it again use:
+save(dat.aov, file = "/Users/jc224701/Desktop/chg_all/R_output/16S/Chapter 2/dat_mvabund_cl.RData")
+
+# Get the output of the test
+dat.aov$table # multivariate table
+#Now that we have taken account of the sequencing bias using counts, then it doesn't matter if counts are 
+#significant, we just care about species being significant
+
+##Ouput:
+#Res.Df Df.diff      Dev Pr(>Dev)
+#(Intercept)    101      NA       NA       NA
+#Counts         100       1 678.9981    0.001
+#MonthYear       91       9 130.2149    0.479
+
+# Obviuosly there is no difference in the multivariate test statistic for my dataset.  
+# BUT if we were to see a difference, we would then ask which variables constituted this effect.
+
+# We can look at test statistics and p values: 
+dat.aov$uni.test # univariate test statistics
+# Note that the output is quite horrible here given
+# the long variable names. A good idea is to plot any one of these to see how they behave.
+
+dat.aov$uni.p # univariate adjusted p values, note we are interested in row 2
+
+# We can use code to ask: Are any of these significantly different? (i.e. p<0.05)
+any(dat.aov$uni.p[2,]<0.05) 
+#Ouput is TRUE/FALSE
+
+# We can visualise this by plotting those p-values from smaller to larger
+plot(sort(dat.aov$uni.p[2,]), main="Sorted univariate P values")
+abline(h=0.05, lty=2, col="red") # line at the 0.05 cut-off
+
+#Then ask: Which are the significant ones?
+diffs=which(dat.aov$uni.p[2,]<0.05) # you could also ask for < 0.1 so we catch the group slightly above 0.05
+diffs
+
+
+# What proportion did these groups have on the multivariate test statistic?
+sum(dat.aov$uni.test[2,diffs])/sum(dat.aov$uni.test[2,])*100
+
+
+# We can then plot the abundances of only these groups.
+palette('default') # mvabund ruins your colour palette, so reset
+
+plot(dat.mv ~ Fac1$Species, var.subset=diffs, type="bx", cex.axis=0.55)
+plot(dat.mv ~ Fac1$Species, var.subset=diffs, type="bx", cex.axis=0.55, legend=F)
 
 
 
@@ -2190,7 +3020,7 @@ fviz_pca_ind(PhysioData5.pr, geom.ind = "point", pointshape = 21,
 PhysioData5_mat<-PhysioData5[c(8:11)]
 cor.res <- cor(PhysioData5_mat)
 corrplot.mixed(cor.res, tl.cex = 0.7, tl.col = "black", addCoefasPercent = TRUE)
-
+ 
 ```
 
 
