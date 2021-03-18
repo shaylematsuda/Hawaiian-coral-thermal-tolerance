@@ -1,8 +1,12 @@
 ---
 title: "R Notebook"
-output: html_notebook
-editor_options: 
-  chunk_output_type: console
+html_document:
+code_folding: hide
+toc:yes
+toc_depth:3
+toc_float:yes
+output: 
+chunk_output_type: console
 ---
 
 Data analysis for the All Coral Experiment #2021. Physiological variables:  
@@ -15,11 +19,14 @@ PAM
 
 
 #Data and libraries
-```{r}
+```{r} 
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+
+
 library(plyr)
 library(dplyr)
 library(ggplot2)
-library('ggpubr')
+library(ggpubr)
 library(lmerTest)
 library(car)
 library(emmeans)
@@ -35,7 +42,7 @@ library(pairwiseAdonis)
 ```
 
 Load meta
-```{r}   
+```{r}    
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
@@ -78,7 +85,7 @@ testAFDW<-merge(AFDW, meta, all=T)
 
 #Biomass (AFDW and SA)
 ```{r}   
-
+ 
 SA<-WaxDipping
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 #WaxDippingtest<-merge(meta, SA, all.x = T)
@@ -154,13 +161,13 @@ Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1
 anova(Biomass_model) 
 qqPlot(residuals(Biomass_model)) 
 
-  emm<-emmeans(Biomass_model,  ~ Time.Point|Treatment*Species, adjust="Tukey")
+  emm<-emmeans(Biomass_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
 ```
 PLOTS
-```{r}
+```{r} 
 #plot Mcap
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -193,7 +200,7 @@ Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, gr
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   ylab("") + #Label the X Axis
-  ylim(0, 10) + #set Y limits
+  #ylim(0, 10) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -1067,7 +1074,7 @@ grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
 ``` 
 
 stats
-```{r}  
+```{r}   
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth", "Treatment")
 Growth <- Growth[GrowthKeep]
@@ -1531,7 +1538,7 @@ PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+
 anova(PAMdata_stats_model) 
 qqPlot(residuals(PAMdata_stats_model)) 
 
-emm<-emmeans(PAMdata_stats_model,  ~ Species*Treatment|Days, adjust="Tukey")
+emm<-emmeans(PAMdata_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
@@ -1579,7 +1586,7 @@ names(PAMdata_physio)[names(PAMdata_physio) == "52"] <- "TF.PAM"
 
 ```
 Plots
-```{r}
+```{r} 
 PAMdata_mean <- ddply(PAMdata, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
                    N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -2070,10 +2077,10 @@ PhysioData_noMissing<-na.omit(PhysioData) #this removes 9 samples (partent/time/
 ```
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data
-```{r}
+```{r} 
 Phy_nmds<-PhysioData_noMissing
 
-
+ 
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
@@ -2707,7 +2714,7 @@ ggplot(Phy_nmds_T1only.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(co
 
 #PERMANOVA on physio only
 
-```{r}
+```{r} 
 
 #ALL THE DATA
 
@@ -2741,7 +2748,7 @@ adonis(PhysioData_noMissing [7:12]~ Species + Treatment+ Time.Point+ Species:Tre
 
 
 ##By SPECIES
-```{r}
+```{r} 
 #Mcap, Phy_nmds_Mcap
 phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [7:12], method="bray") #make dist matrix
 phy_Mcap.div <- adonis2(Phy_nmds_Mcap [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:6], permutations = 999, method="bray")
@@ -2780,104 +2787,323 @@ adonis2(Phy_nmds_Pacu [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pacu [1:6],
 
 
 
-##next steps FOR OTU/DIV data
+
+#ITS2
+#Analysis (RCunning Script) REL Abundance -  
 ```{r}
+library(tidyverse)
+library(janitor)
+library(phyloseq)  # source('http://bioconductor.org/biocLite.R'); biocLite('phyloseq')
+library(zoo)
+library(stringr)
+library(vegan)
+library(multcompView)
+library("ggpubr")
 
-###Checking which taxa are driving the significance####
+# Load data (see data_exploration.Rmd)
+load("data/Raw_coral_phyloseq.RData") #use RAW data
+```
+Hey what does this do?
+```{r}
+coral2 <- coral_RAW %>%
+  subset_samples(!is.na(host_species))
+coralDIV2 <- coralDIV_RAW %>% 
+  subset_samples(!is.na(host_species))
 
-##Using the mvabund package
+# USE IF YOU WANT TO MAKE RELA DATA ACTUALLY OUT OF 100% 
+# Transform to relative abundance
+#coral2 <- transform_sample_counts(coral2, function(x) 100 * x/sum(x))
+#coralDIV2 <- transform_sample_counts(coralDIV2, function(x) 100 * x/sum(x))
 
-dat.mv <- mvabund(ac_or[,2:18]) # makes an mvabund object with the bacterial data (matrix of RAW COUNTS)
-Fac1 <- ac_or[,18:32] # makes a separate data sheet with all the metadata
-# We will use RAW COUNTS but we still need to account for differences in sequencing depth
-# We will follow the approach proposed by McMurdie & Holmes 2014 (PLOS Comput. Biol.), which is to
-# include the total number of counts per sample explicitly in the model
+```
 
-# Lets add a column to Fac1 (the spreadsheet with covariates) of sums of counts per sample 
-Fac1$Counts = rowSums(ac_or[,2:18])
+Monster all data vis (not helpful)
+```{r, fig.width = 10, fig.height = 40}
+# Plot ITS2 profiles for each coral sample by species and site
+plot_bar(coral, fill = "its2_type_profile") +
+  facet_wrap(~ host_genus + host_species, ncol = 6, scales = "free") +
+  #theme(legend.position = "none") +
+  geom_bar(stat = "identity")
+# Plot all post-MED sequences
+plot_bar(coralDIV2, fill = "DIV") +
+  facet_wrap(~ host_genus + host_species, scales = "free") +
+  #theme(legend.position = "none") +
+  geom_bar(stat = "identity")
+# Glom all post-MED sequences by clade:
+divclades <- coralDIV2 %>%
+  tax_glom(taxrank = "clade") %>%                # agglomerate at clade level
+  psmelt() %>%                                         # Melt to long format
+  arrange(clade)                                      # Sort data frame alphabetically by clade
+ggplot(divclades, aes(x = Sample, y = Abundance, fill = clade)) +
+  facet_wrap(~ host_genus + host_species, scales = "free") +
+  geom_bar(stat = "identity") +
+  labs(title=NULL, x = NULL, y = "Relative abundance")
+```
+Look at low samps  
+```{r}
+#lets see what is up with the low samps
+LowSamps<-readxl::read_xlsx("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.meta_only.xlsx")
 
-# Have a look at the data by plotting 
-plot(dat.mv ~ Fac1$MonthYear, cex.axis=0.55) # Raw data plot
-plot(dat.mv ~ Fac1$MonthYear, type="bx", cex.axis=0.55, legend=F) # Box plot
+LowSamps_dups<-merge(LowSamps, Metadata, all.x=T)
+LowSamps_dups2<-subset(LowSamps_dups, Notes=="Dup")
+#write.csv(LowSamps_dups2,"LowSamps_dups.csv")
+
+LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs_log<-log10(LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs)
+hist(LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs_log, breaks=20)
+```
+
+Data wrangle: remove samples with under 5k, remove duplicated samps, save RDS Rarefied and non: coralDIV2_nonrare and coralDIV2_rare
+hannah code!
+
+#FOR DIVS set up and clean up
+```{r} 
+## check out data
+ntaxa(coralDIV2)  #num taxa
+nsamples(coralDIV2)   #num samples
+sample_names(coralDIV2)[1:5] #samp names
+rank_names(coralDIV2) #ranks are DIV and clade
+sample_variables(coralDIV2) #all metadata cats
+
+# create df of sample data to view 
+sample.data <- as(sample_data(coralDIV2), "data.frame") #create sample data frame to view
+sample.data$LibrarySize <- sample_sums(coralDIV2)
+sample.data <- sample.data[order(sample.data$LibrarySize),]
+sample.data$Index <- seq(nrow(sample.data))
+ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
+  geom_point()
+
+#Remove all samples with <5000 reads and create sample data
+#These data also useful for beta diversity analyses (non-rarefied)
+coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=5000, coralDIV2) # remove samps <5000, save as new obj
+coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
+
+##Sample filtering and rarefaction
+#remove duplicates that failed
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1110B")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1166")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1388b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3477a")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S775b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN134")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN198b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN209b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S198b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN127")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN98b")
+
+coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
+
+saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #save this for beta
+
+#Make a rarefied phyloseq object for alpha diversity analyses
+coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
+sample_sums(coralDIV2_rare) #Double check that the sub-sampling worked, this should report 1000 for each sample
+coralDIV2.rare <- as(sample_data(coralDIV2_rare), "data.frame")
+coralDIV2_rare
+saveRDS(coralDIV2_rare, file = "coralDIV2_rare.RDS", compress = TRUE) #save!
+```
+
+# DIV analysis and plots, use rarefied coralDIV2_rare
+```{r}
+#if you want to transform to REL Abund, do after filtering?
+DIV_RelA  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x) )  #save as RELA DIVs
+data.ra <- as(sample_data(DIV_RelA), "data.frame")
+
+# there are >300 taxa, let's prune to top 100
+topN = 100
+most_abundant_taxa = sort(taxa_sums(DIV_RelA), TRUE)[1:topN]
+print(most_abundant_taxa)
+
+#top100 DIVs across all data
+TopNOTUs = names(sort(taxa_sums(DIV_RelA), TRUE)[1:100])
+ent100 = prune_taxa(TopNOTUs, DIV_RelA)
+plot_bar(ent100, "Species", fill = "DIV", facet_grid = ~DIV)
+
+#subset by species
+Mcap_DIV_RA <- subset_samples(DIV_RelA, host_genus=="montipora")
+Pcomp_DIV_RA <- subset_samples(DIV_RelA, host_genus=="porites")
+Pvar_DIV_RA <- subset_samples(DIV_RelA, host_genus=="pavona")
+Pacu_DIV_RA <- subset_samples(DIV_RelA, host_genus=="pocillopora")
+
+#top 20 DIVs across by species 
+#Mcap
+TopNOTUsMcap = names(sort(taxa_sums(Mcap_DIV_RA), TRUE)[1:50])
+Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_DIV_RA)
+TopNOUTsMcap_plot<-plot_bar(Mcapent50, "sample_name",fill = "DIV", facet_grid = ~DIV)
+plot_bar(Mcapent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+
+#Pcomp
+TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_DIV_RA), TRUE)[1:50])
+Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_DIV_RA )
+TopNOUTsPcomp_plot<-plot_bar(Pcompent50, "sample_name",fill = "DIV" )
+plot_bar(Pcompent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+
+#Pvar
+TopNOTUsVar = names(sort(taxa_sums(Pvar_DIV_RA), TRUE)[1:50])
+Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_DIV_RA)
+TopNOUTsPvar_plot<-plot_bar(Pvarent50, "Parent.ID",fill = "DIV",   facet_grid = ~DIV)
+plot_bar(Pvarent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+
+#Pacu
+TopNOTUsPacu = names(sort(taxa_sums(Pacu_DIV_RA), TRUE)[1:50])
+Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_DIV_RA)
+TopNOUTsPacu_plot<-plot_bar(Pacuent50, "Parent.ID",fill = "DIV",  ffacet_grid = ~DIV)
+plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
 
 
-# check the mean-variance relationship
-meanvar.plot(dat.mv ~ Fac1$MonthYear, pch=19)
-# mean increases with the variance - useful to use a negative binomial distribution
 
 
-# Lets fit the model
-dat.nb = manyglm(dat.mv ~ Counts + MonthYear, family="negative.binomial", data=Fac1)
-#The order you put your variables in matters because R uses Type 1 Sums of Squares, so first 
-#you want to take into account the bias in counts, followed by looking at differences in species
-#what you really care about should go last
-#Family = type of data distribution (e.g. poisson, normal, binomial) but for sequencing data
-#it is standard to use negative binomial
 
-# Note: you could also fit Counts as an 'offset', which assumes a proportional increase
-# it should be 'log' of the Counts as the link function for neg.binom. is log
-# dat.nb = manyglm(dat.mv ~ Species + offset(log(Counts)), family="negative.binomial", data=Fac1)
-
-
-# Check the model fit by plotting the residuals
-plot(dat.nb,n.vars=15) # involves some randomisation, repeat it a couple of times
-# No obvious pattern among multiple plots = a good model fit.
-
-
-# The model is fit so now we need to run the statistical test
-dat.aov = anova(dat.nb, nBoot=999, p.uni="adjusted") # uses bootstraps-can take a long time to run
-#We can use nBoot = 100 for trial, but should use 999 for publication
-
-#if you want to save this as an .RData file so you don't have to run it again use:
-save(dat.aov, file = "/Users/jc224701/Desktop/chg_all/R_output/16S/Chapter 2/dat_mvabund_cl.RData")
-
-# Get the output of the test
-dat.aov$table # multivariate table
-#Now that we have taken account of the sequencing bias using counts, then it doesn't matter if counts are 
-#significant, we just care about species being significant
-
-##Ouput:
-#Res.Df Df.diff      Dev Pr(>Dev)
-#(Intercept)    101      NA       NA       NA
-#Counts         100       1 678.9981    0.001
-#MonthYear       91       9 130.2149    0.479
-
-# Obviuosly there is no difference in the multivariate test statistic for my dataset.  
-# BUT if we were to see a difference, we would then ask which variables constituted this effect.
-
-# We can look at test statistics and p values: 
-dat.aov$uni.test # univariate test statistics
-# Note that the output is quite horrible here given
-# the long variable names. A good idea is to plot any one of these to see how they behave.
-
-dat.aov$uni.p # univariate adjusted p values, note we are interested in row 2
-
-# We can use code to ask: Are any of these significantly different? (i.e. p<0.05)
-any(dat.aov$uni.p[2,]<0.05) 
-#Ouput is TRUE/FALSE
-
-# We can visualise this by plotting those p-values from smaller to larger
-plot(sort(dat.aov$uni.p[2,]), main="Sorted univariate P values")
-abline(h=0.05, lty=2, col="red") # line at the 0.05 cut-off
-
-#Then ask: Which are the significant ones?
-diffs=which(dat.aov$uni.p[2,]<0.05) # you could also ask for < 0.1 so we catch the group slightly above 0.05
-diffs
-
-
-# What proportion did these groups have on the multivariate test statistic?
-sum(dat.aov$uni.test[2,diffs])/sum(dat.aov$uni.test[2,])*100
-
-
-# We can then plot the abundances of only these groups.
-palette('default') # mvabund ruins your colour palette, so reset
-
-plot(dat.mv ~ Fac1$Species, var.subset=diffs, type="bx", cex.axis=0.55)
-plot(dat.mv ~ Fac1$Species, var.subset=diffs, type="bx", cex.axis=0.55, legend=F)
+#everything and not useful
+plot_bar(DIV_RelA, "Species", fill="DIV", facet_grid=Treatment~Time.Point)
 
 
 
 ```
+
+
+Ordination
+```{r}
+plot_ordination(coralDIV2.prune, ordinate(coralDIV2.prune, "MDS"), color = "TagID") + geom_point(size = 5)
+plot_heatmap(coralDIV2.prune, "NMDS", "bray", "TagID", "DIV")
+
+GP.ord <- ordinate(coralDIV2.prune, "NMDS", "bray")
+p1 = plot_ordination(coralDIV2.prune, GP.ord, type="samples", color="TagID", title="taxa")
+print(p1)
+
+p2 = plot_ordination(coralDIV2.prune, GP.ord, type="samples", color="TagID", shape="TagID") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+```
+
+#For PRO (maybe you do not do)
+```{r} 
+## check out data
+ntaxa(coral2)  #num taxa
+nsamples(coral2)   #num samples
+sample_names(coral2)[1:5] #samp names
+rank_names(coral2) #ranks are  and clade
+sample_variables(coral2) #all metadata cats
+
+# create df of sample data to view 
+sample.dataPRO <- as(sample_data(coral2), "data.frame") #create sample data frame to view
+sample.dataPRO$LibrarySize <- sample_sums(coral2)
+sample.dataPRO <- sample.data[order(sample.dataPRO$LibrarySize),]
+sample.dataPRO$Index <- seq(nrow(sample.dataPRO))
+ggplot(data = sample.dataPRO, aes(x=Index, y=LibrarySize, color = sample_type)) +
+  geom_point()
+
+#Remove all samples with <5000 reads and create sample data
+#These data also useful for beta ersity analyses (non-rarefied)
+coral2_nonrare <- prune_samples(sample_sums(coral2)>=5000, coral2) # remove samps <5000, save as new obj
+coral2_data.nonrare <- as(sample_data(coral2_nonrare), "data.frame")
+
+##Sample filtering and rarefaction
+#remove duplicates that failed
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1110B")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1166")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1388b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1857")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3085")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3149b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3477a")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S761b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S775b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN134")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN198b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN209b")
+
+saveRDS(coral2_nonrare, file = "coral2_nonrare.RDS", compress = TRUE) #save this for beta
+
+
+### I dont think we can do this for profiles
+#Make a rarefied phyloseq object for alpha ersity analyses
+#coral2_rare <- rarefy_even_depth(coral2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 19 s
+#sample_sums(coral2_rare) #Double check that the sub-sampling worked, this should report 1000 for each sample
+#coral2.rare <- as(sample_data(coral2_rare), "data.frame")
+#saveRDS(coral2_rare, file = "coral2_rare.RDS", compress = TRUE) #save!
+```
+
+#FROM Eckard, wish this would work but you are fucking stuck
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load("dplyr", "edgeR", "ggplot2", "MCMC.OTU", "pairwiseAdonis", "rcartocolor",
+               "RColorBrewer", "Redmonder", "reshape2", "vegan")
+
+pacman::p_load_gh("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+
+
+if (!require("edgeR")){BiocManager::install("edgeR", update = FALSE) 
+  library(edgeR)}
+
+options("scipen" = 10)
+
+its2Seq = read.delim("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_and_meta.txt", header = TRUE, check.names = FALSE)
+# load in data like they do
+head(its2Seq)
+its2Seq <- its2Seq[ -c(1,3:13) ] #drop cols you dont need 
+its2Seq <- its2Seq[ -c(11:21) ] #drop more cols you dont need 
+
+its2MetaData<-read.csv("Data/ACE21_Metadata_Molec_20210317.csv")
+#its2MetaData<-its2MetaData[!(its2MetaData$Notes=="REMOVE"),]
+#its2MetaData<- its2MetaData[!(its2MetaData$sample_name == "3149"),] # dup
+#names(its2MetaData)[names(its2MetaData) == "Frag.ID"] <- "sample_name"
+#rownames(its2MetaData) <- its2MetaData[,1] #make first col row names *(but keep them as a sep col too)
+head(its2MetaData)
+
+#write.csv(its2MetaData,"its2MetaData.csv")
+#write.csv(its2Seq,"its2Seq.csv")
+
+its2Seq = cbind(its2Seq[1], its2MetaData[,2:7], its2Seq[,c(2:length(its2Seq))])
+its2Seq$Parent.ID<-as.factor(as.character(its2Seq$Parent.ID))
+
+its2Seq$Time.Point = factor(its2Seq$Time.Point, levels = c("T0", "T1", "TF"))
+levels(its2Seq$Time.Point)
+
+
+#above works
+
+#first they purge outliers
+goods = purgeOutliers(its2Seq, count.columns = 8:338, sampleZcut=(-5), otu.cut = 0.0001)
+its2SeqTransposed = t(its2Seq[, 8:length(its2Seq[1, ])])
+its2SeqList = DGEList(counts = its2SeqTransposed)
+head(its2SeqList$samples)
+## yo ucan't get this to work
+
+
+
+
+
+```
+
+
+
+#16S
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
