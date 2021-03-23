@@ -7,6 +7,8 @@ toc_depth:3
 toc_float:yes
 output: 
 chunk_output_type: console
+editor_options: 
+  chunk_output_type: console
 ---
 
 Data analysis for the All Coral Experiment #2021. Physiological variables:  
@@ -47,9 +49,20 @@ meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
 meta<- meta[!(meta$Frag.ID == "3149"),] # dup
-
+#write.csv(meta,"ACE21meta.csv")
 # load in datasheets 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
+
+#respiration check
+
+RespCheck  <- read.csv("Data/RespCheck.csv")
+RespCheckC<-cast(RespCheck, Frag.ID~Time.Point)
+
+metaResp<-meta
+metaResp<-metaResp[,c("Frag.ID","Time.Point")] # keep only columns you need
+Respcheck3<-merge(metaResp, RespCheckC)
+write.csv(Respcheck3,"Respcheck3.csv")
+
 
 AFDW <- read.csv("Data/ACE21_AFDW_20210308.csv")
 #AFDW <- AFDW[!(AFDW$Frag.ID == "1195"),]
@@ -86,7 +99,7 @@ testAFDW<-merge(AFDW, meta, all=T)
 #Biomass (AFDW and SA)
 ```{r}   
  
-SA<-WaxDipping
+SA<-WaxDipping 
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 #WaxDippingtest<-merge(meta, SA, all.x = T)
 
@@ -2840,7 +2853,7 @@ ggplot(divclades, aes(x = Sample, y = Abundance, fill = clade)) +
   labs(title=NULL, x = NULL, y = "Relative abundance")
 ```
 Look at low samps  
-```{r}
+```{r} 
 #lets see what is up with the low samps
 LowSamps<-readxl::read_xlsx("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.meta_only.xlsx")
 
@@ -2856,7 +2869,7 @@ Data wrangle: remove samples with under 5k, remove duplicated samps, save RDS Ra
 hannah code!
 
 #FOR DIVS set up and clean up
-```{r} 
+```{r}  
 ## check out data
 ntaxa(coralDIV2)  #num taxa
 nsamples(coralDIV2)   #num samples
@@ -2898,10 +2911,11 @@ coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
 coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S198b")
 coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN127")
 coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN98b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S2893")
 
 coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
 
-saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #save this for beta
+saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #s
 
 #Make a rarefied phyloseq object for alpha diversity analyses
 coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
@@ -2915,7 +2929,7 @@ saveRDS(coralDIV2_rare, file = "coralDIV2_rare.RDS", compress = TRUE) #save!
 ```{r}
 #if you want to transform to REL Abund, do after filtering?
 DIV_RelA  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x) )  #save as RELA DIVs
-data.ra <- as(sample_data(DIV_RelA), "data.frame")
+data.ra <- as(sample_data(DIV_RelA), "data.frame") #look at samp data
 
 # there are >300 taxa, let's prune to top 100
 topN = 100
@@ -2934,54 +2948,836 @@ Pvar_DIV_RA <- subset_samples(DIV_RelA, host_genus=="pavona")
 Pacu_DIV_RA <- subset_samples(DIV_RelA, host_genus=="pocillopora")
 
 #top 20 DIVs across by species 
+
 #Mcap
 TopNOTUsMcap = names(sort(taxa_sums(Mcap_DIV_RA), TRUE)[1:50])
 Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_DIV_RA)
 TopNOUTsMcap_plot<-plot_bar(Mcapent50, "sample_name",fill = "DIV", facet_grid = ~DIV)
-plot_bar(Mcapent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+McapBarPlot<-plot_bar(Mcapent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
 
 #Pcomp
 TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_DIV_RA), TRUE)[1:50])
 Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_DIV_RA )
 TopNOUTsPcomp_plot<-plot_bar(Pcompent50, "sample_name",fill = "DIV" )
-plot_bar(Pcompent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+PcompBarPlot<-plot_bar(Pcompent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+ggsave("PcompBarPlot_DIVrelARare.pdf", PcompBarPlot, dpi=300, width=8)
 
 #Pvar
 TopNOTUsVar = names(sort(taxa_sums(Pvar_DIV_RA), TRUE)[1:50])
 Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_DIV_RA)
 TopNOUTsPvar_plot<-plot_bar(Pvarent50, "Parent.ID",fill = "DIV",   facet_grid = ~DIV)
-plot_bar(Pvarent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+PvarBarPlot<-plot_bar(Pvarent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+ggsave("PvarBarPlot_DIVrelARare.pdf", PvarBarPlot, dpi=300, width=8)
 
 #Pacu
 TopNOTUsPacu = names(sort(taxa_sums(Pacu_DIV_RA), TRUE)[1:50])
 Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_DIV_RA)
 TopNOUTsPacu_plot<-plot_bar(Pacuent50, "Parent.ID",fill = "DIV",  ffacet_grid = ~DIV)
-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
-
-
-
-
+PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
 
 #everything and not useful
-plot_bar(DIV_RelA, "Species", fill="DIV", facet_grid=Treatment~Time.Point)
+#plot_bar(DIV_RelA, "Species", fill="DIV", facet_grid=Treatment~Time.Point)
+
+
 
 
 
 ```
 
+Ordination DIV_RelA <- you might not need this section, code below for each species
+```{r} 
+OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
+ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
-Ordination
+#heat map
+plot_heatmap(DIV_RelA, "NMDS", "bray", "Species", "DIV")
+
+#by species NOT INTERESTING
+  #mcap
+  Mcap_DIV_RA_T1 <- subset_samples(Mcap_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Mcap_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+ #Pcomp
+  Pcomp_DIV_RA_T1 <- subset_samples(Pcomp_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Pcomp_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+  #Pvar
+  Pvar_DIV_RA_T1 <- subset_samples(Pvar_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Pvar_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+  plot_heatmap(Pvar_DIV_RA, "NMDS", "bray", "Parent.ID", "DIV")
+
+#ordination time - all  
+DIVrareRel.ord <- ordinate(DIV_RelA, "NMDS", "bray", set.seed(30))
+DIVrareRel1 = plot_ordination(DIV_RelA, DIVrareRel.ord, type="samples", shape="Treatment",color="Time.Point", title="species")
+print(DIVrareRel1)
+
+DIVrareRel1 + facet_wrap(~Species, 3)
+
+### let's do this again and run the NMDS by species now that we know they are different. 
+# mcap
+Mcap_DIV_RA.ord <- ordinate(Mcap_DIV_RA, "NMDS", "bray", set.seed(30))
+DIVrareRel1_Mcap = plot_ordination(Mcap_DIV_RA, Mcap_DIV_RA.ord, type="samples", shape="Treatment",color="Time.Point", title="Mcap NMDS")
+print(DIVrareRel1_Mcap)
+
+#add ellipses
+DIVrareRel1_Mcap + 
+  stat_ellipse(type = "norm", linetype = 2, alpha=.2) +
+  stat_ellipse(type = "t") +
+  theme_bw()
+
+# pcomp
+Pcomp_DIV_RA.ord <- ordinate(Pcomp_DIV_RA, "NMDS", "bray", set.seed(30))
+DIVrareRel1_Pcomp = plot_ordination(Pcomp_DIV_RA, Pcomp_DIV_RA.ord, type="samples", shape="Treatment",color="Time.Point", title="Pcomp NMDS")
+print(DIVrareRel1_Pcomp)
+
+#add ellipses
+DIVrareRel1_Pcomp + 
+  stat_ellipse(type = "norm",  alpha=.2) +
+  theme_bw()
+
+#Add an ellipse for T0
+ordiellipse(DIVrareRel1_Pcomp, groups=meta$Time.Point, display="species", kind="se", conf=0.99, label=FALSE, col="green", draw="polygon", alpha=200, show.groups = c("Treatment"), border=FALSE)
+
+
+
+
+########ok you are here ^ figure out how to do this ordination stuff. 
+
+```
+#Beta Diversity: df rarefied and relative abudnaces
 ```{r}
-plot_ordination(coralDIV2.prune, ordinate(coralDIV2.prune, "MDS"), color = "TagID") + geom_point(size = 5)
-plot_heatmap(coralDIV2.prune, "NMDS", "bray", "TagID", "DIV")
+DIV_RelA_stats  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x) )  #save as RELA DIVs
 
-GP.ord <- ordinate(coralDIV2.prune, "NMDS", "bray")
-p1 = plot_ordination(coralDIV2.prune, GP.ord, type="samples", color="TagID", title="taxa")
-print(p1)
+#bray curtis presence-absense and abundance
 
-p2 = plot_ordination(coralDIV2.prune, GP.ord, type="samples", color="TagID", shape="TagID") 
-p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all <- phyloseq::distance(DIV_RelA_stats, method = "bray")
+  samp.df <- as(sample_data(DIV_RelA_stats), "data.frame") #sample df
+#adonis test
+adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df)
+
+#                              Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+#Species                        3    62.187 20.7289 161.051 0.70057  0.001 ***
+#Treatment                      1     0.056  0.0559   0.435 0.00063  0.837    
+#Time.Point                     2     0.034  0.0170   0.132 0.00038  1.000    
+#Species:Treatment              3     0.147  0.0489   0.380 0.00165  0.990    
+#Species:Time.Point             6     0.102  0.0169   0.132 0.00114  1.000    
+#Treatment:Time.Point           2     0.086  0.0432   0.336 0.00097  0.977    
+#Species:Treatment:Time.Point   6     0.284  0.0474   0.368 0.00320  1.000    
+#Residuals                    201    25.871  0.1287         0.29145           
+#Total                        224    88.766                 1.00000           
+
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all, samp.df$Species)
+permutest(betaAll)  #p = 0.001. This means the differences could be due to group dispersions NOT our main effects
+permutest(betaAll, pairwise = T) 
+
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats <- ordinate(DIV_RelA_stats, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats)
+scores.ord.DIV_RelA_stats <- as.data.frame(scores(ord.DIV_RelA_stats))
+scores.ord.DIV_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.DIV_RelA_stats$Species <- samp.df$Species
+
+ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+ggsave("bc_all.pdf")
+
 ```
+
+#Split data by species  
+Montipora
+```{r}
+#mcap
+mcap.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "montipora")
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.mcap <- phyloseq::distance(mcap.RelRare, method = "bray")
+  mcap.samp.df <- as(sample_data(mcap.RelRare), "data.frame") #sample df
+#adonis test
+adonis(bc.mcap ~ Treatment*Time.Point, data = mcap.samp.df)
+
+#                     Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
+#Treatment             1    0.0518 0.051762 0.48017 0.00942  0.640
+#Time.Point            2    0.0408 0.020420 0.18942 0.00743  0.983
+#Treatment:Time.Point  2    0.1184 0.059186 0.54903 0.02155  0.725
+#Residuals            49    5.2822 0.107800         0.96159       
+#Total                54    5.4932                  1.00000   
+
+# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
+beta.mcap <- betadisper(bc.mcap, mcap.samp.df$Treatment)
+permutest(beta.mcap)  #p = 0.001. This means the differences could be due to group dispersions NOT our main effects
+permutest(beta.mcap, pairwise = T) 
+
+(bc.mcap.HSD <- TukeyHSD(beta.mcap)) #do you need?
+plot(bc.mcap.HSD)
+
+
+
+
+# Mcap by timepoint: T1
+mcap.RelRare.T1 <- subset_samples(mcap.RelRare, Time.Point == "T1")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.mcap.T1 <- phyloseq::distance(mcap.RelRare.T1, method = "bray")
+  mcap.samp.df.T1 <- as(sample_data(mcap.RelRare.T1), "data.frame") #sample df
+#adonis test
+adonis(bc.mcap.T1 ~ Treatment, data = mcap.samp.df.T1) # p=.976
+
+
+# Mcap by timepoint: TF
+mcap.RelRare.TF <- subset_samples(mcap.RelRare, Time.Point == "TF")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.mcap.TF <- phyloseq::distance(mcap.RelRare.TF, method = "bray")
+  mcap.samp.df.TF <- as(sample_data(mcap.RelRare.TF), "data.frame") #sample df
+#adonis test
+adonis(bc.mcap.TF ~ Treatment, data = mcap.samp.df.TF) # p=.777
+
+# High treatment over time
+mcap.RelRare.High <- subset_samples(mcap.RelRare, Treatment == "High")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.mcap.High <- phyloseq::distance(mcap.RelRare.High, method = "bray")
+  mcap.samp.df.High <- as(sample_data(mcap.RelRare.High), "data.frame") #sample df
+#adonis test
+adonis(bc.mcap.High ~ Time.Point, data = mcap.samp.df.High) # p=.714
+
+
+#Bray Curtis
+library(RColorBrewer)
+library(colorRamps)
+library(devtools)
+
+## create palette for parent.ID and treatments
+Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "honeydew4", "372" = "khaki4","373" ="ivory4", "374" = "lightblue", Ambient = "Blue", High = "Red") 
+
+
+#all
+set.seed(30)
+ord.mcap <- ordinate(mcap.RelRare, "NMDS", "bray", trymax = 100) 
+stressplot(ord.mcap)
+scores.mcap.samp.df <- as.data.frame(scores(ord.mcap))
+scores.mcap.samp.df$Time.Point <- mcap.samp.df$Time.Point
+scores.mcap.samp.df$Parent.ID <- mcap.samp.df$Parent.ID
+scores.mcap.samp.df$Treatment <- mcap.samp.df$Treatment
+
+ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("M. capitata Bray Curtis") +
+  theme_classic()
+ggsave("McapT1its2.pdf")
+
+
+
+
+
+
+
+
+#T1 only
+set.seed(30)
+ord.mcapT1 <- ordinate(mcap.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.mcapT1)
+scores.mcapT1 <- as.data.frame(scores(ord.mcapT1))
+scores.mcapT1$Treatment <- mcap.samp.df.T1$Treatment
+scores.mcapT1$Parent.ID <- mcap.samp.df.T1$Parent.ID
+
+ggplot(scores.mcapT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("M. capitata T1 Bray Curtis") +
+  theme_classic()
+ggsave("McapT1its2.pdf")
+
+# #T1 subset full ord, compare = exactly the same
+# scores.mcapT1b<-subset(scores.mcap.samp.df,Time.Point=="T1")
+# 
+# ggplot(scores.mcapT1b, aes(x = NMDS1, y = NMDS2)) + 
+#   geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+#   scale_color_manual(values=Mcap.Parent.colors)+
+#   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+#   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+#   ggtitle("M. capitata T1 Bray Curtis") +
+#   theme_classic()
+
+#TF only
+set.seed(30)
+ord.mcapTF <- ordinate(mcap.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.mcapTF)
+scores.mcapTF <- as.data.frame(scores(ord.mcapTF))
+scores.mcapTF$Treatment <- mcap.samp.df.TF$Treatment
+scores.mcapTF$Parent.ID <- mcap.samp.df.TF$Parent.ID
+
+ggplot(scores.mcapTF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("M. capitata TF Bray Curtis") +
+  theme_classic()
+ggsave("McapTFits.pdf")
+
+
+
+
+```
+Porites its2
+```{r}
+#pcomp 
+pcomp.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "porites")
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pcomp <- phyloseq::distance(pcomp.RelRare, method = "bray")
+  pcomp.samp.df <- as(sample_data(pcomp.RelRare), "data.frame") #sample df
+#adonis test
+adonis(bc.pcomp ~ Treatment*Time.Point, data = pcomp.samp.df)
+
+#                     Df SumsOfSqs   MeanSqs F.Model      R2 Pr(>F)
+#Treatment             1   0.00845 0.0084548 0.74955 0.01271  0.572
+#Time.Point            2   0.03284 0.0164176 1.45547 0.04938  0.169
+#Treatment:Time.Point  2   0.01454 0.0072714 0.64463 0.02187  0.770
+#Residuals            54   0.60911 0.0112799         0.91603       
+#Total                59   0.66495                   1.00000       
+
+# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
+beta.pcomp <- betadisper(bc.pcomp, pcomp.samp.df$Treatment)
+permutest(beta.pcomp)  #p = 0.996
+permutest(beta.pcomp, pairwise = T) #.991
+
+(bc.pcomp.HSD <- TukeyHSD(beta.pcomp)) #do you need?
+plot(bc.pcomp.HSD)
+
+
+# pcomp by timepoint: T1
+pcomp.RelRare.T1 <- subset_samples(pcomp.RelRare, Time.Point == "T1")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pcomp.T1 <- phyloseq::distance(pcomp.RelRare.T1, method = "bray")
+  pcomp.samp.df.T1 <- as(sample_data(pcomp.RelRare.T1), "data.frame") #sample df
+#adonis test
+adonis(bc.pcomp.T1 ~ Treatment, data = pcomp.samp.df.T1) # p=.647
+
+
+# pcomp by timepoint: TF
+pcomp.RelRare.TF <- subset_samples(pcomp.RelRare, Time.Point == "TF")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pcomp.TF <- phyloseq::distance(pcomp.RelRare.TF, method = "bray")
+  pcomp.samp.df.TF <- as(sample_data(pcomp.RelRare.TF), "data.frame") #sample df
+#adonis test
+adonis(bc.pcomp.TF ~ Treatment, data = pcomp.samp.df.TF) # p=.907
+
+# High treatment over time
+pcomp.RelRare.High <- subset_samples(pcomp.RelRare, Treatment == "High")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pcomp.High <- phyloseq::distance(pcomp.RelRare.High, method = "bray")
+  pcomp.samp.df.High <- as(sample_data(pcomp.RelRare.High), "data.frame") #sample df
+#adonis test
+adonis(bc.pcomp.High ~ Time.Point, data = pcomp.samp.df.High) # p=.414
+ 
+
+
+## create palette for parent.ID and treatments
+pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "honeydew4", "322" = "khaki4","323" ="ivory4", "324" = "lightblue", Ambient = "Blue", High = "Red") 
+
+
+
+#T1 only
+set.seed(30)
+ord.pcompT1 <- ordinate(pcomp.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcompT1)
+scores.pcompT1 <- as.data.frame(scores(ord.pcompT1))
+scores.pcompT1$Treatment <- pcomp.samp.df.T1$Treatment
+scores.pcompT1$Parent.ID <- pcomp.samp.df.T1$Parent.ID
+
+ggplot(scores.pcompT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pcomp.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("P. compressa T1 Bray Curtis") +
+  theme_classic()
+ggsave("pcompT1its2.pdf")
+
+#TF only
+set.seed(30)
+ord.pcompTF <- ordinate(pcomp.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcompTF)
+scores.pcompTF <- as.data.frame(scores(ord.pcompTF))
+scores.pcompTF$Treatment <- pcomp.samp.df.TF$Treatment
+scores.pcompTF$Parent.ID <- pcomp.samp.df.TF$Parent.ID
+
+ggplot(scores.pcompTF, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pcomp.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("P. comp TF Bray Curtis") +
+  theme_classic()
+ggsave("pcompTFits.pdf")
+
+
+```
+Pavona its2
+```{r}
+#pvar 
+pvar.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "pavona")
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pvar <- phyloseq::distance(pvar.RelRare, method = "bray")
+  pvar.samp.df <- as(sample_data(pvar.RelRare), "data.frame") #sample df
+#adonis test
+adonis(bc.pvar ~ Treatment*Time.Point, data = pvar.samp.df)
+
+#                     Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
+#Treatment             1    0.0850 0.084965 0.33204 0.00625  0.659
+#Time.Point            2    0.0220 0.011013 0.04304 0.00162  0.994
+#Treatment:Time.Point  2    0.1781 0.089055 0.34802 0.01310  0.791
+#Residuals            52   13.3062 0.255889         0.97902       
+#Total                57   13.5913                  1.00000       
+
+# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
+beta.pvar <- betadisper(bc.pvar, pvar.samp.df$Treatment)
+permutest(beta.pvar)  #p = 0.921
+permutest(beta.pvar, pairwise = T)  
+
+(bc.pvar.HSD <- TukeyHSD(beta.pvar)) #do you need?
+plot(bc.pvar.HSD)
+
+
+# pvar by timepoint: T1
+pvar.RelRare.T1 <- subset_samples(pvar.RelRare, Time.Point == "T1")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pvar.T1 <- phyloseq::distance(pvar.RelRare.T1, method = "bray")
+  pvar.samp.df.T1 <- as(sample_data(pvar.RelRare.T1), "data.frame") #sample df
+#adonis test
+adonis(bc.pvar.T1 ~ Treatment, data = pvar.samp.df.T1) # p=.937
+
+# pvar by timepoint: TF
+pvar.RelRare.TF <- subset_samples(pvar.RelRare, Time.Point == "TF")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pvar.TF <- phyloseq::distance(pvar.RelRare.TF, method = "bray")
+  pvar.samp.df.TF <- as(sample_data(pvar.RelRare.TF), "data.frame") #sample df
+#adonis test
+adonis(bc.pvar.TF ~ Treatment, data = pvar.samp.df.TF) # p=.948
+
+
+# High treatment over time
+pvar.RelRare.High <- subset_samples(pvar.RelRare, Treatment == "High")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pvar.High <- phyloseq::distance(pvar.RelRare.High, method = "bray")
+  pvar.samp.df.High <- as(sample_data(pvar.RelRare.High), "data.frame") #sample df
+#adonis test
+adonis(bc.pvar.High ~ Time.Point, data = pvar.samp.df.High) # p=.955
+
+## create palette for parent.ID and treatments
+pvar.Parent.colors <- c("325" = "green4",  "351" = "firebrick3", "353" ="deeppink4", "354" = "orange", "355" = "green1","356" = "gold",  "357"= "hotpink", "358" ="darkslateblue", "359" = "honeydew4", "360" = "khaki4","361" ="ivory4", "362" = "lightblue", Ambient = "Blue", High = "Red") 
+
+
+
+#T1 only
+set.seed(30)
+ord.pvarT1 <- ordinate(pvar.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pvarT1)
+scores.pvarT1 <- as.data.frame(scores(ord.pvarT1))
+scores.pvarT1$Treatment <- pvar.samp.df.T1$Treatment
+scores.pvarT1$Parent.ID <- pvar.samp.df.T1$Parent.ID
+
+ggplot(scores.pvarT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pvar.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("P. varians T1 Bray Curtis") +
+  theme_classic()
+ggsave("pvarT1its2.pdf")
+
+#TF only
+set.seed(30)
+ord.pvarTF <- ordinate(pvar.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pvarTF)
+scores.pvarTF <- as.data.frame(scores(ord.pvarTF))
+scores.pvarTF$Treatment <- pvar.samp.df.TF$Treatment
+scores.pvarTF$Parent.ID <- pvar.samp.df.TF$Parent.ID
+
+ggplot(scores.pvarTF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pvar.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("M. capitata TF Bray Curtis") +
+  theme_classic()
+ggsave("pvarTFits.pdf")
+
+
+
+```
+Pocillopora its2 
+```{r}
+#pacu
+pacu.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "pocillopora")
+
+#all speices
+set.seed(30)
+ 
+#make bray curtis data matrix
+bc.pacu <- phyloseq::distance(pacu.RelRare, method = "bray")
+  pacu.samp.df <- as(sample_data(pacu.RelRare), "data.frame") #sample df
+#adonis test
+adonis(bc.pacu ~ Treatment*Time.Point, data = pacu.samp.df)
+
+#                     Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
+#Treatment             1    0.0565 0.056546 0.38979 0.00828  0.563
+#Time.Point            2    0.0407 0.020345 0.14024 0.00596  0.955
+#Treatment:Time.Point  2    0.0598 0.029897 0.20609 0.00875  0.908
+#Residuals            46    6.6732 0.145069         0.97701       
+#Total                51    6.8302                  1.00000       
+
+# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
+beta.pacu <- betadisper(bc.pacu, pacu.samp.df$Treatment)
+permutest(beta.pacu)  #p = 0.59
+permutest(beta.pacu, pairwise = T) 
+
+(bc.pacu.HSD <- TukeyHSD(beta.pacu)) #do you need?
+plot(bc.pacu.HSD)
+
+
+# pacu by timepoint: T1
+pacu.RelRare.T1 <- subset_samples(pacu.RelRare, Time.Point == "T1")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pacu.T1 <- phyloseq::distance(pacu.RelRare.T1, method = "bray")
+  pacu.samp.df.T1 <- as(sample_data(pacu.RelRare.T1), "data.frame") #sample df
+#adonis test
+adonis(bc.pacu.T1 ~ Treatment, data = pacu.samp.df.T1) # p=.978
+
+
+# pacu by timepoint: TF
+pacu.RelRare.TF <- subset_samples(pacu.RelRare, Time.Point == "TF")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pacu.TF <- phyloseq::distance(pacu.RelRare.TF, method = "bray")
+  pacu.samp.df.TF <- as(sample_data(pacu.RelRare.TF), "data.frame") #sample df
+#adonis test
+adonis(bc.pacu.TF ~ Treatment, data = pacu.samp.df.TF) # p=.609
+
+
+
+# High treatment over time
+pacu.RelRare.High <- subset_samples(pacu.RelRare, Treatment == "High")
+
+set.seed(30)
+
+#make bray curtis data matrix
+bc.pacu.High <- phyloseq::distance(pacu.RelRare.High, method = "bray")
+  pacu.samp.df.High <- as(sample_data(pacu.RelRare.High), "data.frame") #sample df
+#adonis test
+adonis(bc.pacu.High ~ Time.Point, data = pacu.samp.df.High) # p=.609
+#0.788 No diff in High over time (BUT you did not remake the data to include all genotypes at T0)
+
+
+#High only
+set.seed(30)
+ord.bc.pacu.High <- ordinate(pacu.RelRare.High, "NMDS", "bray", trymax = 100) 
+stressplot(ord.bc.pacu.High)
+scores.pacuHigh <- as.data.frame(scores(ord.bc.pacu.High))
+scores.pacuHigh$Time.Point <- pacu.samp.df.High$Time.Point
+scores.pacuHigh$Parent.ID <- pacu.samp.df.High$Parent.ID
+
+ggplot(scores.pacuHigh, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Time.Point, shape = Treatment), size = 4) +
+ # scale_color_manual(values=pacu.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Time.Point), linetype = 2) +
+  ggtitle("P. acuta High Bray Curtis") +
+  theme_classic()
+ggsave("pacuHighits2.pdf")
+
+
+## create palette for parent.ID and treatments
+pacu.Parent.colors <- c("301" = "green4",  "302" = "firebrick3", "303" ="deeppink4", "304" = "orange", "305" = "green1","306" = "gold",  "307"= "hotpink", "308" ="darkslateblue", "309" = "honeydew4", "310" = "khaki4","311" ="ivory4", "312" = "lightblue", Ambient = "Blue", High = "Red") 
+
+#T1 only
+set.seed(30)
+ord.pacuT1 <- ordinate(pacu.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pacuT1)
+scores.pacuT1 <- as.data.frame(scores(ord.pacuT1))
+scores.pacuT1$Treatment <- pacu.samp.df.T1$Treatment
+scores.pacuT1$Parent.ID <- pacu.samp.df.T1$Parent.ID
+
+ggplot(scores.pacuT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pacu.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("P. acuta T1 Bray Curtis") +
+  theme_classic()
+ggsave("pacuT1its2.pdf")
+
+#TF only
+set.seed(30)
+ord.pacuTF <- ordinate(pacu.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pacuTF)
+scores.pacuTF <- as.data.frame(scores(ord.pacuTF))
+scores.pacuTF$Treatment <- pacu.samp.df.TF$Treatment
+scores.pacuTF$Parent.ID <- pacu.samp.df.TF$Parent.ID
+
+ggplot(scores.pacuTF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+  scale_color_manual(values=pacu.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("P. acuta TF Bray Curtis") +
+  theme_classic()
+ggsave("pacuTFits.pdf")
+
+```
+
+
+
+
+
+
+
+
+Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
+Use rarefied data, not relative abunances  
+coralDIV2_rare df phyloseq
+coralDIV2.rare df sample data
+```{r}
+coralDIV2_rare.alpha<-coralDIV2_rare #make a copy of df
+
+
+coralDIV2_rare.alpha2 <- prune_taxa(taxa_sums(coralDIV2_rare.alpha) > 0, coralDIV2_rare.alpha) #prune taxa 0s
+
+erich <- estimate_richness(coralDIV2_rare, measures = c("Observed", "Shannon")) #select which estimates and estimate
+  erich$Treatment <- coralDIV2.rare$Treatment       #add back in meta
+  erich$Time.Point <- coralDIV2.rare$Time.Point
+  erich$Parent.ID <- coralDIV2.rare$Parent.ID
+  erich$ID <- coralDIV2.rare$ID
+  erich$Species <- coralDIV2.rare$Species
+
+ 
+#stats ALL THE DATA
+ library(ggpubr)
+  #look at data
+hist(erich$Observed) #not normal  <- bimodal,due to species? 
+ggqqplot(erich$Observed)
+
+hist(log(erich$Observed)) #not normal
+ggqqplot(log(erich$Observed))
+
+shapiro.test(log(erich$Observed))
+  
+## subset by coral species for OBSERVED
+
+erich.mcap<-subset(erich, Species=="Montipora_capitata")
+  hist(erich.mcap$Observed) #not normal  <- bimodal 
+  ggqqplot(erich.mcap$Observed) #looks good
+  hist(log10(erich.mcap$Observed)) #worse
+  ggqqplot(log(erich.mcap$Observed))
+  hist((erich.mcap$Observed)^1/3) #worse
+  ggqqplot(log(erich.mcap$Observed))
+
+  
+erich.pcomp<-subset(erich, Species=="Porites_compressa")
+  hist(erich.pcomp$Observed) #not normal 
+  ggqqplot(erich.pcomp$Observed) #it's just one sample that is pulling it. ideas? 
+  hist(log(erich.pcomp$Observed)) #not normal
+  ggqqplot(log(erich.pcomp$Observed))
+
+
+erich.pvar<-subset(erich, Species=="Pavona_varians")
+ hist(erich.pvar$Observed) #not normal 
+  ggqqplot(erich.pvar$Observed) #looks bad
+  hist(log(erich.pvar$Observed)) #better, still a little right skew
+  ggqqplot(log(erich.pvar$Observed))
+  hist(sqrt(erich.pvar$Observed))#b
+  ggqqplot(log(erich.pvar$Observed))
+ 
+  
+erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
+ hist(erich.pacu$Observed) #not awfuk 
+  ggqqplot(erich.pacu$Observed) #not bad
+  hist(log10(erich.pacu$Observed)) #worse
+  ggqqplot(log(erich.pacu$Observed))
+  hist((erich.pacu$Observed)^1/3)#bad
+  ggqqplot(log(erich.pacu$Observed))
+  
+## subset for Shannon
+  
+erich.mcap<-subset(erich, Species=="Montipora_capitata")
+  hist(erich.mcap$Shannon) #not normal  <- bimodal 
+  ggqqplot(erich.mcap$Shannon) #looks good
+  hist(log10(erich.mcap$Shannon)) #worse
+  ggqqplot(log(erich.mcap$Shannon))
+  hist((erich.mcap$Shannon)^1/3) #worse
+  ggqqplot(log(erich.mcap$Shannon))
+  
+  
+erich.pcomp<-subset(erich, Species=="Porites_compressa")
+  hist(erich.pcomp$Shannon) # normal 
+  ggqqplot(erich.pcomp$Shannon) #it's just one sample that is pulling it. ideas? 
+  hist(log(erich.pcomp$Shannon)) # normal better
+  ggqqplot(log(erich.pcomp$Shannon))
+
+
+erich.pvar<-subset(erich, Species=="Pavona_varians")
+ hist(erich.pvar$Shannon) #not normal 
+  ggqqplot(erich.pvar$Shannon) #
+  hist(log(erich.pvar$Shannon)) #better, still a little right skew
+  ggqqplot(log(erich.pvar$Shannon))
+  
+ 
+  
+erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
+ hist(erich.pacu$Shannon) #not awfuk 
+  ggqqplot(erich.pacu$Shannon) #not bad
+  hist(log10(erich.pacu$Shannon)) #worse
+  ggqqplot(log(erich.pacu$Shannon))
+  hist(asin(sqrt(erich.pacu$Shannon)))#bad
+  ggqqplot(log(erich.pacu$Shannon))
+
+  
+    #use kruskal-wallis, if not normal (https://rstudio-pubs-static.s3.amazonaws.com/268156_d3ea37937f4f4469839ab6fa2c483842.html#alpha-diversity)
+  
+#Run the ANOVA and save it as an object
+aov.shannon.species = aov(Shannon ~ Species, data=erich)
+#Call for the summary of that ANOVA, which will include P-values
+summary(aov.shannon.species) # sig diff between species
+TukeyHSD(aov.shannon.species)
+
+#                                             diff        lwr        upr     p adj
+# Pavona_varians-Montipora_capitata    -1.16163190 -1.3624327 -0.9608311 0.0000000
+# Pocillopora_acuta-Montipora_capitata -1.24194758 -1.4483099 -1.0355853 0.0000000
+# Porites_compressa-Montipora_capitata -0.05568403 -0.2548492  0.1434812 0.8875317
+# Pocillopora_acuta-Pavona_varians     -0.08031568 -0.2840678  0.1234365 0.7376709
+# Porites_compressa-Pavona_varians      1.10594786  0.9094884  1.3024073 0.0000000
+# Porites_compressa-Pocillopora_acuta   1.18626355  0.9841231  1.3884040 0.0000000
+
+#Plot
+boxplot(Shannon ~ Species, data=erich, ylab="Shannon's diversity") 
+
+#show that only Species is significant
+aov.shannon.species2 = aov(Shannon ~ Species*Treatment*Time.Point, data=erich)
+  summary(aov.shannon.species2) # sig diff between species
+
+  
+  
+#subset by species
+
+  
+
+
+
+#for non normal Kruskal wallis rank sum  
+  kruskal.test(x ~ AgeGroup, data=meta)
+
+  
+  
+  
+#testing
+  
+  coral <- get_variable(coralDIV2_rare.alpha2, "host_genus") %in% c("montipora",  "pocillopora")
+sample_data(coralDIV2_rare.alpha2)$human <- factor(coral)
+
+ #estimate_richness(coralDIV2_rare, "coral","host_genus", measures = c("Observed", "Shannon")) #select which estimates and estimate CANNOT GET TO WORK with X
+  
+## from tutorial can't get it to wokr in my code.   
+  GP <- prune_taxa(taxa_sums(GlobalPatterns) > 0, GlobalPatterns)
+
+human <- get_variable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+sample_data(GP)$human <- factor(human)
+
+alpha_meas = c("Observed", "Shannon")
+(p <- plot_richness(GP, "human", "SampleType", measures=alpha_meas))
+
+
+
+
+
+
+##
+## make bar plot of rank abundance of all DIVs
+par(mar = c(10, 4, 4, 2) + 0.1) # make more room on bottom margin
+N <- 50
+barplot(sort(taxa_sums(coralDIV2_rare.alpha2), TRUE)[1:N]/nsamples(coralDIV2_rare.alpha2), las=2)
+
+sample_variables(coralDIV2_rare.alpha2) #check sample variables
+
+plot_bar(coralDIV2_rare.alpha2, "Species", fill="DIV", facet_grid=~DIV)
+
+
+#make network - not helpful for ITS2 here
+
+ig <- make_network(coralDIV2_rare.alpha2, max.dist=0.3)
+plot_network(ig, coralDIV2_rare.alpha2, color="Parent.ID", shape="Species", line_weight=0.4, label=NULL)
+
+
+
+## 
+
+
+
+
+```
+
+
+
+
 
 #For PRO (maybe you do not do)
 ```{r} 
