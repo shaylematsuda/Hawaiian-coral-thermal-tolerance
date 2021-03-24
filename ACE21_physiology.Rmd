@@ -2092,8 +2092,8 @@ PhysioData_noMissing<-na.omit(PhysioData) #this removes 9 samples (partent/time/
 #nMDS of physio, PhysioData df, by Parent.ID, all data
 ```{r} 
 Phy_nmds<-PhysioData_noMissing
-
  
+  
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
@@ -2853,7 +2853,7 @@ ggplot(divclades, aes(x = Sample, y = Abundance, fill = clade)) +
   labs(title=NULL, x = NULL, y = "Relative abundance")
 ```
 Look at low samps  
-```{r} 
+```{r}  
 #lets see what is up with the low samps
 LowSamps<-readxl::read_xlsx("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.meta_only.xlsx")
 
@@ -2869,7 +2869,7 @@ Data wrangle: remove samples with under 5k, remove duplicated samps, save RDS Ra
 hannah code!
 
 #FOR DIVS set up and clean up
-```{r}  
+```{r}   
 ## check out data
 ntaxa(coralDIV2)  #num taxa
 nsamples(coralDIV2)   #num samples
@@ -2915,20 +2915,77 @@ coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S2893")
 
 coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
 
-saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #s
+#saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #s
 
 #Make a rarefied phyloseq object for alpha diversity analyses
 coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
 sample_sums(coralDIV2_rare) #Double check that the sub-sampling worked, this should report 1000 for each sample
 coralDIV2.rare <- as(sample_data(coralDIV2_rare), "data.frame")
 coralDIV2_rare
-saveRDS(coralDIV2_rare, file = "coralDIV2_rare.RDS", compress = TRUE) #save!
+#saveRDS(coralDIV2_rare, file = "coralDIV2_rare.RDS", compress = TRUE) #save!
+
+#### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
+
+controlT0_Amb = subset_samples(coralDIV2_rare, Time.Point == "T0"&Treatment == "Ambient")  #copy
+
+#tax table
+tax  = tax_table(controlT0_Amb)
+
+  # sample data
+  sd = sample_data(controlT0_Amb)
+  rownames(sd) <- paste0(rownames(sd), "_dup")
+  # otu_table
+  OTU = otu_table(controlT0_Amb)
+  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+  # Avoid conflict between factor and character
+  sd$Treatment <- as.character(sd$Treatment)
+  sd$ID <- as.character(sd$ID)
+  sd$Treatment <- "High"    #rename HIGH
+  sd$ID <- paste0(sd$ID, "_dup")
+  sd$Treatment <- as.factor(sd$Treatment)
+  sd$ID <- as.factor(sd$ID)
+
+  Amb2<-phyloseq(OTU, sd, tax)
+
+##High
+  controlT0_High = subset_samples(coralDIV2_rare, Time.Point == "T0"&Treatment == "High")  #copy
+
+#tax table
+tax  = tax_table(controlT0_High)
+
+  # sample data
+  sd = sample_data(controlT0_High)
+  rownames(sd) <- paste0(rownames(sd), "_dup")
+  # otu_table
+  OTU = otu_table(controlT0_High)
+  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+  # Avoid conflict between factor and character
+  sd$Treatment <- as.character(sd$Treatment)
+  sd$ID <- as.character(sd$ID)
+  sd$Treatment <- "Ambient"    #rename HIGH
+  sd$ID <- paste0(sd$ID, "_dup")
+  sd$Treatment <- as.factor(sd$Treatment)
+  sd$ID <- as.factor(sd$ID)
+
+  High2<-phyloseq(OTU, sd, tax)
+  
+#Merge control dups H and A  
+Controldups = merge_phyloseq(Amb2,High2)
+Controldups
+  
+#merg them to the original df:
+
+coralDIV2_rare2 = merge_phyloseq(coralDIV2_rare,Controldups)
+coralDIV2_rare2
+coralDIV2_rare2View <- as(sample_data(coralDIV2_rare2), "data.frame") #create sample data frame to view
+
+  
 ```
 
 # DIV analysis and plots, use rarefied coralDIV2_rare
-```{r}
+```{r} 
 #if you want to transform to REL Abund, do after filtering?
-DIV_RelA  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x) )  #save as RELA DIVs
+DIV_RelA  = transform_sample_counts(coralDIV2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
 data.ra <- as(sample_data(DIV_RelA), "data.frame") #look at samp data
 
 # there are >300 taxa, let's prune to top 100
@@ -2975,6 +3032,7 @@ TopNOTUsPacu = names(sort(taxa_sums(Pacu_DIV_RA), TRUE)[1:50])
 Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_DIV_RA)
 TopNOUTsPacu_plot<-plot_bar(Pacuent50, "Parent.ID",fill = "DIV",  ffacet_grid = ~DIV)
 PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment")
+
 ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
 
 #everything and not useful
@@ -2987,7 +3045,7 @@ ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
 ```
 
 Ordination DIV_RelA <- you might not need this section, code below for each species
-```{r} 
+```{r}  
 OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
@@ -3045,7 +3103,7 @@ ordiellipse(DIVrareRel1_Pcomp, groups=meta$Time.Point, display="species", kind="
 
 ```
 #Beta Diversity: df rarefied and relative abudnaces
-```{r}
+```{r} 
 DIV_RelA_stats  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x) )  #save as RELA DIVs
 
 #bray curtis presence-absense and abundance
@@ -3587,17 +3645,11 @@ ggsave("pacuTFits.pdf")
 ```
 
 
-
-
-
-
-
-
-Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
+#Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances  
 coralDIV2_rare df phyloseq
 coralDIV2.rare df sample data
-```{r}
+```{r} 
 coralDIV2_rare.alpha<-coralDIV2_rare #make a copy of df
 
 
@@ -3609,18 +3661,28 @@ erich <- estimate_richness(coralDIV2_rare, measures = c("Observed", "Shannon")) 
   erich$Parent.ID <- coralDIV2.rare$Parent.ID
   erich$ID <- coralDIV2.rare$ID
   erich$Species <- coralDIV2.rare$Species
+  erich$Time.Point = factor(erich$Time.Point, levels = c("T0", "T1", "TF"))
 
  
 #stats ALL THE DATA
  library(ggpubr)
   #look at data
+#observed
 hist(erich$Observed) #not normal  <- bimodal,due to species? 
 ggqqplot(erich$Observed)
-
 hist(log(erich$Observed)) #not normal
 ggqqplot(log(erich$Observed))
-
 shapiro.test(log(erich$Observed))
+
+#shannon
+hist(erich$Shannon) #not normal  <- bimodal,due to species? 
+ggqqplot(erich$Shannon)
+hist(log(erich$Shannon)) #not normal
+ggqqplot(log(erich$Shannon))
+hist(1/(erich$Shannon)) #not normal
+
+shapiro.test(log(erich$Shannon))
+
   
 ## subset by coral species for OBSERVED
 
@@ -3694,40 +3756,230 @@ erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
   
     #use kruskal-wallis, if not normal (https://rstudio-pubs-static.s3.amazonaws.com/268156_d3ea37937f4f4469839ab6fa2c483842.html#alpha-diversity)
   
-#Run the ANOVA and save it as an object
-aov.shannon.species = aov(Shannon ~ Species, data=erich)
-#Call for the summary of that ANOVA, which will include P-values
-summary(aov.shannon.species) # sig diff between species
-TukeyHSD(aov.shannon.species)
+#If it is normal 'enough'  
 
-#                                             diff        lwr        upr     p adj
-# Pavona_varians-Montipora_capitata    -1.16163190 -1.3624327 -0.9608311 0.0000000
-# Pocillopora_acuta-Montipora_capitata -1.24194758 -1.4483099 -1.0355853 0.0000000
-# Porites_compressa-Montipora_capitata -0.05568403 -0.2548492  0.1434812 0.8875317
-# Pocillopora_acuta-Pavona_varians     -0.08031568 -0.2840678  0.1234365 0.7376709
-# Porites_compressa-Pavona_varians      1.10594786  0.9094884  1.3024073 0.0000000
-# Porites_compressa-Pocillopora_acuta   1.18626355  0.9841231  1.3884040 0.0000000
+### ALL SPECIES
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.species = aov(Shannon ~ Species, data=erich)
+    aov.shannon.species = aov(log(Shannon) ~ Species*Treatment*Time.Point, data=erich)
+
+#Call for the summary of that ANOVA, which will include P-values
+  summary(aov.shannon.species) # sig diff between species
+  TukeyHSD(aov.shannon.species)
 
 #Plot
-boxplot(Shannon ~ Species, data=erich, ylab="Shannon's diversity") 
-
-#show that only Species is significant
-aov.shannon.species2 = aov(Shannon ~ Species*Treatment*Time.Point, data=erich)
-  summary(aov.shannon.species2) # sig diff between species
+  boxplot(Shannon ~ Species, data=erich, ylab="Shannon's diversity") 
 
   
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.species = aov(log(Observed) ~ Species*Treatment*Time.Point, data=erich)
+  #aov.observed.species = aov(Observed ~ Species, data=erich)
+
+#Call for the summary of that ANOVA, which will include P-values
+  summary(aov.observed.species) # sig diff between species
+  TukeyHSD(aov.observed.species)
+
+#Plot
+  boxplot(Observed ~ Species*Treatment*Time.Point, data=erich, ylab="observed's diversity") 
+```
+
+### MCAP alpha
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesMcap = aov(Shannon ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.shannon.speciesMcap) # sig diff between species
+  TukeyHSD(aov.shannon.speciesMcap)
   
-#subset by species
+  aov.shannon.speciesMcap = aov(log(Shannon) ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.shannon.speciesMcap) # sig diff between species
+  TukeyHSD(aov.shannon.speciesMcap)
+  
+    aov.shannon.speciesMcap = aov(Shannon^(1/3) ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.shannon.speciesMcap) # sig diff between species
+  TukeyHSD(aov.shannon.speciesMcap)
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.mcap, ylab="Shannon's diversity") 
+
+#MCAP  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesMcap = aov(Observed ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.observed.speciesMcap) # sig diff between species
+  TukeyHSD(aov.observed.speciesMcap)
+  
+  aov.observed.speciesMcap = aov(log(Observed) ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.observed.speciesMcap) # sig diff between species
+  TukeyHSD(aov.observed.speciesMcap)
+  
+  aov.observed.speciesMcap = aov(Observed^(1/3) ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.observed.speciesMcap) # sig diff between species
+  TukeyHSD(aov.observed.speciesMcap)
+  
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.mcap, ylab="observed's diversity") 
+
 
   
+``` 
+# Pcomp alpha
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPcomp = aov(Shannon ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.shannon.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPcomp)
+  
+  aov.shannon.speciesPcomp = aov(log(Shannon) ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.shannon.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPcomp)
+  
+ 
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pcomp, ylab="Shannon's diversity") 
+
+#Pcomp  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPcomp = aov(Observed ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.observed.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.observed.speciesPcomp)
+  
+  aov.observed.speciesPcomp = aov(log(Observed) ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.observed.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.observed.speciesPcomp)
+
+  
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.pcomp, ylab="observed's diversity") 
+
+
+  
+``` 
+# Pvar
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPvar = aov(Shannon ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.shannon.speciesPvar) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPvar)
+  
+  aov.shannon.speciesPvar = aov(log(Shannon) ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.shannon.speciesPvar) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPvar)
+  
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pvar, ylab="Shannon's diversity") 
+  
+ 
+  
+  
+  
+  
+  
+  
+
+#Pvar  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPvar = aov(Observed ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.observed.speciesPvar) # sig diff between species
+  TukeyHSD(aov.observed.speciesPvar)
+  
+  aov.observed.speciesPvar = aov(log(Observed) ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.observed.speciesPvar) # sig diff between species
+  TukeyHSD(aov.observed.speciesPvar)
+
+  
+#Plot
+  boxplot(log(Observed) ~ Treatment*Time.Point, data=erich.pvar, ylab="observed's diversity") 
+
+# Just T1
+  erich.pvarT1<-subset(erich.pvar, Time.Point=="T1")
+  hist(log10(erich.pvarT1$Observed))
+  aov.observed.speciesPvarT1 = aov(log10(Observed) ~ Treatment, data=erich.pvarT1)
+  summary(aov.observed.speciesPvarT1) # sig diff between species
+  TukeyHSD(aov.observed.speciesPvarT1)
+  
+  hist((erich.pvarT1$Shannon))
+  aov.shannon.speciesPvarT1 = aov(log10(Shannon) ~ Treatment, data=erich.pvarT1)
+  summary(aov.shannon.speciesPvarT1) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPvarT1)
+  
+  
+``` 
+
+# Pacu
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPacu = aov(Shannon ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.shannon.speciesPacu) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPacu)
+  
+  aov.shannon.speciesPacu = aov(log(Shannon) ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.shannon.speciesPacu) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPacu)
+  
+
+#Plot
+  aov.shannon.speciesPacu$Time.Point = factor(aov.shannon.speciesPacu$Time.Point, levels = c("T0", "T1", "TF"))
+
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pacu, ylab="Shannon's diversity") 
+  
+ 
+  
+  
+  
+  
+  
+  
+
+#Pvar  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPacu = aov(Observed ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.observed.speciesPacu) # sig diff between species
+  TukeyHSD(aov.observed.speciesPacu)
+  
+  aov.observed.speciesPacu = aov(log(Observed) ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.observed.speciesPacu) # sig diff between species
+  TukeyHSD(aov.observed.speciesPacu)
+
+  
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.pacu, ylab="observed's diversity") 
+
+# Just T1
+  erich.pacuT1<-subset(erich.pacu, Time.Point=="T1")
+  hist(log10(erich.pacuT1$Observed))
+  aov.observed.speciesPacuT1 = aov(log10(Observed) ~ Treatment, data=erich.pacuT1)
+  summary(aov.observed.speciesPacuT1) # sig diff between species
+  TukeyHSD(aov.observed.speciesPacuT1)
+  
+  hist((erich.pacuT1$Shannon))
+  aov.shannon.speciesPacuT1 = aov(log10(Shannon) ~ Treatment, data=erich.pacuT1)
+  summary(aov.shannon.speciesPacuT1) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPacuT1)
+  
+  
+``` 
+ 
 
 
 
+
+
+
+```{r}
 #for non normal Kruskal wallis rank sum  
   kruskal.test(x ~ AgeGroup, data=meta)
 
-  
-  
   
 #testing
   
@@ -3758,7 +4010,7 @@ barplot(sort(taxa_sums(coralDIV2_rare.alpha2), TRUE)[1:N]/nsamples(coralDIV2_rar
 
 sample_variables(coralDIV2_rare.alpha2) #check sample variables
 
-plot_bar(coralDIV2_rare.alpha2, "Species", fill="DIV", facet_grid=~DIV)
+#plot_bar(coralDIV2_rare.alpha2, "Species", fill="DIV", facet_grid=~DIV)
 
 
 #make network - not helpful for ITS2 here
@@ -3767,8 +4019,6 @@ ig <- make_network(coralDIV2_rare.alpha2, max.dist=0.3)
 plot_network(ig, coralDIV2_rare.alpha2, color="Parent.ID", shape="Species", line_weight=0.4, label=NULL)
 
 
-
-## 
 
 
 
