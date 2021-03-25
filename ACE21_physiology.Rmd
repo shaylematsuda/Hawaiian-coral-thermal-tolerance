@@ -1457,8 +1457,8 @@ pairs(emm)
 ```
 
 
-#PAM
-```{r}   
+#PAM 
+```{r}    
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -1524,34 +1524,51 @@ PAMdata<-PAMdata[!is.na(PAMdata$Yield), ]
 
 
 
+# Many frags were too low to PAM (no signal) but corals were alive. Change fv.fm to 0.1, a minimum baseline to indicate the lack of photosynthetic yield. 0.1 is below the threshold of any PAM signal in a readable coral 
 
+LowSig<-read.csv("Data/PAM_lowSignalSamps.csv") #read in df with low sig samps
+
+#remove samples in 'extra;
+#testmer<-merge(meta, LowSig, all.y=T)
+LowSig$Date <- as.Date(LowSig$Date, format="%e-%b-%y") #update date
+LowSig<-LowSig[!(LowSig$REMOVE=="REMOVE"),] #remove the REMOVES
+
+PAMdata2<- left_join(PAMdata, LowSig, by=c("Date","Frag.ID")) %>%  #merge df based on frag * date
+  rowwise() 
+# Change Yields in lowsigs to 0.1
+PAMdata2 <- within(PAMdata2, Yield[Low.Sig == 'Yes' ] <- '0.1')
+
+PAMdata2$Yield<-as.numeric(PAMdata2$Yield)
+PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 
 
 ```
 Stats
-```{r}  
+```{r}   
 #remove notes
 
-PAMdata_stats<-PAMdata[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
-PAMdata_stats$Days<-as.factor(as.character(PAMdata_stats$Days))
+PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
+PAMdata2_stats$Days<-as.factor(as.character(PAMdata2_stats$Days))
+PAMdata2_stats$Yield<-as.numeric(PAMdata2_stats$Yield)
+PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 
 # Historgam
-hist(PAMdata_stats$Yield)
+hist(PAMdata2_stats$Yield)
 
 #transform
-PAMdata_stats$Yield_sq<-(PAMdata_stats$Yield)^2
-hist(PAMdata_stats$Yield_sq)
+PAMdata2_stats$Yield_sq<-(PAMdata2_stats$Yield)^2
+hist(PAMdata2_stats$Yield_sq)
 
-PAMdata_stats$Yield_cu<-(PAMdata_stats$Yield)^3
-hist(PAMdata_stats$Yield_cu) #beter
+PAMdata2_stats$Yield_cu<-(PAMdata2_stats$Yield)^3
+hist(PAMdata2_stats$Yield_cu) #beter
 
 
 #lmer with ^3
-PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata_stats)
-anova(PAMdata_stats_model) 
-qqPlot(residuals(PAMdata_stats_model)) 
+PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
+anova(PAMdata2_stats_model) 
+qqPlot(residuals(PAMdata2_stats_model)) 
 
-emm<-emmeans(PAMdata_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+emm<-emmeans(PAMdata2_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
@@ -1559,61 +1576,61 @@ pairs(emm)
 
 #is the data still not normal by species
 
-Mcap_PAM<-subset(PAMdata_stats, Species=="Montipora_capitata")
+Mcap_PAM<-subset(PAMdata2_stats, Species=="Montipora_capitata")
 hist(Mcap_PAM$Yield_cu)
-Mcap_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Mcap_PAM)
-anova(Mcap_PAMdata_stats_model) 
-qqPlot(residuals(Mcap_PAMdata_stats_model))
+Mcap_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Mcap_PAM)
+anova(Mcap_PAMdata2_stats_model) 
+qqPlot(residuals(Mcap_PAMdata2_stats_model))
 
-Pcomp_PAM<-subset(PAMdata_stats, Species=="Porites_compressa")
+Pcomp_PAM<-subset(PAMdata2_stats, Species=="Porites_compressa")
 hist(Pcomp_PAM$Yield_cu)
-Pcomp_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pcomp_PAM)
-anova(Pcomp_PAMdata_stats_model) 
-qqPlot(residuals(Pcomp_PAMdata_stats_model))
+Pcomp_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pcomp_PAM)
+anova(Pcomp_PAMdata2_stats_model) 
+qqPlot(residuals(Pcomp_PAMdata2_stats_model))
 
-Pvar_PAM<-subset(PAMdata_stats, Species=="Pavona_varians") #normal AF
+Pvar_PAM<-subset(PAMdata2_stats, Species=="Pavona_varians") #normal AF
 hist(Pvar_PAM$Yield_cu)
-Pvar_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pvar_PAM)
-anova(Pvar_PAMdata_stats_model) 
-qqPlot(residuals(Pvar_PAMdata_stats_model))
+Pvar_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pvar_PAM)
+anova(Pvar_PAMdata2_stats_model) 
+qqPlot(residuals(Pvar_PAMdata2_stats_model))
 
-Pacu_PAM<-subset(PAMdata_stats, Species=="Pocillopora_acuta")
+Pacu_PAM<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
 hist(Pacu_PAM$Yield_cu)
-Pacu_PAMdata_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pacu_PAM)
-anova(Pacu_PAMdata_stats_model) 
-qqPlot(residuals(Pacu_PAMdata_stats_model))
+Pacu_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pacu_PAM)
+anova(Pacu_PAMdata2_stats_model) 
+qqPlot(residuals(Pacu_PAMdata2_stats_model))
 
 
 #set up df for physio\
   keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu") #keep cols you need
-PAMdata_stats2<-PAMdata_stats[keepPAM] #keep cols you want
-PAMdata_stats2$Parent.ID<-as.factor(as.character(PAMdata_stats2$Parent.ID))
-PAMdata_physio<-dcast(PAMdata_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
+PAMdata2_stats2<-PAMdata2_stats[keepPAM] #keep cols you want
+PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
+PAMdata2_physio<-dcast(PAMdata2_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
 
-names(PAMdata_physio)[names(PAMdata_physio) == "0"] <- "T0.PAM"
-names(PAMdata_physio)[names(PAMdata_physio) == "24"] <- "T1.PAM"
-names(PAMdata_physio)[names(PAMdata_physio) == "52"] <- "TF.PAM"
+names(PAMdata2_physio)[names(PAMdata2_physio) == "0"] <- "T0.PAM"
+names(PAMdata2_physio)[names(PAMdata2_physio) == "24"] <- "T1.PAM"
+names(PAMdata2_physio)[names(PAMdata2_physio) == "52"] <- "TF.PAM"
 
 
 
 
 ```
 Plots
-```{r} 
-PAMdata_mean <- ddply(PAMdata, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
+```{r}  
+PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
                    N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
                    sd   = sd(Yield, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
                    max = max(Yield, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
-PAMdata_mean #display table
+PAMdata2_mean #display table
 
 # divide by species
-Mcap_PAM_mean<-subset(PAMdata_mean, Species =="Montipora_capitata")
-Pcomp_PAM_mean<-subset(PAMdata_mean, Species =="Porites_compressa")
-Pvar_PAM_mean<-subset(PAMdata_mean, Species =="Pavona_varians")
-Pacu_PAM_mean<-subset(PAMdata_mean, Species =="Pocillopora_acuta")
+Mcap_PAM_mean<-subset(PAMdata2_mean, Species =="Montipora_capitata")
+Pcomp_PAM_mean<-subset(PAMdata2_mean, Species =="Porites_compressa")
+Pvar_PAM_mean<-subset(PAMdata2_mean, Species =="Pavona_varians")
+Pacu_PAM_mean<-subset(PAMdata2_mean, Species =="Pocillopora_acuta")
 
 #Mcap plot
 
@@ -2090,7 +2107,7 @@ PhysioData_noMissing<-na.omit(PhysioData) #this removes 9 samples (partent/time/
 ```
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data
-```{r} 
+```{r}  
 Phy_nmds<-PhysioData_noMissing
  
   
@@ -2817,7 +2834,7 @@ library("ggpubr")
 load("data/Raw_coral_phyloseq.RData") #use RAW data
 ```
 Hey what does this do?
-```{r}
+```{r} 
 coral2 <- coral_RAW %>%
   subset_samples(!is.na(host_species))
 coralDIV2 <- coralDIV_RAW %>% 
@@ -2831,7 +2848,7 @@ coralDIV2 <- coralDIV_RAW %>%
 ```
 
 Monster all data vis (not helpful)
-```{r, fig.width = 10, fig.height = 40}
+```{r, fig.width = 10, fig.height = 40} 
 # Plot ITS2 profiles for each coral sample by species and site
 plot_bar(coral, fill = "its2_type_profile") +
   facet_wrap(~ host_genus + host_species, ncol = 6, scales = "free") +
@@ -2982,7 +2999,7 @@ coralDIV2_rare2View <- as(sample_data(coralDIV2_rare2), "data.frame") #create sa
   
 ```
 
-# DIV analysis and plots, use rarefied coralDIV2_rare
+# DIV analysis and plots, use rarefied coralDIV2_rare2
 ```{r} 
 #if you want to transform to REL Abund, do after filtering?
 DIV_RelA  = transform_sample_counts(coralDIV2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
@@ -3045,9 +3062,9 @@ ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
 ```
 
 Ordination DIV_RelA <- you might not need this section, code below for each species
-```{r}  
+```{r}   
 OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
-ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
+#ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
 #heat map
 plot_heatmap(DIV_RelA, "NMDS", "bray", "Species", "DIV")
@@ -3112,7 +3129,7 @@ DIV_RelA_stats  = transform_sample_counts(coralDIV2_rare, function(x) x / sum(x)
 set.seed(30)
 
 #make bray curtis data matrix
-bc.all <- phyloseq::distance(DIV_RelA_stats, method = "bray")
+bc.all <- phyloseq::distance(DIV_RelA_stats, method = "bray", set.seed(30))
   samp.df <- as(sample_data(DIV_RelA_stats), "data.frame") #sample df
 #adonis test
 adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df)
