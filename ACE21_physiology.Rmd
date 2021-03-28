@@ -2015,7 +2015,7 @@ Stats
 ```{r}      
 #remove notes
 
-PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
+PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
 PAMdata2_stats$Days<-as.factor(as.character(PAMdata2_stats$Days))
 PAMdata2_stats$Yield<-as.numeric(PAMdata2_stats$Yield)
 PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
@@ -2040,37 +2040,174 @@ emm<-emmeans(PAMdata2_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
+PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
+anova(PAMdata2_stats_model) 
+qqPlot(residuals(PAMdata2_stats_model)) 
+
+emm<-emmeans(PAMdata2_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+#lmer
+
+PAMdata2_stats2_Mcap<-subset(PAMdata2_stats2, Species=="Montipora_capitata")
+PAMdata2_stats2_Pcomp<-subset(PAMdata2_stats2, Species=="Porites_compressa")
+PAMdata2_stats2_Pvar<-subset(PAMdata2_stats2, Species=="Pavona_varians")
+PAMdata2_stats2_Pacu<-subset(PAMdata2_stats2, Species=="Pocillopora_acuta")
+
+# by Species df: PAMdata2_stats2_Mcap, PAMdata2_stats2_Pcomp, PAMdata2_stats2_Pvar, PAMdata2_stats2_Pacu
+PAMdata2_stats2_Mcap<-subset(PAMdata2_stats2, Species=="Montipora_capitata")
+  PAMdata2_stats2_Mcap.C<-subset(PAMdata2_stats2_Mcap, Clade=="C")
+  PAMdata2_stats2_Mcap.CD<-subset(PAMdata2_stats2_Mcap, Clade=="CD")
+PAMdata2_stats2_Pcomp<-subset(PAMdata2_stats2, Species=="Porites_compressa")
+  PAMdata2_stats2_Pcomp.C15cj<-subset(PAMdata2_stats2_Pcomp, Clade=="C15cj")
+  PAMdata2_stats2_Pcomp.C15n<-subset(PAMdata2_stats2_Pcomp, Clade=="C15n")
+PAMdata2_stats2_Pvar<-subset(PAMdata2_stats2, Species=="Pavona_varians")
+  PAMdata2_stats2_Pvar.C1<-subset(PAMdata2_stats2_Pvar, Clade=="C1")
+  PAMdata2_stats2_Pvar.C27<-subset(PAMdata2_stats2_Pvar, Clade=="C27")
+PAMdata2_stats2_Pacu<-subset(PAMdata2_stats2, Species=="Pocillopora_acuta")
+  PAMdata2_stats2_Pacu.CCC<-subset(PAMdata2_stats2_Pacu, Clade=="CCC")
+  PAMdata2_stats2_Pacu.C42<-subset(PAMdata2_stats2_Pacu, Clade=="C42")
 
 
-#is the data still not normal by species
-
-Mcap_PAM<-subset(PAMdata2_stats, Species=="Montipora_capitata")
-hist(Mcap_PAM$Yield_cu)
-Mcap_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Mcap_PAM)
-anova(Mcap_PAMdata2_stats_model) 
-qqPlot(residuals(Mcap_PAMdata2_stats_model))
-
-Pcomp_PAM<-subset(PAMdata2_stats, Species=="Porites_compressa")
-hist(Pcomp_PAM$Yield_cu)
-Pcomp_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pcomp_PAM)
-anova(Pcomp_PAMdata2_stats_model) 
-qqPlot(residuals(Pcomp_PAMdata2_stats_model))
-
-Pvar_PAM<-subset(PAMdata2_stats, Species=="Pavona_varians") #normal AF
-hist(Pvar_PAM$Yield_cu)
-Pvar_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pvar_PAM)
-anova(Pvar_PAMdata2_stats_model) 
-qqPlot(residuals(Pvar_PAMdata2_stats_model))
-
-Pacu_PAM<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
-hist(Pacu_PAM$Yield_cu)
-Pacu_PAMdata2_stats_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID)+(1|Tank.num), Pacu_PAM)
-anova(Pacu_PAMdata2_stats_model) 
-qqPlot(residuals(Pacu_PAMdata2_stats_model))
 
 
-#set up df for physio\
-  keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu") #keep cols you need
+#lmer
+Yield_cu_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2)
+anova(Yield_cu_stats_model) 
+qqPlot(residuals(Yield_cu_stats_model)) 
+
+Yield_cu_stats_modelC<-lmer(Yield_cu~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2)
+anova(Yield_cu_stats_modelC) 
+
+emm<-emmeans(Yield_cu_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+  
+#mcap
+#lmer
+ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap)
+  anova(Yield_cu_Mcap_model) 
+  
+Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap)
+  anova(Yield_cu_Mcap_model) 
+  qqPlot(residuals(Yield_cu_Mcap_model)) 
+  emm<-emmeans(Yield_cu_Mcap_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Yield_cu_Mcap_model.C<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.C)
+  anova(Yield_cu_Mcap_model.C) 
+  qqPlot(residuals(Yield_cu_Mcap_model.C)) 
+    emm<-emmeans(Yield_cu_Mcap_model.C,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Yield_cu_Mcap_model.CD<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.CD)
+  anova(Yield_cu_Mcap_model.CD) 
+  qqPlot(residuals(Yield_cu_Mcap_model.CD)) 
+    emm<-emmeans(Yield_cu_Mcap_model.CD,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pcomp
+#lmer 
+    Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+  anova(Yield_cu_Pcomp_model) 
+  
+Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+  anova(Yield_cu_Pcomp_model) 
+  qqPlot(residuals(Yield_cu_Pcomp_model)) 
+  emm<-emmeans(Yield_cu_Pcomp_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+  anova(Yield_cu_Pcomp_model.Clade) 
+  qqPlot(residuals(Yield_cu_Pcomp_model.Clade)) 
+  emm<-emmeans(Yield_cu_Pcomp_model.Clade,  ~ Days*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Yield_cu_Pcomp_model.C15cj<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.C15cj)
+  anova(Yield_cu_Pcomp_model.C15cj) 
+  qqPlot(residuals(Yield_cu_Pcomp_model.C15cj)) 
+    emm<-emmeans(Yield_cu_Pcomp_model.C15cj,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  Yield_cu_Pcomp_model.C15n<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.C15n)
+  anova(Yield_cu_Pcomp_model.C15n) 
+  qqPlot(residuals(Yield_cu_Pcomp_model.C15n)) 
+    emm<-emmeans(Yield_cu_Pcomp_model.C15n,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar)
+  anova(Yield_cu_Pvar_model) 
+  qqPlot(residuals(Yield_cu_Pvar_model)) 
+  emm<-emmeans(Yield_cu_Pvar_model,  ~ Days*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C1 only
+  Yield_cu_Pvar_model.C1<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.C1)
+  anova(Yield_cu_Pvar_model.C1) 
+  qqPlot(residuals(Yield_cu_Pvar_model.C1)) 
+    emm<-emmeans(Yield_cu_Pvar_model.C1,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  Yield_cu_Pvar_model.C27<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.C27)
+  anova(Yield_cu_Pvar_model.C27) 
+  qqPlot(residuals(Yield_cu_Pvar_model.C27)) 
+    emm<-emmeans(Yield_cu_Pvar_model.C27,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+    Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu)
+  anova(Yield_cu_Pacu_model) 
+Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu)
+  anova(Yield_cu_Pacu_model) 
+  qqPlot(residuals(Yield_cu_Pacu_model)) 
+  emm<-emmeans(Yield_cu_Pacu_model,  ~ Days*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Yield_cu_Pacu_model.CCC<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.CCC)
+  anova(Yield_cu_Pacu_model.CCC) 
+  qqPlot(residuals(Yield_cu_Pacu_model.CCC)) 
+    emm<-emmeans(Yield_cu_Pacu_model.CCC,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Yield_cu_Pacu_model.C42<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.C42)
+  anova(Yield_cu_Pacu_model.C42) 
+  qqPlot(residuals(Yield_cu_Pacu_model.C42)) 
+    emm<-emmeans(Yield_cu_Pacu_model.C42,  ~ Days*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+
+
+
+#set up df for physi
+  keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu","Clade") #keep cols you need
 PAMdata2_stats2<-PAMdata2_stats[keepPAM] #keep cols you want
 PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
 #PAMdata2_physio<-dcast(PAMdata2_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
@@ -2078,158 +2215,6 @@ PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "0"] <- "T0.PAM"
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "24"] <- "T1.PAM"
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "52"] <- "TF.PAM"
-
-
-hist(PR.df_B$PR) #
-PR.df_B$PR_log<-log10(PR.df_B$PR+1)
-hist(PR.df_B$PR_log) #
-
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
-
-# by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
-  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
-  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
-  PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
-  PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
-  PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
-  PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
-  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
-  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
-
-
-
-
-#lmer
-PR_stats_model<-lmer(PR_log~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
-anova(PR_stats_model) 
-qqPlot(residuals(PR_stats_model)) 
-
-PR_stats_modelC<-lmer(PR_log~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
-anova(PR_stats_modelC) 
-
-emm<-emmeans(PR_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
- cld(emm)
- pairs(emm)
-  
-#mcap
-#lmer
-PR_Mcap_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
-  anova(PR_Mcap_model) 
-  qqPlot(residuals(PR_Mcap_model)) 
-  emm<-emmeans(PR_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-  
-#mcap-C only
-  PR_Mcap_model.C<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.C)
-  anova(PR_Mcap_model.C) 
-  qqPlot(residuals(PR_Mcap_model.C)) 
-    emm<-emmeans(PR_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-
-#mcap-CD only
-  PR_Mcap_model.CD<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.CD)
-  anova(PR_Mcap_model.CD) 
-  qqPlot(residuals(PR_Mcap_model.CD)) 
-    emm<-emmeans(PR_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
-#Pcomp
-#lmer
-PR_Pcomp_model<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
-  anova(PR_Pcomp_model) 
-  qqPlot(residuals(PR_Pcomp_model)) 
-  emm<-emmeans(PR_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-PR_Pcomp_model.Clade<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
-  anova(PR_Pcomp_model.Clade) 
-  qqPlot(residuals(PR_Pcomp_model.Clade)) 
-  emm<-emmeans(PR_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
-    
-#Pcomp-C15cj only
-  PR_Pcomp_model.C15cj<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
-  anova(PR_Pcomp_model.C15cj) 
-  qqPlot(residuals(PR_Pcomp_model.C15cj)) 
-    emm<-emmeans(PR_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-
-#Pcomp-C27 only
-  PR_Pcomp_model.C15n<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
-  anova(PR_Pcomp_model.C15n) 
-  qqPlot(residuals(PR_Pcomp_model.C15n)) 
-    emm<-emmeans(PR_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
-#Pvar
-#lmer
-PR_Pvar_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
-  anova(PR_Pvar_model) 
-  qqPlot(residuals(PR_Pvar_model)) 
-  emm<-emmeans(PR_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-  
-#Pvar-C1 only
-  PR_Pvar_model.C1<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
-  anova(PR_Pvar_model.C1) 
-  qqPlot(residuals(PR_Pvar_model.C1)) 
-    emm<-emmeans(PR_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-
-#Pvar-C27 only
-  PR_Pvar_model.C27<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C27)
-  anova(PR_Pvar_model.C27) 
-  qqPlot(residuals(PR_Pvar_model.C27)) 
-    emm<-emmeans(PR_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)  
-
-#Pacu
-#lmer
-PR_Pacu_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
-  anova(PR_Pacu_model) 
-  qqPlot(residuals(PR_Pacu_model)) 
-  emm<-emmeans(PR_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-  
-#Pacu-CCC only
-  PR_Pacu_model.CCC<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.CCC)
-  anova(PR_Pacu_model.CCC) 
-  qqPlot(residuals(PR_Pacu_model.CCC)) 
-    emm<-emmeans(PR_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-
-#Pacu-C42 only
-  PR_Pacu_model.C42<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.C42)
-  anova(PR_Pacu_model.C42) 
-  qqPlot(residuals(PR_Pacu_model.C42)) 
-    emm<-emmeans(PR_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
-
 
 ```
 Plots
@@ -2239,7 +2224,7 @@ PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, #
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
                    sd   = sd(Yield, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
-                   max = max(Yield, na.rm=TRUE) #calculate max, could also calculate min () if desired
+                  max = max(Yield, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
 PAMdata2_mean #display table
 
@@ -2734,6 +2719,7 @@ PR_TF<-subset(PR, Time.Point=="TF")
 PR_TFm<-merge(PR_TF, metaPR, all.y=T) #this weeds out 'extra' frags
 PR_TFm<-PR_TFm[!is.na(PR_TFm$PR), ] #remove rows with no PR
 duplicated(PR_TFm$Frag.ID) #check for duplicated rows per frag (for redos)
+PR_TFm<-PR_TFm[!(PR_TFm$Frag.ID=="3481" & PR_TFm$round==11),]  #remove the PR is no possible
 
 PR.df<-rbind(PR_T0m,PR_T1m)
 PR.df<-rbind(PR.df,PR_TFm)
@@ -2744,8 +2730,9 @@ PR.df<-merge(PR.df, metaPR)
 
 ######## FOR NOW - change pos R to 0 and neg P to 0
 PR.df_B<-PR.df
-PR.df_B$Photo[PR.df_B$Photo < 0] <- 0
-PR.df_B$Resp[PR.df_B$Resp > 0] <- 0
+# PR.df_B$Photo[PR.df_B$Photo < 0] <- 0
+# PR.df_B$Resp[PR.df_B$Resp > 0] <- 0
+
 
 PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
 PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
@@ -2755,7 +2742,7 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
 ```
 Plots
 Photosynthesis
-```{r}
+```{r} 
 Photo_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -2797,8 +2784,6 @@ theme(panel.grid.major = element_blank(),
         theme(aspect.ratio=1)+
   ggtitle("Mcap Photosynthesis")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Photo_plot
-
-
 
 
 #Pcomp plot
@@ -2896,6 +2881,150 @@ grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,
 library(gridExtra)
 
 ```
+Plots by Clades
+```{r}
+#Mcap
+Photo_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                   N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Photo, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Photo, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Photo_mean.Clade #display table
+
+# divide by species
+Mcap_Photo_mean.Clade<-subset(Photo_mean.Clade, Species =="Montipora_capitata")
+  Mcap_Photo_mean.Clade$Code<-paste(Mcap_Photo_mean.Clade$Clade, Mcap_Photo_mean.Clade$Treatment)
+Pcomp_Photo_mean.Clade<-subset(Photo_mean.Clade, Species =="Porites_compressa")
+  Pcomp_Photo_mean.Clade$Code<-paste(Pcomp_Photo_mean.Clade$Clade, Pcomp_Photo_mean.Clade$Treatment)
+Pvar_Photo_mean.Clade<-subset(Photo_mean.Clade, Species =="Pavona_varians")
+  Pvar_Photo_mean.Clade$Code<-paste(Pvar_Photo_mean.Clade$Clade, Pvar_Photo_mean.Clade$Treatment)
+Pacu_Photo_mean.Clade<-subset(Photo_mean.Clade, Species =="Pocillopora_acuta")
+  Pacu_Photo_mean.Clade$Code<-paste(Pacu_Photo_mean.Clade$Clade, Pacu_Photo_mean.Clade$Treatment)
+
+
+library(RColorBrewer)
+
+#Mcap by clade
+
+Mcap_Photo_plot.Clade<-ggplot(data=Mcap_Photo_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Mcap Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Photo_plot.Clade
+
+#Pcomp by clade
+
+Pcomp_Photo_plot.Clade<-ggplot(data=Pcomp_Photo_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pcomp Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Photo_plot.Clade
+
+#Pvar by clade
+
+Pvar_Photo_plot.Clade<-ggplot(data=Pvar_Photo_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pvar Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Photo_plot.Clade
+
+#Pacu by clade
+
+Pacu_Photo_plot.Clade<-ggplot(data=Pacu_Photo_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pacu Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Photo_plot.Clade
+
+Mcap_Photo_plot.Clade<-Mcap_Photo_plot.Clade+ theme(legend.position = "none") #remove legend
+Pcomp_Photo_plot.Clade<-Pcomp_Photo_plot.Clade+ theme(legend.position = "none") #remove legend
+Pvar_Photo_plot.Clade<-Pvar_Photo_plot.Clade+ theme(legend.position = "none") #remove legend
+Pacu_Photo_plot.Clade<-Pacu_Photo_plot.Clade+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clade,Pacu_Photo_plot.Clade, nrow = 1)
+
+
+
+```
+
 Photosynthesis stats
 ```{r}
 #df PR.df_B
@@ -3042,9 +3171,6 @@ Photo_Pacu_model<-lmer(Photo_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.I
     
     
 ```
-
-
-
 Respiration
 ```{r}
 Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
@@ -3183,6 +3309,150 @@ Pacu_Resp_plot<-Pacu_Resp_plot+ theme(legend.position = "none") #remove legend
 grid.arrange(Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot, nrow = 1)
 
 ```
+Plots by Clades
+```{r}
+#Mcap
+Resp_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                   N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Resp, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Resp, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Resp_mean.Clade #display table
+
+# divide by species
+Mcap_Resp_mean.Clade<-subset(Resp_mean.Clade, Species =="Montipora_capitata")
+  Mcap_Resp_mean.Clade$Code<-paste(Mcap_Resp_mean.Clade$Clade, Mcap_Resp_mean.Clade$Treatment)
+Pcomp_Resp_mean.Clade<-subset(Resp_mean.Clade, Species =="Porites_compressa")
+  Pcomp_Resp_mean.Clade$Code<-paste(Pcomp_Resp_mean.Clade$Clade, Pcomp_Resp_mean.Clade$Treatment)
+Pvar_Resp_mean.Clade<-subset(Resp_mean.Clade, Species =="Pavona_varians")
+  Pvar_Resp_mean.Clade$Code<-paste(Pvar_Resp_mean.Clade$Clade, Pvar_Resp_mean.Clade$Treatment)
+Pacu_Resp_mean.Clade<-subset(Resp_mean.Clade, Species =="Pocillopora_acuta")
+  Pacu_Resp_mean.Clade$Code<-paste(Pacu_Resp_mean.Clade$Clade, Pacu_Resp_mean.Clade$Treatment)
+
+
+library(RColorBrewer)
+
+#Mcap by clade
+
+Mcap_Resp_plot.Clade<-ggplot(data=Mcap_Resp_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Mcap Respsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Resp_plot.Clade
+
+#Pcomp by clade
+
+Pcomp_Resp_plot.Clade<-ggplot(data=Pcomp_Resp_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pcomp Respsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Resp_plot.Clade
+
+#Pvar by clade
+
+Pvar_Resp_plot.Clade<-ggplot(data=Pvar_Resp_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pvar Respsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Resp_plot.Clade
+
+#Pacu by clade
+
+Pacu_Resp_plot.Clade<-ggplot(data=Pacu_Resp_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pacu Respsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Resp_plot.Clade
+
+Mcap_Resp_plot.Clade<-Mcap_Resp_plot.Clade+ theme(legend.position = "none") #remove legend
+Pcomp_Resp_plot.Clade<-Pcomp_Resp_plot.Clade+ theme(legend.position = "none") #remove legend
+Pvar_Resp_plot.Clade<-Pvar_Resp_plot.Clade+ theme(legend.position = "none") #remove legend
+Pacu_Resp_plot.Clade<-Pacu_Resp_plot.Clade+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Resp_plot.Clade, Pcomp_Resp_plot.Clade, Pvar_Resp_plot.Clade,Pacu_Resp_plot.Clade, nrow = 1)
+
+
+
+```
+
 Resp stats
 ```{r}
 #df PR.df_B
@@ -3352,6 +3622,10 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
   ylab(expression(paste("umol/sec/cm2"))) +
   ggtitle("Mcap PRsynthesis")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
@@ -3377,6 +3651,10 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
   ggtitle("Pcomp PRsynthesis")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot
 
@@ -3400,6 +3678,10 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
   ggtitle("Pvar PRsynthesis")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot
 
@@ -3423,10 +3705,167 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
   ggtitle("Pacu PRsynthesis")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
+ 
+```
+PR Plots together
+```{r}
+###### All plots together
+Mcap_PR_plot<-Mcap_PR_plot+ theme(legend.position = "none") #remove legend
+Pcomp_PR_plot<-Pcomp_PR_plot+ theme(legend.position = "none") #remove legend
+Pvar_PR_plot<-Pvar_PR_plot+ theme(legend.position = "none") #remove legend
+Pacu_PR_plot<-Pacu_PR_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 1)
 
 ```
+Plots by Clades
+```{r}
+#Mcap
+PR_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                   N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(PR, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PR_mean.Clade #display table
+
+# divide by species
+Mcap_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Montipora_capitata")
+  Mcap_PR_mean.Clade$Code<-paste(Mcap_PR_mean.Clade$Clade, Mcap_PR_mean.Clade$Treatment)
+Pcomp_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Porites_compressa")
+  Pcomp_PR_mean.Clade$Code<-paste(Pcomp_PR_mean.Clade$Clade, Pcomp_PR_mean.Clade$Treatment)
+Pvar_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pavona_varians")
+  Pvar_PR_mean.Clade$Code<-paste(Pvar_PR_mean.Clade$Clade, Pvar_PR_mean.Clade$Treatment)
+Pacu_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pocillopora_acuta")
+  Pacu_PR_mean.Clade$Code<-paste(Pacu_PR_mean.Clade$Clade, Pacu_PR_mean.Clade$Treatment)
+
+
+library(RColorBrewer)
+
+#Mcap by clade
+
+Mcap_PR_plot.Clade<-ggplot(data=Mcap_PR_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Mcap PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot.Clade
+
+#Pcomp by clade
+
+Pcomp_PR_plot.Clade<-ggplot(data=Pcomp_PR_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pcomp PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot.Clade
+
+#Pvar by clade
+
+Pvar_PR_plot.Clade<-ggplot(data=Pvar_PR_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pvar PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot.Clade
+
+#Pacu by clade
+
+Pacu_PR_plot.Clade<-ggplot(data=Pacu_PR_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+            width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+ 
+  geom_line(aes(linetype=Clade, color=Treatment))+
+    scale_linetype_manual(values=c("twodash", "dotted"))+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pacu PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot.Clade
+
+Mcap_PR_plot.Clade<-Mcap_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pcomp_PR_plot.Clade<-Pcomp_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pvar_PR_plot.Clade<-Pvar_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pacu_PR_plot.Clade<-Pacu_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 1)
+
+```
+
 PR stats
 ```{r} 
 #df PR.df_B
@@ -3581,6 +4020,15 @@ PR_Pacu_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
     pairs(emm)
     
     
+```
+All P, R, PR plots
+```{r}
+grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 3)
+
+
+#by clade
+grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clade,Pacu_Photo_plot.Clade,Mcap_Resp_plot.Clade, Pcomp_Resp_plot.Clade, Pvar_Resp_plot.Clade,Pacu_Resp_plot.Clade,Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 3)
+
 ```
 
 
