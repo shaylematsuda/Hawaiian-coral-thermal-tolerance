@@ -110,7 +110,7 @@ meta<- meta[!(meta$Frag.ID == "3149"),] # dup
   meta$Clade[meta$Parent.ID==373]<-"C"
   meta$Clade[meta$Parent.ID==374]<-"CD"
 
-
+meta$Clade<-as.factor(meta$Clade)
 
 
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
@@ -123,7 +123,7 @@ RespCheckC<-cast(RespCheck, Frag.ID~Time.Point)
 metaResp<-meta
 metaResp<-metaResp[,c("Frag.ID","Time.Point")] # keep only columns you need
 Respcheck3<-merge(metaResp, RespCheckC)
-write.csv(Respcheck3,"Respcheck3.csv")
+#write.csv(Respcheck3,"Respcheck3.csv")
 
 
 AFDW <- read.csv("Data/ACE21_AFDW_20210308.csv")
@@ -159,7 +159,7 @@ testAFDW<-merge(AFDW, meta, all=T)
 
 
 #Biomass (AFDW and SA)
-```{r}    
+```{r}     
  
 SA<-WaxDipping 
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
@@ -180,7 +180,7 @@ biomass <- merge(AFDW.slurry, SA)
 biomass$Surface.area<-as.numeric(as.character(biomass$Surface.area))
 biomass<- biomass[,c("Frag.ID", "AFDWmg", "Surface.area")] # keep only columns you need
 biomass$AFDWmg.cm2 <-biomass$AFDWmg/biomass$Surface.area # mg/cm2
-
+ 
 # merge with metadata to plot by treatments
 biomass2 <- merge(biomass, meta)
 #write.csv(biomass2, "biomass2.csv")
@@ -224,21 +224,154 @@ Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
 
 
 ```
-Stats - T0 is n=6, not n=12
-```{r}
+Stats - T0 is n=6, not n=12. T1 and TF
+```{r} 
 Biomass_stats<-biomass2
 
-hist(Biomass_stats$AFDWmg.cm2) 
-Biomass_stats$AFDWmg.cm2_log<-log10(Biomass_stats$AFDWmg.cm2+1)
-hist(Biomass_stats$AFDWmg.cm2_log) #normal (use)
+biomass_stats_T1TF<-biomass2
+biomass_stats_T1TF<-subset(biomass_stats_T1TF, Time.Point=="T1"|Time.Point=="TF")
 
-Biomass_model<-lmer(AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Biomass_stats)
+hist(biomass_stats_T1TF$AFDWmg.cm2) 
+
+Biomass_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF)
 anova(Biomass_model) 
 qqPlot(residuals(Biomass_model)) 
 
   emm<-emmeans(Biomass_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
+
+# by Species df: biomass_stats_T1TF_Mcap, biomass_stats_T1TF_Pcomp, biomass_stats_T1TF_Pvar, biomass_stats_T1TF_Pacu
+biomass_stats_T1TF_Mcap<-subset(biomass_stats_T1TF, Species=="Montipora_capitata")
+  biomass_stats_T1TF_Mcap.C<-subset(biomass_stats_T1TF_Mcap, Clade=="C")
+  biomass_stats_T1TF_Mcap.CD<-subset(biomass_stats_T1TF_Mcap, Clade=="CD")
+biomass_stats_T1TF_Pcomp<-subset(biomass_stats_T1TF, Species=="Porites_compressa")
+  biomass_stats_T1TF_Pcomp.C15cj<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15cj")
+  biomass_stats_T1TF_Pcomp.C15n<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15n")
+biomass_stats_T1TF_Pvar<-subset(biomass_stats_T1TF, Species=="Pavona_varians")
+  biomass_stats_T1TF_Pvar.C1<-subset(biomass_stats_T1TF_Pvar, Clade=="C1")
+  biomass_stats_T1TF_Pvar.C27<-subset(biomass_stats_T1TF_Pvar, Clade=="C27")
+biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora_acuta")
+  biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="CCC")
+  biomass_stats_T1TF_Pacu.C42<-subset(biomass_stats_T1TF_Pacu, Clade=="C42")
+  
+#mcap
+#lmer
+Biomass_Mcap_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap)
+  anova(Biomass_Mcap_model) 
+  qqPlot(residuals(Biomass_Mcap_model)) 
+  emm<-emmeans(Biomass_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Biomass_Mcap_model.C<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap.C)
+  anova(Biomass_Mcap_model.C) 
+  qqPlot(residuals(Biomass_Mcap_model.C)) 
+    emm<-emmeans(Biomass_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Biomass_Mcap_model.CD<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap.CD)
+  anova(Biomass_Mcap_model.CD) 
+  qqPlot(residuals(Biomass_Mcap_model.CD)) 
+    emm<-emmeans(Biomass_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)*
+    pairs(emm)
+    
+#Pcomp
+#lmer
+Biomass_Pcomp_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp)
+  anova(Biomass_Pcomp_model) 
+  qqPlot(residuals(Biomass_Pcomp_model)) 
+  emm<-emmeans(Biomass_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Biomass_Pcomp_model.Clade<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp)
+  anova(Biomass_Pcomp_model.Clade) 
+  qqPlot(residuals(Biomass_Pcomp_model.Clade)) 
+  emm<-emmeans(Biomass_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Biomass_Pcomp_model.C15cj<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp.C15cj)
+  anova(Biomass_Pcomp_model.C15cj) 
+  qqPlot(residuals(Biomass_Pcomp_model.C15cj)) 
+    emm<-emmeans(Biomass_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  Biomass_Pcomp_model.C15n<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp.C15n)
+  anova(Biomass_Pcomp_model.C15n) 
+  qqPlot(residuals(Biomass_Pcomp_model.C15n)) 
+    emm<-emmeans(Biomass_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+Biomass_Pvar_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pvar)
+  anova(Biomass_Pvar_model) 
+  qqPlot(residuals(Biomass_Pvar_model)) 
+  emm<-emmeans(Biomass_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C only
+  Biomass_Pvar_model.C1<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pvar.C1)
+  anova(Biomass_Pvar_model.C1) 
+  qqPlot(residuals(Biomass_Pvar_model.C1)) 
+    emm<-emmeans(Biomass_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-CD only
+  Biomass_Pvar_model.C27<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pvar.C27)
+  anova(Biomass_Pvar_model.C27) 
+  qqPlot(residuals(Biomass_Pvar_model.C27)) 
+    emm<-emmeans(Biomass_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+    Biomass_Pacu_model<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pacu)
+  anova(Biomass_Pacu_model)
+Biomass_Pacu_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pacu)
+  anova(Biomass_Pacu_model) 
+  qqPlot(residuals(Biomass_Pacu_model)) 
+  emm<-emmeans(Biomass_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Biomass_Pacu_model.CCC<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pacu.CCC)
+  anova(Biomass_Pacu_model.CCC) 
+  qqPlot(residuals(Biomass_Pacu_model.CCC)) 
+    emm<-emmeans(Biomass_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Biomass_Pacu_model.C42<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pacu.C42)
+  anova(Biomass_Pacu_model.C42) 
+  qqPlot(residuals(Biomass_Pacu_model.C42)) 
+    emm<-emmeans(Biomass_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+
+
+
+
 
 ```
 PLOTS
@@ -348,7 +481,7 @@ grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_
 ```
 
 # Flow cytometry  cell counts
-```{r}   
+```{r}    
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
 
@@ -494,19 +627,154 @@ Pacu_FC_Sum #display table
 Stats
 ```{r}
 
+FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
+hist(FC_stats_T1TF$zoox.cm2) 
+FC_stats_T1TF$zoox.cm2_log<-log10(FC_stats_T1TF$zoox.cm2+1)
+hist(FC_stats_T1TF$zoox.cm2_log) #normal (use)
 
-hist(FC_Data$zoox.cm2) 
-FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
-hist(FC_Data$zoox.cm2_log) #normal (use)
-
-CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_Data)
+CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
 anova(CellCount_model) 
 qqPlot(residuals(CellCount_model)) 
 
   emm<-emmeans(CellCount_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
+
+CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
+anova(CellCount_model) 
+
+
+
+
+# by Species df: FC_stats_T1TF_Mcap, FC_stats_T1TF_Pcomp, FC_stats_T1TF_Pvar, FC_stats_T1TF_Pacu
+FC_stats_T1TF_Mcap<-subset(FC_stats_T1TF, Species=="Montipora_capitata")
+  FC_stats_T1TF_Mcap.C<-subset(FC_stats_T1TF_Mcap, Clade=="C")
+  FC_stats_T1TF_Mcap.CD<-subset(FC_stats_T1TF_Mcap, Clade=="CD")
+FC_stats_T1TF_Pcomp<-subset(FC_stats_T1TF, Species=="Porites_compressa")
+  FC_stats_T1TF_Pcomp.C15cj<-subset(FC_stats_T1TF_Pcomp, Clade=="C15cj")
+  FC_stats_T1TF_Pcomp.C15n<-subset(FC_stats_T1TF_Pcomp, Clade=="C15n")
+FC_stats_T1TF_Pvar<-subset(FC_stats_T1TF, Species=="Pavona_varians")
+  FC_stats_T1TF_Pvar.C1<-subset(FC_stats_T1TF_Pvar, Clade=="C1")
+  FC_stats_T1TF_Pvar.C27<-subset(FC_stats_T1TF_Pvar, Clade=="C27")
+FC_stats_T1TF_Pacu<-subset(FC_stats_T1TF, Species=="Pocillopora_acuta")
+  FC_stats_T1TF_Pacu.CCC<-subset(FC_stats_T1TF_Pacu, Clade=="CCC")
+  FC_stats_T1TF_Pacu.C42<-subset(FC_stats_T1TF_Pacu, Clade=="C42")
+  
+#mcap
+#lmer
+FC_Mcap_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap)
+  anova(FC_Mcap_model) 
+  qqPlot(residuals(FC_Mcap_model)) 
+  emm<-emmeans(FC_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  FC_Mcap_model.C<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap.C)
+  anova(FC_Mcap_model.C) 
+  qqPlot(residuals(FC_Mcap_model.C)) 
+    emm<-emmeans(FC_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  FC_Mcap_model.CD<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap.CD)
+  anova(FC_Mcap_model.CD) 
+  qqPlot(residuals(FC_Mcap_model.CD)) 
+    emm<-emmeans(FC_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)*
+    pairs(emm)
+    
+#Pcomp
+#lmer
+FC_Pcomp_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
+  anova(FC_Pcomp_model) 
+  qqPlot(residuals(FC_Pcomp_model)) 
+  emm<-emmeans(FC_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+FC_Pcomp_model.Clade<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
+  anova(FC_Pcomp_model.Clade) 
+  qqPlot(residuals(FC_Pcomp_model.Clade)) 
+  emm<-emmeans(FC_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  FC_Pcomp_model.C15cj<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp.C15cj)
+  anova(FC_Pcomp_model.C15cj) 
+  qqPlot(residuals(FC_Pcomp_model.C15cj)) 
+    emm<-emmeans(FC_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C15cj only
+  FC_Pcomp_model.C15n<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp.C15n)
+  anova(FC_Pcomp_model.C15n) 
+  qqPlot(residuals(FC_Pcomp_model.C15n)) 
+    emm<-emmeans(FC_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
+  anova(FC_Pvar_model) 
+  qqPlot(residuals(FC_Pvar_model)) 
+  emm<-emmeans(FC_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C only
+  FC_Pvar_model.C1<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C1)
+  anova(FC_Pvar_model.C1) 
+  qqPlot(residuals(FC_Pvar_model.C1)) 
+    emm<-emmeans(FC_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-CD only
+  FC_Pvar_model.C27<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C27)
+  anova(FC_Pvar_model.C27) 
+  qqPlot(residuals(FC_Pvar_model.C27)) 
+    emm<-emmeans(FC_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+    FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
+  anova(FC_Pacu_model)
+FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
+  anova(FC_Pacu_model) 
+  qqPlot(residuals(FC_Pacu_model)) 
+  emm<-emmeans(FC_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  FC_Pacu_model.CCC<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu.CCC)
+  anova(FC_Pacu_model.CCC) 
+  qqPlot(residuals(FC_Pacu_model.CCC)) 
+    emm<-emmeans(FC_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  FC_Pacu_model.C42<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu.C42)
+  anova(FC_Pacu_model.C42) 
+  qqPlot(residuals(FC_Pacu_model.C42)) 
+    emm<-emmeans(FC_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+
 ```
 
 Line plots
@@ -1186,7 +1454,7 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 #Chl-a
 dfs: Slurry=airbrush, SA=wax dip, 
-```{r}   
+```{r}    
 
  # Plate 1
 
@@ -1491,23 +1759,23 @@ grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nro
 ```
  
 stats  
-```{r}  
- 
-hist (Chla$ChlaSA) 
-Chla$ChlaSA_log<-log10(Chla$ChlaSA+1)
-hist(Chla$ChlaSA_log) #pos skew this ok?
-Chla$ChlaSA_sqrt<-sqrt(Chla$ChlaSA) 
-hist(Chla$ChlaSA_sqrt) #nope
+```{r}   
+Chla_stats_T1TF<-subset(Chla, Time.Point=="T1"|Time.Point=="TF")
 
-Chla$ChlaSA_cube<-Chla$ChlaSA^(1/3)
-hist(Chla$ChlaSA_cube) #better but no
-shapiro.test(Chla$ChlaSA_cube)
+hist (Chla_stats_T1TF$ChlaSA) 
+Chla_stats_T1TF$ChlaSA_log<-log10(Chla_stats_T1TF$ChlaSA+1)
+hist(Chla_stats_T1TF$ChlaSA_log) #pos skew this ok?
+ # Chla_stats_T1TF$ChlaSA_sqrt<-sqrt(Chla_stats_T1TF$ChlaSA) 
+ # hist(Chla_stats_T1TF$ChlaSA_sqrt) #nope
+# 
+# Chla_stats_T1TF$ChlaSA_cube<-Chla_stats_T1TF$ChlaSA^(1/3)
+# hist(Chla_stats_T1TF$ChlaSA_cube) #better but no
+# shapiro.test(Chla_stats_T1TF$ChlaSA_cube)
 
-Chla$ChlaSA_quart<-Chla$ChlaSA^(1/4)
-hist(Chla$ChlaSA_quart) #best
-shapiro.test(Chla$ChlaSA_quart) # p=0.08
+Chla_stats_T1TF$ChlaSA_quart<-Chla_stats_T1TF$ChlaSA^(1/4)
+hist(Chla_stats_T1TF$ChlaSA_quart) #best
 
-Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla)
+Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF)
 anova(Chla_model) 
 qqPlot(residuals(Chla_model)) 
 
@@ -1515,6 +1783,144 @@ qqPlot(residuals(Chla_model))
 emm<-emmeans(Chla_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
+
+Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF)
+anova(Chla_model) 
+qqPlot(residuals(Chla_model)) 
+
+
+
+
+
+# by Species df: Chla_stats_T1TF_Mcap, Chla_stats_T1TF_Pcomp, Chla_stats_T1TF_Pvar, Chla_stats_T1TF_Pacu
+Chla_stats_T1TF_Mcap<-subset(Chla_stats_T1TF, Species=="Montipora_capitata")
+  Chla_stats_T1TF_Mcap.C<-subset(Chla_stats_T1TF_Mcap, Clade=="C")
+  Chla_stats_T1TF_Mcap.CD<-subset(Chla_stats_T1TF_Mcap, Clade=="CD")
+Chla_stats_T1TF_Pcomp<-subset(Chla_stats_T1TF, Species=="Porites_compressa")
+  Chla_stats_T1TF_Pcomp.C15cj<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15cj")
+  Chla_stats_T1TF_Pcomp.C15n<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15n")
+Chla_stats_T1TF_Pvar<-subset(Chla_stats_T1TF, Species=="Pavona_varians")
+  Chla_stats_T1TF_Pvar.C1<-subset(Chla_stats_T1TF_Pvar, Clade=="C1")
+  Chla_stats_T1TF_Pvar.C27<-subset(Chla_stats_T1TF_Pvar, Clade=="C27")
+Chla_stats_T1TF_Pacu<-subset(Chla_stats_T1TF, Species=="Pocillopora_acuta")
+  Chla_stats_T1TF_Pacu.CCC<-subset(Chla_stats_T1TF_Pacu, Clade=="CCC")
+  Chla_stats_T1TF_Pacu.C42<-subset(Chla_stats_T1TF_Pacu, Clade=="C42")
+  
+#mcap
+#lmer
+Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Mcap)
+  anova(Chla_Mcap_model) 
+  qqPlot(residuals(Chla_Mcap_model)) 
+  emm<-emmeans(Chla_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Chla_Mcap_model.C<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Mcap.C)
+  anova(Chla_Mcap_model.C) 
+  qqPlot(residuals(Chla_Mcap_model.C)) 
+    emm<-emmeans(Chla_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Chla_Mcap_model.CD<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Mcap.CD)
+  anova(Chla_Mcap_model.CD) 
+  qqPlot(residuals(Chla_Mcap_model.CD)) 
+    emm<-emmeans(Chla_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)*
+    pairs(emm)
+    
+#Pcomp
+#lmer
+Chla_Pcomp_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pcomp)
+  anova(Chla_Pcomp_model) 
+  qqPlot(residuals(Chla_Pcomp_model)) 
+  emm<-emmeans(Chla_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Chla_Pcomp_model.Clade<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pcomp)
+  anova(Chla_Pcomp_model.Clade) 
+  qqPlot(residuals(Chla_Pcomp_model.Clade)) 
+  emm<-emmeans(Chla_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Chla_Pcomp_model.C15cj<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pcomp.C15cj)
+  anova(Chla_Pcomp_model.C15cj) 
+  qqPlot(residuals(Chla_Pcomp_model.C15cj)) 
+    emm<-emmeans(Chla_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C15cj only
+  Chla_Pcomp_model.C15n<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pcomp.C15n)
+  anova(Chla_Pcomp_model.C15n) 
+  qqPlot(residuals(Chla_Pcomp_model.C15n)) 
+    emm<-emmeans(Chla_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+    Chla_Pvar_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar)
+  anova(Chla_Pvar_model) 
+Chla_Pvar_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar)
+  anova(Chla_Pvar_model) 
+  qqPlot(residuals(Chla_Pvar_model)) 
+  emm<-emmeans(Chla_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C only
+  Chla_Pvar_model.C1<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C1)
+  anova(Chla_Pvar_model.C1) 
+  qqPlot(residuals(Chla_Pvar_model.C1)) 
+    emm<-emmeans(Chla_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  Chla_Pvar_model.C27<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C27)
+  anova(Chla_Pvar_model.C27) 
+  qqPlot(residuals(Chla_Pvar_model.C27)) 
+    emm<-emmeans(Chla_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+    Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu)
+  anova(Chla_Pacu_model)
+Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu)
+  anova(Chla_Pacu_model) 
+  qqPlot(residuals(Chla_Pacu_model)) 
+  emm<-emmeans(Chla_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Chla_Pacu_model.CCC<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu.CCC)
+  anova(Chla_Pacu_model.CCC) 
+  qqPlot(residuals(Chla_Pacu_model.CCC)) 
+    emm<-emmeans(Chla_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Chla_Pacu_model.C42<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu.C42)
+  anova(Chla_Pacu_model.C42) 
+  qqPlot(residuals(Chla_Pacu_model.C42)) 
+    emm<-emmeans(Chla_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
 
 ```
 
@@ -1674,6 +2080,155 @@ PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "52"] <- "TF.PAM"
 
 
+hist(PR.df_B$PR) #
+PR.df_B$PR_log<-log10(PR.df_B$PR+1)
+hist(PR.df_B$PR_log) #
+
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+
+# by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
+  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+  PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
+  PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+  PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
+  PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
+  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
+
+
+
+
+#lmer
+PR_stats_model<-lmer(PR_log~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(PR_stats_model) 
+qqPlot(residuals(PR_stats_model)) 
+
+PR_stats_modelC<-lmer(PR_log~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(PR_stats_modelC) 
+
+emm<-emmeans(PR_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+  
+#mcap
+#lmer
+PR_Mcap_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(PR_Mcap_model) 
+  qqPlot(residuals(PR_Mcap_model)) 
+  emm<-emmeans(PR_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  PR_Mcap_model.C<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.C)
+  anova(PR_Mcap_model.C) 
+  qqPlot(residuals(PR_Mcap_model.C)) 
+    emm<-emmeans(PR_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  PR_Mcap_model.CD<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.CD)
+  anova(PR_Mcap_model.CD) 
+  qqPlot(residuals(PR_Mcap_model.CD)) 
+    emm<-emmeans(PR_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pcomp
+#lmer
+PR_Pcomp_model<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(PR_Pcomp_model) 
+  qqPlot(residuals(PR_Pcomp_model)) 
+  emm<-emmeans(PR_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+PR_Pcomp_model.Clade<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(PR_Pcomp_model.Clade) 
+  qqPlot(residuals(PR_Pcomp_model.Clade)) 
+  emm<-emmeans(PR_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  PR_Pcomp_model.C15cj<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
+  anova(PR_Pcomp_model.C15cj) 
+  qqPlot(residuals(PR_Pcomp_model.C15cj)) 
+    emm<-emmeans(PR_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  PR_Pcomp_model.C15n<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
+  anova(PR_Pcomp_model.C15n) 
+  qqPlot(residuals(PR_Pcomp_model.C15n)) 
+    emm<-emmeans(PR_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+PR_Pvar_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
+  anova(PR_Pvar_model) 
+  qqPlot(residuals(PR_Pvar_model)) 
+  emm<-emmeans(PR_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C1 only
+  PR_Pvar_model.C1<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
+  anova(PR_Pvar_model.C1) 
+  qqPlot(residuals(PR_Pvar_model.C1)) 
+    emm<-emmeans(PR_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  PR_Pvar_model.C27<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C27)
+  anova(PR_Pvar_model.C27) 
+  qqPlot(residuals(PR_Pvar_model.C27)) 
+    emm<-emmeans(PR_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+PR_Pacu_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
+  anova(PR_Pacu_model) 
+  qqPlot(residuals(PR_Pacu_model)) 
+  emm<-emmeans(PR_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  PR_Pacu_model.CCC<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.CCC)
+  anova(PR_Pacu_model.CCC) 
+  qqPlot(residuals(PR_Pacu_model.CCC)) 
+    emm<-emmeans(PR_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  PR_Pacu_model.C42<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.C42)
+  anova(PR_Pacu_model.C42) 
+  qqPlot(residuals(PR_Pacu_model.C42)) 
+    emm<-emmeans(PR_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
 
 
 ```
@@ -1853,8 +2408,13 @@ hist(Protein$mg.mm2_sqrt) #better
  
 ```
 Stats
-```{r}
-Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Protein)
+```{r} 
+
+Prot_stats_T1TF<-subset(Protein, Time.Point=="T1"|Time.Point=="TF")
+
+
+
+Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF)
 anova(Protein_model) 
 qqPlot(residuals(Protein_model)) #not awful
 
@@ -1866,7 +2426,144 @@ pairs(emm)
 cld(emm)
 pairs(emm)
 
+Protein_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF)
+anova(Protein_model) 
+qqPlot(residuals(Protein_model)) #not awful
 
+  emm<-emmeans(Protein_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+cld(emm)
+pairs(emm)
+
+
+# by Species df: Prot_stats_T1TF_Mcap, Prot_stats_T1TF_Pcomp, Prot_stats_T1TF_Pvar, Prot_stats_T1TF_Pacu
+Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF_Mcap, Species=="Montipora_capitata")
+  Prot_stats_T1TF_Mcap.C<-subset(Prot_stats_T1TF_Mcap, Clade=="C")
+  Prot_stats_T1TF_Mcap.CD<-subset(Prot_stats_T1TF_Mcap, Clade=="CD")
+Prot_stats_T1TF_Pcomp<-subset(Prot_stats_T1TF, Species=="Porites_compressa")
+  Prot_stats_T1TF_Pcomp.C15cj<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15cj")
+  Prot_stats_T1TF_Pcomp.C15n<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15n")
+Prot_stats_T1TF_Pvar<-subset(Prot_stats_T1TF, Species=="Pavona_varians")
+  Prot_stats_T1TF_Pvar.C1<-subset(Prot_stats_T1TF_Pvar, Clade=="C1")
+  Prot_stats_T1TF_Pvar.C27<-subset(Prot_stats_T1TF_Pvar, Clade=="C27")
+Prot_stats_T1TF_Pacu<-subset(Prot_stats_T1TF, Species=="Pocillopora_acuta")
+  Prot_stats_T1TF_Pacu.CCC<-subset(Prot_stats_T1TF_Pacu, Clade=="CCC")
+  Prot_stats_T1TF_Pacu.C42<-subset(Prot_stats_T1TF_Pacu, Clade=="C42")
+  
+#mcap
+#lmer
+Prot_Mcap_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Mcap)
+  anova(Prot_Mcap_model) 
+  qqPlot(residuals(Prot_Mcap_model)) 
+  emm<-emmeans(Prot_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Prot_Mcap_model.C<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Mcap.C)
+  anova(Prot_Mcap_model.C) 
+  qqPlot(residuals(Prot_Mcap_model.C)) 
+    emm<-emmeans(Prot_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Prot_Mcap_model.CD<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Mcap.CD)
+  anova(Prot_Mcap_model.CD) 
+  qqPlot(residuals(Prot_Mcap_model.CD)) 
+    emm<-emmeans(Prot_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)*
+    pairs(emm)
+    
+#Pcomp
+#lmer
+Prot_Pcomp_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pcomp)
+  anova(Prot_Pcomp_model) 
+  qqPlot(residuals(Prot_Pcomp_model)) 
+  emm<-emmeans(Prot_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Prot_Pcomp_model.Clade<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pcomp)
+  anova(Prot_Pcomp_model.Clade) 
+  qqPlot(residuals(Prot_Pcomp_model.Clade)) 
+  emm<-emmeans(Prot_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Prot_Pcomp_model.C15cj<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pcomp.C15cj)
+  anova(Prot_Pcomp_model.C15cj) 
+  qqPlot(residuals(Prot_Pcomp_model.C15cj)) 
+    emm<-emmeans(Prot_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C15cj only
+  Prot_Pcomp_model.C15n<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pcomp.C15n)
+  anova(Prot_Pcomp_model.C15n) 
+  qqPlot(residuals(Prot_Pcomp_model.C15n)) 
+    emm<-emmeans(Prot_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+    Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar)
+  anova(Prot_Pvar_model) 
+Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar)
+  anova(Prot_Pvar_model) 
+  qqPlot(residuals(Prot_Pvar_model)) 
+  emm<-emmeans(Prot_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C1 only
+  Prot_Pvar_model.C1<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar.C1)
+  anova(Prot_Pvar_model.C1) 
+  qqPlot(residuals(Prot_Pvar_model.C1)) 
+    emm<-emmeans(Prot_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  Prot_Pvar_model.C27<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar.C27)
+  anova(Prot_Pvar_model.C27) 
+  qqPlot(residuals(Prot_Pvar_model.C27)) 
+    emm<-emmeans(Prot_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+    Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu)
+  anova(Prot_Pacu_model)
+Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu)
+  anova(Prot_Pacu_model) 
+  qqPlot(residuals(Prot_Pacu_model)) 
+  emm<-emmeans(Prot_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Prot_Pacu_model.CCC<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu.CCC)
+  anova(Prot_Pacu_model.CCC) 
+  qqPlot(residuals(Prot_Pacu_model.CCC)) 
+    emm<-emmeans(Prot_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Prot_Pacu_model.C42<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu.C42)
+  anova(Prot_Pacu_model.C42) 
+  qqPlot(residuals(Prot_Pacu_model.C42)) 
+    emm<-emmeans(Prot_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
 ```
 plots
 ```{r}
@@ -2731,7 +3428,7 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
 
 ```
 PR stats
-```{r}
+```{r} 
 #df PR.df_B
 
 hist(PR.df_B$PR) #
