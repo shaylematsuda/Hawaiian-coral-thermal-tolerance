@@ -45,13 +45,74 @@ packageVersion("scales")
 ```
 
 Load meta
-```{r}     
+```{r}      
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
 meta<- meta[!(meta$Frag.ID == "3149"),] # dup
 #write.csv(meta,"ACE21meta.csv")
-# load in datasheets 
+
+#add new col for Clades
+# EDIT sample data
+ #Pcomp
+  meta$Clade[meta$Parent.ID==314]<-"C15cj"
+  meta$Clade[meta$Parent.ID==317]<-"C15cj"
+  meta$Clade[meta$Parent.ID==319]<-"C15cj"
+  meta$Clade[meta$Parent.ID==320]<-"C15cj"
+  meta$Clade[meta$Parent.ID==321]<-"C15cj"
+  meta$Clade[meta$Parent.ID==322]<-"C15cj"
+  meta$Clade[meta$Parent.ID==313]<-"C15n"
+  meta$Clade[meta$Parent.ID==315]<-"C15n"
+  meta$Clade[meta$Parent.ID==316]<-"C15n"
+  meta$Clade[meta$Parent.ID==318]<-"C15n"
+  meta$Clade[meta$Parent.ID==323]<-"C15n"
+  meta$Clade[meta$Parent.ID==324]<-"C15n"
+  
+  #Pvar
+  meta$Clade[meta$Parent.ID==353]<-"C1"
+  meta$Clade[meta$Parent.ID==358]<-"C1"
+  meta$Clade[meta$Parent.ID==361]<-"C1"
+  meta$Clade[meta$Parent.ID==325]<-"C1"
+  meta$Clade[meta$Parent.ID==356]<-"C1"
+  meta$Clade[meta$Parent.ID==351]<-"C27"
+  meta$Clade[meta$Parent.ID==354]<-"C27"
+  meta$Clade[meta$Parent.ID==355]<-"C27"
+  meta$Clade[meta$Parent.ID==357]<-"C27"
+  meta$Clade[meta$Parent.ID==359]<-"C27"
+  meta$Clade[meta$Parent.ID==360]<-"C27"
+  meta$Clade[meta$Parent.ID==362]<-"C27"
+  
+#Pacu
+  meta$Clade[meta$Parent.ID==311]<-"C42"
+  meta$Clade[meta$Parent.ID==301]<-"CCC"
+  meta$Clade[meta$Parent.ID==304]<-"CCC"
+  meta$Clade[meta$Parent.ID==306]<-"CCC"
+  meta$Clade[meta$Parent.ID==303]<-"CCC"
+  meta$Clade[meta$Parent.ID==307]<-"C42"
+  meta$Clade[meta$Parent.ID==308]<-"CCC"
+  meta$Clade[meta$Parent.ID==310]<-"CCC"
+  meta$Clade[meta$Parent.ID==312]<-"CCC"
+  meta$Clade[meta$Parent.ID==302]<-"CCC"
+  meta$Clade[meta$Parent.ID==305]<-"C42"
+  meta$Clade[meta$Parent.ID==309]<-"C42"
+
+#Mcap
+  meta$Clade[meta$Parent.ID==363]<-"C"
+  meta$Clade[meta$Parent.ID==364]<-"CD"
+  meta$Clade[meta$Parent.ID==365]<-"CD"
+  meta$Clade[meta$Parent.ID==366]<-"CD"
+  meta$Clade[meta$Parent.ID==367]<-"C"
+  meta$Clade[meta$Parent.ID==368]<-"CD"
+  meta$Clade[meta$Parent.ID==369]<-"CD"
+  meta$Clade[meta$Parent.ID==370]<-"C"
+  meta$Clade[meta$Parent.ID==371]<-"C"
+  meta$Clade[meta$Parent.ID==372]<-"C"
+  meta$Clade[meta$Parent.ID==373]<-"C"
+  meta$Clade[meta$Parent.ID==374]<-"CD"
+
+
+
+
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
 #respiration check
@@ -1545,7 +1606,7 @@ PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 
 ```
 Stats
-```{r}    
+```{r}      
 #remove notes
 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -1922,6 +1983,908 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 
+
+
+
+#Resp:photosynthesis
+```{r}
+#load data respirometry_processed.csv
+PR  <- read.csv("Data/respirometry_processed.csv")
+#PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
+
+
+#subset metadata for what you need 
+metaPR<-meta
+metaPR<-metaPR[,c("Frag.ID","Parent.ID","Treatment","Species","Tank.num")] # keep only columns you need
+metaPR$Parent.ID<-as.factor(as.character(metaPR$Parent.ID))
+metaPR$Tank.num<-as.factor(as.character(metaPR$Tank.num))
+
+#subset to add metadata bc merg isnt' wroking
+PR_T0<-subset(PR, Time.Point=="T0")
+PR_T0m<-merge(PR_T0, metaPR, all.y=T) #this weeds out 'extra' frags
+PR_T0m<-PR_T0m[!is.na(PR_T0m$PR), ] #remove rows with no PR
+duplicated(PR_T0m$Frag.ID) #check for duplicated rows per frag (for redos)
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N94" & PR_T0m$round==2),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N211" & PR_T0m$round==4),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N209" & PR_T0m$round==2),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N197" & PR_T0m$round==4),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N181" & PR_T0m$round==8),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N104" & PR_T0m$round==6),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="422" & PR_T0m$round==4),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="3442" & PR_T0m$round==4),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="284" & PR_T0m$round==1),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="284" & PR_T0m$round==11),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="1736" & PR_T0m$channel==8),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="1556" & PR_T0m$round==2),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="1279" & PR_T0m$round==1),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="1226" & PR_T0m$round==8),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="1144" & PR_T0m$round==4),]  #remove the dups
+PR_T0m<-PR_T0m[!(PR_T0m$Frag.ID=="N92" & PR_T0m$round==4),]  #remove the dups
+duplicated(PR_T0m$Frag.ID) #check for duplicated rows per frag (for redos)
+
+
+
+PR_T1<-subset(PR, Time.Point=="T1")
+PR_T1m<-merge(PR_T1, metaPR, all.y=T) #this weeds out 'extra' frags
+PR_T1m<-PR_T1m[!is.na(PR_T1m$PR), ] #remove rows with no PR
+duplicated(PR_T1m$Frag.ID) #check for duplicated rows per frag (for redos)
+PR_T1m<-PR_T1m[!(PR_T1m$Frag.ID=="1413" & PR_T1m$round==2),]  #remove the dups
+PR_T1m<-PR_T1m[!(PR_T1m$Frag.ID=="477" & PR_T1m$Photo==2.339480e-04),]  #remove the dups
+PR_T1m<-PR_T1m[!(PR_T1m$Frag.ID=="3383" & PR_T1m$round==12),]  #remove the dups
+PR_T1m<-PR_T1m[!(PR_T1m$Frag.ID=="1791" & PR_T1m$round==13),]  #remove the dups
+
+PR_TF<-subset(PR, Time.Point=="TF")
+PR_TFm<-merge(PR_TF, metaPR, all.y=T) #this weeds out 'extra' frags
+PR_TFm<-PR_TFm[!is.na(PR_TFm$PR), ] #remove rows with no PR
+duplicated(PR_TFm$Frag.ID) #check for duplicated rows per frag (for redos)
+
+PR.df<-rbind(PR_T0m,PR_T1m)
+PR.df<-rbind(PR.df,PR_TFm)
+
+#add the clades in 
+metaPR<-meta[,c("Frag.ID","Clade")] # keep only columns you need
+PR.df<-merge(PR.df, metaPR)
+
+######## FOR NOW - change pos R to 0 and neg P to 0
+PR.df_B<-PR.df
+PR.df_B$Photo[PR.df_B$Photo < 0] <- 0
+PR.df_B$Resp[PR.df_B$Resp > 0] <- 0
+
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+
+```
+Plots
+Photosynthesis
+```{r}
+Photo_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Photo, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Photo, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Photo_mean #display table
+
+# divide by species
+Mcap_Photo_mean<-subset(Photo_mean, Species =="Montipora_capitata")
+Pcomp_Photo_mean<-subset(Photo_mean, Species =="Porites_compressa")
+Pvar_Photo_mean<-subset(Photo_mean, Species =="Pavona_varians")
+Pacu_Photo_mean<-subset(Photo_mean, Species =="Pocillopora_acuta")
+
+#Mcap plot
+
+Mcap_Photo_plot<-ggplot(data=Mcap_Photo_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Mcap Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Photo_plot
+
+
+
+
+#Pcomp plot
+
+Pcomp_Photo_plot<-ggplot(data=Pcomp_Photo_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pcomp Photosynthesis")+
+          theme(aspect.ratio=1)+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Photo_plot
+
+#Pvar plot
+
+Pvar_Photo_plot<-ggplot(data=Pvar_Photo_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+          theme(aspect.ratio=1)+
+  ggtitle("Pvar Photosynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Photo_plot
+
+#Pacu plot
+
+Pacu_Photo_plot<-ggplot(data=Pacu_Photo_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+    ggtitle("Pacu Photosynthesis")+
+   
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Photo_plot
+
+```
+P Plots together
+```{r}
+###### All plots together
+Mcap_Photo_plot<-Mcap_Photo_plot+ theme(legend.position = "none") #remove legend
+Pcomp_Photo_plot<-Pcomp_Photo_plot+ theme(legend.position = "none") #remove legend
+Pvar_Photo_plot<-Pvar_Photo_plot+ theme(legend.position = "none") #remove legend
+Pacu_Photo_plot<-Pacu_Photo_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot, nrow = 1)
+library(gridExtra)
+
+```
+Photosynthesis stats
+```{r}
+#df PR.df_B
+
+hist(PR.df_B$Photo)
+PR.df_B$Photo_sqrt<-sqrt(PR.df_B$Photo)
+hist(PR.df_B$Photo_sqrt) #
+
+#lmer
+Photo_stats_model<-lmer(Photo_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(Photo_stats_model) 
+qqPlot(residuals(Photo_stats_model)) 
+Photo_stats_modelC<-lmer(Photo_sqrt~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(Photo_stats_modelC) 
+
+emm<-emmeans(Photo_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+
+# by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
+  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+  PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
+  PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+  PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
+  PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
+  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
+  
+#mcap
+#lmer
+Photo_Mcap_model<-lmer(Photo_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(Photo_Mcap_model) 
+  qqPlot(residuals(Photo_Mcap_model)) 
+  emm<-emmeans(Photo_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Photo_Mcap_model.C<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.C)
+  anova(Photo_Mcap_model.C) 
+  qqPlot(residuals(Photo_Mcap_model.C)) 
+    emm<-emmeans(Photo_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Photo_Mcap_model.CD<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.CD)
+  anova(Photo_Mcap_model.CD) 
+  qqPlot(residuals(Photo_Mcap_model.CD)) 
+    emm<-emmeans(Photo_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pcomp
+#lmer
+Photo_Pcomp_model<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(Photo_Pcomp_model) 
+  qqPlot(residuals(Photo_Pcomp_model)) 
+  emm<-emmeans(Photo_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Photo_Pcomp_model.Clade<-lmer(Photo_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15)
+  anova(Photo_Pcomp_model.Clade) 
+  qqPlot(residuals(Photo_Pcomp_model.Clade)) 
+  emm<-emmeans(Photo_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Photo_Pcomp_model.C15cj<-1-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
+  anova(Photo_Pcomp_model.C15cj) 
+  qqPlot(residuals(Photo_Pcomp_model.C15cj)) 
+    emm<-emmeans(Photo_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  Photo_Pcomp_model.C15n<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
+  anova(Photo_Pcomp_model.C15n) 
+  qqPlot(residuals(Photo_Pcomp_model.C15n)) 
+    emm<-emmeans(Photo_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+Photo_Pvar_model<-lmer(Photo_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
+  anova(Photo_Pvar_model) 
+  qqPlot(residuals(Photo_Pvar_model)) 
+  emm<-emmeans(Photo_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C only
+  Photo_Pvar_model.C1<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
+  anova(Photo_Pvar_model.C1) 
+  qqPlot(residuals(Photo_Pvar_model.C1)) 
+    emm<-emmeans(Photo_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-CD only
+  Photo_Pvar_model.C27<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C27)
+  anova(Photo_Pvar_model.C27) 
+  qqPlot(residuals(Photo_Pvar_model.C27)) 
+    emm<-emmeans(Photo_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+Photo_Pacu_model<-lmer(Photo_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
+  anova(Photo_Pacu_model) 
+  qqPlot(residuals(Photo_Pacu_model)) 
+  emm<-emmeans(Photo_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Photo_Pacu_model.CCC<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.CCC)
+  anova(Photo_Pacu_model.CCC) 
+  qqPlot(residuals(Photo_Pacu_model.CCC)) 
+    emm<-emmeans(Photo_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Photo_Pacu_model.C42<-lmer(Photo_sqrt~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.C42)
+  anova(Photo_Pacu_model.C42) 
+  qqPlot(residuals(Photo_Pacu_model.C42)) 
+    emm<-emmeans(Photo_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+```
+
+
+
+Respiration
+```{r}
+Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Resp, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Resp, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Resp_mean #display table
+
+# divide by species
+Mcap_Resp_mean<-subset(Resp_mean, Species =="Montipora_capitata")
+Pcomp_Resp_mean<-subset(Resp_mean, Species =="Porites_compressa")
+Pvar_Resp_mean<-subset(Resp_mean, Species =="Pavona_varians")
+Pacu_Resp_mean<-subset(Resp_mean, Species =="Pocillopora_acuta")
+
+#Mcap plot
+
+Mcap_Resp_plot<-ggplot(data=Mcap_Resp_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  ggtitle("Mcap Resp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Resp_plot
+
+
+#Pcomp plot
+
+Pcomp_Resp_plot<-ggplot(data=Pcomp_Resp_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pcomp Resp")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Resp_plot
+
+#Pvar plot
+
+Pvar_Resp_plot<-ggplot(data=Pvar_Resp_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pvar Resp")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Resp_plot
+
+#Pacu plot
+
+Pacu_Resp_plot<-ggplot(data=Pacu_Resp_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pacu Resp")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=2))+
+        theme(aspect.ratio=1)+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Resp_plot
+
+```
+R Plots together
+```{r}
+###### All plots together
+Mcap_Resp_plot<-Mcap_Resp_plot+ theme(legend.position = "none") #remove legend
+Pcomp_Resp_plot<-Pcomp_Resp_plot+ theme(legend.position = "none") #remove legend
+Pvar_Resp_plot<-Pvar_Resp_plot+ theme(legend.position = "none") #remove legend
+Pacu_Resp_plot<-Pacu_Resp_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot, nrow = 1)
+
+```
+Resp stats
+```{r}
+#df PR.df_B
+
+hist(PR.df_B$Resp) #normal
+
+
+#lmer
+Resp_stats_model<-lmer(Resp~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(Resp_stats_model) 
+qqPlot(residuals(Resp_stats_model)) 
+
+Resp_stats_modelC<-lmer(Resp~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(Resp_stats_modelC) 
+
+emm<-emmeans(Resp_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+  
+#mcap
+#lmer
+Resp_Mcap_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(Resp_Mcap_model) 
+  qqPlot(residuals(Resp_Mcap_model)) 
+  emm<-emmeans(Resp_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  Resp_Mcap_model.C<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.C)
+  anova(Resp_Mcap_model.C) 
+  qqPlot(residuals(Resp_Mcap_model.C)) 
+    emm<-emmeans(Resp_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  Resp_Mcap_model.CD<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.CD)
+  anova(Resp_Mcap_model.CD) 
+  qqPlot(residuals(Resp_Mcap_model.CD)) 
+    emm<-emmeans(Resp_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pcomp
+#lmer
+Resp_Pcomp_model<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(Resp_Pcomp_model) 
+  qqPlot(residuals(Resp_Pcomp_model)) 
+  emm<-emmeans(Resp_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+Resp_Pcomp_model.Clade<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(Resp_Pcomp_model.Clade) 
+  qqPlot(residuals(Resp_Pcomp_model.Clade)) 
+  emm<-emmeans(Resp_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  Resp_Pcomp_model.C15cj<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
+  anova(Resp_Pcomp_model.C15cj) 
+  qqPlot(residuals(Resp_Pcomp_model.C15cj)) 
+    emm<-emmeans(Resp_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  Resp_Pcomp_model.C15n<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
+  anova(Resp_Pcomp_model.C15n) 
+  qqPlot(residuals(Resp_Pcomp_model.C15n)) 
+    emm<-emmeans(Resp_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
+  anova(Resp_Pvar_model) 
+  qqPlot(residuals(Resp_Pvar_model)) 
+  emm<-emmeans(Resp_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C1 only
+  Resp_Pvar_model.C1<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
+  anova(Resp_Pvar_model.C1) 
+  qqPlot(residuals(Resp_Pvar_model.C1)) 
+    emm<-emmeans(Resp_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  Resp_Pvar_model.C27<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C27)
+  anova(Resp_Pvar_model.C27) 
+  qqPlot(residuals(Resp_Pvar_model.C27)) 
+    emm<-emmeans(Resp_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
+  anova(Resp_Pacu_model) 
+  qqPlot(residuals(Resp_Pacu_model)) 
+  emm<-emmeans(Resp_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  Resp_Pacu_model.CCC<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.CCC)
+  anova(Resp_Pacu_model.CCC) 
+  qqPlot(residuals(Resp_Pacu_model.CCC)) 
+    emm<-emmeans(Resp_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  Resp_Pacu_model.C42<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.C42)
+  anova(Resp_Pacu_model.C42) 
+  qqPlot(residuals(Resp_Pacu_model.C42)) 
+    emm<-emmeans(Resp_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+```
+
+P:R
+```{r}
+PR_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(PR, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PR_mean #display table
+
+# divide by species
+Mcap_PR_mean<-subset(PR_mean, Species =="Montipora_capitata")
+Pcomp_PR_mean<-subset(PR_mean, Species =="Porites_compressa")
+Pvar_PR_mean<-subset(PR_mean, Species =="Pavona_varians")
+Pacu_PR_mean<-subset(PR_mean, Species =="Pocillopora_acuta")
+
+#Mcap plot
+
+Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Mcap PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
+
+
+#Pcomp plot
+
+Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pcomp PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot
+
+#Pvar plot
+
+Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pvar PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot
+
+#Pacu plot
+
+Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("umol/sec/cm2"))) +
+  ggtitle("Pacu PRsynthesis")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
+
+```
+PR stats
+```{r}
+#df PR.df_B
+
+hist(PR.df_B$PR) #
+PR.df_B$PR_log<-log10(PR.df_B$PR+1)
+hist(PR.df_B$PR_log) #
+
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+
+# by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
+  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+  PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
+  PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+  PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
+  PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
+  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
+
+
+
+
+#lmer
+PR_stats_model<-lmer(PR_log~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(PR_stats_model) 
+qqPlot(residuals(PR_stats_model)) 
+
+PR_stats_modelC<-lmer(PR_log~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
+anova(PR_stats_modelC) 
+
+emm<-emmeans(PR_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+  
+#mcap
+#lmer
+PR_Mcap_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(PR_Mcap_model) 
+  qqPlot(residuals(PR_Mcap_model)) 
+  emm<-emmeans(PR_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#mcap-C only
+  PR_Mcap_model.C<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.C)
+  anova(PR_Mcap_model.C) 
+  qqPlot(residuals(PR_Mcap_model.C)) 
+    emm<-emmeans(PR_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#mcap-CD only
+  PR_Mcap_model.CD<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap.CD)
+  anova(PR_Mcap_model.CD) 
+  qqPlot(residuals(PR_Mcap_model.CD)) 
+    emm<-emmeans(PR_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pcomp
+#lmer
+PR_Pcomp_model<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(PR_Pcomp_model) 
+  qqPlot(residuals(PR_Pcomp_model)) 
+  emm<-emmeans(PR_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+PR_Pcomp_model.Clade<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
+  anova(PR_Pcomp_model.Clade) 
+  qqPlot(residuals(PR_Pcomp_model.Clade)) 
+  emm<-emmeans(PR_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+#Pcomp-C15cj only
+  PR_Pcomp_model.C15cj<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
+  anova(PR_Pcomp_model.C15cj) 
+  qqPlot(residuals(PR_Pcomp_model.C15cj)) 
+    emm<-emmeans(PR_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pcomp-C27 only
+  PR_Pcomp_model.C15n<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
+  anova(PR_Pcomp_model.C15n) 
+  qqPlot(residuals(PR_Pcomp_model.C15n)) 
+    emm<-emmeans(PR_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+#Pvar
+#lmer
+PR_Pvar_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
+  anova(PR_Pvar_model) 
+  qqPlot(residuals(PR_Pvar_model)) 
+  emm<-emmeans(PR_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pvar-C1 only
+  PR_Pvar_model.C1<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
+  anova(PR_Pvar_model.C1) 
+  qqPlot(residuals(PR_Pvar_model.C1)) 
+    emm<-emmeans(PR_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pvar-C27 only
+  PR_Pvar_model.C27<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C27)
+  anova(PR_Pvar_model.C27) 
+  qqPlot(residuals(PR_Pvar_model.C27)) 
+    emm<-emmeans(PR_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)  
+
+#Pacu
+#lmer
+PR_Pacu_model<-lmer(PR_log~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
+  anova(PR_Pacu_model) 
+  qqPlot(residuals(PR_Pacu_model)) 
+  emm<-emmeans(PR_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+#Pacu-CCC only
+  PR_Pacu_model.CCC<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.CCC)
+  anova(PR_Pacu_model.CCC) 
+  qqPlot(residuals(PR_Pacu_model.CCC)) 
+    emm<-emmeans(PR_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+
+#Pacu-C42 only
+  PR_Pacu_model.C42<-lmer(PR_log~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu.C42)
+  anova(PR_Pacu_model.C42) 
+  qqPlot(residuals(PR_Pacu_model.C42)) 
+    emm<-emmeans(PR_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
+    cld(emm)
+    pairs(emm)
+    
+    
+```
 
 
 #COMBINE all physio dfs
@@ -2827,8 +3790,6 @@ library(vegan)
 library(multcompView)
 library("ggpubr")
 
-library(phyloseq)
-library(ggplot2)
 library(dplyr)
 library(plyr)
 library(tidyverse)
@@ -2839,9 +3800,9 @@ library(RColorBrewer)
 
 # Load data (see data_exploration.Rmd)
 load("data/Raw_coral_phyloseq.RData") #use RAW data
-```
+``` 
 Hey what does this do?
-```{r}  
+```{r}   
 coral2 <- coral_RAW %>%
   subset_samples(!is.na(host_species))
 coralDIV2 <- coralDIV_RAW %>% 
@@ -2855,7 +3816,7 @@ coralDIV2 <- coralDIV_RAW %>%
 ```
 
 Monster all data vis (not helpful)
-```{r, fig.width = 10, fig.height = 40} 
+```{r, fig.width = 10, fig.height = 40}  
 # Plot ITS2 profiles for each coral sample by species and site
 plot_bar(coral, fill = "its2_type_profile") +
   facet_wrap(~ host_genus + host_species, ncol = 6, scales = "free") +
@@ -2878,7 +3839,7 @@ ggplot(divclades, aes(x = Sample, y = Abundance, fill = clade)) +
 ```
 Look at low samps  
 ```{r}  
-#lets see what is up with the low samps
+#lets see  what is up with the low samps
 LowSamps<-readxl::read_xlsx("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.meta_only.xlsx")
 
 LowSamps_dups<-merge(LowSamps, Metadata, all.x=T)
@@ -3195,18 +4156,18 @@ orditorp(its2.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r}      
+```{r}       
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
- 
+  
 #heat map
 plot_heatmap(DIV_RelA, "NMDS", "bray", "Species", "DIV")
 
 #by species NOT INTERESTING
   #mcap
-  Mcap_DIV_RA_T1 <- subset_samples(Mcap_DIV_RA, Time.Point=="T1")
-  plot_heatmap(Mcap_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+  plot_heatmap(Mcapent50, "NMDS", "bray", "Parent.ID","DIV",sample.order=T, low="#000033", high="#CCFF66") #use to show split
+
  #Pcomp
   Pcomp_DIV_RA_T1 <- subset_samples(Pcomp_DIV_RA, Time.Point=="T1")
   plot_heatmap(Pcomp_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
@@ -3243,7 +4204,7 @@ print(DIVrareRel1_Pcomp)
 ```
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species
-```{r}    
+```{r}     
 #DIV_RelA is coralDIV2_rare2 with RELA
 
 DIV_RelA_stats<- DIV_RelA #make a copy
@@ -3307,6 +4268,10 @@ mcap.RelRare.TF <- subset_samples(mcap.RelRareT1F, Time.Point == "TF")
   mcap.samp.df.T1F <- as(sample_data(mcap.RelRare.T1F), "data.frame")            #sample df
   adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)      #adonis test
 
+  #heatmap
+    plot_heatmap(DIV_RelA_stats.T1F, "NMDS", "bray", "Parent.ID", "DIV")
+
+  
 #T1
 #make bray curtis data matrix 
   bc.mcapT1 <- phyloseq::distance(mcap.RelRare.T1, method = "bray")
@@ -3404,7 +4369,7 @@ library(colorRamps)
 library(devtools)
 
 ## create palette for parent.ID and treatments
-Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "honeydew4", "372" = "khaki4","373" ="ivory4", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
+Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
 
 #T1 and TF
 ord.mcap <- ordinate(mcap.RelRareT1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
@@ -3415,15 +4380,19 @@ scores.mcap.samp.df$Time.Point <- mcap.samp.df.T1F$Time.Point
 scores.mcap.samp.df$Parent.ID <- mcap.samp.df.T1F$Parent.ID
 scores.mcap.samp.df$Treatment <- mcap.samp.df.T1F$Treatment
 scores.mcap.samp.df$Clade <- mcap.samp.df.T1F$Clade
+scores.mcap.samp.df$Code <- paste(mcap.samp.df.T1F$Parent.ID,mcap.samp.df.T1F$Time.Point)
 
 
+#http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
 ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Clade), size = 4) +
+  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
   scale_color_manual(values=Mcap.Parent.colors)+
+    geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata Bray Curtis") +
   theme_classic()
 #ggsave("McapT1its2.pdf")
+
 ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
   scale_color_manual(values=Mcap.Parent.colors)+
@@ -3449,13 +4418,15 @@ scores.mcapT1$CladeTreat <- as.factor(paste(mcap.samp.df.T1$Clade,mcap.samp.df.T
 
 
 ggplot(scores.mcapT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+ geom_point(aes(stroke=1.5, colour = Parent.ID, size = 4) )+
+    geom_point(aes(colour = Treatment), size = 4) +
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
+     # geom_line(aes(group = Parent.ID), color = "black") + 
   ggtitle("M. capitata T1 Bray Curtis") +
   theme_classic()
-ggsave("McapT1_its2_nmds_clade.pdf")
+#ggsave("McapT1_its2_nmds_Poutline.pdf")
 
 #TF only
 set.seed(30)
@@ -3468,15 +4439,16 @@ scores.mcapTF$Clade <- mcap.samp.df.TF$Clade
 scores.mcapTF$CladeTreat <- as.factor(paste(mcap.samp.df.TF$Clade,mcap.samp.df.TF$Treatment))
 
 ggplot(scores.mcapTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+  geom_point(aes(stroke=1.5, colour = Parent.ID, size = 4) )+
+    geom_point(aes(colour = Treatment), size = 4) +
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
   ggtitle("M. capitata TF Bray Curtis") +
   theme_classic()
-ggsave("Mcap_TF_its_nmds.pdf")
+#ggsave("Mcap_TF_its_nmds_parent_outline.pdf")
 
-
+#### BY CLADE
 #ords
 #C T1 and TF
 set.seed(30)
@@ -3488,13 +4460,13 @@ scores.mcap_C$Parent.ID <- mcap.samp.df.T1F.C$Parent.ID
 scores.mcap_C$Time.Point <- mcap.samp.df.T1F.C$Time.Point
 
 ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Mcap.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata Cladocopium") +
   theme_classic()
-#ggsave("McapTFits.pdf")
+#ggsave("McapTFits_C.pdf")
 
 
 #C T1
@@ -3507,13 +4479,14 @@ scores.mcap_C.T1$Parent.ID <- mcap.samp.df.T1.C$Parent.ID
 scores.mcap_C.T1$Time.Point <- mcap.samp.df.T1.C$Time.Point
 
 ggplot(scores.mcap_C.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 Cladocopium") +
   theme_classic()
-#ggsave("McapTFits.pdf")
+#ggsave("Mcap_T1_its_C.pdf")
 
 #C TF
 set.seed(30)
@@ -3525,13 +4498,14 @@ scores.mcap_C.TF$Parent.ID <- mcap.samp.df.TF.C$Parent.ID
 scores.mcap_C.TF$Time.Point <- mcap.samp.df.TF.C$Time.Point
 
 ggplot(scores.mcap_C.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C TF") +
   theme_classic()
-#ggsave("McapTFits.pdf")
+#ggsave("Mcap_TF_its_TF_C.pdf")
 
 
 #CD
@@ -3544,14 +4518,15 @@ scores.mcap_CD$Parent.ID <- mcap.samp.df.T1F.CD$Parent.ID
 scores.mcap_CD$Time.Point <- mcap.samp.df.T1F.CD$Time.Point
 
 ggplot(scores.mcap_CD, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
   scale_color_manual(values=Mcap.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C&D") +
   theme_classic()
-#ggsave("Mcap_ITS2_CCD_its.pdf")
+#ggsave("Mcap_ITS2_CD_its_T1TF.pdf")
 
-#C T1
+#CD T1
 set.seed(30)
 ord.mcap_CD.T1 <- ordinate(mcap.RelRare.T1.CD, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_CD.T1)
@@ -3561,13 +4536,14 @@ scores.mcap_CD.T1$Parent.ID <- mcap.samp.df.T1.CD$Parent.ID
 scores.mcap_CD.T1$Time.Point <- mcap.samp.df.T1.CD$Time.Point
 
 ggplot(scores.mcap_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 CD") +
   theme_classic()
-ggsave("Mcap_ITS2_C_TF.pdf")
+#ggsave("Mcap_ITS2_CD_T1.pdf")
 
 #CD TF
 set.seed(30)
@@ -3579,7 +4555,8 @@ scores.mcap_CD.TF$Parent.ID <- mcap.samp.df.TF.CD$Parent.ID
 scores.mcap_CD.TF$Time.Point <- mcap.samp.df.TF.CD$Time.Point
 
 ggplot(scores.mcap_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
@@ -3631,7 +4608,7 @@ Pcomp.RelRare.TF <- subset_samples(Pcomp.RelRare.T1F, Time.Point == "TF")
 
 ## by clade: C vs CD
   
-# C only, new objs
+# C15cj only, new objs
 Pcomp.RelRareT1F.C15cj <- subset_samples(Pcomp.RelRare.T1F, Clade == "C15cj")
 Pcomp.RelRare.T1.C15cj <- subset_samples(Pcomp.RelRare.T1, Clade == "C15cj")
 Pcomp.RelRare.TF.C15cj <- subset_samples(Pcomp.RelRare.TF, Clade == "C15cj")
@@ -3700,9 +4677,9 @@ Pcomp NMDS
 library(RColorBrewer)
 library(colorRamps)
 library(devtools)
-
+ 
 ## create palette for parent.ID and treatments
-Pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "honeydew4", "322" = "khaki4","323" ="ivory4", "324" = "lightblue", "Ambient" = "Blue", "High" = "Red","C15cj Ambient"="blue","C15cj High"="red", "C15n Ambient"="darkblue", "C15n High"="darkred") 
+Pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "cyan", "322" = "darkorange","323" ="darkorchid1", "324" = "lightblue", "Ambient" = "Blue", "High" = "Red","C15cj Ambient"="blue","C15cj High"="red", "C15n Ambient"="darkblue", "C15n High"="darkred") 
 
 #T1 and TF
 ord.Pcomp <- ordinate(Pcomp.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
@@ -3717,13 +4694,14 @@ scores.Pcomp.samp.df$Code <- paste(Pcomp.samp.df.T1F$Parent.ID, Pcomp.samp.df.T1
 
 
 ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-    geom_line(aes(group = Code), color = "black") + 
+   # geom_line(aes(group = Code), color = "black") + 
   ggtitle("P. comp Bray Curtis") +
   theme_classic()
-#ggsave("PcompT1its2.pdf")
+#ggsave("Pcomp_T1TF_its2.pdf")
 
 ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
@@ -3751,14 +4729,15 @@ scores.PcompT1$CladeTreat <- as.factor(paste(Pcomp.samp.df.T1$Clade,Pcomp.samp.d
 
 
 ggplot(scores.PcompT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Clade, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Clade)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-      geom_line(aes(group = Parent.ID), color = "black") + 
-  ggtitle("M. capitata T1 Bray Curtis") +
+  #    geom_line(aes(group = Parent.ID), color = "black") + 
+  ggtitle("P. comp T1 Bray Curtis") +
   theme_classic()
-ggsave("PcompT1_its2_nmds_clade.pdf")
+#ggsave("Pcomp_T1_its2_nmds_clade.pdf")
 
 #TF only
 set.seed(30)
@@ -3771,125 +4750,136 @@ scores.PcompTF$Clade <- Pcomp.samp.df.TF$Clade
 scores.PcompTF$CladeTreat <- as.factor(paste(Pcomp.samp.df.TF$Clade,Pcomp.samp.df.TF$Treatment))
 
 ggplot(scores.PcompTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Clade, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Clade)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata TF Bray Curtis") +
+  ggtitle("P. comp TF Bray Curtis") +
   theme_classic()
-ggsave("Pcomp_TF_its_nmds.pdf")
+#ggsave("Pcomp_TF_its_nmds.pdf")
 
 
+
+ Pcomp.RelRare.T1F
+Pcomp.RelRare.T1
+Pcomp.RelRare.TF. 
+
+#### BY CLADE
 #ords
 #C T1 and TF
 set.seed(30)
-ord.Pcomp_C <- ordinate(Pcomp_DIV_C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_C)
-scores.Pcomp_C <- as.data.frame(scores(ord.Pcomp_C))
-scores.Pcomp_C$Treatment <- Pcomp.samp.df.T1F.C$Treatment
-scores.Pcomp_C$Parent.ID <- Pcomp.samp.df.T1F.C$Parent.ID
-scores.Pcomp_C$Time.Point <- Pcomp.samp.df.T1F.C$Time.Point
+ord.pcomp_C15cj  <- ordinate(Pcomp.RelRare.T1F, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15cj)
+scores.pcomp_C15cj <- as.data.frame(scores(ord.pcomp_C15cj))
+scores.pcomp_C15cj$Treatment <- Pcomp.samp.df.T1F$Treatment
+scores.pcomp_C15cj$Parent.ID <- Pcomp.samp.df.T1F$Parent.ID
+scores.pcomp_C15cj$Time.Point <- Pcomp.samp.df.T1F$Time.Point
 
-ggplot(scores.Pcomp_C, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+ggplot(scores.pcomp_C15cj, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Cladocopium") +
+  ggtitle("P comp C15cj") +
   theme_classic()
-#ggsave("PcompTFits.pdf")
+#ggsave("pcompTFits_C15cj.pdf")
 
 
 #C T1
 set.seed(30)
-ord.Pcomp_C.T1 <- ordinate(Pcomp.RelRare.T1.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_C.T1)
-scores.Pcomp_C.T1 <- as.data.frame(scores(ord.Pcomp_C.T1))
-scores.Pcomp_C.T1$Treatment <- Pcomp.samp.df.T1.C$Treatment
-scores.Pcomp_C.T1$Parent.ID <- Pcomp.samp.df.T1.C$Parent.ID
-scores.Pcomp_C.T1$Time.Point <- Pcomp.samp.df.T1.C$Time.Point
+ord.pcomp_C15cj.T1 <- ordinate(Pcomp.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15cj.T1)
+scores.pcomp_C15cj.T1 <- as.data.frame(scores(ord.pcomp_C15cj.T1))
+scores.pcomp_C15cj.T1$Treatment <- pcomp.samp.df.T1$Treatment
+scores.pcomp_C15cj.T1$Parent.ID <- pcomp.samp.df.T1$Parent.ID
+scores.pcomp_C15cj.T1$Time.Point <- pcomp.samp.df.T1$Time.Point
 
-ggplot(scores.Pcomp_C.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.pcomp_C15cj.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 Cladocopium") +
+  ggtitle("P. comp T1 C15cj") +
   theme_classic()
-#ggsave("PcompTFits.pdf")
+#ggsave("pcomp_T1_its_C15cj.pdf")
 
 #C TF
 set.seed(30)
-ord.Pcomp_C.TF <- ordinate(Pcomp.RelRare.TF.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_C.TF)
-scores.Pcomp_C.TF <- as.data.frame(scores(ord.Pcomp_C.TF))
-scores.Pcomp_C.TF$Treatment <- Pcomp.samp.df.TF.C$Treatment
-scores.Pcomp_C.TF$Parent.ID <- Pcomp.samp.df.TF.C$Parent.ID
-scores.Pcomp_C.TF$Time.Point <- Pcomp.samp.df.TF.C$Time.Point
+ord.pcomp_C15cj.TF <- ordinate(pcomp.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15cj.TF)
+scores.pcomp_C15cj.TF <- as.data.frame(scores(ord.pcomp_C15cj.TF))
+scores.pcomp_C15cj.TF$Treatment <- pcomp.samp.df.TF$Treatment
+scores.pcomp_C15cj.TF$Parent.ID <- pcomp.samp.df.TF$Parent.ID
+scores.pcomp_C15cj.TF$Time.Point <- pcomp.samp.df.TF$Time.Point
 
-ggplot(scores.Pcomp_C.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.pcomp_C15cj.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C TF") +
   theme_classic()
-#ggsave("PcompTFits.pdf")
+#ggsave("pcomp_TF_its_TF_C15cj.pdf")
 
 
-#CD
+#C15n
 set.seed(30)
-ord.Pcomp_CD <- ordinate(Pcomp_DIV_CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_CD)
-scores.Pcomp_CD <- as.data.frame(scores(ord.Pcomp_CD))
-scores.Pcomp_CD$Treatment <- Pcomp.samp.df.T1F.CD$Treatment
-scores.Pcomp_CD$Parent.ID <- Pcomp.samp.df.T1F.CD$Parent.ID
-scores.Pcomp_CD$Time.Point <- Pcomp.samp.df.T1F.CD$Time.Point
+ord.pcomp_C15n <- ordinate(pcomp_DIV_C15n, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15n)
+scores.pcomp_C15n <- as.data.frame(scores(ord.pcomp_C15n))
+scores.pcomp_C15n$Treatment <- pcomp.samp.df.T1F.CD$Treatment
+scores.pcomp_C15n$Parent.ID <- pcomp.samp.df.T1F.CD$Parent.ID
+scores.pcomp_C15n$Time.Point <- pcomp.samp.df.T1F.CD$Time.Point
 
-ggplot(scores.Pcomp_CD, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+ggplot(scores.pcomp_C15n, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
+  scale_color_manual(values=pcomp.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C&D") +
   theme_classic()
-#ggsave("Pcomp_ITS2_CCD_its.pdf")
+#ggsave("pcomp_ITS2_C15n_its_T1TF.pdf")
 
-#C T1
+#C15n T1
 set.seed(30)
-ord.Pcomp_CD.T1 <- ordinate(Pcomp.RelRare.T1.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_CD.T1)
-scores.Pcomp_CD.T1 <- as.data.frame(scores(ord.Pcomp_CD.T1))
-scores.Pcomp_CD.T1$Treatment <- Pcomp.samp.df.T1.CD$Treatment
-scores.Pcomp_CD.T1$Parent.ID <- Pcomp.samp.df.T1.CD$Parent.ID
-scores.Pcomp_CD.T1$Time.Point <- Pcomp.samp.df.T1.CD$Time.Point
+ord.pcomp_C15n.T1 <- ordinate(pcomp.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15n.T1)
+scores.pcomp_C15n.T1 <- as.data.frame(scores(ord.pcomp_C15n.T1))
+scores.pcomp_C15n.T1$Treatment <- pcomp.samp.df.T1$Treatment
+scores.pcomp_C15n.T1$Parent.ID <- pcomp.samp.df.T1$Parent.ID
+scores.pcomp_C15n.T1$Time.Point <- pcomp.samp.df.T1$Time.Point
 
-ggplot(scores.Pcomp_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.pcomp_C15n.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 CD") +
+  ggtitle("P comp T1 C15n") +
   theme_classic()
-ggsave("Pcomp_ITS2_C_TF.pdf")
+#ggsave("pcomp_ITS2_C15n_T1.pdf")
 
 #CD TF
 set.seed(30)
-ord.Pcomp_CD.TF <- ordinate(Pcomp.RelRare.TF.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp_CD.TF)
-scores.Pcomp_CD.TF <- as.data.frame(scores(ord.Pcomp_CD.TF))
-scores.Pcomp_CD.TF$Treatment <- Pcomp.samp.df.TF.CD$Treatment
-scores.Pcomp_CD.TF$Parent.ID <- Pcomp.samp.df.TF.CD$Parent.ID
-scores.Pcomp_CD.TF$Time.Point <- Pcomp.samp.df.TF.CD$Time.Point
+ord.pcomp_C15n.TF <- ordinate(pcomp.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp_C15n.TF)
+scores.pcomp_C15n.TF <- as.data.frame(scores(ord.pcomp_C15n.TF))
+scores.pcomp_C15n.TF$Treatment <- pcomp.samp.df.TF$Treatment
+scores.pcomp_C15n.TF$Parent.ID <- pcomp.samp.df.TF$Parent.ID
+scores.pcomp_C15n.TF$Time.Point <- pcomp.samp.df.TF$Time.Point
 
-ggplot(scores.Pcomp_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.pcomp_C15n.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pcomp.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata CD TF") +
+  ggtitle("P. comp C15n TF") +
   theme_classic()
-ggsave("Pcomp_ITS2_CD_TF.pdf")
-
+#ggsave("pcomp_ITS2_C15n_TF.pdf")
 
 
 ```
@@ -3897,9 +4887,9 @@ Pavona - T1 and TF together, then independent. PERMANOVA
 ```{r}   
 #DIV_RelA_stats.T1F
 #Pvar
-Pvar.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "montipora")
-Pvar.RelRare.T1 <- subset_samples(Pvar.RelRareT1F, Time.Point == "T1")
-Pvar.RelRare.TF <- subset_samples(Pvar.RelRareT1F, Time.Point == "TF")
+Pvar.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "pavona")
+Pvar.RelRare.T1 <- subset_samples(Pvar.RelRare.T1F, Time.Point == "T1")
+Pvar.RelRare.TF <- subset_samples(Pvar.RelRare.T1F, Time.Point == "TF")
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -3931,83 +4921,90 @@ Pvar.RelRare.TF <- subset_samples(Pvar.RelRareT1F, Time.Point == "TF")
   permutest(beta.Pvar.TF, pairwise = T) 
 
 
-## by clade: C vs CD
+## by clade: C1 vs C27
   
-# C only, new objs
-Pvar.RelRareT1F.C <- subset_samples(Pvar.RelRareT1F, Clade == "C")
-Pvar.RelRare.T1.C <- subset_samples(Pvar.RelRare.T1, Clade == "C")
-Pvar.RelRare.TF.C <- subset_samples(Pvar.RelRare.TF, Clade == "C")
+# C1 only, new objs
+Pvar.RelRareT1F.C1 <- subset_samples(Pvar.RelRare.T1F, Clade == "C1")
+Pvar.RelRare.T1.C1 <- subset_samples(Pvar.RelRare.T1, Clade == "C1")
+Pvar.RelRare.TF.C1 <- subset_samples(Pvar.RelRare.TF, Clade == "C1")
   
-#T1TF.C
+#T1TF.C1
 #make bray curtis data matrix -T1 and TF
-  bc.Pvar.T1F.C <- phyloseq::distance(Pvar.RelRareT1F.C, method = "bray")
-  Pvar.samp.df.T1F.C <- as(sample_data(Pvar.RelRareT1F.C), "data.frame") #sample df
+  bc.Pvar.T1F.C1 <- phyloseq::distance(Pvar.RelRareT1F.C1, method = "bray")
+  Pvar.samp.df.T1F.C1 <- as(sample_data(Pvar.RelRareT1F.C1), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pvar.T1F.C ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.C)
+  adonis(bc.Pvar.T1F.C1 ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.C1)
 
-#T1.C
+#T1.C1
 #make bray curtis data matrix 
-  bc.PvarT1.C <- phyloseq::distance(Pvar.RelRare.T1.C, method = "bray")
-  Pvar.samp.df.T1.C <- as(sample_data(Pvar.RelRare.T1.C), "data.frame") #sample df
+  bc.PvarT1.C1 <- phyloseq::distance(Pvar.RelRare.T1.C1, method = "bray")
+  Pvar.samp.df.T1.C1 <- as(sample_data(Pvar.RelRare.T1.C1), "data.frame") #sample df
 #adonis test
-  adonis(bc.PvarT1.C ~ Treatment, data = Pvar.samp.df.T1.C)
+  adonis(bc.PvarT1.C1 ~ Treatment, data = Pvar.samp.df.T1.C1)
 # Homogeneity of dispersion test  
-  beta.Pvar.T1.C <- betadisper(bc.PvarT1.C, Pvar.samp.df.T1.C$Treatment)
-  permutest(beta.Pvar.T1.C, pairwise = T) 
+  beta.Pvar.T1.C1 <- betadisper(bc.PvarT1.C1, Pvar.samp.df.T1.C1$Treatment)
+  permutest(beta.Pvar.T1.C1, pairwise = T) 
 
-#TF.C
+#TF.C1
 #make bray curtis data matrix 
-  bc.Pvar.TF.C <- phyloseq::distance(Pvar.RelRare.TF.C, method = "bray")
-  Pvar.samp.df.TF.C <- as(sample_data(Pvar.RelRare.TF.C), "data.frame") #sample df
+  bc.Pvar.TF.C1 <- phyloseq::distance(Pvar.RelRare.TF.C1, method = "bray")
+  Pvar.samp.df.TF.C1 <- as(sample_data(Pvar.RelRare.TF.C1), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pvar.TF.C ~ Treatment, data = Pvar.samp.df.TF.C)
+  adonis(bc.Pvar.TF.C1 ~ Treatment, data = Pvar.samp.df.TF.C1)
 # Homogeneity of dispersion test  
-  beta.Pvar.TF.C <- betadisper(bc.Pvar.TF.C, Pvar.samp.df.TF.C$Treatment)
-  permutest(beta.Pvar.TF.C, pairwise = T) 
+  beta.Pvar.TF.C1 <- betadisper(bc.Pvar.TF.C1, Pvar.samp.df.TF.C1$Treatment)
+  permutest(beta.Pvar.TF.C1, pairwise = T) 
 
 
-# CD only, new objs
-Pvar.RelRareT1F.CD <- subset_samples(Pvar.RelRareT1F, Clade == "CD")
-Pvar.RelRare.T1.CD <- subset_samples(Pvar.RelRare.T1, Clade == "CD")
-Pvar.RelRare.TF.CD <- subset_samples(Pvar.RelRare.TF, Clade == "CD")
+# C27 only, new objs
+Pvar.RelRareT1F.C27 <- subset_samples(Pvar.RelRare.T1F, Clade == "C27")
+Pvar.RelRare.T1.C27 <- subset_samples(Pvar.RelRare.T1, Clade == "C27")
+Pvar.RelRare.TF.C27 <- subset_samples(Pvar.RelRare.TF, Clade == "C27")
   
-#T1TF.CD
+#T1TF.C27
 #make bray curtis data matrix -T1 and TF
-  bc.Pvar.T1F.CD <- phyloseq::distance(Pvar.RelRareT1F.CD, method = "bray")
-  Pvar.samp.df.T1F.CD <- as(sample_data(Pvar.RelRareT1F.CD), "data.frame") #sample df
+  bc.Pvar.T1F.C27 <- phyloseq::distance(Pvar.RelRareT1F.C27, method = "bray")
+  Pvar.samp.df.T1F.C27 <- as(sample_data(Pvar.RelRareT1F.C27), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pvar.T1F.CD ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.CD)
+  adonis(bc.Pvar.T1F.C27 ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.C27)
 
-#T1.CD
+#T1.C27
 #make bray curtis data matrix 
-  bc.PvarT1.CD <- phyloseq::distance(Pvar.RelRare.T1.CD, method = "bray")
-  Pvar.samp.df.T1.CD <- as(sample_data(Pvar.RelRare.T1.CD), "data.frame") #sample df
-  adonis(bc.PvarT1.CD ~ Treatment, data = Pvar.samp.df.T1.CD)#adonis test
+  bc.PvarT1.C27 <- phyloseq::distance(Pvar.RelRare.T1.C27, method = "bray")
+  Pvar.samp.df.T1.C27 <- as(sample_data(Pvar.RelRare.T1.C27), "data.frame") #sample df
+  adonis(bc.PvarT1.C27 ~ Treatment, data = Pvar.samp.df.T1.C27)#adonis test
 # Homogeneity of dispersion test  
-  beta.Pvar.T1.CD <- betadisper(bc.PvarT1.CD, Pvar.samp.df.T1.CD$Treatment)
-  permutest(beta.Pvar.T1.CD, pairwise = T) 
+  beta.Pvar.T1.C27 <- betadisper(bc.PvarT1.C27, Pvar.samp.df.T1.C27$Treatment)
+  permutest(beta.Pvar.T1.C27, pairwise = T) 
 
-#TF.CD
+#TF.C27
 #make bray curtis data matrix 
-  bc.Pvar.TF.CD <- phyloseq::distance(Pvar.RelRare.TF.CD, method = "bray")
-  Pvar.samp.df.TF.CD <- as(sample_data(Pvar.RelRare.TF.CD), "data.frame") #sample df
+  bc.Pvar.TF.C27 <- phyloseq::distance(Pvar.RelRare.TF.C27, method = "bray")
+  Pvar.samp.df.TF.C27 <- as(sample_data(Pvar.RelRare.TF.C27), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pvar.TF.CD ~ Treatment, data = Pvar.samp.df.TF.CD)
+  adonis(bc.Pvar.TF.C27 ~ Treatment, data = Pvar.samp.df.TF.C27)
 # Homogeneity of dispersion test  
-  beta.Pvar.TF.CD <- betadisper(bc.Pvar.TF.CD, Pvar.samp.df.TF.CD$Treatment)
-  permutest(beta.Pvar.TF.CD, pairwise = T) 
+  beta.Pvar.TF.C27 <- betadisper(bc.Pvar.TF.C27, Pvar.samp.df.TF.C27$Treatment)
+  permutest(beta.Pvar.TF.C27, pairwise = T) 
 ``` 
 Pvar NMDS
 ```{r}
+#dfs
+# C1 only, new objs
+# Pvar.RelRareT1F.C1 <- subset_samples(Pvar.RelRare.T1F, Clade == "C1")
+# Pvar.RelRare.T1.C1 <- subset_samples(Pvar.RelRare.T1, Clade == "C1")
+# Pvar.RelRare.TF.C1 <- subset_samples(Pvar.RelRare.TF, Clade == "C1")
+
+
 library(RColorBrewer)
 library(colorRamps)
 library(devtools)
 
 ## create palette for parent.ID and treatments
-Pvar.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "honeydew4", "372" = "khaki4","373" ="ivory4", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
+Pvar.Parent.colors <- c("325" = "green4",  "351" = "firebrick3", "353" ="deeppink4", "354" = "orange", "355" = "green1","356" = "gold",  "357"= "hotpink", "358" ="darkslateblue", "359" = "honeydew4", "360" = "khaki4","361" ="ivory4", "362" = "lightblue", Ambient = "Blue", High = "Red","C1 Ambient"="blue","C1 High"="red", "C27 Ambient"="darkblue", "C27 High"="darkred") 
 
 #T1 and TF
-ord.Pvar <- ordinate(Pvar.RelRareT1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
+ord.Pvar <- ordinate(Pvar.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
 stressplot(ord.Pvar)
 
 scores.Pvar.samp.df <- as.data.frame(scores(ord.Pvar) ) 
@@ -4015,20 +5012,25 @@ scores.Pvar.samp.df$Time.Point <- Pvar.samp.df.T1F$Time.Point
 scores.Pvar.samp.df$Parent.ID <- Pvar.samp.df.T1F$Parent.ID
 scores.Pvar.samp.df$Treatment <- Pvar.samp.df.T1F$Treatment
 scores.Pvar.samp.df$Clade <- Pvar.samp.df.T1F$Clade
+scores.Pvar.samp.df$Code <- paste(Pvar.samp.df.T1F$Parent.ID, Pvar.samp.df.T1F$Time.Point)
 
 
 ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pvar.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Bray Curtis") +
+   # geom_line(aes(group = Code), color = "black") + 
+  ggtitle("P.var Bray Curtis") +
   theme_classic()
-#ggsave("PvarT1its2.pdf")
+#ggsave("Pvar_T1TF_its2.pdf")
+
 ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
   scale_color_manual(values=Pvar.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Bray Curtis") +
+     # geom_line(aes(group = Parent.ID), color = "black") + 
+  ggtitle("P. var Bray Curtis") +
   theme_classic()
 #ggsave("PvarT1its2.pdf")
 
@@ -4049,13 +5051,15 @@ scores.PvarT1$CladeTreat <- as.factor(paste(Pvar.samp.df.T1$Clade,Pvar.samp.df.T
 
 
 ggplot(scores.PvarT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata T1 Bray Curtis") +
+  #    geom_line(aes(group = Parent.ID), color = "black") + 
+  ggtitle("P. var T1 Bray Curtis") +
   theme_classic()
-ggsave("PvarT1_its2_nmds_clade.pdf")
+#ggsave("Pvar_T1_its2_nmds_clade.pdf")
 
 #TF only
 set.seed(30)
@@ -4068,124 +5072,140 @@ scores.PvarTF$Clade <- Pvar.samp.df.TF$Clade
 scores.PvarTF$CladeTreat <- as.factor(paste(Pvar.samp.df.TF$Clade,Pvar.samp.df.TF$Treatment))
 
 ggplot(scores.PvarTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Clade, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Clade)) +
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata TF Bray Curtis") +
+  ggtitle("P. var TF Bray Curtis") +
   theme_classic()
-ggsave("Pvar_TF_its_nmds.pdf")
+#gsave("Pvar_TF_its_nmds.pdf")
 
 
-#ords
-#C T1 and TF
+
+# C1 only, new objs
+#Pvar.RelRareT1F.C1 , Pvar.samp.df.T1F.C1
+#Pvar.RelRare.T1.C1 , Pvar.samp.df.T1.C1
+#Pvar.RelRare.TF.C1 ,Pvar.samp.df.TF.C1
+
+#### BY CLADE
+
+#CCC T1 and TF
 set.seed(30)
-ord.Pvar_C <- ordinate(Pvar_DIV_C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_C)
-scores.Pvar_C <- as.data.frame(scores(ord.Pvar_C))
-scores.Pvar_C$Treatment <- Pvar.samp.df.T1F.C$Treatment
-scores.Pvar_C$Parent.ID <- Pvar.samp.df.T1F.C$Parent.ID
-scores.Pvar_C$Time.Point <- Pvar.samp.df.T1F.C$Time.Point
+ord.Pvar_CCC  <- ordinate(Pvar.RelRare.T1F, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_CCC)
+scores.Pvar_CCC <- as.data.frame(scores(ord.Pvar_CCC))
+scores.Pvar_CCC$Treatment <- Pvar.samp.df.T1F$Treatment
+scores.Pvar_CCC$Parent.ID <- Pvar.samp.df.T1F$Parent.ID
+scores.Pvar_CCC$Time.Point <- Pvar.samp.df.T1F$Time.Point
 
-ggplot(scores.Pvar_C, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+ggplot(scores.Pvar_CCC, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pvar.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Cladocopium") +
+  ggtitle("P var CCC") +
   theme_classic()
-#ggsave("PvarTFits.pdf")
+#ggsave("PvarTFits_CCC.pdf")
 
 
 #C T1
 set.seed(30)
-ord.Pvar_C.T1 <- ordinate(Pvar.RelRare.T1.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_C.T1)
-scores.Pvar_C.T1 <- as.data.frame(scores(ord.Pvar_C.T1))
-scores.Pvar_C.T1$Treatment <- Pvar.samp.df.T1.C$Treatment
-scores.Pvar_C.T1$Parent.ID <- Pvar.samp.df.T1.C$Parent.ID
-scores.Pvar_C.T1$Time.Point <- Pvar.samp.df.T1.C$Time.Point
+ord.Pvar_CCC.T1 <- ordinate(Pvar.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_CCC.T1)
+scores.Pvar_CCC.T1 <- as.data.frame(scores(ord.Pvar_CCC.T1))
+scores.Pvar_CCC.T1$Treatment <- Pvar.samp.df.T1$Treatment
+scores.Pvar_CCC.T1$Parent.ID <- Pvar.samp.df.T1$Parent.ID
+scores.Pvar_CCC.T1$Time.Point <- Pvar.samp.df.T1$Time.Point
 
-ggplot(scores.Pvar_C.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pvar_CCC.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 Cladocopium") +
+  ggtitle("P. var T1 CCC") +
   theme_classic()
-#ggsave("PvarTFits.pdf")
+#ggsave("Pvar_T1_its_CCC.pdf")
 
 #C TF
 set.seed(30)
-ord.Pvar_C.TF <- ordinate(Pvar.RelRare.TF.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_C.TF)
-scores.Pvar_C.TF <- as.data.frame(scores(ord.Pvar_C.TF))
-scores.Pvar_C.TF$Treatment <- Pvar.samp.df.TF.C$Treatment
-scores.Pvar_C.TF$Parent.ID <- Pvar.samp.df.TF.C$Parent.ID
-scores.Pvar_C.TF$Time.Point <- Pvar.samp.df.TF.C$Time.Point
+ord.Pvar_CCC.TF <- ordinate(Pvar.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_CCC.TF)
+scores.Pvar_CCC.TF <- as.data.frame(scores(ord.Pvar_CCC.TF))
+scores.Pvar_CCC.TF$Treatment <- Pvar.samp.df.TF$Treatment
+scores.Pvar_CCC.TF$Parent.ID <- Pvar.samp.df.TF$Parent.ID
+scores.Pvar_CCC.TF$Time.Point <- Pvar.samp.df.TF$Time.Point
 
-ggplot(scores.Pvar_C.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pvar_CCC.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata C TF") +
+  ggtitle("P. var CCC TF") +
   theme_classic()
-#ggsave("PvarTFits.pdf")
+#ggsave("Pvar_TF_its_TF_CCC.pdf")
 
 
-#CD
+
+
+
+#C27
 set.seed(30)
-ord.Pvar_CD <- ordinate(Pvar_DIV_CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_CD)
-scores.Pvar_CD <- as.data.frame(scores(ord.Pvar_CD))
-scores.Pvar_CD$Treatment <- Pvar.samp.df.T1F.CD$Treatment
-scores.Pvar_CD$Parent.ID <- Pvar.samp.df.T1F.CD$Parent.ID
-scores.Pvar_CD$Time.Point <- Pvar.samp.df.T1F.CD$Time.Point
+ord.Pvar_C27 <- ordinate(Pvar.RelRareT1F.C27, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_C27)
+scores.Pvar_C27 <- as.data.frame(scores(ord.Pvar_C27))
+scores.Pvar_C27$Treatment <- Pvar.samp.df.T1F$Treatment
+scores.Pvar_C27$Parent.ID <- Pvar.samp.df.T1F$Parent.ID
+scores.Pvar_C27$Time.Point <- Pvar.samp.df.T1F$Time.Point
 
-ggplot(scores.Pvar_CD, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+ggplot(scores.Pvar_C27, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
   scale_color_manual(values=Pvar.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata C&D") +
+  ggtitle("P. var C&D") +
   theme_classic()
-#ggsave("Pvar_ITS2_CCD_its.pdf")
+#ggsave("Pvar_ITS2_C27_its_T1TF.pdf")
 
-#C T1
+#C27 T1
 set.seed(30)
-ord.Pvar_CD.T1 <- ordinate(Pvar.RelRare.T1.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_CD.T1)
-scores.Pvar_CD.T1 <- as.data.frame(scores(ord.Pvar_CD.T1))
-scores.Pvar_CD.T1$Treatment <- Pvar.samp.df.T1.CD$Treatment
-scores.Pvar_CD.T1$Parent.ID <- Pvar.samp.df.T1.CD$Parent.ID
-scores.Pvar_CD.T1$Time.Point <- Pvar.samp.df.T1.CD$Time.Point
+ord.Pvar_C27.T1 <- ordinate(Pvar.RelRare.T1.C27 , "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_C27.T1)
+scores.Pvar_C27.T1 <- as.data.frame(scores(ord.Pvar_C27.T1))
+scores.Pvar_C27.T1$Treatment <- Pvar.samp.df.T1.C27$Treatment
+scores.Pvar_C27.T1$Parent.ID <- Pvar.samp.df.T1.C27$Parent.ID
+scores.Pvar_C27.T1$Time.Point <- Pvar.samp.df.T1.C27$Time.Point
 
-ggplot(scores.Pvar_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pvar_C27.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 CD") +
+  ggtitle("P var T1 C27") +
   theme_classic()
-ggsave("Pvar_ITS2_C_TF.pdf")
+#ggsave("Pvar_ITS2_C27_T1.pdf")
 
 #CD TF
 set.seed(30)
-ord.Pvar_CD.TF <- ordinate(Pvar.RelRare.TF.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pvar_CD.TF)
-scores.Pvar_CD.TF <- as.data.frame(scores(ord.Pvar_CD.TF))
-scores.Pvar_CD.TF$Treatment <- Pvar.samp.df.TF.CD$Treatment
-scores.Pvar_CD.TF$Parent.ID <- Pvar.samp.df.TF.CD$Parent.ID
-scores.Pvar_CD.TF$Time.Point <- Pvar.samp.df.TF.CD$Time.Point
+ord.Pvar_C27.TF <- ordinate(Pvar.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pvar_C27.TF)
+scores.Pvar_C27.TF <- as.data.frame(scores(ord.Pvar_C27.TF))
+scores.Pvar_C27.TF$Treatment <- Pvar.samp.df.TF$Treatment
+scores.Pvar_C27.TF$Parent.ID <- Pvar.samp.df.TF$Parent.ID
+scores.Pvar_C27.TF$Time.Point <- Pvar.samp.df.TF$Time.Point
 
-ggplot(scores.Pvar_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pvar_C27.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pvar.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata CD TF") +
+  ggtitle("P. var C27 TF") +
   theme_classic()
-ggsave("Pvar_ITS2_CD_TF.pdf")
+#ggsave("Pvar_ITS2_C27_TF.pdf")
 
 
 
@@ -4229,93 +5249,90 @@ Pacu.RelRare.TF <- subset_samples(Pacu.RelRare.T1F, Time.Point == "TF")
   permutest(beta.Pacu.TF, pairwise = T) 
 
 
-## by clade: C vs CD
+## by clade: CCC vs C42
   
 # C only, new objs
-Pacu.RelRareT1F.C <- subset_samples(Pacu.RelRareT1F, Clade == "C")
-Pacu.RelRare.T1.C <- subset_samples(Pacu.RelRare.T1, Clade == "C")
-Pacu.RelRare.TF.C <- subset_samples(Pacu.RelRare.TF, Clade == "C")
+Pacu.RelRareT1F.CCC <- subset_samples(Pacu.RelRare.T1F, Clade == "CCC")
+Pacu.RelRare.T1.CCC <- subset_samples(Pacu.RelRare.T1, Clade == "CCC")
+Pacu.RelRare.TF.CCC <- subset_samples(Pacu.RelRare.TF, Clade == "CCC")
   
-#T1TF.C
+#T1TF.CCC
 #make bray curtis data matrix -T1 and TF
-  bc.Pacu.T1F.C <- phyloseq::distance(Pacu.RelRareT1F.C, method = "bray")
-  Pacu.samp.df.T1F.C <- as(sample_data(Pacu.RelRareT1F.C), "data.frame") #sample df
+  bc.Pacu.T1F.CCC <- phyloseq::distance(Pacu.RelRareT1F.CCC, method = "bray")
+  Pacu.samp.df.T1F.CCC <- as(sample_data(Pacu.RelRareT1F.CCC), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pacu.T1F.C ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.C)
+  adonis(bc.Pacu.T1F.CCC ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.CCC)
 
-#T1.C
+#T1.CCC
 #make bray curtis data matrix 
-  bc.PacuT1.C <- phyloseq::distance(Pacu.RelRare.T1.C, method = "bray")
-  Pacu.samp.df.T1.C <- as(sample_data(Pacu.RelRare.T1.C), "data.frame") #sample df
+  bc.PacuT1.CCC <- phyloseq::distance(Pacu.RelRare.T1.CCC, method = "bray")
+  Pacu.samp.df.T1.CCC <- as(sample_data(Pacu.RelRare.T1.CCC), "data.frame") #sample df
 #adonis test
-  adonis(bc.PacuT1.C ~ Treatment, data = Pacu.samp.df.T1.C)
+  adonis(bc.PacuT1.CCC ~ Treatment, data = Pacu.samp.df.T1.CCC)
 # Homogeneity of dispersion test  
-  beta.Pacu.T1.C <- betadisper(bc.PacuT1.C, Pacu.samp.df.T1.C$Treatment)
-  permutest(beta.Pacu.T1.C, pairwise = T) 
+  beta.Pacu.T1.CCC <- betadisper(bc.PacuT1.CCC, Pacu.samp.df.T1.CCC$Treatment)
+  permutest(beta.Pacu.T1.CCC, pairwise = T) 
 
-#TF.C
+#TF.CCC
 #make bray curtis data matrix 
-  bc.Pacu.TF.C <- phyloseq::distance(Pacu.RelRare.TF.C, method = "bray")
-  Pacu.samp.df.TF.C <- as(sample_data(Pacu.RelRare.TF.C), "data.frame") #sample df
+  bc.Pacu.TF.CCC <- phyloseq::distance(Pacu.RelRare.TF.CCC, method = "bray")
+  Pacu.samp.df.TF.CCC <- as(sample_data(Pacu.RelRare.TF.CCC), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pacu.TF.C ~ Treatment, data = Pacu.samp.df.TF.C)
+  adonis(bc.Pacu.TF.CCC ~ Treatment, data = Pacu.samp.df.TF.CCC)
 # Homogeneity of dispersion test  
-  beta.Pacu.TF.C <- betadisper(bc.Pacu.TF.C, Pacu.samp.df.TF.C$Treatment)
-  permutest(beta.Pacu.TF.C, pairwise = T) 
+  beta.Pacu.TF.CCC <- betadisper(bc.Pacu.TF.CCC, Pacu.samp.df.TF.CCC$Treatment)
+  permutest(beta.Pacu.TF.CCC, pairwise = T) 
 
 
-# CD only, new objs
-Pacu.RelRareT1F.CD <- subset_samples(Pacu.RelRareT1F, Clade == "CD")
-Pacu.RelRare.T1.CD <- subset_samples(Pacu.RelRare.T1, Clade == "CD")
-Pacu.RelRare.TF.CD <- subset_samples(Pacu.RelRare.TF, Clade == "CD")
+# C42 only, new objs
+Pacu.RelRareT1F.C42 <- subset_samples(Pacu.RelRare.T1F, Clade == "C42")
+Pacu.RelRare.T1.C42 <- subset_samples(Pacu.RelRare.T1, Clade == "C42")
+Pacu.RelRare.TF.C42 <- subset_samples(Pacu.RelRare.TF, Clade == "C42")
   
-#T1TF.CD
+#T1TF.C42
 #make bray curtis data matrix -T1 and TF
-  bc.Pacu.T1F.CD <- phyloseq::distance(Pacu.RelRareT1F.CD, method = "bray")
-  Pacu.samp.df.T1F.CD <- as(sample_data(Pacu.RelRareT1F.CD), "data.frame") #sample df
+  bc.Pacu.T1F.C42 <- phyloseq::distance(Pacu.RelRareT1F.C42, method = "bray")
+  Pacu.samp.df.T1F.C42 <- as(sample_data(Pacu.RelRareT1F.C42), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pacu.T1F.CD ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.CD)
+  adonis(bc.Pacu.T1F.C42 ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.C42)
 
-#T1.CD
+#T1.C42
 #make bray curtis data matrix 
-  bc.PacuT1.CD <- phyloseq::distance(Pacu.RelRare.T1.CD, method = "bray")
-  Pacu.samp.df.T1.CD <- as(sample_data(Pacu.RelRare.T1.CD), "data.frame") #sample df
-  adonis(bc.PacuT1.CD ~ Treatment, data = Pacu.samp.df.T1.CD)#adonis test
+  bc.PacuT1.C42 <- phyloseq::distance(Pacu.RelRare.T1.C42, method = "bray")
+  Pacu.samp.df.T1.C42 <- as(sample_data(Pacu.RelRare.T1.C42), "data.frame") #sample df
+  adonis(bc.PacuT1.C42 ~ Treatment, data = Pacu.samp.df.T1.C42)#adonis test
 # Homogeneity of dispersion test  
-  beta.Pacu.T1.CD <- betadisper(bc.PacuT1.CD, Pacu.samp.df.T1.CD$Treatment)
-  permutest(beta.Pacu.T1.CD, pairwise = T) 
+  beta.Pacu.T1.C42 <- betadisper(bc.PacuT1.C42, Pacu.samp.df.T1.C42$Treatment)
+  permutest(beta.Pacu.T1.C42, pairwise = T) 
 
-#TF.CD
+#TF.C42
 #make bray curtis data matrix 
-  bc.Pacu.TF.CD <- phyloseq::distance(Pacu.RelRare.TF.CD, method = "bray")
-  Pacu.samp.df.TF.CD <- as(sample_data(Pacu.RelRare.TF.CD), "data.frame") #sample df
+  bc.Pacu.TF.C42 <- phyloseq::distance(Pacu.RelRare.TF.C42, method = "bray")
+  Pacu.samp.df.TF.C42 <- as(sample_data(Pacu.RelRare.TF.C42), "data.frame") #sample df
 #adonis test
-  adonis(bc.Pacu.TF.CD ~ Treatment, data = Pacu.samp.df.TF.CD)
+  adonis(bc.Pacu.TF.C42 ~ Treatment, data = Pacu.samp.df.TF.C42)
 # Homogeneity of dispersion test  
-  beta.Pacu.TF.CD <- betadisper(bc.Pacu.TF.CD, Pacu.samp.df.TF.CD$Treatment)
-  permutest(beta.Pacu.TF.CD, pairwise = T) 
+  beta.Pacu.TF.C42 <- betadisper(bc.Pacu.TF.C42, Pacu.samp.df.TF.C42$Treatment)
+  permutest(beta.Pacu.TF.C42, pairwise = T) 
 ``` 
 Pacu NMDS
 ```{r}
-
-# pull df sections for craig Pacu.RelRare.T1F
-OTU_Pacu<-out_table(Pacu.RelRare.T1F)
-tax  = tax_table(coralDIV2_rare2)
-otu  = otu_table(coralDIV2_rare2)
-
-OTU1 = as(otu_table(Pacu.RelRare.T1F), "matrix")
-# transpose if necessary
-if(taxa_are_rows(Pacu.RelRare.T1F)){OTU1 <- t(OTU1)}
-# Coerce to data.frame
-OTUdf = as.data.frame(OTU1)
-write.csv(OTUdf, "Pacuta_its2_T1TF.csv")
-
-
-
-
-
-
-
+# C only, new objs
+Pacu.RelRareT1F.CCC <- subset_samples(Pacu.RelRare.T1F, Clade == "CCC")
+Pacu.RelRare.T1.CCC <- subset_samples(Pacu.RelRare.T1, Clade == "CCC")
+Pacu.RelRare.TF.CCC <- subset_samples(Pacu.RelRare.TF, Clade == "CCC")
+# # pull df sections for craig Pacu.RelRare.T1F
+# OTU_Pacu<-out_table(Pacu.RelRare.T1F)
+# tax  = tax_table(coralDIV2_rare2)
+# otu  = otu_table(coralDIV2_rare2)
+# 
+# OTU1 = as(otu_table(Pacu.RelRare.T1F), "matrix")
+# # transpose if necessary
+# if(taxa_are_rows(Pacu.RelRare.T1F)){OTU1 <- t(OTU1)}
+# # Coerce to data.frame
+# OTUdf = as.data.frame(OTU1)
+# write.csv(OTUdf, "Pacuta_its2_T1TF.csv")
+# 
 
 
 library(RColorBrewer)
@@ -4323,7 +5340,11 @@ library(colorRamps)
 library(devtools)
 
 ## create palette for parent.ID and treatments
-Pacu.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "honeydew4", "372" = "khaki4","373" ="ivory4", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
+Pacu.Parent.colors <- c("305" = "green4",  "306" = "firebrick3", "307" ="deeppink4", "308" = "orange", "309" = "green1","310" = "gold",  "311"= "hotpink", "312" ="darkslateblue", "302" = "honeydew4", "303" = "khaki4","304" ="ivory4", "305" = "lightblue", Ambient = "Blue", High = "Red","CCC Ambient"="blue","CCC High"="red", "C42 Ambient"="darkblue", "C42 High"="darkred") 
+
+
+
+
 
 #T1 and TF
 ord.Pacu <- ordinate(Pacu.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
@@ -4334,33 +5355,25 @@ scores.Pacu.samp.df$Time.Point <- Pacu.samp.df.T1F$Time.Point
 scores.Pacu.samp.df$Parent.ID <- Pacu.samp.df.T1F$Parent.ID
 scores.Pacu.samp.df$Treatment <- Pacu.samp.df.T1F$Treatment
 scores.Pacu.samp.df$Clade <- Pacu.samp.df.T1F$Clade
-#write.csv(scores.Pacu.samp.df,"scores.Pacu.samp.df.csv")
-
-######## testing chunk. Hclust
-
-
-
-
-
-
-
-
-
-
+scores.Pacu.samp.df$Code <- paste(Pacu.samp.df.T1F$Parent.ID, Pacu.samp.df.T1F$Time.Point)
 
 
 ggplot(scores.Pacu.samp.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pacu.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Bray Curtis") +
+   # geom_line(aes(group = Code), color = "black") + 
+  ggtitle("P.acu Bray Curtis") +
   theme_classic()
-#ggsave("PacuT1its2.pdf")
+#ggsave("Pacu_T1TF_its2.pdf")
+
 ggplot(scores.Pacu.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
   scale_color_manual(values=Pacu.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Bray Curtis") +
+     # geom_line(aes(group = Parent.ID), color = "black") + 
+  ggtitle("P. var Bray Curtis") +
   theme_classic()
 #ggsave("PacuT1its2.pdf")
 
@@ -4381,13 +5394,15 @@ scores.PacuT1$CladeTreat <- as.factor(paste(Pacu.samp.df.T1$Clade,Pacu.samp.df.T
 
 
 ggplot(scores.PacuT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata T1 Bray Curtis") +
+  #    geom_line(aes(group = Parent.ID), color = "black") + 
+  ggtitle("P. var T1 Bray Curtis") +
   theme_classic()
-ggsave("PacuT1_its2_nmds_clade.pdf")
+#ggsave("Pacu_T1_its2_nmds_clade.pdf")
 
 #TF only
 set.seed(30)
@@ -4400,461 +5415,151 @@ scores.PacuTF$Clade <- Pacu.samp.df.TF$Clade
 scores.PacuTF$CladeTreat <- as.factor(paste(Pacu.samp.df.TF$Clade,Pacu.samp.df.TF$Treatment))
 
 ggplot(scores.PacuTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Clade, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Clade)) +
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata TF Bray Curtis") +
+  ggtitle("P. var TF Bray Curtis") +
   theme_classic()
-ggsave("Pacu_TF_its_nmds.pdf")
+#gsave("Pacu_TF_its_nmds.pdf")
 
 
-#ords
-#C T1 and TF
+
+
+
+
+
+
+
+
+#### BY CLADE
+
+#CCC T1 and TF
 set.seed(30)
-ord.Pacu_C <- ordinate(Pacu_DIV_C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_C)
-scores.Pacu_C <- as.data.frame(scores(ord.Pacu_C))
-scores.Pacu_C$Treatment <- Pacu.samp.df.T1F.C$Treatment
-scores.Pacu_C$Parent.ID <- Pacu.samp.df.T1F.C$Parent.ID
-scores.Pacu_C$Time.Point <- Pacu.samp.df.T1F.C$Time.Point
+ord.Pacu_CCC  <- ordinate(Pacu.RelRare.T1F, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_CCC)
+scores.Pacu_CCC <- as.data.frame(scores(ord.Pacu_CCC))
+scores.Pacu_CCC$Treatment <- Pacu.samp.df.T1F$Treatment
+scores.Pacu_CCC$Parent.ID <- Pacu.samp.df.T1F$Parent.ID
+scores.Pacu_CCC$Time.Point <- Pacu.samp.df.T1F$Time.Point
 
-ggplot(scores.Pacu_C, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+ggplot(scores.Pacu_CCC, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +
   scale_color_manual(values=Pacu.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata Cladocopium") +
+  ggtitle("P var CCC") +
   theme_classic()
-#ggsave("PacuTFits.pdf")
+#ggsave("PacuTFits_CCC.pdf")
 
 
 #C T1
 set.seed(30)
-ord.Pacu_C.T1 <- ordinate(Pacu.RelRare.T1.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_C.T1)
-scores.Pacu_C.T1 <- as.data.frame(scores(ord.Pacu_C.T1))
-scores.Pacu_C.T1$Treatment <- Pacu.samp.df.T1.C$Treatment
-scores.Pacu_C.T1$Parent.ID <- Pacu.samp.df.T1.C$Parent.ID
-scores.Pacu_C.T1$Time.Point <- Pacu.samp.df.T1.C$Time.Point
+ord.Pacu_CCC.T1 <- ordinate(Pacu.RelRare.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_CCC.T1)
+scores.Pacu_CCC.T1 <- as.data.frame(scores(ord.Pacu_CCC.T1))
+scores.Pacu_CCC.T1$Treatment <- Pacu.samp.df.T1$Treatment
+scores.Pacu_CCC.T1$Parent.ID <- Pacu.samp.df.T1$Parent.ID
+scores.Pacu_CCC.T1$Time.Point <- Pacu.samp.df.T1$Time.Point
 
-ggplot(scores.Pacu_C.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pacu_CCC.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 Cladocopium") +
+  ggtitle("P. var T1 CCC") +
   theme_classic()
-#ggsave("PacuTFits.pdf")
+#ggsave("Pacu_T1_its_CCC.pdf")
 
 #C TF
 set.seed(30)
-ord.Pacu_C.TF <- ordinate(Pacu.RelRare.TF.C, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_C.TF)
-scores.Pacu_C.TF <- as.data.frame(scores(ord.Pacu_C.TF))
-scores.Pacu_C.TF$Treatment <- Pacu.samp.df.TF.C$Treatment
-scores.Pacu_C.TF$Parent.ID <- Pacu.samp.df.TF.C$Parent.ID
-scores.Pacu_C.TF$Time.Point <- Pacu.samp.df.TF.C$Time.Point
+ord.Pacu_CCC.TF <- ordinate(Pacu.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_CCC.TF)
+scores.Pacu_CCC.TF <- as.data.frame(scores(ord.Pacu_CCC.TF))
+scores.Pacu_CCC.TF$Treatment <- Pacu.samp.df.TF$Treatment
+scores.Pacu_CCC.TF$Parent.ID <- Pacu.samp.df.TF$Parent.ID
+scores.Pacu_CCC.TF$Time.Point <- Pacu.samp.df.TF$Time.Point
 
-ggplot(scores.Pacu_C.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pacu_CCC.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata C TF") +
+  ggtitle("P. var CCC TF") +
   theme_classic()
-#ggsave("PacuTFits.pdf")
+#ggsave("Pacu_TF_its_TF_CCC.pdf")
 
 
-#CD
+
+Pacu.RelRareT1F.C27 , 
+Pacu.RelRare.T1.C27 
+Pacu.RelRare.TF.C27 
+
+#C27
 set.seed(30)
-ord.Pacu_CD <- ordinate(Pacu_DIV_CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_CD)
-scores.Pacu_CD <- as.data.frame(scores(ord.Pacu_CD))
-scores.Pacu_CD$Treatment <- Pacu.samp.df.T1F.CD$Treatment
-scores.Pacu_CD$Parent.ID <- Pacu.samp.df.T1F.CD$Parent.ID
-scores.Pacu_CD$Time.Point <- Pacu.samp.df.T1F.CD$Time.Point
+ord.Pacu_C27 <- ordinate(Pacu.RelRareT1F.C27, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_C27)
+scores.Pacu_C27 <- as.data.frame(scores(ord.Pacu_C27))
+scores.Pacu_C27$Treatment <- Pacu.samp.df.T1F$Treatment
+scores.Pacu_C27$Parent.ID <- Pacu.samp.df.T1F$Parent.ID
+scores.Pacu_C27$Time.Point <- Pacu.samp.df.T1F$Time.Point
 
-ggplot(scores.Pacu_CD, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+ggplot(scores.Pacu_C27, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
   scale_color_manual(values=Pacu.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata C&D") +
+  ggtitle("P. var C&D") +
   theme_classic()
-#ggsave("Pacu_ITS2_CCD_its.pdf")
+#ggsave("Pacu_ITS2_C27_its_T1TF.pdf")
 
-#C T1
+#C27 T1
 set.seed(30)
-ord.Pacu_CD.T1 <- ordinate(Pacu.RelRare.T1.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_CD.T1)
-scores.Pacu_CD.T1 <- as.data.frame(scores(ord.Pacu_CD.T1))
-scores.Pacu_CD.T1$Treatment <- Pacu.samp.df.T1.CD$Treatment
-scores.Pacu_CD.T1$Parent.ID <- Pacu.samp.df.T1.CD$Parent.ID
-scores.Pacu_CD.T1$Time.Point <- Pacu.samp.df.T1.CD$Time.Point
+ord.Pacu_C27.T1 <- ordinate(Pacu.RelRare.T1.C27 , "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_C27.T1)
+scores.Pacu_C27.T1 <- as.data.frame(scores(ord.Pacu_C27.T1))
+scores.Pacu_C27.T1$Treatment <- Pacu.samp.df.T1.C27$Treatment
+scores.Pacu_C27.T1$Parent.ID <- Pacu.samp.df.T1.C27$Parent.ID
+scores.Pacu_C27.T1$Time.Point <- Pacu.samp.df.T1.C27$Time.Point
 
-ggplot(scores.Pacu_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pacu_C27.T1, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata T1 CD") +
+  ggtitle("P var T1 C27") +
   theme_classic()
-ggsave("Pacu_ITS2_C_TF.pdf")
+#ggsave("Pacu_ITS2_C27_T1.pdf")
 
 #CD TF
 set.seed(30)
-ord.Pacu_CD.TF <- ordinate(Pacu.RelRare.TF.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pacu_CD.TF)
-scores.Pacu_CD.TF <- as.data.frame(scores(ord.Pacu_CD.TF))
-scores.Pacu_CD.TF$Treatment <- Pacu.samp.df.TF.CD$Treatment
-scores.Pacu_CD.TF$Parent.ID <- Pacu.samp.df.TF.CD$Parent.ID
-scores.Pacu_CD.TF$Time.Point <- Pacu.samp.df.TF.CD$Time.Point
+ord.Pacu_C27.TF <- ordinate(Pacu.RelRare.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.Pacu_C27.TF)
+scores.Pacu_C27.TF <- as.data.frame(scores(ord.Pacu_C27.TF))
+scores.Pacu_C27.TF$Treatment <- Pacu.samp.df.TF$Treatment
+scores.Pacu_C27.TF$Parent.ID <- Pacu.samp.df.TF$Parent.ID
+scores.Pacu_C27.TF$Time.Point <- Pacu.samp.df.TF$Time.Point
 
-ggplot(scores.Pacu_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
+ggplot(scores.Pacu_C27.TF, aes(x = NMDS1, y = NMDS2)) + 
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
   scale_color_manual(values=Pacu.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata CD TF") +
+  ggtitle("P. var C27 TF") +
   theme_classic()
-ggsave("Pacu_ITS2_CD_TF.pdf")
+#ggsave("Pacu_ITS2_C27_TF.pdf")
+
+
 
 
 
 ```
 
-CUT when above updated 
-Porites its2 OLD not by 'clade'
-```{r} 
-#pcomp 
-pcomp.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "porites")
-
-#all speices
-set.seed(30) 
-
-#make bray curtis data matrix
-bc.pcomp <- phyloseq::distance(pcomp.RelRare, method = "bray")
-  pcomp.samp.df <- as(sample_data(pcomp.RelRare), "data.frame") #sample df
-#adonis test
-adonis(bc.pcomp ~ Treatment*Time.Point, data = pcomp.samp.df)
-
-# Homogeneity of dispersion test  
-beta.pcomp <- betadisper(bc.pcomp, pcomp.samp.df$Time.Point)
-permutest(beta.pcomp)  #p = 0.996
-permutest(beta.pcomp, pairwise = T) #.991
-
-(bc.pcomp.HSD <- TukeyHSD(beta.pcomp)) #do you need?
-plot(bc.pcomp.HSD)
-
-
-# pcomp by timepoint: T1
-pcomp.RelRare.T1 <- subset_samples(pcomp.RelRare, Time.Point == "T1")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pcomp.T1 <- phyloseq::distance(pcomp.RelRare.T1, method = "bray")
-  pcomp.samp.df.T1 <- as(sample_data(pcomp.RelRare.T1), "data.frame") #sample df
-#adonis test
-adonis(bc.pcomp.T1 ~ Treatment, data = pcomp.samp.df.T1) # p=.647
-# Homogeneity of dispersion test 
-beta.pcomp <- betadisper(bc.pcomp.T1, pcomp.samp.df.T1$Treatment)
-permutest(beta.pcomp)  
-permutest(beta.pcomp, pairwise = T) 
-
-# pcomp by timepoint: TF
-pcomp.RelRare.TF <- subset_samples(pcomp.RelRare, Time.Point == "TF")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pcomp.TF <- phyloseq::distance(pcomp.RelRare.TF, method = "bray")
-  pcomp.samp.df.TF <- as(sample_data(pcomp.RelRare.TF), "data.frame") #sample df
-#adonis test
-adonis(bc.pcomp.TF ~ Treatment, data = pcomp.samp.df.TF) # p=.907
-# Homogeneity of dispersion test 
-beta.pcomp <- betadisper(bc.pcomp.TF, pcomp.samp.df.TF$Treatment)
-permutest(beta.pcomp)  
-permutest(beta.pcomp, pairwise = T) 
-
-
-
-#make bray curtis data matrix
-bc.pcomp.High <- phyloseq::distance(pcomp.RelRare.High, method = "bray")
-  pcomp.samp.df.High <- as(sample_data(pcomp.RelRare.High), "data.frame") #sample df
-#adonis test
-adonis(bc.pcomp.High ~ Time.Point, data = pcomp.samp.df.High) # p=.414
- 
-
-
-## create palette for parent.ID and treatments
-pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "honeydew4", "322" = "khaki4","323" ="ivory4", "324" = "lightblue", Ambient = "Blue", High = "Red") 
-
-
-
-#T1 only
-set.seed(30)
-ord.pcompT1 <- ordinate(pcomp.RelRare.T1, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pcompT1)
-scores.pcompT1 <- as.data.frame(scores(ord.pcompT1))
-scores.pcompT1$Treatment <- pcomp.samp.df.T1$Treatment
-scores.pcompT1$Parent.ID <- pcomp.samp.df.T1$Parent.ID
-
-ggplot(scores.pcompT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pcomp.Parent.colors)+
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("P. compressa T1 Bray Curtis") +
-  theme_classic()
-ggsave("pcompT1its2.pdf")
-
-#TF only
-set.seed(30)
-ord.pcompTF <- ordinate(pcomp.RelRare.TF, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pcompTF)
-scores.pcompTF <- as.data.frame(scores(ord.pcompTF))
-scores.pcompTF$Treatment <- pcomp.samp.df.TF$Treatment
-scores.pcompTF$Parent.ID <- pcomp.samp.df.TF$Parent.ID
-
-ggplot(scores.pcompTF, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pcomp.Parent.colors)+
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("P. comp TF Bray Curtis") +
-  theme_classic()
-ggsave("pcompTFits.pdf")
-
-
-```
-Pavona its2 OLD not by 'clade'
-```{r}
-#pvar 
-pvar.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "pavona")
-
-#all speices
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pvar <- phyloseq::distance(pvar.RelRare, method = "bray")
-  pvar.samp.df <- as(sample_data(pvar.RelRare), "data.frame") #sample df
-#adonis test
-adonis(bc.pvar ~ Treatment*Time.Point, data = pvar.samp.df)
-
-#                     Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
-#Treatment             1    0.0850 0.084965 0.33204 0.00625  0.659
-#Time.Point            2    0.0220 0.011013 0.04304 0.00162  0.994
-#Treatment:Time.Point  2    0.1781 0.089055 0.34802 0.01310  0.791
-#Residuals            52   13.3062 0.255889         0.97902       
-#Total                57   13.5913                  1.00000       
-
-# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
-beta.pvar <- betadisper(bc.pvar, pvar.samp.df$Treatment)
-permutest(beta.pvar)  #p = 0.921
-permutest(beta.pvar, pairwise = T)  
-
-(bc.pvar.HSD <- TukeyHSD(beta.pvar)) #do you need?
-plot(bc.pvar.HSD)
-
-
-# pvar by timepoint: T1
-pvar.RelRare.T1 <- subset_samples(pvar.RelRare, Time.Point == "T1")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pvar.T1 <- phyloseq::distance(pvar.RelRare.T1, method = "bray")
-  pvar.samp.df.T1 <- as(sample_data(pvar.RelRare.T1), "data.frame") #sample df
-#adonis test
-adonis(bc.pvar.T1 ~ Treatment, data = pvar.samp.df.T1) # p=.937
-
-# pvar by timepoint: TF
-pvar.RelRare.TF <- subset_samples(pvar.RelRare, Time.Point == "TF")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pvar.TF <- phyloseq::distance(pvar.RelRare.TF, method = "bray")
-  pvar.samp.df.TF <- as(sample_data(pvar.RelRare.TF), "data.frame") #sample df
-#adonis test
-adonis(bc.pvar.TF ~ Treatment, data = pvar.samp.df.TF) # p=.948
-
-
-# High treatment over time
-pvar.RelRare.High <- subset_samples(pvar.RelRare, Treatment == "High")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pvar.High <- phyloseq::distance(pvar.RelRare.High, method = "bray")
-  pvar.samp.df.High <- as(sample_data(pvar.RelRare.High), "data.frame") #sample df
-#adonis test
-adonis(bc.pvar.High ~ Time.Point, data = pvar.samp.df.High) # p=.955
-
-## create palette for parent.ID and treatments
-pvar.Parent.colors <- c("325" = "green4",  "351" = "firebrick3", "353" ="deeppink4", "354" = "orange", "355" = "green1","356" = "gold",  "357"= "hotpink", "358" ="darkslateblue", "359" = "honeydew4", "360" = "khaki4","361" ="ivory4", "362" = "lightblue", Ambient = "Blue", High = "Red") 
-
-
-
-#T1 only
-set.seed(30)
-ord.pvarT1 <- ordinate(pvar.RelRare.T1, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pvarT1)
-scores.pvarT1 <- as.data.frame(scores(ord.pvarT1))
-scores.pvarT1$Treatment <- pvar.samp.df.T1$Treatment
-scores.pvarT1$Parent.ID <- pvar.samp.df.T1$Parent.ID
-
-ggplot(scores.pvarT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pvar.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("P. varians T1 Bray Curtis") +
-  theme_classic()
-ggsave("pvarT1its2.pdf")
-
-#TF only
-set.seed(30)
-ord.pvarTF <- ordinate(pvar.RelRare.TF, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pvarTF)
-scores.pvarTF <- as.data.frame(scores(ord.pvarTF))
-scores.pvarTF$Treatment <- pvar.samp.df.TF$Treatment
-scores.pvarTF$Parent.ID <- pvar.samp.df.TF$Parent.ID
-
-ggplot(scores.pvarTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pvar.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("M. capitata TF Bray Curtis") +
-  theme_classic()
-ggsave("pvarTFits.pdf")
-
-
-
-```
-Pocillopora its2 OLD not by 'clade'
-```{r}
-#pacu
-pacu.RelRare <- subset_samples(DIV_RelA_stats, host_genus == "pocillopora")
-
-#all speices
-set.seed(30)
- 
-#make bray curtis data matrix
-bc.pacu <- phyloseq::distance(pacu.RelRare, method = "bray")
-  pacu.samp.df <- as(sample_data(pacu.RelRare), "data.frame") #sample df
-#adonis test
-adonis(bc.pacu ~ Treatment*Time.Point, data = pacu.samp.df)
-
-#                     Df SumsOfSqs  MeanSqs F.Model      R2 Pr(>F)
-#Treatment             1    0.0565 0.056546 0.38979 0.00828  0.563
-#Time.Point            2    0.0407 0.020345 0.14024 0.00596  0.955
-#Treatment:Time.Point  2    0.0598 0.029897 0.20609 0.00875  0.908
-#Residuals            46    6.6732 0.145069         0.97701       
-#Total                51    6.8302                  1.00000       
-
-# Homogeneity of dispersion test  <- do I need to do this if ^^ not significant?
-beta.pacu <- betadisper(bc.pacu, pacu.samp.df$Treatment)
-permutest(beta.pacu)  #p = 0.59
-permutest(beta.pacu, pairwise = T) 
-
-(bc.pacu.HSD <- TukeyHSD(beta.pacu)) #do you need?
-plot(bc.pacu.HSD)
-
-
-# pacu by timepoint: T1
-pacu.RelRare.T1 <- subset_samples(pacu.RelRare, Time.Point == "T1")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pacu.T1 <- phyloseq::distance(pacu.RelRare.T1, method = "bray")
-  pacu.samp.df.T1 <- as(sample_data(pacu.RelRare.T1), "data.frame") #sample df
-#adonis test
-adonis(bc.pacu.T1 ~ Treatment, data = pacu.samp.df.T1) # p=.978
-
-
-# pacu by timepoint: TF
-pacu.RelRare.TF <- subset_samples(pacu.RelRare, Time.Point == "TF")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pacu.TF <- phyloseq::distance(pacu.RelRare.TF, method = "bray")
-  pacu.samp.df.TF <- as(sample_data(pacu.RelRare.TF), "data.frame") #sample df
-#adonis test
-adonis(bc.pacu.TF ~ Treatment, data = pacu.samp.df.TF) # p=.609
-
-
-
-# High treatment over time
-pacu.RelRare.High <- subset_samples(pacu.RelRare, Treatment == "High")
-
-set.seed(30)
-
-#make bray curtis data matrix
-bc.pacu.High <- phyloseq::distance(pacu.RelRare.High, method = "bray")
-  pacu.samp.df.High <- as(sample_data(pacu.RelRare.High), "data.frame") #sample df
-#adonis test
-adonis(bc.pacu.High ~ Time.Point, data = pacu.samp.df.High) # p=.609
-#0.788 No diff in High over time (BUT you did not remake the data to include all genotypes at T0)
-
-
-#High only
-set.seed(30)
-ord.bc.pacu.High <- ordinate(pacu.RelRare.High, "NMDS", "bray", trymax = 100) 
-stressplot(ord.bc.pacu.High)
-scores.pacuHigh <- as.data.frame(scores(ord.bc.pacu.High))
-scores.pacuHigh$Time.Point <- pacu.samp.df.High$Time.Point
-scores.pacuHigh$Parent.ID <- pacu.samp.df.High$Parent.ID
-
-ggplot(scores.pacuHigh, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Time.Point, shape = Treatment), size = 4) +
- # scale_color_manual(values=pacu.Parent.colors)+
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Time.Point), linetype = 2) +
-  ggtitle("P. acuta High Bray Curtis") +
-  theme_classic()
-ggsave("pacuHighits2.pdf")
-
-
-## create palette for parent.ID and treatments
-pacu.Parent.colors <- c("301" = "green4",  "302" = "firebrick3", "303" ="deeppink4", "304" = "orange", "305" = "green1","306" = "gold",  "307"= "hotpink", "308" ="darkslateblue", "309" = "honeydew4", "310" = "khaki4","311" ="ivory4", "312" = "lightblue", Ambient = "Blue", High = "Red") 
-
-#T1 only
-set.seed(30)
-ord.pacuT1 <- ordinate(pacu.RelRare.T1, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pacuT1)
-scores.pacuT1 <- as.data.frame(scores(ord.pacuT1))
-scores.pacuT1$Treatment <- pacu.samp.df.T1$Treatment
-scores.pacuT1$Parent.ID <- pacu.samp.df.T1$Parent.ID
-
-ggplot(scores.pacuT1, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pacu.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("P. acuta T1 Bray Curtis") +
-  theme_classic()
-ggsave("pacuT1its2.pdf")
-
-#TF only
-set.seed(30)
-ord.pacuTF <- ordinate(pacu.RelRare.TF, "NMDS", "bray", trymax = 100) 
-stressplot(ord.pacuTF)
-scores.pacuTF <- as.data.frame(scores(ord.pacuTF))
-scores.pacuTF$Treatment <- pacu.samp.df.TF$Treatment
-scores.pacuTF$Parent.ID <- pacu.samp.df.TF$Parent.ID
-
-ggplot(scores.pacuTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Treatment), size = 4) +
-  scale_color_manual(values=pacu.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
-  ggtitle("P. acuta TF Bray Curtis") +
-  theme_classic()
-ggsave("pacuTFits.pdf")
-
-```
 
 
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
@@ -5255,6 +5960,23 @@ if(taxa_are_rows(coral2_rare_RelAPro)){Tax1 <- t(Tax1)}
 # Coerce to data.frame
 Taxdf = as.data.frame(Tax1)
 write.csv(Tax1, "Profile_its2_Tax.csv")
+
+
+
+
+plot_heatmap(coral2_rare_RelAPro, "NMDS", "bray", "Species", "its2_type_profile")
+
+#by species NOT INTERESTING
+  #mcap
+  Mcap_DIV_RA_T1 <- subset_samples(Mcap_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Mcap_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+ #Pcomp
+  Pcomp_DIV_RA_T1 <- subset_samples(Pcomp_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Pcomp_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+  #Pvar
+  Pvar_DIV_RA_T1 <- subset_samples(Pvar_DIV_RA, Time.Point=="T1")
+  plot_heatmap(Pvar_DIV_RA_T1, "NMDS", "bray", "Treatment", "DIV") #nothing great
+  plot_heatmap(Pvar_DIV_RA, "NMDS", "bray", "Parent.ID", "DIV")
 
 ```
 
