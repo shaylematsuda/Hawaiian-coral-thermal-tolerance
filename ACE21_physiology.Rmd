@@ -45,7 +45,7 @@ packageVersion("scales")
 ```
 
 Load meta
-```{r}      
+```{r}       
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
@@ -112,7 +112,7 @@ meta<- meta[!(meta$Frag.ID == "3149"),] # dup
 
 meta$Clade<-as.factor(meta$Clade)
 
-
+#write.csv(meta,"meta16s.csv")
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
 
 #respiration check
@@ -160,7 +160,7 @@ testAFDW<-merge(AFDW, meta, all=T)
 
 #Biomass (AFDW and SA)
 ```{r}     
- 
+  
 SA<-WaxDipping 
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 #WaxDippingtest<-merge(meta, SA, all.x = T)
@@ -3335,7 +3335,7 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 #Resp:photosynthesis
-```{r}
+```{r} 
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed.csv")
 #PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -3924,7 +3924,7 @@ Photo_Pacu_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     
 ```
 Respiration
-```{r}
+```{r} 
 Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -4541,7 +4541,7 @@ grid.arrange(Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 1)
 
 ```
 Plots by Clades
-```{r}
+```{r} 
 #Mcap
 PR_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
                    N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -4915,7 +4915,7 @@ All P, R, PR plots
 ```{r}
 grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 3)
 
-
+ 
 #by clade
 grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clade,Pacu_Photo_plot.Clade,Mcap_Resp_plot.Clade, Pcomp_Resp_plot.Clade, Pvar_Resp_plot.Clade,Pacu_Resp_plot.Clade,Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 3)
 
@@ -5815,7 +5815,7 @@ phy_Pacu.div #view, all is significant
 ####ITS2
 ## ITS2
 #Analysis (RCunning Script) REL Abundance -  
-```{r}
+```{r} 
 library(tidyverse)
 library(janitor)
 library(phyloseq)  # source('http://bioconductor.org/biocLite.R'); biocLite('phyloseq')
@@ -5837,7 +5837,7 @@ library(RColorBrewer)
 load("data/Raw_coral_phyloseq.RData") #use RAW data
 ``` 
 Hey what does this do?
-```{r}   
+```{r}    
 coral2 <- coral_RAW %>%
   subset_samples(!is.na(host_species))
 coralDIV2 <- coralDIV_RAW %>% 
@@ -5889,7 +5889,7 @@ Data wrangle: remove samples with under 5k, remove duplicated samps, save RDS Ra
 hannah code!
 
 #FOR DIVS set up and clean up
-```{r}    
+```{r}     
 ## check out data
 ntaxa(coralDIV2)  #num taxa
 nsamples(coralDIV2)   #num samples
@@ -5976,8 +5976,8 @@ tax  = tax_table(controlT0_High)
   # sample data
   sd = sample_data(controlT0_High)
   rownames(sd) <- paste0(rownames(sd), "_dup")
-  # otu_table
-  OTU = otu_table(controlT0_High)
+# otu_table
+OTU = otu_table(controlT0_High)
   sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
   # Avoid conflict between factor and character
   sd$Treatment <- as.character(sd$Treatment)
@@ -6060,7 +6060,7 @@ otu  = otu_table(coralDIV2_rare2)
 ```
 
 # DIV analysis and plots, use rarefied coralDIV2_rare2
-```{r}   
+```{r}    
 #RELA
 DIV_RelA  = transform_sample_counts(coralDIV2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
 data.ra <- as(sample_data(DIV_RelA), "data.frame") #look at samp data
@@ -6191,7 +6191,7 @@ orditorp(its2.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r}       
+```{r}        
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
@@ -6239,7 +6239,7 @@ print(DIVrareRel1_Pcomp)
 ```
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species
-```{r}     
+```{r}      
 #DIV_RelA is coralDIV2_rare2 with RELA
 
 DIV_RelA_stats<- DIV_RelA #make a copy
@@ -8070,11 +8070,117 @@ head(its2SeqList$samples)
 
 
 #16S
-
+Load in your data
 ```{r}
+# Load data (see data_exploration.Rmd)
+load("data/Raw_bacteria_phyloseq.RData") #use RAW data
+# the df is Bac.seq
+rank_names(Bac.seq) #ranks are DIV and clade
+
+
+#remove field samples
+Bac.s = subset_samples(Bac.seq, Type== "sample" )
+
+
+
+
+## check out data
+ntaxa(Bac.s)  #num taxa
+nsamples(Bac.s)   #num samples
+sample_names(Bac.s)[1:5] #samp names
+rank_names(Bac.s) #ranks are DIV and clade
+sample_variables(Bac.s) #all metadata cats
+
+# create df of sample data to view 
+sample.data <- as(sample_data(Bac.s), "data.frame") #create sample data frame to view
+sample.data$LibrarySize <- sample_sums(Bac.s)
+sample.data <- sample.data[order(sample.data$LibrarySize),]
+sample.data$Index <- seq(nrow(sample.data))  # check 3k rare
+ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = Species)) +
+  geom_point()
+
+
+
+#remove duplicates 
+Dups<-subset_samples(Bac.s, Dups=="Yes")
+
+TopNOTUsB = names(sort(taxa_sums(Dups), TRUE)[1:100])
+bac50 = prune_taxa(TopNOTUsB, Dups)
+bacBarPlot<-plot_bar(bac50,  fill="Phyla");bacBarPlot
+#ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S1753b" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S208" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S3476" )
+
+#make relative abundance df
+Bac.RelA  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
+data.bac <- as(sample_data(Bac.RelA), "data.frame") #look at samp data
+
+#heatmap
+#  plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
+  
+#bac_abund <- filter_taxa(Bac.RelA, function(x) sum(x > total*0.10) > 0, TRUE) #not working
+  bac_abund
 
 ```
 
+16s - bar plots 
+```{r}
+#ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
+Bac.RelA.ord <- ordinate(Bac.RelA, "NMDS", "bray", set.seed(30))
+Bac.RelA.ord_plot = plot_ordination(Bac.RelA, Bac.RelA.ord, type="samples", shape="Treatment",color="Species", title="species")
+print(Bac.RelA.ord_plot)
+Bac.RelA.ord_plot + facet_wrap(~Species, 3)
+
+### let's do this again and run the NMDS by species now that we know they are different. 
+#subset by species
+Mcap_16s_RA <- subset_samples(Bac.RelA, Species=="Montipora_capitata")
+Pcomp_16s_RA <- subset_samples(Bac.RelA, Species=="Porites_compressa")
+Pvar_16s_RA <- subset_samples(Bac.RelA, Species=="Pavona_varians")
+Pacu_16s_RA <- subset_samples(Bac.RelA, Species=="Pocillopora_acuta")
+
+#top 50 DIVs across by species 
+
+#Mcap
+TopNOTUsMcap = names(sort(taxa_sums(Mcap_16s_RA), TRUE)[1:300])
+Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_16s_RA)
+McapBarPlot<-plot_bar(Mcapent50, x="Parent.ID", fill="Phyla", facet_grid = "Time.Point~Treatment");McapBarPlot
+#ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
+
+#Mcap C and CD
+#C
+Mcap_DIV_RA.C<-subset_samples(Mcap_DIV_RA, Clade=="C")
+TopNOTUsMcap.C = names(sort(taxa_sums(Mcap_DIV_RA.C), TRUE)[1:50])
+Mcap.50.C = prune_taxa(TopNOTUsMcap.C, Mcap_DIV_RA.C)
+McapBarPlot.C<-plot_bar(Mcap.50.C, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");McapBarPlot.C
+#ggsave("McapBarPlot_DIV_C.pdf", McapBarPlot.C, dpi=300, width=8)
+
+#CD
+Mcap_DIV_RA.CD<-subset_samples(Mcap_DIV_RA, Clade=="CD")
+TopNOTUsMcap.CD = names(sort(taxa_sums(Mcap_DIV_RA.CD), TRUE)[1:50])
+Mcap.50.CD = prune_taxa(TopNOTUsMcap.CD, Mcap_DIV_RA.CD)
+McapBarPlot.CD<-plot_bar(Mcap.50.CD, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");McapBarPlot.CD
+#ggsave("McapBarPlot_DIV_CD.pdf", McapBarPlot.CD, dpi=300, width=8)
+
+
+#Pcomp
+TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_DIV_RA), TRUE)[1:50])
+Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_DIV_RA )
+PcompBarPlot<-plot_bar(Pcompent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PcompBarPlot
+#ggsave("PcompBarPlot_DIVrelARare.pdf", PcompBarPlot, dpi=300, width=8)
+
+#Pvar
+TopNOTUsVar = names(sort(taxa_sums(Pvar_DIV_RA), TRUE)[1:50])
+Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_DIV_RA)
+PvarBarPlot<-plot_bar(Pvarent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PvarBarPlot
+#ggsave("PvarBarPlot_DIVrelARare.pdf", PvarBarPlot, dpi=300, width=8)
+
+#Pacu
+TopNOTUsPacu = names(sort(taxa_sums(Pacu_DIV_RA), TRUE)[1:50])
+Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_DIV_RA)
+PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PacuBarPlot
+#ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
+```
 
 
 
