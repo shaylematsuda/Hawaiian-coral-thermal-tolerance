@@ -19,6 +19,101 @@ library(phyloseq)
 library(janitor)
 ```
 
+## Raw Reads
+Read in coral ITS2 profiles: "coral_Raw"
+```{r} 
+
+#add metadata to symportal submission data
+Symp_sub<-readxl::read_xlsx("Data/ITS2/ITS2_TT17_Matsuda_metadata_2020_update.xlsx", skip = 1)
+
+Metadata<-read.csv("Data/ACE21_Metadata_Molec_20210317.csv")
+
+# EDIT sample data, add CLADE COL
+  Metadata$Clade[Metadata$Parent.ID==363]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==364]<-"CD"
+  Metadata$Clade[Metadata$Parent.ID==365]<-"CD"
+  Metadata$Clade[Metadata$Parent.ID==366]<-"CD"
+  Metadata$Clade[Metadata$Parent.ID==367]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==368]<-"CD"
+  Metadata$Clade[Metadata$Parent.ID==369]<-"CD"
+  Metadata$Clade[Metadata$Parent.ID==370]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==371]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==372]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==373]<-"C"
+  Metadata$Clade[Metadata$Parent.ID==374]<-"CD"
+  Metadata$Clade<-as.factor(Metadata$Clade) #change to factor
+#write.csv(Metadata,"ACE21_Metadata_Molec_20210325.csv")
+
+  
+  names(Metadata)[names(Metadata) == "Frag.ID"] <- "sample_name" #change to same ID
+Symp_sub_Meta<-left_join(Symp_sub, Metadata, by="sample_name") # merge
+Symp_sub_Meta$Parent.ID<-as.factor(as.character(Symp_sub_Meta$Parent.ID))
+
+
+#save in correct format:
+#write_xlsx(Symp_sub_Meta,"MCL_Symp_Metadata.xlsx")
+
+sam0 <- Symp_sub_Meta
+sam1 <- as.matrix(sam0[, -1])
+rownames(sam1) <- sam0$sample_name
+sam <- sample_data(data.frame(sam1))
+
+tax0 <- read_tsv(
+  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt",
+  n_max = 6) %>%
+  dplyr::select(-2) %>% 
+  gather(UID, value, -1) %>% 
+  spread(1, value) %>%
+  clean_names()
+
+tax1 <- as.matrix(tax0[, -1], dimnames = list(tax0$uid, colnames(tax0[-1])))
+rownames(tax1) <- tax0$uid
+tax <- tax_table(tax1)
+
+otu0 <- read_tsv(
+  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt") %>% 
+  rename(sample_name = X2) %>%
+  select(-1) %>%
+  slice(7:n()) %>%
+  mutate_at(2:ncol(.), as.numeric)
+otu1 <- as.matrix(otu0[, -1])
+rownames(otu1) <- otu0$sample_name
+otu <- otu_table(otu1, taxa_are_rows = FALSE)
+
+coral_RAW <- phyloseq(otu, tax, sam)
+
+
+```
+Read in coral post-QC sequence variants: "coralDIV_RELA"
+```{r}
+#sam0 <- Symp_sub_Meta
+#rownames(sam0) <- sam0$sample_name
+#sam0$Parent.ID<-as.factor(as.character(sam0$Parent.ID))
+#sam <- sample_data(data.frame(sam0))
+taxnames <- read_tsv(file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_only.txt",
+  n_max = 0) %>%
+  select(-1) %>%
+  names(.)
+tax0 <- data_frame(
+  DIV = taxnames,
+  clade = str_extract(DIV, "[A-Z]")
+)
+tax1 <- as.matrix(tax0)
+rownames(tax1) <- tax0$DIV
+
+tax <- tax_table(tax1)
+otu0 <- read_tsv(
+  file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_and_meta.txt") %>%
+  select(-1, -(3:33))
+otu1 <- as.matrix(otu0[, -1])
+rownames(otu1) <- otu0$sample_name
+otu <- otu_table(otu1, taxa_are_rows = FALSE)
+coralDIV_RAW <- phyloseq(otu, tax, sam)
+
+save(coral_RAW, coralDIV_RAW, file = "Data/Raw_coral_phyloseq.RData")
+
+```
+
 ## RELATIVE ABUNDANCES
 Read in coral ITS2 profiles: "coral_RELA"
 ```{r} 
@@ -92,83 +187,6 @@ otu <- otu_table(otu1, taxa_are_rows = FALSE)
 coralDIV_RELA <- phyloseq(otu, tax, sam)
 
 save(coral_RELA, coralDIV_RELA, file = "Data/RELA_coral_phyloseq.RData")
-
-```
-
-## Raw Reads
-Read in coral ITS2 profiles: "coral_Raw"
-```{r} 
-
-#add metadata to symportal submission data
-#Symp_sub<-readxl::read_xlsx("Data/ITS2/ITS2_TT17_Matsuda_metadata_2020_update.xlsx", skip = 1)
-#Metadata<-read.csv("Data/ACE21_Metadata_Molec_20210317.csv")
-#names(Metadata)[names(Metadata) == "Frag.ID"] <- "sample_name" #change to same ID
-
-#Symp_sub_Meta<-left_join(Symp_sub, Metadata, by="sample_name") # merge
-#write.csv(Symp_sub_Meta,"Symp_sub_Meta.csv")
-
-
-#save in correct format:
-#write_xlsx(Symp_sub_Meta,"MCL_Symp_Metadata.xlsx")
-
-sam0 <- Symp_sub_Meta
-sam1 <- as.matrix(sam0[, -1])
-rownames(sam1) <- sam0$sample_name
-sam <- sample_data(data.frame(sam1))
-
-tax0 <- read_tsv(
-  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt",
-  n_max = 6) %>%
-  dplyr::select(-2) %>% 
-  gather(UID, value, -1) %>% 
-  spread(1, value) %>%
-  clean_names()
-
-tax1 <- as.matrix(tax0[, -1], dimnames = list(tax0$uid, colnames(tax0[-1])))
-rownames(tax1) <- tax0$uid
-tax <- tax_table(tax1)
-
-otu0 <- read_tsv(
-  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt") %>% 
-  rename(sample_name = X2) %>%
-  select(-1) %>%
-  slice(7:n()) %>%
-  mutate_at(2:ncol(.), as.numeric)
-otu1 <- as.matrix(otu0[, -1])
-rownames(otu1) <- otu0$sample_name
-otu <- otu_table(otu1, taxa_are_rows = FALSE)
-
-coral_RAW <- phyloseq(otu, tax, sam)
-
-
-```
-Read in coral post-QC sequence variants: "coralDIV_RELA"
-```{r}
-#sam0 <- Symp_sub_Meta
-#rownames(sam0) <- sam0$sample_name
-#sam0$Parent.ID<-as.factor(as.character(sam0$Parent.ID))
-#sam <- sample_data(data.frame(sam0))
-taxnames <- read_tsv(file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_only.txt",
-  n_max = 0) %>%
-  select(-1) %>%
-  names(.)
-tax0 <- data_frame(
-  DIV = taxnames,
-  clade = str_extract(DIV, "[A-Z]")
-)
-tax1 <- as.matrix(tax0)
-rownames(tax1) <- tax0$DIV
-
-tax <- tax_table(tax1)
-otu0 <- read_tsv(
-  file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_and_meta.txt") %>%
-  select(-1, -(3:33))
-otu1 <- as.matrix(otu0[, -1])
-rownames(otu1) <- otu0$sample_name
-otu <- otu_table(otu1, taxa_are_rows = FALSE)
-coralDIV_RAW <- phyloseq(otu, tax, sam)
-
-save(coral_RAW, coralDIV_RAW, file = "Data/Raw_coral_phyloseq.RData")
 
 ```
 
