@@ -41,19 +41,44 @@ rownames(tax1) <- tax0$OTU
 tax <- tax_table(tax1)
 
 
+
+
 # Read the data into phyloseq
-Bac.seq = phyloseq(otu, tax,sam) #THIS WORKS
-Bac.seq
+Bac.seqAll = phyloseq(otu, tax,sam) #THIS WORKS
+Bac.seqAll
 
-save(Bac.seq, file = "Data/Raw_bacteria_phyloseq.RData")
-
+save(Bac.seqAll, file = "Data/Bac.seqAll_phyloseq.RData")
 
 ## check out data
-ntaxa(Bac.seq)  #num taxa
-nsamples(Bac.seq)   #num samples
-sample_names(Bac.seq)[1:300] #samp names
-# sampsy<-sample_names(physeq)[1:300]
+ntaxa(Bac.seqAll)  #num taxa
+nsamples(Bac.seqAll)   #num samples
+sample_names(Bac.seqAll)[1:300] #samp names
+ #sampsy<-sample_names(physeq)[1:300]
 #write.csv(sampsy,"sampsy.csv")
+
+# OK Now you need to do the steps in the pipeline.
+#1 filter out taxa: get rid of unknown, mitochondria and chloroplast
+Bac.seqAll<-subset_taxa(Bac.seqAll, Family !="Mitochondria")
+Bac.seqAll<-subset_taxa(Bac.seqAll, Order !="Chloroplast")
+Bac.seqAll<-subset_taxa(Bac.seqAll, Taxonomy !="unknown")
+Bac.seqAll<-subset_taxa(Bac.seqAll, Taxonomy !="Archaea")
+
+# now get rid of things not represnted 2x or more
+#Prune singletons (these are reads that are only found once)
+Bac.seqAll.prune <- prune_taxa(taxa_sums(Bac.seqAll) > 2, Bac.seqAll)
+
+  save(Bac.seqAll, file = "Data/Bac.seqAll.prune.RData")
+  
+
+
+
+
+
+
+
+
+
+
 
 
 ####################
@@ -89,10 +114,11 @@ tax <- tax_table(tax1)
 
 
 # Read the data into phyloseq
-Bac.seq = phyloseq(otu, tax,sam) #THIS WORKS
+Bac.seq2 = phyloseq(otu, tax,sam) #THIS WORKS
 Bac.seq
+Bac.seq.df <- sample_data(Bac.seq)
 
-save(Bac.seq, file = "Data/Raw_bacteria_phyloseq.RData")
+save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
 
 ## check out data
@@ -101,4 +127,7 @@ nsamples(Bac.seq)   #num samples
 sample_names(Bac.seq)[1:300] #samp names
  #sampsy<-sample_names(physeq)[1:350]
 #write.csv(sampsy,"sampsy.csv")
+
+
+
 

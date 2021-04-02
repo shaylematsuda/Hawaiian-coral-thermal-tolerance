@@ -42,6 +42,9 @@ library(vegan)
 library(pairwiseAdonis)
 library("scales")
 packageVersion("scales")
+library(RColorBrewer)
+library(colorRamps)
+library(devtools)
 ```
 
 Load meta
@@ -3335,7 +3338,7 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 #Resp:photosynthesis
-```{r} 
+```{r}  
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed.csv")
 #PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -4403,8 +4406,8 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
 ```
 
 P:R
-```{r}
-PR_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+```{r} 
+PR_mean <-  ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
                    sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
@@ -8073,16 +8076,23 @@ head(its2SeqList$samples)
 Load in your data
 ```{r}
 # Load data (see data_exploration.Rmd)
-load("data/Raw_bacteria_phyloseq.RData") #use RAW data
+load("Data/Bac.seqAll.prune.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
-rank_names(Bac.seq) #ranks are DIV and clade
+rank_names(Bac.seqAll) #ranks are DIV and clade
 
 
 #remove field samples
-Bac.s = subset_samples(Bac.seq, Type== "sample" )
+Bac.s = subset_samples(Bac.seqAll, Type== "sample" )
 
-
-
+# #Bac.seqAll all not 3k use to check who you lose
+# # create df of sample data to view 
+# sample.dataAll <- as(sample_data(Bac.seqAll), "data.frame") #create sample data frame to view
+# sample.dataAll$LibrarySize <- sample_sums(Bac.seqAll)
+# #sample.dataAll <- sample.data[order(sample.dataAll$LibrarySize),]
+# #sample.dataAll$Index <- seq(nrow(sample.dataAll))  # check 3k rare
+# ggplot(data = sample.dataAll, aes(x=Index, y=LibrarySize, color = Species)) +
+#   geom_point()
+# write.csv(sample.dataAll, "sampscheck.csv")
 
 ## check out data
 ntaxa(Bac.s)  #num taxa
@@ -8106,17 +8116,26 @@ Dups<-subset_samples(Bac.s, Dups=="Yes")
 
 TopNOTUsB = names(sort(taxa_sums(Dups), TRUE)[1:100])
 bac50 = prune_taxa(TopNOTUsB, Dups)
-bacBarPlot<-plot_bar(bac50,  fill="Phyla");bacBarPlot
+bacBarPlot<-plot_bar(bac50,  fill="Phylum");bacBarPlot
 #ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
-Bac.s <- subset_samples(Bac.s, sample_name.1 != "S1753b" )
-Bac.s <- subset_samples(Bac.s, sample_name.1 != "S208" )
-Bac.s <- subset_samples(Bac.s, sample_name.1 != "S3476" )
+Bac.s <- subset_samples(Bac.s, realsample_name != "S1753b" )
+Bac.s <- subset_samples(Bac.s, realsample_name != "S208" )
+Bac.s <- subset_samples(Bac.s, realsample_name != "S3476" )
+Bac.s <- subset_samples(Bac.s, realsample_name != "SN35b" )
+Bac.s <- subset_samples(Bac.s, realsample_name != "SN111b" )
+
+Bac.s <- subset_samples(Bac.s, realsample_name != "Field" )
 
 
-  
+# Subsample to 2K
+Bac.s2 <- prune_samples(sample_sums(Bac.s)>=1764, Bac.s) #keep things over 2k
+#Rarefied to 2000 reads
+Bac.r <- rarefy_even_depth(Bac.s2, sample.size = 1764, rngseed = 711) 
+
+
 #### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
 #not
-controlT0_Amb = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "Ambient")  #copy
+controlT0_Amb = subset_samples(Bac.r, Time.Point == "T0"&Treatment == "Ambient")  #copy
 
 #tax table
 tax  = tax_table(controlT0_Amb)
@@ -8136,6 +8155,7 @@ tax  = tax_table(controlT0_Amb)
   # sd$ID <- as.factor(sd$ID)
 
   Amb2<-phyloseq(OTU, sd, tax)
+#sample.dataAmb2 <- as(sample_data(Amb2), "data.frame") #create sample data frame to view
 
 ##High
   controlT0_High = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "High")  #copy
@@ -8158,106 +8178,657 @@ OTU = otu_table(controlT0_High)
   sd$ID <- as.factor(sd$ID)
 
   High2<-phyloseq(OTU, sd, tax)
-  
+  #sample.dataHigh2 <- as(sample_data(High2), "data.frame") #create sample data frame to view
+
 #Merge control dups H and A  
 Controldups = merge_phyloseq(Amb2,High2)
 Controldups
-  
+    #sample.dataControldups2 <- as(sample_data(Controldups), "data.frame") #create sample data frame to view
+
 #merg them to the original df:
 
-Bac.s2 = merge_phyloseq(Bac.s,Controldups)
-Bac.s2
-Bac.s2.sd <- as(sample_data(Bac.s2), "data.frame") #create sample data frame to view
-Bac.s2.sd
+Bac.r2 = merge_phyloseq(Bac.r,Controldups)
+Bac.r2
+Bac.r2.sd <- as(sample_data(Bac.r2), "data.frame") #create sample data frame to view
+Bac.r2.sd
 
 ```
-Set up
+Set up, Bac.r2.sd <- this df is rarefied raw counts
 ```{r}
 #make relative abundance df Bac.s2
-Bac.s2RelA  = transform_sample_counts(Bac.s2, function(x) x / sum(x) )  #save as RELA DIVs
-data.bac <- as(sample_data(Bac.s2RelA), "data.frame") #look at samp data
+Bac.r.rel  = transform_sample_counts(Bac.r2, function(x) x / sum(x) )  #save as RELA DIVs
+data.Bac.r.rel <- as(sample_data(Bac.r.rel), "data.frame") #look at samp data
 
 #heatmap
   #plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
-  
 
 ```
 
 
+16 bar plots in ggplot (to make faster than next section)  
+#MCAP
+PHYLUM
+```{r}
+#try glom use raw counts Bac.r2
+Mcap_Bac.r2<-subset_samples(Bac.r2, Species=="Montipora_capitata")
+
+Mcap_Bac.r2.phy <- Mcap_Bac.r2 %>% 
+  tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.phy)
+
+# sum.ra.mcap <- ddply(Mcap_Bac.r2.melt, c("Phylum", "Time.Point", "Treatment","Parent.ID"), summarise,
+#                 N = length(Abundance),
+#                 mean = mean(Abundance),
+#                 sd = sd(Abundance), 
+#                 se = sd/sqrt(N)
+# )
+# sum.ra.mcap
+
+Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
+Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 52
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
 
 
-16s - bar plots df Bac.s2RelA 
+### by C or CD
+# C ONLY
+
+Mcap_Bac.r2.C<-subset_samples(Mcap_Bac.r2.melt, Clade=="C")
+
+mcap.p <- ggplot(Mcap_Bac.r2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Mcap C")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+# CD ONLY
+Mcap_Bac.r2.CD<-subset_samples(Mcap_Bac.r2.melt, Clade=="CD")
+
+mcap.p <- ggplot(Mcap_Bac.r2.CD.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Mcap CD")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+```
+CLASS
+```{r}
+#try glom use raw counts Bac.r2
+Mcap_Bac.r2<-subset_samples(Bac.r2, Species=="Montipora_capitata")
+
+Mcap_Bac.r2.Cla <- Mcap_Bac.r2 %>% 
+  tax_glom(taxrank = "Class", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.Cla)
+
+Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
+Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 123
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+### by C or CD
+# C ONLY
+
+Mcap_Bac.r2.melt.C<-subset(Mcap_Bac.r2.melt, Clade=="C")
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Mcap C")+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+# CD ONLY
+Mcap_Bac.r2.melt.CD<-subset(Mcap_Bac.r2.melt, Clade=="CD")
+
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  ggtitle("16S Mcap CD")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+```
+Family
+```{r}
+#try glom use raw counts Bac.r2
+Mcap_Bac.r2.Fam <- Mcap_Bac.r2 %>% 
+  tax_glom(taxrank = "Family", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.Fam)
+
+Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
+Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 123
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+### by C or CD
+# C ONLY
+
+Mcap_Bac.r2.melt.C<-subset(Mcap_Bac.r2.melt, Clade=="C")
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Mcap C")+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+# CD ONLY
+Mcap_Bac.r2.melt.CD<-subset(Mcap_Bac.r2.melt, Clade=="CD")
+
+
+mcap.p <- ggplot(Mcap_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  ggtitle("16S Mcap CD")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+```
+#Pcomp
+PHYLUM
+```{r}
+#try glom use raw counts Bac.r2
+Pcomp_Bac.r2<-subset_samples(Bac.r2, Species=="Porites_compressa")
+
+Pcomp_Bac.r2.phy <- Pcomp_Bac.r2 %>% 
+  tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.phy)
+
+Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
+Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+
+Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 52
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Parent.ID") +
+    #theme(legend.position = "none")+
+    ggtitle("16S Pcomp")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+### by C15cj or C15n
+# C15cj ONLY
+
+Pcomp_Bac.r2.C15cj<-subset(Pcomp_Bac.r2.melt, Clade=="C15cj")
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pcomp C15cj")+
+    theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+# C15n ONLY
+Pcomp_Bac.r2.C15n<-subset(Pcomp_Bac.r2.melt, Clade=="C15n")
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.C15n, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pcomp C15n")+
+      theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+```
+CLASS
+```{r}
+#try glom use raw counts Bac.r2
+
+Pcomp_Bac.r2.Cla <- Pcomp_Bac.r2 %>% 
+  tax_glom(taxrank = "Class", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.Cla)
+
+Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
+Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 123
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+
+### by C or CD
+# C ONLY
+
+Pcomp_Bac.r2.melt.C<-subset(Pcomp_Bac.r2.melt, Clade=="C")
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pcomp C")+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+# CD ONLY
+Pcomp_Bac.r2.melt.CD<-subset(Pcomp_Bac.r2.melt, Clade=="CD")
+
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  ggtitle("16S Pcomp CD")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+```
+Family
+```{r}
+#try glom use raw counts Bac.r2
+Pcomp_Bac.r2.Fam <- Pcomp_Bac.r2 %>% 
+  tax_glom(taxrank = "Family", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.Fam)
+
+Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
+Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 123
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+
+### by C or CD
+# C ONLY
+
+Pcomp_Bac.r2.melt.C<-subset(Pcomp_Bac.r2.melt, Clade=="C")
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pcomp C")+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+# CD ONLY
+Pcomp_Bac.r2.melt.CD<-subset(Pcomp_Bac.r2.melt, Clade=="CD")
+
+
+Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(legend.position = "none")+
+  ggtitle("16S Pcomp CD")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+```
+#Pvar
+PHYLUM
+```{r}
+#try glom use raw counts Bac.r2
+Pvar_Bac.r2<-subset_samples(Bac.r2, Species=="Pavona_varians")
+
+Pvar_Bac.r2.phy <- Pvar_Bac.r2 %>% 
+  tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pvar_Bac.r2.melt <- psmelt(Pvar_Bac.r2.phy)
+
+Pvar_Bac.r2.melt$Code<-paste(Pvar_Bac.r2.melt$Treatment, Pvar_Bac.r2.melt$Time.Point)
+Pvar_Bac.r2.melt$Parent.ID <- factor(Pvar_Bac.r2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+
+Pvar_Bac.r2.melt$Code <- factor(Pvar_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 52
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pvar.p <- ggplot(Pvar_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Parent.ID") +
+    #theme(legend.position = "none")+
+    ggtitle("16S Pvar")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pvar.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+### by C1 or C127
+# C15cj ONLY
+
+Pvar_Bac.r2.C15cj<-subset(Pvar_Bac.r2.melt, Clade=="C1")
+
+Pvar.p <- ggplot(Pvar_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pvar C1")+
+    theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pvar.p +  facet_wrap(~ Code, nrow=2)
+
+# C15n ONLY
+Pvar_Bac.r2.C27<-subset(Pvar_Bac.r2.melt, Clade=="C27")
+
+Pvar.p <- ggplot(Pvar_Bac.r2.C27, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pvar C27")+
+      theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pvar.p +  facet_wrap(~ Code, nrow=2)
+
+```
+#Pacu
+PHYLUM
+```{r}
+#try glom use raw counts Bac.r2
+Pacu_Bac.r2<-subset_samples(Bac.r2, Species=="Pocillopora_acuta")
+
+Pacu_Bac.r2.phy <- Pacu_Bac.r2 %>% 
+  tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pacu_Bac.r2.melt <- psmelt(Pacu_Bac.r2.phy)
+
+Pacu_Bac.r2.melt$Code<-paste(Pacu_Bac.r2.melt$Treatment, Pacu_Bac.r2.melt$Time.Point)
+Pacu_Bac.r2.melt$Parent.ID <- factor(Pacu_Bac.r2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+
+Pacu_Bac.r2.melt$Code <- factor(Pacu_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 52
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pacu.p <- ggplot(Pacu_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Parent.ID") +
+    #theme(legend.position = "none")+
+    ggtitle("16S Pacu")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pacu.p +  facet_wrap(~ Code, nrow=2)
+
+
+
+### by CCC or C42
+# CCC ONLY
+
+Pacu_Bac.r2.CCC<-subset(Pacu_Bac.r2.melt, Clade=="CCC")
+
+Pacu.p <- ggplot(Pacu_Bac.r2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pacu CCC")+
+    theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pacu.p +  facet_wrap(~ Code, nrow=2)
+
+# C42 ONLY
+Pacu_Bac.r2.C42<-subset(Pacu_Bac.r2.melt, Clade=="C42")
+
+Pacu.p <- ggplot(Pacu_Bac.r2.C42, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  ggtitle("16S Pacu C42")+
+      theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+Pacu.p +  facet_wrap(~ Code, nrow=2)
+
+```
+
+#16s - bar plots df Bac.s2RelA YOU Don't need now
 ```{r} 
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
-Bac.s2RelA.ord <- ordinate(Bac.s2RelA, "NMDS", "bray", set.seed(30))
-Bac.RelA.ord_plot = plot_ordination(Bac.s2RelA, Bac.s2RelA.ord, type="samples", shape="Treatment",color="Species", title="species")
+Bac.r.rel.ord <- ordinate(Bac.r.rel, "NMDS", "bray", set.seed(30))
+Bac.RelA.ord_plot = plot_ordination(Bac.r.rel, Bac.r.rel.ord, type="samples", shape="Treatment",color="Species", title="species")
 print(Bac.RelA.ord_plot)
 Bac.RelA.ord_plot + facet_wrap(~Species, 3)
 
 ### let's do this again and run the NMDS by species now that we know they are different. 
 #subset by species
-Mcap_16s_RA <- subset_samples(Bac.s2RelA, Species=="Montipora_capitata")
-Pcomp_16s_RA <- subset_samples(Bac.s2RelA, Species=="Porites_compressa")
-Pvar_16s_RA <- subset_samples(Bac.s2RelA, Species=="Pavona_varians")
-Pacu_16s_RA <- subset_samples(Bac.s2RelA, Species=="Pocillopora_acuta")
+Mcap_16s_RA <- subset_samples(Bac.r.rel, Species=="Montipora_capitata")
+Pcomp_16s_RA <- subset_samples(Bac.r.rel, Species=="Porites_compressa")
+Pvar_16s_RA <- subset_samples(Bac.r.rel, Species=="Pavona_varians")
+Pacu_16s_RA <- subset_samples(Bac.r.rel, Species=="Pocillopora_acuta")
 
 #top 50 DIVs across by species 
 
 #Mcap
  TopNOTUsMcap = names(sort(taxa_sums(Mcap_16s_RA), TRUE)[1:300])
  Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_16s_RA)
-McapBarPlot<-plot_bar(Mcap_16s_RA, x="Parent.ID", fill="Class", facet_grid = "Time.Point~Treatment");McapBarPlot
+McapBarPlot<-plot_bar(Mcap_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");McapBarPlot
 #ggsave("mMcapBarPlot_16srelARare.pdf", McapBarPlot, dpi=300, width=8)
+
+
+#### try with gg
+Mcap_16s_RA.gg<-phyloseq_to_df(Mcap_16s_RA, addtax = T, addtot = F, addmaxrank = F,
+  sorting = "abundance")
+Mcap_16s_RA.gg.Phylum<-subset(Mcap_16s_RA.gg, select=-c(2:3,5:8))
+#convert data frame from a "wide" format to a "long" format
+pcm = melt(Mcap_16s_RA.gg, id = c("OTU","Size","Phylum"))
+
+  mx = ggplot(Mcap_16s_RA.gg, aes(x = Parent.ID, fill = Phylum, y = value)) + 
+    geom_bar(stat = "identity", colour = "black") + 
+    theme(axis.text.x = element_text(angle = 90, size = 14, colour = "black", vjust = 0.5, hjust = 1, face= "bold"), 
+    axis.title.y = element_text(size = 16, face = "bold"), legend.title = element_text(size = 16, face = "bold"), 
+    legend.text = element_text(size = 12, face = "bold", colour = "black"), 
+    axis.text.y = element_text(colour = "black", size = 12, face = "bold")) + 
+    scale_y_continuous(expand = c(0,0)) + 
+    labs(x = "", y = "Relative Abundance (%)", fill = "OTU") + 
+    scale_fill_manual(values = colours)
+    
+  mx
+
+
+
 
 #Mcap C and CD
 #C
 Mcap_16s_RA.C<-subset_samples(Mcap_16s_RA, Clade=="C")
-TopNOTUsMcap.C = names(sort(taxa_sums(Mcap_16s_RA.C), TRUE)[1:50])
+TopNOTUsMcap.C = names(sort(taxa_sums(Mcap_16s_RA.C), TRUE)[1:300])
 Mcap.50.C = prune_taxa(TopNOTUsMcap.C, Mcap_16s_RA.C)
-McapBarPlot.C<-plot_bar(Mcap_16s_RA.C, x="Parent.ID", fill="Phyla", facet_grid = "Time.Point~Treatment");McapBarPlot.C
+McapBarPlot.C<-plot_bar(Mcap_16s_RA.C, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");McapBarPlot.C
 #ggsave("McapBarPlot_16s_C.pdf", McapBarPlot.C, dpi=300, width=8)
 
 #CD
 Mcap_16s_RA.CD<-subset_samples(Mcap_16s_RA, Clade=="CD")
-TopNOTUsMcap.CD = names(sort(taxa_sums(Mcap_16s_RA.CD), TRUE)[1:50])
+TopNOTUsMcap.CD = names(sort(taxa_sums(Mcap_16s_RA.CD), TRUE)[1:300])
  Mcap.50.CD = prune_taxa(TopNOTUsMcap.CD, Mcap_16s_RA.CD)
-McapBarPlot.CD<-plot_bar(Mcap_16s_RA.CD, x="Parent.ID", fill="Phyla", facet_grid = "Time.Point~Treatment");McapBarPlot.CD
+McapBarPlot.CD<-plot_bar(Mcap_16s_RA.CD, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");McapBarPlot.CD
 #ggsave("McapBarPlot_16s_CD.pdf", McapBarPlot.CD, dpi=300, width=8)
 
 
 #Pcomp
-TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_16s_RA), TRUE)[1:50])
+TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_16s_RA), TRUE)[1:300])
 # Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_16s_RA )
-PcompBarPlot<-plot_bar(Pcomp_16s_RA, x="Parent.ID", fill="Phyla", facet_grid = "Time.Point~Treatment");PcompBarPlot
+PcompBarPlot<-plot_bar(Pcomp_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PcompBarPlot
 #ggsave("PcompBarPlot_16srelARare.pdf", PcompBarPlot, dpi=300, width=8)
 
+#C15cj and C15n
+  #C15cj
+  Pcomp_16s_RA.C15cj<-subset_samples(Pcomp_16s_RA, Clade=="C15cj")
+  TopNOTUsPcomp.C15cj = names(sort(taxa_sums(Pcomp_16s_RA.C15cj), TRUE)[1:300])
+  Pcomp.50.C15cj = prune_taxa(TopNOTUsPcomp.C15cj, Pcomp_16s_RA.C15cj)
+  PcompBarPlot.C15cj<-plot_bar(Pcomp_16s_RA.C15cj, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PcompBarPlot.C15cj
+  #ggsave("PcompBarPlot_16s_C.pdf", PcompBarPlot.C15cj, dpi=300, width=8)
+
+  #C15n
+  Pcomp_16s_RA.C15n<-subset_samples(Pcomp_16s_RA, Clade=="C15n")
+  TopNOTUsPcomp.C15n = names(sort(taxa_sums(Pcomp_16s_RA.C15n), TRUE)[1:300])
+   Pcomp.50.C15n = prune_taxa(TopNOTUsPcomp.C15n, Pcomp_16s_RA.C15n)
+  PcompBarPlot.C15n<-plot_bar(Pcomp_16s_RA.C15n, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PcompBarPlot.C15n
+#ggsave("PcompBarPlot_16s_CD.pdf", PcompBarPlot.C15n, dpi=300, width=8)
+
+
 #Pvar
-TopNOTUsVar = names(sort(taxa_sums(Pvar_16s_RA), TRUE)[1:50])
+TopNOTUsVar = names(sort(taxa_sums(Pvar_16s_RA), TRUE)[1:300])
 Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_16s_RA)
-PvarBarPlot<-plot_bar(Pvarent50, x="Parent.ID", fill="16s", facet_grid = "Time.Point~Treatment");PvarBarPlot
+PvarBarPlot<-plot_bar(Pvar_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PvarBarPlot
 #ggsave("PvarBarPlot_16srelARare.pdf", PvarBarPlot, dpi=300, width=8)
 
+
+#C1 and C27
+  #C15cj
+  Pvar_16s_RA.C1<-subset_samples(Pvar_16s_RA, Clade=="C1")
+  TopNOTUsPvar.C1 = names(sort(taxa_sums(Pvar_16s_RA.C1), TRUE)[1:300])
+  Pvar.50.C1 = prune_taxa(TopNOTUsPvar.C1, Pvar_16s_RA.C1)
+  PvarBarPlot.C1<-plot_bar(Pvar_16s_RA.C1, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PvarBarPlot.C1
+  #ggsave("PvarBarPlot_16s_C.pdf", PvarBarPlot.C15cj, dpi=300, width=8)
+
+  #C27
+  Pvar_16s_RA.C27<-subset_samples(Pvar_16s_RA, Clade=="C27")
+  TopNOTUsPvar.C27 = names(sort(taxa_sums(Pvar_16s_RA.C27), TRUE)[1:300])
+   Pvar.50.C27 = prune_taxa(TopNOTUsPvar.C27, Pvar_16s_RA.C27)
+  PvarBarPlot.C27<-plot_bar(Pvar_16s_RA.C27, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PvarBarPlot.C27
+  #ggsave("PvarBarPlot_16s_CD.pdf", PvarBarPlot.C27, dpi=300, width=8)
+
+
+
 #Pacu
-TopNOTUsPacu = names(sort(taxa_sums(Pacu_16s_RA), TRUE)[1:50])
+# TopNOTUsPacu = names(sort(taxa_sums(Pacu_16s_RA), TRUE)[1:300])
 Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_16s_RA)
-PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="16s", facet_grid = "Time.Point~Treatment");PacuBarPlot
+PacuBarPlot<-plot_bar(Pacu_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PacuBarPlot
 #ggsave("PacuBarPlot_16srelARare.pdf", PacuBarPlot, dpi=300, width=8)
+
+#CCC and C42
+  #CCC
+  Pacu_16s_RA.CCC<-subset_samples(Pacu_16s_RA, Clade=="CCC")
+  TopNOTUsPacu.CCC = names(sort(taxa_sums(Pacu_16s_RA.CCC), TRUE)[1:300])
+  Pacu.50.CCC = prune_taxa(TopNOTUsPacu.CCC, Pacu_16s_RA.CCC)
+  PacuBarPlot.CCC<-plot_bar(Pacu_16s_RA.CCC, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PacuBarPlot.CCC
+  #ggsave("PacuBarPlot_16s_C.pdf", PacuBarPlotCCC5cj, dpi=300, width=8)
+
+  #C42
+  Pacu_16s_RA.C42<-subset_samples(Pacu_16s_RA, Clade=="C42")
+  TopNOTUsPacu.C42 = names(sort(taxa_sums(Pacu_16s_RA.C42), TRUE)[1:300])
+   Pacu.50.C42 = prune_taxa(TopNOTUsPacu.C42, Pacu_16s_RA.C42)
+  PacuBarPlot.C42<-plot_bar(Pacu_16s_RA.C42, x="Parent.ID", fill="Phylum", facet_grid = "Time.Point~Treatment");PacuBarPlot.C42
+  #ggsave("PacuBarPlot_16s_CD.pdf", PacuBarPlot.C42, dpi=300, width=8)
 ```
 
 
 #Ordination DIV_RelA <- you might not need this section, code below for each species  
-try vegan nmds - its the same, delete when CN says cool, Bac.s2RelA
+try vegan nmds - its the same, delete when CN says cool, Bac.r.rel
 ```{r} 
   ##this isn't working, not converging. 
 # convert the sample_data() within a phyloseq object to a vegan compatible data object
-df16s2veg <- function(Bac.s2RelA) { 
-  sd <- sample_data(Bac.s2RelA)
+df16s2veg <- function(Bac.r.rel) { 
+  sd <- sample_data(Bac.r.rel)
   return(as(sd,"data.frame"))
 }
 
 # convert the otu_table() within a phyloseq object to a vegan compatible data object
-df16sotu2veg <- function(Bac.s2RelA) {
-  OTU <- otu_table(Bac.s2RelA)
+df16sotu2veg <- function(Bac.r.rel) {
+  OTU <- otu_table(Bac.r.rel)
   if (taxa_are_rows(OTU)) {
     OTU <- t(OTU)
   }
@@ -8294,13 +8865,13 @@ orditorp(df16s.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r}        
+```{r}         
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
   
 #heat map
-plot_heatmap(Bac.s2RelA, "NMDS", "bray", "Species", "Phyla")
+plot_heatmap(Bac.r.rel, "NMDS", "bray", "Species", "Phylum")
 
 #by species 
   #mcap
@@ -8311,9 +8882,9 @@ Mcapent50.T1.CD<- subset_samples(Mcapent50.T1, Clade=="CD")
 Mcapent50.TF<- subset_samples(Mcapent50, Time.Point=="TF")
 
 
-  plot_heatmap(Mcapent50.T1, "NMDS", "bray", "Treatment","Phyla", low="#000033", high="#CCFF66") #use to show split
-  plot_heatmap(Mcapent50.T1.C, "NMDS", "bray", "Treatment","Phyla", low="#000033", high="#CCFF66") #use to show split
-  plot_heatmap(Mcapent50.T1.CD, "NMDS", "bray", "Treatment","Phyla", low="#000033", high="#CCFF66") #use to show split
+  plot_heatmap(Mcapent50.T1, "NMDS", "bray", "Treatment","Phylum", low="#000033", high="#CCFF66") #use to show split
+  plot_heatmap(Mcapent50.T1.C, "NMDS", "bray", "Treatment","Phylum", low="#000033", high="#CCFF66") #use to show split
+  plot_heatmap(Mcapent50.T1.CD, "NMDS", "bray", "Treatment","Phylum", low="#000033", high="#CCFF66") #use to show split
 
  #Pcomp
   Pcomp_DIV_RA_T1 <- subset_samples(Pcomp_DIV_RA, Time.Point=="T1")
@@ -8355,20 +8926,20 @@ print(DIVrareRel1_Pcomp)
 ```
 
 #Beta Diversity: df rarefied and relative abudnaces  
-All Species Bac.s2RelA
+All Species Bac.r.rel
 ```{r}      
-#Bac.s2RelA 
+#Bac.r.rel 
 
-Bac.s2RelA_stats<- Bac.s2RelA #make a copy
-otu_table(Bac.s2RelA_stats)[1:5, 1:5] #check rela worked
+Bac.r.rel_stats<- Bac.r.rel #make a copy
+otu_table(Bac.r.rel_stats)[1:5, 1:5] #check rela worked
 
 #get rid of NA OTUs now!
-Bac.s2RelA_stats = prune_taxa(taxa_sums(Bac.s2RelA_stats) > 0, Bac.s2RelA_stats) #this removes any OTU with 0s
+Bac.r.rel_stats = prune_taxa(taxa_sums(Bac.r.rel_stats) > 0, Bac.r.rel_stats) #this removes any OTU with 0s
 
 
 #bray curtis presence-absense and abundance
 ## REMOVE T0 for models
-Bac_RelA_stats.T1F<-subset_samples(Bac.s2RelA_stats, Time.Point=="T1"|Time.Point=="TF")
+Bac_RelA_stats.T1F<-subset_samples(Bac.r.rel_stats, Time.Point=="T1"|Time.Point=="TF")
 
 #bray curtis presence-absense and abundance
 
@@ -8391,12 +8962,14 @@ plot(bc.all.HSD)
 
 
 #Ordination NMDS for all species, T1Tf
-set.seed(30)
+set.seed(50)
 ord.Bac_RelA_stats <- ordinate(Bac_RelA_stats.T1F, "NMDS", "bray", trymax = 500) 
 stressplot(ord.Bac_RelA_stats)
-scores.ord.Bac_RelA_stats <- as.data.frame(scores(ord.Bac_RelA_stats)) #HEY when this does not work it is bc you have NAs from your subset. go back and figure out how to remove OTUs that are now not a part of the phylo
+scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
+
 scores.ord.Bac_RelA_stats$Treatment <- samp.df$Treatment
 scores.ord.Bac_RelA_stats$Species <- samp.df$Species
+
 
 ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
@@ -8412,131 +8985,103 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 
 
 #Split data by species 
-Beta
-Montipora - T1 and TF together, then independent. PERMANOVA
+Beta div
+Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
 ```{r}   
-# Bac_RelA_stats.T1F
-#mcap
+# df Bac_RelA_stats.T1F
+#Mcap
 mcap.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
 mcap.bac.T1F = prune_taxa(taxa_sums(mcap.bac.T1F) > 0, mcap.bac.T1F) #this removes any OTU with 0s
 
+#make dfs you need 
 mcap.bac.T1 <- subset_samples(mcap.bac.T1F, Time.Point == "T1")
+  mcap.bac.T1 = prune_taxa(taxa_sums(mcap.bac.T1) > 0, mcap.bac.T1) #this removes any OTU with 0s
+
 mcap.bac.TF <- subset_samples(mcap.bac.T1F, Time.Point == "TF")
+  mcap.bac.TF = prune_taxa(taxa_sums(mcap.bac.TF) > 0, mcap.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
   bc.mcap.T1F <- phyloseq::distance(mcap.bac.T1F, method = "bray")
-  mcap.samp.df.T1F <- as(sample_data(mcap.bac.T1F), "data.frame")            #sample df
-  adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)      #adonis test
-  adonis(bc.mcap.T1F ~ Treatment*Time.Point, data = mcap.samp.df.T1F)      #adonis test
-
-  #heatmap
-    #plot_heatmap(mcap.bac.T1F, "NMDS", "bray", "Parent.ID", "Phyla")
-
-  
+     mcap.samp.df.T1F <- as(sample_data(mcap.bac.T1F), "data.frame") #sample df
+    adonis(bc.mcap.T1F ~ Treatment*Time.Point, data = mcap.samp.df.T1F) #adonis test no clade
+    adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(mcap.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    
 #T1
-#make bray curtis data matrix 
-  bc.mcapT1 <- phyloseq::distance(mcap.bac.T1, method = "bray")
-  mcap.samp.df.T1 <- as(sample_data(mcap.bac.T1), "data.frame") #sample df
-  adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.samp.df.T1)   #adonis test
+  bc.mcapT1 <- phyloseq::distance(mcap.bac.T1, method = "bray") 
+      mcap.samp.df.T1 <- as(sample_data(mcap.bac.T1), "data.frame") 
+    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Clade)
-  permutest(beta.mcap.T1, pairwise = T) 
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Treatment)
-  permutest(beta.mcap.T1, pairwise = T) 
+  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Clade)  #clade
+    permutest(beta.mcap.T1, pairwise = T) 
+  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Treatment) #treatment
+    permutest(beta.mcap.T1, pairwise = T) 
 
 #TF
-#make bray curtis data matrix 
   bc.mcap.TF <- phyloseq::distance(mcap.bac.TF, method = "bray")
-  mcap.samp.df.TF <- as(sample_data(mcap.bac.TF), "data.frame") #sample df
-#adonis test
-  adonis(bc.mcap.TF ~ Clade*Treatment, data = mcap.samp.df.TF)
+     mcap.samp.df.TF <- as(sample_data(mcap.bac.TF), "data.frame") 
+    adonis(bc.mcap.TF ~ Clade*Treatment, data = mcap.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Clade)
-  permutest(beta.mcap.TF, pairwise = T) 
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Treatment)
-  permutest(beta.mcap.TF, pairwise = T) 
+  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Clade) 
+    permutest(beta.mcap.TF, pairwise = T) 
+  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Treatment) 
+    permutest(beta.mcap.TF, pairwise = T) 
 
-
-## by clade: C vs CD
-  
-# C only, new objs
-mcap.bacT1F.C <- subset_samples(mcap.bac.T1F, Clade == "C")
-mcap.bac.T1.C <- subset_samples(mcap.bac.T1, Clade == "C")
-mcap.bac.TF.C <- subset_samples(mcap.bac.TF, Clade == "C")
+######### by phylotype: C vs CD
+# C ONLY
+  mcap.bac.T1F.C <- subset_samples(mcap.bac.T1F, Clade == "C")
+  mcap.bac.T1.C <- subset_samples(mcap.bac.T1, Clade == "C")
+  mcap.bac.TF.C <- subset_samples(mcap.bac.TF, Clade == "C")
   
 #T1TF.C
-#make bray curtis data matrix -T1 and TF
-  bc.mcap.T1F.C <- phyloseq::distance(mcap.bacT1F.C, method = "bray")
-  mcap.samp.df.T1F.C <- as(sample_data(mcap.bacT1F.C), "data.frame") #sample df
-#adonis test
+  bc.mcap.T1F.C <- phyloseq::distance(mcap.bac.T1F.C, method = "bray")
+    mcap.samp.df.T1F.C <- as(sample_data(mcap.bacT1F.C), "data.frame") 
   adonis(bc.mcap.T1F.C ~ Treatment*Time.Point, data = mcap.samp.df.T1F.C)
 
 #T1.C
-#make bray curtis data matrix 
   bc.mcapT1.C <- phyloseq::distance(mcap.bac.T1.C, method = "bray")
-  mcap.samp.df.T1.C <- as(sample_data(mcap.bac.T1.C), "data.frame") #sample df
-#adonis test
+    mcap.samp.df.T1.C <- as(sample_data(mcap.bac.T1.C), "data.frame") #sample df
   adonis(bc.mcapT1.C ~ Treatment, data = mcap.samp.df.T1.C)
-# Homogeneity of dispersion test  
   beta.mcap.T1.C <- betadisper(bc.mcapT1.C, mcap.samp.df.T1.C$Treatment)
-  permutest(beta.mcap.T1.C, pairwise = T) 
+    permutest(beta.mcap.T1.C, pairwise = T) 
 
 #TF.C
-#make bray curtis data matrix 
   bc.mcap.TF.C <- phyloseq::distance(mcap.bac.TF.C, method = "bray")
-  mcap.samp.df.TF.C <- as(sample_data(mcap.bac.TF.C), "data.frame") #sample df
-#adonis test
+    mcap.samp.df.TF.C <- as(sample_data(mcap.bac.TF.C), "data.frame") #sample df
   adonis(bc.mcap.TF.C ~ Treatment, data = mcap.samp.df.TF.C)
-# Homogeneity of dispersion test  
   beta.mcap.TF.C <- betadisper(bc.mcap.TF.C, mcap.samp.df.TF.C$Treatment)
-  permutest(beta.mcap.TF.C, pairwise = T) 
+    permutest(beta.mcap.TF.C, pairwise = T) 
 
-
-# CD only, new objs mcap.bac.TF
-mcap.bacT1F.CD <- subset_samples(mcap.bac.T1F, Clade == "CD")
+# CD ONLY
+mcap.bac.T1F.CD <- subset_samples(mcap.bac.T1F, Clade == "CD")
 mcap.bac.T1.CD <- subset_samples(mcap.bac.T1, Clade == "CD")
 mcap.bac.TF.CD <- subset_samples(mcap.bac.TF, Clade == "CD")
   
 #T1TF.CD
-#make bray curtis data matrix -T1 and TF
-  bc.mcap.T1F.CD <- phyloseq::distance(mcap.bacT1F.CD, method = "bray")
-  mcap.samp.df.T1F.CD <- as(sample_data(mcap.bacT1F.CD), "data.frame") #sample df
-#adonis test
+  bc.mcap.T1F.CD <- phyloseq::distance(mcap.bac.T1F.CD, method = "bray")
+  mcap.samp.df.T1F.CD <- as(sample_data(mcap.bac.T1F.CD), "data.frame") 
   adonis(bc.mcap.T1F.CD ~ Treatment*Time.Point, data = mcap.samp.df.T1F.CD)
 
 #T1.CD
-#make bray curtis data matrix 
   bc.mcapT1.CD <- phyloseq::distance(mcap.bac.T1.CD, method = "bray")
-  mcap.samp.df.T1.CD <- as(sample_data(mcap.bac.T1.CD), "data.frame") #sample df
-  adonis(bc.mcapT1.CD ~ Treatment, data = mcap.samp.df.T1.CD)#adonis test
-# Homogeneity of dispersion test  
-  beta.mcap.T1.CD <- betadisper(bc.mcapT1.CD, mcap.samp.df.T1.CD$Treatment)
+    mcap.samp.df.T1.CD <- as(sample_data(mcap.bac.T1.CD), "data.frame") 
+  adonis(bc.mcapT1.CD ~ Treatment, data = mcap.samp.df.T1.CD)
+    beta.mcap.T1.CD <- betadisper(bc.mcapT1.CD, mcap.samp.df.T1.CD$Treatment)
   permutest(beta.mcap.T1.CD, pairwise = T) 
 
 #TF.CD
-#make bray curtis data matrix 
   bc.mcap.TF.CD <- phyloseq::distance(mcap.bac.TF.CD, method = "bray")
-  mcap.samp.df.TF.CD <- as(sample_data(mcap.bac.TF.CD), "data.frame") #sample df
-#adonis test
+    mcap.samp.df.TF.CD <- as(sample_data(mcap.bac.TF.CD), "data.frame") 
   adonis(bc.mcap.TF.CD ~ Treatment, data = mcap.samp.df.TF.CD)
-# Homogeneity of dispersion test  
   beta.mcap.TF.CD <- betadisper(bc.mcap.TF.CD, mcap.samp.df.TF.CD$Treatment)
-  permutest(beta.mcap.TF.CD, pairwise = T) 
+    permutest(beta.mcap.TF.CD, pairwise = T) 
 ``` 
 Mcap NMDS
 ```{r}
-library(RColorBrewer)
-library(colorRamps)
-library(devtools)
-
 ## create palette for parent.ID and treatments
-Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
-
-
-mcap.bac.T1F = prune_taxa(taxa_sums(mcap.bac.T1F) > 0, mcap.bac.T1F) #this removes any OTU with 0s
-
-
+Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
 #T1 and TF
 ord.mcap2 <- ordinate(mcap.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
@@ -8549,11 +9094,12 @@ scores.mcap.samp.df$Treatment <- mcap.samp.df.T1F$Treatment
 scores.mcap.samp.df$Clade <- mcap.samp.df.T1F$Clade
 scores.mcap.samp.df$Code <- paste(mcap.samp.df.T1F$Parent.ID,mcap.samp.df.T1F$Time.Point)
 scores.mcap.samp.df$Code2 <- paste(mcap.samp.df.T1F$Treatment,mcap.samp.df.T1F$Time.Point)
+scores.mcap.samp.df$Code3 <- paste(mcap.samp.df.T1F$Treatment,mcap.samp.df.T1F$Time.Point,mcap.samp.df.T1F$Parent.ID)
 
 ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Time.Point, shape = Treatment), size = 4) +
-  #scale_color_manual(values=Mcap.Parent.colors)+
-   # geom_line(aes(group = Code2), color = "black") + 
+  geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+   # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2), linetype = 2) +
   ggtitle("M. capitata T1TF") +
   theme_classic()
@@ -8572,9 +9118,10 @@ ord.mcap.T1.df$Code <- paste(mcap.samp.df.T1$Parent.ID,mcap.samp.df.T1$Time.Poin
 
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
 ggplot(ord.mcap.T1.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Treatment, shape = Clade), size = 4) +
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Mcap.Parent.colors)+
-    geom_line(aes(group = Code), color = "black") + 
+    geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1") +
   theme_classic()
@@ -8593,26 +9140,19 @@ ord.mcap.TF.df$Treatment <- mcap.samp.df.TF$Treatment
 ord.mcap.TF.df$Parent.ID <- mcap.samp.df.TF$Parent.ID
 ord.mcap.TF.df$Clade <- mcap.samp.df.TF$Clade
 ord.mcap.TF.df$CladeTreat <- as.factor(paste(mcap.samp.df.TF$Clade,mcap.samp.df.TF$Treatment))
+ord.mcap.TF.df$Code <- as.factor(paste(mcap.samp.df.TF$Parent.ID,mcap.samp.df.TF$Treatment))
 
 ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Parent.ID, shape = Clade), size = 4) +
-  scale_color_manual(values=Mcap.Parent.colors)+
-   # geom_line(aes(group = Parent.ID), color = "black") + 
+ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+    scale_color_manual(values=Mcap.Parent.colors)+
+    geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata TF") +
   theme_classic()
 #ggsave("McapT1its2.pdf")
 
 
-ggplot(scores.mcapTF, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(stroke=1.5, colour = Parent.ID, size = 4) )+
-    geom_point(aes(colour = Treatment), size = 4) +
-  scale_color_manual(values=Mcap.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-  ggtitle("M. capitata TF Bray Curtis") +
-  theme_classic()
-#ggsave("Mcap_TF_its_nmds_parent_outline.pdf")
 
 #### BY CLADE
 #ords
@@ -8628,8 +9168,8 @@ scores.mcap_C$Parent.ID <- mcap.samp.df.T1F.C$Parent.ID
 scores.mcap_C$Time.Point <- mcap.samp.df.T1F.C$Time.Point
 
 ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) + 
-geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
-    geom_point(aes(colour = Parent.ID, size = 4, shape=Time.Point)) +
+geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Mcap.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata Cladocopium") +
@@ -8736,6 +9276,20 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### DELETE BELOW once redon above
 Porites - T1 and TF together, then independent. PERMANOVA
 ```{r}   
 #DIV_RelA_stats.T1F
@@ -9662,7 +10216,7 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
 
 
 
-Pacu.bacT1F.C27 , 
+Pacu.bacT1F.C27  
 Pacu.bac.T1.C27 
 Pacu.bac.TF.C27 
 
