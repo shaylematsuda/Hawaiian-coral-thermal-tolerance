@@ -228,13 +228,16 @@ Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
 
 ```
 Stats - T0 is n=6, not n=12. T1 and TF
-```{r} 
+```{r}  
 Biomass_stats<-biomass2
 
 biomass_stats_T1TF<-biomass2
 biomass_stats_T1TF<-subset(biomass_stats_T1TF, Time.Point=="T1"|Time.Point=="TF")
 
 hist(biomass_stats_T1TF$AFDWmg.cm2) 
+# biomass_stats_T1TF$AFDWmg.cm2_log<-log10(biomass_stats_T1TF$AFDWmg.cm2)
+# hist(biomass_stats_T1TF$AFDWmg.cm2_log) 
+
 
 Biomass_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF)
 anova(Biomass_model) 
@@ -466,7 +469,7 @@ Biomass_Pacu_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|
 
 ```
 PLOTS
-```{r}  
+```{r}   
 #plot Mcap
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -475,7 +478,7 @@ Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
-  ylim(0, 10) + #set Y limits
+  ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -485,8 +488,12 @@ Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("Montipora capitata")+
+  ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
 
 # Pcomp 
@@ -499,7 +506,7 @@ Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, gr
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   ylab("") + #Label the X Axis
-  #ylim(0, 10) + #set Y limits
+  ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -509,8 +516,12 @@ Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("Porites compressa")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot
 
 # Pvar 
@@ -522,7 +533,7 @@ Pvar_biomass_mean_plot<-ggplot(data=Pvar_biomass_mean, aes(x=Time.Point, y=mean,
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
-  ylim(2.5, 6) + #set Y limits
+  ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -532,8 +543,12 @@ Pvar_biomass_mean_plot<-ggplot(data=Pvar_biomass_mean, aes(x=Time.Point, y=mean,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("Pavona varians")+
+  ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_mean_plot
 
 # Pacu 
@@ -546,7 +561,7 @@ Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean,
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   ylab("") + #Label the Y Axis
-  ylim(0, 10) + #set Y limits
+  ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -556,8 +571,12 @@ Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean,
         plot.background =element_blank(), #Set the plot background
         text = element_text(size=18),  # set element text
         legend.key = element_blank()) + #Set plot legend key
-  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("Pocillopora acuta")+
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P acuta")+
   theme(plot.title = element_text(size=20,face = "italic"));Pacu_biomass_mean_plot
 
 
@@ -567,12 +586,12 @@ Pcomp_biomass_plot<-Pcomp_biomass_plot+ theme(legend.position = "none") #remove 
 Pvar_biomass_mean_plot<-Pvar_biomass_mean_plot+ theme(legend.position = "none") #remove legend
 Pacu_biomass_mean_plot<-Pacu_biomass_mean_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot, nrow = 2)
+grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot, nrow = 1)
  
 ```
 
 # Flow cytometry  cell counts
-```{r}    
+```{r}     
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
 
@@ -716,7 +735,7 @@ Pacu_FC_Sum #display table
 
 ```
 Stats
-```{r}
+```{r} 
 
 FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
@@ -951,7 +970,7 @@ FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
 ```
 
 Line plots
-```{r} 
+```{r}  
 # Mcap  
 
 Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
@@ -962,8 +981,8 @@ Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-       scale_y_log10()+
-    #  ylim(0, 4000000)+
+       #scale_y_log10()+
+   #   ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -974,7 +993,11 @@ Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("cells"))) +
-  ggtitle("Mcap Flow Cytometry")+
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot
 
 # Pcomp 
@@ -987,8 +1010,8 @@ Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = T
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-       scale_y_log10()+
-   # ylim(0, 4000000)+
+      # scale_y_log10()+
+  #  ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -999,7 +1022,11 @@ Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = T
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("cells"))) +
-  ggtitle("Pcomp Flow Cytometry")+
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
 
 
@@ -1013,8 +1040,8 @@ Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-       scale_y_log10()+
-   # ylim(0, 4000000)+
+     #  scale_y_log10()+
+  #  ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -1025,7 +1052,11 @@ Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("cells"))) +
-  ggtitle("Pvar Flow Cytometry")+
+     theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot
 
 # Pacu 
@@ -1038,7 +1069,7 @@ Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-       scale_y_log10()+
+      # scale_y_log10()+
   #ylim(0, 4000000)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -1050,7 +1081,11 @@ Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("cells"))) +
-  ggtitle("Pacu Flow Cytometry")+
+     theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_FC_lineplot
 
 ###### All plots together
@@ -1059,7 +1094,7 @@ Pcomp_FC_lineplot<-Pcomp_FC_lineplot+ theme(legend.position = "none") #remove le
 Pvar_FC_lineplot<-Pvar_FC_lineplot+ theme(legend.position = "none") #remove legend
 Pacu_FC_lineplot<-Pacu_FC_lineplot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot, nrow = 2)
+grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot, nrow = 1)
 
 ```
 #Buoyant Weight/Calcification
@@ -1093,7 +1128,7 @@ StandardFreshModel$coef
 
 ```
 Analysis 
-```{r}  
+```{r}   
  
 #load coral weight data
 BW.data <-read.csv('Data/BW_TT17.csv') # this is a file I compiled with all dates
@@ -1182,7 +1217,7 @@ data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.W
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
 
 
-
+ 
 
 
 # mean, standard dev, and sem
@@ -1219,7 +1254,7 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-     # ylim(0, .7)+
+      ylim(0, .6)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -1229,15 +1264,19 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("Montipora capitata")+
+  ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot
 
 
 ```
 Porites compressa
 ```{r} 
-  
+   
 ################################     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
   #Parameters---------------------------------------------------------------
@@ -1346,12 +1385,17 @@ Pcomp_BW_plot<-ggplot(data=G_Pcomp, aes(x=newtime, y=mean, group = Treatment, co
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
  ylab(expression(paste(""))) +
-  ggtitle("Porites compressa")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+  
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pcomp_BW_plot
 
 ```
 Pavona varians
-```{r}
+```{r} 
 BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -1461,12 +1505,16 @@ Pvar_BW_plot<-ggplot(data=G_Pvar, aes(x=newtime, y=mean, group = Treatment, colo
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("Pavona varians")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pvar_BW_plot
 
 ```
 P acuta
-```{r} 
+```{r}  
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -1574,7 +1622,12 @@ Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, colo
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste(" "))) + 
-  ggtitle("Pocillopora acuta")+ 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+    ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  ggtitle("P acuta")+ 
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pacu_BW_plot
  
 ```
@@ -1586,7 +1639,7 @@ Pcomp_BW_plot<-Pcomp_BW_plot+ theme(legend.position = "none") #remove legend
 Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
 Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 2)
+grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
 ``` 
  
 stats
@@ -1886,9 +1939,9 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 
 
-#Chl-a
+#Chl-a 
 dfs: Slurry=airbrush, SA=wax dip, 
-```{r}    
+```{r}     
 
  # Plate 1
 
@@ -2044,7 +2097,7 @@ chlatest<-merge(meta, Chla, all = T)
 ```
 
 means for plots
-```{r}  
+```{r}   
 
 chlatest<-merge(meta, Chla, all.x = T)
 
@@ -2101,7 +2154,11 @@ Mcap_Chla_plot<-ggplot(data=Mcap_chla, aes(x=Time.Point, y=mean, group = Treatme
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  ggtitle("Montipora capitata")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot
 
 #Pcomp plot
@@ -2125,7 +2182,11 @@ Pcomp_Chla_plot<-ggplot(data=Pcomp_chla, aes(x=Time.Point, y=mean, group = Treat
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  ggtitle("Porites compressa")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot
 
 #Pvar plot
@@ -2149,7 +2210,11 @@ Pvar_Chla_plot<-ggplot(data=Pvar_chla, aes(x=Time.Point, y=mean, group = Treatme
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  ggtitle("Pavona varians")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot
 
 
@@ -2163,7 +2228,7 @@ Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatme
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-      ylim(0, 5)+
+      ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -2174,7 +2239,11 @@ Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatme
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  ggtitle("Pocillopora acuta")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot
 
 
@@ -2182,18 +2251,18 @@ Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatme
 ```
 
 Plots together
-```{r}
+```{r} 
 ###### All plots together
 Mcap_Chla_plot<-Mcap_Chla_plot+ theme(legend.position = "none") #remove legend
 Pcomp_Chla_plot<-Pcomp_Chla_plot+ theme(legend.position = "none") #remove legend
 Pvar_Chla_plot<-Pvar_Chla_plot+ theme(legend.position = "none") #remove legend
 Pacu_Chla_plot<-Pacu_Chla_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 2)
+grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 1)
 ```
  
 stats  
-```{r}   
+```{r}     
 Chla_stats_T1TF<-subset(Chla, Time.Point=="T1"|Time.Point=="TF")
 
 hist (Chla_stats_T1TF$ChlaSA) 
@@ -2438,7 +2507,7 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
 
 
 #PAM 
-```{r}     
+```{r}      
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -2480,7 +2549,7 @@ PAMdata$Days[PAMdata$Days<4]<- 0  #If you want to make T0 all the same start tim
 
 
 # make yield ratio
-PAMdata <- transform(PAMdata, Yield = PAMdata$Yield/1000)
+PAMdata$Yield <- PAMdata$Yield/1000
 str(PAMdata) # check
 
 #check yield calculations versus records and build dataframe
@@ -2524,7 +2593,7 @@ PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 
 ```
 Stats 
-```{r}      
+```{r}       
 #remove notes
 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
@@ -2562,44 +2631,44 @@ pairs(emm)
 
 #lmer
 
-PAMdata2_stats2_Mcap<-subset(PAMdata2_stats2, Species=="Montipora_capitata")
-PAMdata2_stats2_Pcomp<-subset(PAMdata2_stats2, Species=="Porites_compressa")
-PAMdata2_stats2_Pvar<-subset(PAMdata2_stats2, Species=="Pavona_varians")
-PAMdata2_stats2_Pacu<-subset(PAMdata2_stats2, Species=="Pocillopora_acuta")
+PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora_capitata")
+PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites_compressa")
+PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona_varians")
+PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
 
-# by Species df: PAMdata2_stats2_Mcap, PAMdata2_stats2_Pcomp, PAMdata2_stats2_Pvar, PAMdata2_stats2_Pacu
-PAMdata2_stats2_Mcap<-subset(PAMdata2_stats2, Species=="Montipora_capitata")
-  PAMdata2_stats2_Mcap.C<-subset(PAMdata2_stats2_Mcap, Clade=="C")
-  PAMdata2_stats2_Mcap.CD<-subset(PAMdata2_stats2_Mcap, Clade=="CD")
-    PAMdata2_stats2_Mcap.T1<-subset(PAMdata2_stats2_Mcap, Days==24)
-    PAMdata2_stats2_Mcap.TF<-subset(PAMdata2_stats2_Mcap, Days==52)
+# by Species df: PAMdata2_stats_Mcap, PAMdata2_stats_Pcomp, PAMdata2_stats_Pvar, PAMdata2_stats_Pacu
+PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora_capitata")
+  PAMdata2_stats_Mcap.C<-subset(PAMdata2_stats_Mcap, Clade=="C")
+  PAMdata2_stats_Mcap.CD<-subset(PAMdata2_stats_Mcap, Clade=="CD")
+    PAMdata2_stats_Mcap.T1<-subset(PAMdata2_stats_Mcap, Days==24)
+    PAMdata2_stats_Mcap.TF<-subset(PAMdata2_stats_Mcap, Days==52)
 
-PAMdata2_stats2_Pcomp<-subset(PAMdata2_stats2, Species=="Porites_compressa")
-  PAMdata2_stats2_Pcomp.C15cj<-subset(PAMdata2_stats2_Pcomp, Clade=="C15cj")
-  PAMdata2_stats2_Pcomp.C15n<-subset(PAMdata2_stats2_Pcomp, Clade=="C15n")
-    PAMdata2_stats2_Pcomp.T1<-subset(PAMdata2_stats2_Pcomp, Days==24)
-    PAMdata2_stats2_Pcomp.TF<-subset(PAMdata2_stats2_Pcomp, Days==52)
+PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites_compressa")
+  PAMdata2_stats_Pcomp.C15cj<-subset(PAMdata2_stats_Pcomp, Clade=="C15cj")
+  PAMdata2_stats_Pcomp.C15n<-subset(PAMdata2_stats_Pcomp, Clade=="C15n")
+    PAMdata2_stats_Pcomp.T1<-subset(PAMdata2_stats_Pcomp, Days==24)
+    PAMdata2_stats_Pcomp.TF<-subset(PAMdata2_stats_Pcomp, Days==52)
     
-PAMdata2_stats2_Pvar<-subset(PAMdata2_stats2, Species=="Pavona_varians")
-  PAMdata2_stats2_Pvar.C1<-subset(PAMdata2_stats2_Pvar, Clade=="C1")
-  PAMdata2_stats2_Pvar.C27<-subset(PAMdata2_stats2_Pvar, Clade=="C27")
-    PAMdata2_stats2_Pvar.T1<-subset(PAMdata2_stats2_Pvar, Days==24)
-    PAMdata2_stats2_Pvar.TF<-subset(PAMdata2_stats2_Pvar, Days==52)
+PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona_varians")
+  PAMdata2_stats_Pvar.C1<-subset(PAMdata2_stats_Pvar, Clade=="C1")
+  PAMdata2_stats_Pvar.C27<-subset(PAMdata2_stats_Pvar, Clade=="C27")
+    PAMdata2_stats_Pvar.T1<-subset(PAMdata2_stats_Pvar, Days==24)
+    PAMdata2_stats_Pvar.TF<-subset(PAMdata2_stats_Pvar, Days==52)
     
-PAMdata2_stats2_Pacu<-subset(PAMdata2_stats2, Species=="Pocillopora_acuta")
-  PAMdata2_stats2_Pacu.CCC<-subset(PAMdata2_stats2_Pacu, Clade=="CCC")
-  PAMdata2_stats2_Pacu.C42<-subset(PAMdata2_stats2_Pacu, Clade=="C42")
-    PAMdata2_stats2_Pacu.T1<-subset(PAMdata2_stats2_Pacu, Days==24)
-    PAMdata2_stats2_Pacu.TF<-subset(PAMdata2_stats2_Pacu, Days==52)
+PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
+  PAMdata2_stats_Pacu.CCC<-subset(PAMdata2_stats_Pacu, Clade=="CCC")
+  PAMdata2_stats_Pacu.C42<-subset(PAMdata2_stats_Pacu, Clade=="C42")
+    PAMdata2_stats_Pacu.T1<-subset(PAMdata2_stats_Pacu, Days==24)
+    PAMdata2_stats_Pacu.TF<-subset(PAMdata2_stats_Pacu, Days==52)
 
 
 
 #lmer
-Yield_cu_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2)
+Yield_cu_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
 anova(Yield_cu_stats_model) 
 qqPlot(residuals(Yield_cu_stats_model)) 
 
-Yield_cu_stats_modelC<-lmer(Yield_cu~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2)
+Yield_cu_stats_modelC<-lmer(Yield_cu~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
 anova(Yield_cu_stats_modelC) 
 
 emm<-emmeans(Yield_cu_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
@@ -2608,10 +2677,10 @@ emm<-emmeans(Yield_cu_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
   
 #mcap
 #lmer
- Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap)
+ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap)
   anova(Yield_cu_Mcap_model) 
   
-Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap)
+Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap)
   anova(Yield_cu_Mcap_model) 
   qqPlot(residuals(Yield_cu_Mcap_model)) 
   emm<-emmeans(Yield_cu_Mcap_model,  ~ Days*Treatment, adjust="Tukey")
@@ -2619,7 +2688,7 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
 
   #T1 only 
-    Biomass_Mcap_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.T1)
+    Biomass_Mcap_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Mcap.T1)
   anova(Biomass_Mcap_model.T1) 
   qqPlot(residuals(Biomass_Mcap_model.T1)) 
   emm<-emmeans(Biomass_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2627,7 +2696,7 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
   
   #TF only
-  Biomass_Mcap_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.TF)
+  Biomass_Mcap_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Mcap.TF)
   anova(Biomass_Mcap_model.TF) 
   qqPlot(residuals(Biomass_Mcap_model.TF)) 
   emm<-emmeans(Biomass_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2639,7 +2708,7 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   
   
 #mcap-C only
-  Yield_cu_Mcap_model.C<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.C)
+  Yield_cu_Mcap_model.C<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap.C)
   anova(Yield_cu_Mcap_model.C) 
   qqPlot(residuals(Yield_cu_Mcap_model.C)) 
     emm<-emmeans(Yield_cu_Mcap_model.C,  ~ Days*Treatment, adjust="Tukey")
@@ -2647,7 +2716,7 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     pairs(emm)
 
 #mcap-CD only
-  Yield_cu_Mcap_model.CD<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Mcap.CD)
+  Yield_cu_Mcap_model.CD<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap.CD)
   anova(Yield_cu_Mcap_model.CD) 
   qqPlot(residuals(Yield_cu_Mcap_model.CD)) 
     emm<-emmeans(Yield_cu_Mcap_model.CD,  ~ Days*Treatment, adjust="Tukey")
@@ -2656,24 +2725,24 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     
 #Pcomp
 #lmer 
-    Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+    Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp)
   anova(Yield_cu_Pcomp_model) 
   
-Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp)
   anova(Yield_cu_Pcomp_model) 
   qqPlot(residuals(Yield_cu_Pcomp_model)) 
   emm<-emmeans(Yield_cu_Pcomp_model,  ~ Days*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
-Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp)
+Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp)
   anova(Yield_cu_Pcomp_model.Clade) 
   qqPlot(residuals(Yield_cu_Pcomp_model.Clade)) 
   emm<-emmeans(Yield_cu_Pcomp_model.Clade,  ~ Days*Treatment*Clade, adjust="Tukey")
     cld(emm)
     pairs(emm)
 #T1 only 
-    Biomass_Pcomp_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.T1)
+    Biomass_Pcomp_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pcomp.T1)
   anova(Biomass_Pcomp_model.T1) 
   qqPlot(residuals(Biomass_Pcomp_model.T1)) 
   emm<-emmeans(Biomass_Pcomp_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2681,7 +2750,7 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
   pairs(emm)
   
   #TF only
-  Biomass_Pcomp_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.TF)
+  Biomass_Pcomp_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pcomp.TF)
   anova(Biomass_Pcomp_model.TF) 
   qqPlot(residuals(Biomass_Pcomp_model.TF)) 
   emm<-emmeans(Biomass_Pcomp_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2689,7 +2758,7 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
   pairs(emm)   
     
 #Pcomp-C15cj only
-  Yield_cu_Pcomp_model.C15cj<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.C15cj)
+  Yield_cu_Pcomp_model.C15cj<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp.C15cj)
   anova(Yield_cu_Pcomp_model.C15cj) 
   qqPlot(residuals(Yield_cu_Pcomp_model.C15cj)) 
     emm<-emmeans(Yield_cu_Pcomp_model.C15cj,  ~ Days*Treatment, adjust="Tukey")
@@ -2697,7 +2766,7 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
     pairs(emm)
 
 #Pcomp-C27 only
-  Yield_cu_Pcomp_model.C15n<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pcomp.C15n)
+  Yield_cu_Pcomp_model.C15n<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp.C15n)
   anova(Yield_cu_Pcomp_model.C15n) 
   qqPlot(residuals(Yield_cu_Pcomp_model.C15n)) 
     emm<-emmeans(Yield_cu_Pcomp_model.C15n,  ~ Days*Treatment, adjust="Tukey")
@@ -2706,7 +2775,7 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
     
 #Pvar
 #lmer
-Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar)
+Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pvar)
   anova(Yield_cu_Pvar_model) 
   qqPlot(residuals(Yield_cu_Pvar_model)) 
   emm<-emmeans(Yield_cu_Pvar_model,  ~ Days*Treatment*Clade, adjust="Tukey")
@@ -2715,7 +2784,7 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   
   
   #T1 only 
-    Biomass_Pvar_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.T1)
+    Biomass_Pvar_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pvar.T1)
   anova(Biomass_Pvar_model.T1) 
   qqPlot(residuals(Biomass_Pvar_model.T1)) 
   emm<-emmeans(Biomass_Pvar_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2723,7 +2792,7 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
   
   #TF only
-  Biomass_Pvar_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.TF)
+  Biomass_Pvar_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pvar.TF)
   anova(Biomass_Pvar_model.TF) 
   qqPlot(residuals(Biomass_Pvar_model.TF)) 
   emm<-emmeans(Biomass_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2732,7 +2801,7 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 
   
 #Pvar-C1 only
-  Yield_cu_Pvar_model.C1<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.C1)
+  Yield_cu_Pvar_model.C1<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pvar.C1)
   anova(Yield_cu_Pvar_model.C1) 
   qqPlot(residuals(Yield_cu_Pvar_model.C1)) 
     emm<-emmeans(Yield_cu_Pvar_model.C1,  ~ Days*Treatment, adjust="Tukey")
@@ -2740,7 +2809,7 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     pairs(emm)
 
 #Pvar-C27 only
-  Yield_cu_Pvar_model.C27<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pvar.C27)
+  Yield_cu_Pvar_model.C27<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pvar.C27)
   anova(Yield_cu_Pvar_model.C27) 
   qqPlot(residuals(Yield_cu_Pvar_model.C27)) 
     emm<-emmeans(Yield_cu_Pvar_model.C27,  ~ Days*Treatment, adjust="Tukey")
@@ -2749,9 +2818,9 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 
 #Pacu
 #lmer
-    Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu)
+    Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu)
   anova(Yield_cu_Pacu_model) 
-Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu)
+Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu)
   anova(Yield_cu_Pacu_model) 
   qqPlot(residuals(Yield_cu_Pacu_model)) 
   emm<-emmeans(Yield_cu_Pacu_model,  ~ Days*Treatment*Clade, adjust="Tukey")
@@ -2759,7 +2828,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
 
   #T1 only 
-    Biomass_Pacu_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.T1)
+    Biomass_Pacu_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pacu.T1)
   anova(Biomass_Pacu_model.T1) 
   qqPlot(residuals(Biomass_Pacu_model.T1)) 
   emm<-emmeans(Biomass_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2767,7 +2836,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
   
   #TF only
-  Biomass_Pacu_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.TF)
+  Biomass_Pacu_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pacu.TF)
   anova(Biomass_Pacu_model.TF) 
   qqPlot(residuals(Biomass_Pacu_model.TF)) 
   emm<-emmeans(Biomass_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2775,7 +2844,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   pairs(emm)
   
 #Pacu-CCC only
-  Yield_cu_Pacu_model.CCC<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.CCC)
+  Yield_cu_Pacu_model.CCC<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu.CCC)
   anova(Yield_cu_Pacu_model.CCC) 
   qqPlot(residuals(Yield_cu_Pacu_model.CCC)) 
     emm<-emmeans(Yield_cu_Pacu_model.CCC,  ~ Days*Treatment, adjust="Tukey")
@@ -2783,7 +2852,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     pairs(emm)
 
 #Pacu-C42 only
-  Yield_cu_Pacu_model.C42<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats2_Pacu.C42)
+  Yield_cu_Pacu_model.C42<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu.C42)
   anova(Yield_cu_Pacu_model.C42) 
   qqPlot(residuals(Yield_cu_Pacu_model.C42)) 
     emm<-emmeans(Yield_cu_Pacu_model.C42,  ~ Days*Treatment, adjust="Tukey")
@@ -2795,8 +2864,8 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 
 #set up df for physi
   keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu","Clade") #keep cols you need
-PAMdata2_stats2<-PAMdata2_stats[keepPAM] #keep cols you want
-PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
+PAMdata2_stats<-PAMdata2_stats[keepPAM] #keep cols you want
+PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 #PAMdata2_physio<-dcast(PAMdata2_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
 
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "0"] <- "T0.PAM"
@@ -2808,7 +2877,7 @@ PAMdata2_stats2$Parent.ID<-as.factor(as.character(PAMdata2_stats2$Parent.ID))
 
 ```
 Plots
-```{r}  
+```{r}   
 PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
                    N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -2847,7 +2916,11 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-  ggtitle("Mcap PAM")+
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PAM_plot
 
 #Pcomp plot
@@ -2872,7 +2945,11 @@ Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean, aes(x=Days, y=mean, group = Treatmen
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-  ggtitle("Pcomp PAM")+
+    theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
 
 #Pvar plot
@@ -2887,7 +2964,6 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean, aes(x=Days, y=mean, group = Treatment,
   xlab("Time Point") + #Label the X Axis
       ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
-
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -2898,7 +2974,11 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-  ggtitle("Pvar PAM")+
+  ggtitle("P varians")+
+    theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PAM_plot
 
 #Pacu plot
@@ -2924,7 +3004,11 @@ Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-  ggtitle("Pacu PAM")+
+    theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PAM_plot
 
 ```
@@ -2936,7 +3020,7 @@ Pcomp_PAM_plot<-Pcomp_PAM_plot+ theme(legend.position = "none") #remove legend
 Pvar_PAM_plot<-Pvar_PAM_plot+ theme(legend.position = "none") #remove legend
 Pacu_PAM_plot<-Pacu_PAM_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 2)
+grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 1)
 ```
 
 #Protein
@@ -2983,7 +3067,7 @@ hist(Protein$mg.mm2_sqrt) #better
  
 ```
 Stats
-```{r} 
+```{r}  
 
 Prot_stats_T1TF<-subset(Protein, Time.Point=="T1"|Time.Point=="TF")
 
@@ -3220,7 +3304,7 @@ Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
     
 ```
 plots
-```{r}
+```{r} 
 Mcap_Protein_mean<-subset(Protein_mean, Species=="Montipora_capitata")
 Pcomp_Protein_mean<-subset(Protein_mean, Species=="Porites_compressa")
 Pvar_Protein_mean<-subset(Protein_mean, Species=="Pavona_varians")
@@ -3247,7 +3331,11 @@ Mcap_Protein_plot<-ggplot(data=Mcap_Protein_mean, aes(x=Time.Point, y=mean, grou
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("Montipora capitata")+
+  ggtitle("M capitata")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Protein_plot
 
 #Pcomp
@@ -3270,7 +3358,11 @@ Pcomp_Protein_plot<-ggplot(data=Pcomp_Protein_mean, aes(x=Time.Point, y=mean, gr
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("Porites compressa")+
+  ggtitle("P compressa")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Protein_plot
 
 #Pvar
@@ -3293,7 +3385,11 @@ Pvar_Protein_plot<-ggplot(data=Pvar_Protein_mean, aes(x=Time.Point, y=mean, grou
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("Pavona varians")+
+  ggtitle("P varians")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Protein_plot
 
 
@@ -3317,7 +3413,11 @@ Pacu_Protein_plot<-ggplot(data=Pacu_Protein_mean, aes(x=Time.Point, y=mean, grou
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("Pocillopora acuta")+
+  ggtitle("P acuta")+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Protein_plot
 
 
@@ -3327,7 +3427,7 @@ Pcomp_Protein_plot<-Pcomp_Protein_plot+ theme(legend.position = "none") #remove 
 Pvar_Protein_plot<-Pvar_Protein_plot+ theme(legend.position = "none") #remove legend
 Pacu_Protein_plot<-Pacu_Protein_plot+ theme(legend.position = "none") #remove legend
 
-grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot, nrow = 2)
+grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot, nrow = 1)
 ```
 
 
@@ -3338,7 +3438,7 @@ grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Prote
 
 
 #Resp:photosynthesis
-```{r}   
+```{r}    
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed_Final.csv")
 #PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -3411,7 +3511,7 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
 ```
 Plots
 Photosynthesis
-```{r} 
+```{r}  
 Photo_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -3451,7 +3551,7 @@ theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap Photosynthesis")+
+  ggtitle("Mcap P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Photo_plot
 
 
@@ -3478,7 +3578,7 @@ Pcomp_Photo_plot<-ggplot(data=Pcomp_Photo_mean, aes(x=Time.Point, y=mean, group 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
   ylab(expression(paste("umol/sec/cm2"))) +
-  ggtitle("Pcomp Photosynthesis")+
+  ggtitle("Pcomp P")+
           theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Photo_plot
 
@@ -3506,7 +3606,7 @@ Pvar_Photo_plot<-ggplot(data=Pvar_Photo_mean, aes(x=Time.Point, y=mean, group = 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
           theme(aspect.ratio=1)+
-  ggtitle("Pvar Photosynthesis")+
+  ggtitle("Pvar P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Photo_plot
 
 #Pacu plot
@@ -3533,7 +3633,7 @@ Pacu_Photo_plot<-ggplot(data=Pacu_Photo_mean, aes(x=Time.Point, y=mean, group = 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-    ggtitle("Pacu Photosynthesis")+
+    ggtitle("Pacu P")+
    
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Photo_plot
 
@@ -3695,7 +3795,7 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 ```
 
 Photosynthesis stats 
-```{r}
+```{r} 
 #df PR.df_B, use all time points bc repeated measures 
 
 hist(PR.df_B$Photo)
@@ -3936,7 +4036,7 @@ Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
                    max = max(Resp, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
 Resp_mean #display table
-
+ 
 # divide by species
 Mcap_Resp_mean<-subset(Resp_mean, Species =="Montipora_capitata")
 Pcomp_Resp_mean<-subset(Resp_mean, Species =="Porites_compressa")
@@ -4054,7 +4154,7 @@ Pacu_Resp_plot<-ggplot(data=Pacu_Resp_mean, aes(x=Time.Point, y=mean, group = Tr
 
 ```
 R Plots together
-```{r}
+```{r} 
 ###### All plots together
 Mcap_Resp_plot<-Mcap_Resp_plot+ theme(legend.position = "none") #remove legend
 Pcomp_Resp_plot<-Pcomp_Resp_plot+ theme(legend.position = "none") #remove legend
@@ -4408,7 +4508,7 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
 P:R
 ```{r} 
 PR_mean <-  ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                   N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                    N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
                    sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
@@ -4443,10 +4543,10 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         legend.key = element_blank()) + #Set plot legend key
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+        panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("umol/sec/cm2"))) +
-  ggtitle("Mcap PRsynthesis")+
+  ggtitle("Mcap PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
 
 
@@ -4474,7 +4574,7 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp PRsynthesis")+
+  ggtitle("Pcomp PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot
 
 #Pvar plot
@@ -4501,7 +4601,7 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar PRsynthesis")+
+  ggtitle("Pvar PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot
 
 #Pacu plot
@@ -4528,7 +4628,7 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu PRsynthesis")+
+  ggtitle("Pacu PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
  
 ```
@@ -4929,7 +5029,7 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
 ```{r}    
 #biomass: keep Frag.ID and AFDW.cm2_log
-Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","AFDWmg.cm2_log")] # keep only columns you need
+Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","AFDWmg.cm2")] # keep only columns you need
   #create duplicate T0 for H or A that isn't there for each parent. id
   Biomass_psyT0<-Biomass_psy #copy
   Biomass_psyT0<-subset(Biomass_psyT0, Time.Point=="T0")
@@ -5113,7 +5213,7 @@ PhysioData_noMissing<-na.omit(PhysioData) #this removes 4 samples (partent/time/
 ```{r}   
 Phy_nmds<-PhysioData_noMissing
  
-  
+   
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
