@@ -730,12 +730,12 @@ Pacu_FC_Sum <- ddply(Pacu_FC, c("Treatment", "Species", "Time.Point"), summarise
                    sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
                    max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
+) 
 Pacu_FC_Sum #display table
 
 ```
 Stats
-```{r} 
+```{r}  
 
 FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
@@ -1155,7 +1155,7 @@ Pacu_BW<- subset(AllBWdata, Species =="Pocillopora_acuta")
 BW_Pacu <- Pacu_BW$Mass.g
 Temp_Pacu <- Pacu_BW$Temp.C  
 
-
+ 
 ```
 Montipora capitata
 ```{r} 
@@ -1643,21 +1643,23 @@ grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
 ``` 
  
 stats
-```{r}   
+```{r}    
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
-GrowthKeep<- c("Frag.ID","time1.growth","time2.growth", "Treatment", "Clade")
+GrowthKeep<- c("Frag.ID","time1.growth","time2.growth")
 Growth <- Growth[GrowthKeep]
 
- Growth2<-merge(Grow_m, meta) #merge metadata
+metaKeep<- c("Frag.ID","Parent.ID","Treatment","Clade","Species","Tank.num") #get rid of that X column
+metaK <- meta[metaKeep]
+ Growth2<-merge(Growth, metaK) #merge metadata
 
 
-# Grow_m <- melt(Growth, id=c("Frag.ID","Treatment","Clade")) #melt
-# names(Grow_m)[names(Grow_m) == "value"] <- "percent.change"
-# names(Grow_m)[names(Grow_m) == "variable"] <- "Time.point"
+Growth_m <- melt(Growth2, id=c("Frag.ID","Treatment","Parent.ID","Species","Tank.num","Clade")) #melt
+names(Growth_m)[names(Growth_m) == "value"] <- "percent.change"
+names(Growth_m)[names(Growth_m) == "variable"] <- "Time.point"
+Growth_m2<-na.omit(Growth_m) #get rid of NAs
 
-GrowthKeep2<- c("Frag.ID","Time.point", "Treatment", "Tank.num","Parent.ID","Species","percent.change", "Clade")
-Growth3 <- Growth2[GrowthKeep2]
-Growth3<-na.omit(Growth3)
+Growth3<-Growth_m2
+
 Growth3$Tank.num<-as.factor(as.character(Growth3$Tank.num))
 Growth3$Parent.ID<-as.factor(as.character(Growth3$Parent.ID))
 Growth3$percent.change<-as.numeric(as.character(Growth3$percent.change))
@@ -1666,21 +1668,22 @@ Growth3$percent.change<-as.numeric(as.character(Growth3$percent.change))
 
 
 hist(Growth3$percent.change) 
-Growth3$percent.change_log<-log10(Growth3$percent.change+1)
-hist(Growth3$percent.change_log) # 
+# Growth3$percent.change_log<-log10(Growth3$percent.change+1)
+# hist(Growth3$percent.change_log) # 
 Growth3$percent.change_sqrt<-sqrt(Growth3$percent.change)
 hist(Growth3$percent.change_sqrt) # 
-Growth3$percent.change_cube<-Growth3$percent.change^(1/3)
-hist(Growth3$percent.change_cube) #USE
+# Growth3$percent.change_cube<-Growth3$percent.change^(1/3)
+# hist(Growth3$percent.change_cube) 
 
-BW_model<-lmer(percent.change_cube~Time.point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Growth3)
+
+BW_model<-lmer(percent.change_sqrt~Time.point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
 anova(BW_model) 
 qqPlot(residuals(BW_model)) 
   emm<-emmeans(BW_model,  ~ Time.point*Treatment|Species, adjust="Tukey")
   cld(emm)
   pairs(emm)
  
-BW_model<-lmer(percent.change_cube~Time.point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), Growth3)
+BW_model<-lmer(percent.change_sqrt~Time.point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
 anova(BW_model) 
 #lmer
 
@@ -1712,31 +1715,31 @@ Growth3_Pacu<-subset(Growth3, Species=="Pocillopora_acuta")
 
 
 #lmer
-percent.change_cube_stats_model<-lmer(percent.change_cube~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
-anova(percent.change_cube_stats_model) 
-qqPlot(residuals(percent.change_cube_stats_model)) 
+percent.change_stats_model<-lmer(percent.change_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
+anova(percent.change_stats_model) 
+qqPlot(residuals(percent.change_stats_model)) 
 
-percent.change_cube_stats_modelC<-lmer(percent.change_cube~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
-anova(percent.change_cube_stats_modelC) 
+percent.change_sqrt_stats_modelC<-lmer(percent.change_sqrt~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
+anova(percent.change_sqrt_stats_modelC) 
 
-emm<-emmeans(percent.change_cube_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+emm<-emmeans(percent.change_sqrt_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
  cld(emm)
  pairs(emm)
   
 #mcap
 #lmer
- percent.change_cube_Mcap_model<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap)
-  anova(percent.change_cube_Mcap_model) 
+ percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap)
+  anova(percent.change_sqrt_Mcap_model) 
   
-percent.change_cube_Mcap_model<-lmer(percent.change_cube~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap)
-  anova(percent.change_cube_Mcap_model) 
-  qqPlot(residuals(percent.change_cube_Mcap_model)) 
-  emm<-emmeans(percent.change_cube_Mcap_model,  ~ Time.point*Treatment, adjust="Tukey")
+percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap)
+  anova(percent.change_sqrt_Mcap_model) 
+  qqPlot(residuals(percent.change_sqrt_Mcap_model)) 
+  emm<-emmeans(percent.change_sqrt_Mcap_model,  ~ Time.point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
   #T1 only 
-    Biomass_Mcap_model.T1<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.T1)
+    Biomass_Mcap_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.T1)
   anova(Biomass_Mcap_model.T1) 
   qqPlot(residuals(Biomass_Mcap_model.T1)) 
   emm<-emmeans(Biomass_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1744,7 +1747,7 @@ percent.change_cube_Mcap_model<-lmer(percent.change_cube~Time.point*Treatment*Cl
   pairs(emm)
   
   #TF only
-  Biomass_Mcap_model.TF<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.TF)
+  Biomass_Mcap_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.TF)
   anova(Biomass_Mcap_model.TF) 
   qqPlot(residuals(Biomass_Mcap_model.TF)) 
   emm<-emmeans(Biomass_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1756,41 +1759,36 @@ percent.change_cube_Mcap_model<-lmer(percent.change_cube~Time.point*Treatment*Cl
   
   
 #mcap-C only
-  percent.change_cube_Mcap_model.C<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap.C)
-  anova(percent.change_cube_Mcap_model.C) 
-  qqPlot(residuals(percent.change_cube_Mcap_model.C)) 
-    emm<-emmeans(percent.change_cube_Mcap_model.C,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Mcap_model.C<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap.C)
+  anova(percent.change_sqrt_Mcap_model.C) 
+  qqPlot(residuals(percent.change_sqrt_Mcap_model.C)) 
+    emm<-emmeans(percent.change_sqrt_Mcap_model.C,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
 #mcap-CD only
-  percent.change_cube_Mcap_model.CD<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap.CD)
-  anova(percent.change_cube_Mcap_model.CD) 
-  qqPlot(residuals(percent.change_cube_Mcap_model.CD)) 
-    emm<-emmeans(percent.change_cube_Mcap_model.CD,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Mcap_model.CD<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap.CD)
+  anova(percent.change_sqrt_Mcap_model.CD) 
+  qqPlot(residuals(percent.change_sqrt_Mcap_model.CD)) 
+    emm<-emmeans(percent.change_sqrt_Mcap_model.CD,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
     
 #Pcomp
 #lmer 
-    percent.change_cube_Pcomp_model<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp)
-  anova(percent.change_cube_Pcomp_model) 
+    percent.change_sqrt_Pcomp_model<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp)
+  anova(percent.change_sqrt_Pcomp_model) 
   
-percent.change_cube_Pcomp_model<-lmer(percent.change_cube~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp)
-  anova(percent.change_cube_Pcomp_model) 
-  qqPlot(residuals(percent.change_cube_Pcomp_model)) 
-  emm<-emmeans(percent.change_cube_Pcomp_model,  ~ Time.point*Treatment, adjust="Tukey")
+percent.change_sqrt_Pcomp_model<-lmer(percent.change_sqrt~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp)
+  anova(percent.change_sqrt_Pcomp_model) 
+  qqPlot(residuals(percent.change_sqrt_Pcomp_model)) 
+  emm<-emmeans(percent.change_sqrt_Pcomp_model,  ~ Time.point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
-percent.change_cube_Pcomp_model.Clade<-lmer(percent.change_cube~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp)
-  anova(percent.change_cube_Pcomp_model.Clade) 
-  qqPlot(residuals(percent.change_cube_Pcomp_model.Clade)) 
-  emm<-emmeans(percent.change_cube_Pcomp_model.Clade,  ~ Time.point*Treatment*Clade, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
+
 #T1 only 
-    Biomass_Pcomp_model.T1<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pcomp.T1)
+    Biomass_Pcomp_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pcomp.T1)
   anova(Biomass_Pcomp_model.T1) 
   qqPlot(residuals(Biomass_Pcomp_model.T1)) 
   emm<-emmeans(Biomass_Pcomp_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1798,43 +1796,45 @@ percent.change_cube_Pcomp_model.Clade<-lmer(percent.change_cube~Time.point*Treat
   pairs(emm)
   
   #TF only
-  Biomass_Pcomp_model.TF<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pcomp.TF)
+  Biomass_Pcomp_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pcomp.TF)
   anova(Biomass_Pcomp_model.TF) 
   qqPlot(residuals(Biomass_Pcomp_model.TF)) 
   emm<-emmeans(Biomass_Pcomp_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
-  pairs(emm)   
+  pairs(emm) 
+
+  
     
 #Pcomp-C15cj only
-  percent.change_cube_Pcomp_model.C15cj<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp.C15cj)
-  anova(percent.change_cube_Pcomp_model.C15cj) 
-  qqPlot(residuals(percent.change_cube_Pcomp_model.C15cj)) 
-    emm<-emmeans(percent.change_cube_Pcomp_model.C15cj,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pcomp_model.C15cj<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp.C15cj)
+  anova(percent.change_sqrt_Pcomp_model.C15cj) 
+  qqPlot(residuals(percent.change_sqrt_Pcomp_model.C15cj)) 
+    emm<-emmeans(percent.change_sqrt_Pcomp_model.C15cj,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
 #Pcomp-C27 only
-  percent.change_cube_Pcomp_model.C15n<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp.C15n)
-  anova(percent.change_cube_Pcomp_model.C15n) 
-  qqPlot(residuals(percent.change_cube_Pcomp_model.C15n)) 
-    emm<-emmeans(percent.change_cube_Pcomp_model.C15n,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pcomp_model.C15n<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pcomp.C15n)
+  anova(percent.change_sqrt_Pcomp_model.C15n) 
+  qqPlot(residuals(percent.change_sqrt_Pcomp_model.C15n)) 
+    emm<-emmeans(percent.change_sqrt_Pcomp_model.C15n,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
     
 #Pvar
 #lmer
-    percent.change_cube_Pvar_model<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar)
-  anova(percent.change_cube_Pvar_model) 
-percent.change_cube_Pvar_model<-lmer(percent.change_cube~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar)
-  anova(percent.change_cube_Pvar_model) 
-  qqPlot(residuals(percent.change_cube_Pvar_model)) 
-  emm<-emmeans(percent.change_cube_Pvar_model,  ~ Time.point*Treatment*Clade, adjust="Tukey")
+    percent.change_sqrt_Pvar_model<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar)
+  anova(percent.change_sqrt_Pvar_model) 
+percent.change_sqrt_Pvar_model<-lmer(percent.change_sqrt~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar)
+  anova(percent.change_sqrt_Pvar_model) 
+  qqPlot(residuals(percent.change_sqrt_Pvar_model)) 
+  emm<-emmeans(percent.change_sqrt_Pvar_model,  ~ Time.point*Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
   
   #T1 only 
-    Biomass_Pvar_model.T1<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.T1)
+    Biomass_Pvar_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.T1)
   anova(Biomass_Pvar_model.T1) 
   qqPlot(residuals(Biomass_Pvar_model.T1)) 
   emm<-emmeans(Biomass_Pvar_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1842,7 +1842,7 @@ percent.change_cube_Pvar_model<-lmer(percent.change_cube~Time.point*Treatment*Cl
   pairs(emm)
   
   #TF only
-  Biomass_Pvar_model.TF<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
+  Biomass_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
   anova(Biomass_Pvar_model.TF) 
   qqPlot(residuals(Biomass_Pvar_model.TF)) 
   emm<-emmeans(Biomass_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1851,61 +1851,61 @@ percent.change_cube_Pvar_model<-lmer(percent.change_cube~Time.point*Treatment*Cl
 
   
 #Pvar-C1 only
-  percent.change_cube_Pvar_model.C1<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar.C1)
-  anova(percent.change_cube_Pvar_model.C1) 
-  qqPlot(residuals(percent.change_cube_Pvar_model.C1)) 
-    emm<-emmeans(percent.change_cube_Pvar_model.C1,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pvar_model.C1<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar.C1)
+  anova(percent.change_sqrt_Pvar_model.C1) 
+  qqPlot(residuals(percent.change_sqrt_Pvar_model.C1)) 
+    emm<-emmeans(percent.change_sqrt_Pvar_model.C1,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
 #Pvar-C27 only
-  percent.change_cube_Pvar_model.C27<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar.C27)
-  anova(percent.change_cube_Pvar_model.C27) 
-  qqPlot(residuals(percent.change_cube_Pvar_model.C27)) 
-    emm<-emmeans(percent.change_cube_Pvar_model.C27,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pvar_model.C27<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pvar.C27)
+  anova(percent.change_sqrt_Pvar_model.C27) 
+  qqPlot(residuals(percent.change_sqrt_Pvar_model.C27)) 
+    emm<-emmeans(percent.change_sqrt_Pvar_model.C27,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)  
 
 #Pacu
 #lmer
-    percent.change_cube_Pacu_model<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu)
-  anova(percent.change_cube_Pacu_model) 
-percent.change_cube_Pacu_model<-lmer(percent.change_cube~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu)
-  anova(percent.change_cube_Pacu_model) 
-  qqPlot(residuals(percent.change_cube_Pacu_model)) 
-  emm<-emmeans(percent.change_cube_Pacu_model,  ~ Time.point*Treatment*Clade, adjust="Tukey")
+    percent.change_sqrt_Pacu_model<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu)
+  anova(percent.change_sqrt_Pacu_model) 
+percent.change_sqrt_Pacu_model<-lmer(percent.change_sqrt~Time.point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu)
+  anova(percent.change_sqrt_Pacu_model) 
+  qqPlot(residuals(percent.change_sqrt_Pacu_model)) 
+  emm<-emmeans(percent.change_sqrt_Pacu_model,  ~ Time.point*Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
   #T1 only 
-    Biomass_Pacu_model.T1<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.T1)
-  anova(Biomass_Pacu_model.T1) 
-  qqPlot(residuals(Biomass_Pacu_model.T1)) 
-  emm<-emmeans(Biomass_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+    Growth_Pacu_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.T1)
+  anova(Growth_Pacu_model.T1) 
+  qqPlot(residuals(Growth_Pacu_model.T1)) 
+  emm<-emmeans(Growth_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
   #TF only
-  Biomass_Pacu_model.TF<-lmer(percent.change_cube~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.TF)
-  anova(Biomass_Pacu_model.TF) 
-  qqPlot(residuals(Biomass_Pacu_model.TF)) 
-  emm<-emmeans(Biomass_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  Growth_Pacu_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.TF)
+  anova(Growth_Pacu_model.TF) 
+  qqPlot(residuals(Growth_Pacu_model.TF)) 
+  emm<-emmeans(Growth_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
 #Pacu-CCC only
-  percent.change_cube_Pacu_model.CCC<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu.CCC)
-  anova(percent.change_cube_Pacu_model.CCC) 
-  qqPlot(residuals(percent.change_cube_Pacu_model.CCC)) 
-    emm<-emmeans(percent.change_cube_Pacu_model.CCC,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pacu_model.CCC<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu.CCC)
+  anova(percent.change_sqrt_Pacu_model.CCC) 
+  qqPlot(residuals(percent.change_sqrt_Pacu_model.CCC)) 
+    emm<-emmeans(percent.change_sqrt_Pacu_model.CCC,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
 #Pacu-C42 only
-  percent.change_cube_Pacu_model.C42<-lmer(percent.change_cube~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu.C42)
-  anova(percent.change_cube_Pacu_model.C42) 
-  qqPlot(residuals(percent.change_cube_Pacu_model.C42)) 
-    emm<-emmeans(percent.change_cube_Pacu_model.C42,  ~ Time.point*Treatment, adjust="Tukey")
+  percent.change_sqrt_Pacu_model.C42<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Pacu.C42)
+  anova(percent.change_sqrt_Pacu_model.C42) 
+  qqPlot(residuals(percent.change_sqrt_Pacu_model.C42)) 
+    emm<-emmeans(percent.change_sqrt_Pacu_model.C42,  ~ Time.point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
     
@@ -2873,7 +2873,7 @@ PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 # names(PAMdata2_physio)[names(PAMdata2_physio) == "52"] <- "TF.PAM"
 
 
-
+ 
 
 ```
 Plots
@@ -3501,7 +3501,7 @@ PR.df<-merge(PR.df, metaPR)
 PR.df_B<-PR.df
 # PR.df_B$Photo[PR.df_B$Photo < 0] <- 0
 # PR.df_B$Resp[PR.df_B$Resp > 0] <- 0
-
+ 
 
 PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
 PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
@@ -5030,38 +5030,39 @@ Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag r
 ```{r}    
 #biomass: keep Frag.ID and AFDW.cm2_log
 Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","AFDWmg.cm2")] # keep only columns you need
-  #create duplicate T0 for H or A that isn't there for each parent. id
-  Biomass_psyT0<-Biomass_psy #copy
-  Biomass_psyT0<-subset(Biomass_psyT0, Time.Point=="T0")
-  Biomass_psyT0Amb<-Biomass_psyT0
-  Biomass_psyT0Amb$Treatment[Biomass_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
-  Biomass_psyT0High<-Biomass_psyT0
-  Biomass_psyT0High$Treatment[Biomass_psyT0High$Treatment == "Ambient"] <- "High" #change 
-  Biomass_psyT02<-rbind(Biomass_psyT0Amb,Biomass_psyT0High) #now oyu have T0 for Amb and High
-
-  Biomass_psy<-Biomass_psy[!(Biomass_psy$Time.Point=="T0"),] #remove T0s
-  Biomass_psy<-rbind(Biomass_psy,Biomass_psyT02) # add the full T0 dataset
-duplicated(Biomass_psy)
+  
+# #create duplicate T0 for H or A that isn't there for each parent. ONLY IF YOU WANTT0
+#   Biomass_psyT0<-Biomass_psy #copy
+#   Biomass_psyT0<-subset(Biomass_psyT0, Time.Point=="T0")
+#   Biomass_psyT0Amb<-Biomass_psyT0
+#   Biomass_psyT0Amb$Treatment[Biomass_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+#   Biomass_psyT0High<-Biomass_psyT0
+#   Biomass_psyT0High$Treatment[Biomass_psyT0High$Treatment == "Ambient"] <- "High" #change 
+#   Biomass_psyT02<-rbind(Biomass_psyT0Amb,Biomass_psyT0High) #now oyu have T0 for Amb and High
+# 
+#   Biomass_psy<-Biomass_psy[!(Biomass_psy$Time.Point=="T0"),] #remove T0s
+#   Biomass_psy<-rbind(Biomass_psy,Biomass_psyT02) # add the full T0 dataset
+# duplicated(Biomass_psy)
   Biomass_psy$Code<-paste(Biomass_psy$Species,Biomass_psy$Treatment,Biomass_psy$Parent.ID, Biomass_psy$Time.Point)
 
-  Biomass_psy<- Biomass_psy[,c("Code" ,"AFDWmg.cm2_log")] # keep only columns you need
+  Biomass_psy<- Biomass_psy[,c("Code" ,"AFDWmg.cm2")] # keep only columns you need
 duplicated(Biomass_psy) #check
 Biomass_psy<-unique(Biomass_psy) # remove dups
 
 #cell counts:FC_Data df and keep  Frag.ID and zoox.cm2_log
-CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","zoox.cm2_log")] # keep only columns you need
+CellCounts_psy<- FC_stats_T1TF[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","zoox.cm2_log")] # keep only columns you need
 
-#create duplicate T0 for H or A that isn't there for each parent. id
-  CellCounts_psyT0<-CellCounts_psy #copy
-  CellCounts_psyT0<-subset(CellCounts_psyT0, Time.Point=="T0")
-  CellCounts_psyT0Amb<-CellCounts_psyT0
-  CellCounts_psyT0Amb$Treatment[CellCounts_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
-  CellCounts_psyT0High<-CellCounts_psyT0
-  CellCounts_psyT0High$Treatment[CellCounts_psyT0High$Treatment == "Ambient"] <- "High" #change 
-  CellCounts_psyT02<-rbind(CellCounts_psyT0Amb,CellCounts_psyT0High) #now oyu have T0 for Amb and High
-
-  CellCounts_psy<-CellCounts_psy[!(CellCounts_psy$Time.Point=="T0"),] #remove T0s
-  CellCounts_psy<-rbind(CellCounts_psy,CellCounts_psyT02) # add the full T0 dataset
+# #create duplicate T0 for H or A that isn't there for each parent. id
+#   CellCounts_psyT0<-CellCounts_psy #copy
+#   CellCounts_psyT0<-subset(CellCounts_psyT0, Time.Point=="T0")
+#   CellCounts_psyT0Amb<-CellCounts_psyT0
+#   CellCounts_psyT0Amb$Treatment[CellCounts_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+#   CellCounts_psyT0High<-CellCounts_psyT0
+#   CellCounts_psyT0High$Treatment[CellCounts_psyT0High$Treatment == "Ambient"] <- "High" #change 
+#   CellCounts_psyT02<-rbind(CellCounts_psyT0Amb,CellCounts_psyT0High) #now oyu have T0 for Amb and High
+# 
+#   CellCounts_psy<-CellCounts_psy[!(CellCounts_psy$Time.Point=="T0"),] #remove T0s
+#   CellCounts_psy<-rbind(CellCounts_psy,CellCounts_psyT02) # add the full T0 dataset
 
   CellCounts_psy$Code<-paste(CellCounts_psy$Species,CellCounts_psy$Treatment,CellCounts_psy$Parent.ID, CellCounts_psy$Time.Point)
 
@@ -5072,20 +5073,20 @@ CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.n
 
 
 #Chla Chla df ChlaSA_quart
-Chla_psy<- Chla[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
+Chla_psy<- Chla_stats_T1TF[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
 names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
 
-#create duplicate T0 for H or A that isn't there for each parent. id
-  Chla_psyT0<-Chla_psy #copy
-  Chla_psyT0<-subset(Chla_psyT0, Time.Point=="T0")
-  Chla_psyT0Amb<-Chla_psyT0
-  Chla_psyT0Amb$Treatment[Chla_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
-  Chla_psyT0High<-Chla_psyT0
-  Chla_psyT0High$Treatment[Chla_psyT0High$Treatment == "Ambient"] <- "High" #change 
-  Chla_psyT02<-rbind(Chla_psyT0Amb,Chla_psyT0High) #now oyu have T0 for Amb and High
-
-  Chla_psy<-Chla_psy[!(Chla_psy$Time.Point=="T0"),] #remove T0s
-  Chla_psy<-rbind(Chla_psy,Chla_psyT02) # add the full T0 dataset
+# #create duplicate T0 for H or A that isn't there for each parent. id
+#   Chla_psyT0<-Chla_psy #copy
+#   Chla_psyT0<-subset(Chla_psyT0, Time.Point=="T0")
+#   Chla_psyT0Amb<-Chla_psyT0
+#   Chla_psyT0Amb$Treatment[Chla_psyT0Amb$Treatment == "High"] <- "Ambient" #change 
+#   Chla_psyT0High<-Chla_psyT0
+#   Chla_psyT0High$Treatment[Chla_psyT0High$Treatment == "Ambient"] <- "High" #change 
+#   Chla_psyT02<-rbind(Chla_psyT0Amb,Chla_psyT0High) #now oyu have T0 for Amb and High
+# 
+#   Chla_psy<-Chla_psy[!(Chla_psy$Time.Point=="T0"),] #remove T0s
+#   Chla_psy<-rbind(Chla_psy,Chla_psyT02) # add the full T0 dataset
 
   Chla_psy$Code<-paste(Chla_psy$Species,Chla_psy$Treatment,Chla_psy$Parent.ID, Chla_psy$Time.Point)
 Chla_psy<- Chla_psy[,c("Code","Chla_ug.chla.cm2")] # keep only columns you need
@@ -5094,20 +5095,20 @@ duplicated(Chla_psy)
 
 
 #Protein Protein$mg.mm2_sqrt
-Protein_psy<- Protein[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
+Protein_psy<- Prot_stats_T1TF[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
 names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 
-#create duplicate T0 for H or A that isn't there for each parent. id
-  Protein_psyT0<-Protein_psy #copy
-  Protein_psyT0<-subset(Protein_psyT0, Time.Point=="T0")
-  Protein_psyAmb<-Protein_psyT0
-  Protein_psyAmb$Treatment[Protein_psyAmb$Treatment == "High"] <- "Ambient" #change 
-  Protein_psyHigh<-Protein_psyT0
-  Protein_psyHigh$Treatment[Protein_psyHigh$Treatment == "Ambient"] <- "High" #change 
-  Protein_psy2<-rbind(Protein_psyAmb,Protein_psyHigh) #now oyu have T0 for Amb and High
-
-  Protein_psy<-Protein_psy[!(Protein_psy$Time.Point=="T0"),] #remove T0s
-  Protein_psy<-rbind(Protein_psy,Protein_psy2) # add the full T0 dataset
+# #create duplicate T0 for H or A that isn't there for each parent. id
+#   Protein_psyT0<-Protein_psy #copy
+#   Protein_psyT0<-subset(Protein_psyT0, Time.Point=="T0")
+#   Protein_psyAmb<-Protein_psyT0
+#   Protein_psyAmb$Treatment[Protein_psyAmb$Treatment == "High"] <- "Ambient" #change 
+#   Protein_psyHigh<-Protein_psyT0
+#   Protein_psyHigh$Treatment[Protein_psyHigh$Treatment == "Ambient"] <- "High" #change 
+#   Protein_psy2<-rbind(Protein_psyAmb,Protein_psyHigh) #now oyu have T0 for Amb and High
+# 
+#   Protein_psy<-Protein_psy[!(Protein_psy$Time.Point=="T0"),] #remove T0s
+#   Protein_psy<-rbind(Protein_psy,Protein_psy2) # add the full T0 dataset
 
   Protein_psy$Code<-paste(Protein_psy$Species,Protein_psy$Treatment,Protein_psy$Parent.ID, Protein_psy$Time.Point)
 Protein_psy<- Protein_psy[,c("Code","Protein_mg.mm2_sqrt")] # keep only columns you need
@@ -5117,17 +5118,16 @@ duplicated(Protein_psy)
 #Calcification, Growth and percent.change_log do for each time point
 
 Calcification_psy<- Growth3 #copy df
-
-Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point) #change to character to replace
+Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point)
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time1.growth"] <- "T1" #change 
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time2.growth"] <- "TF" #change 
 Calcification_psy$Time.point<-as.factor(Calcification_psy$Time.point)
-names(Calcification_psy)[names(Calcification_psy) == "Time.point"] <- "Time.Point" #change name
+# names(Calcification_psy)[names(Calcification_psy) == "Time.point"] <- "Time.Point" #change name
 
 Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment,Calcification_psy$Parent.ID,Calcification_psy$Time.Point) #make code
 
-Calcification_psy<- Calcification_psy[,c("Code","percent.change_log","Parent.ID", "Treatment","Species","Time.Point")] # keep only columns you need
-Calcification_psy<-Calcification_psy %>% group_by(Code) %>% mutate(mean=mean(percent.change_log)) # mean by code, this worked
+Calcification_psy<- Calcification_psy[,c("Code","percent.change_sqrt","Parent.ID", "Treatment","Species","Time.Point")] # keep only columns you need
+Calcification_psy<-Calcification_psy %>% group_by(Code) %>% mutate(mean=mean(percent.change_sqrt)) # mean by code, this worked
 names(Calcification_psy)[names(Calcification_psy) == "mean"] <- "calc.percentchange" #change name
 Calcification_psy<-Calcification_psy[,c("Code","Parent.ID", "Treatment","Species","calc.percentchange")] #remove col
 Calcification_psy<-unique(Calcification_psy) #remove duplicates, now you have 
@@ -5137,7 +5137,7 @@ Calcification_psy$calc.percentchange[is.na(Calcification_psy$calc.percentchange)
 
 
 #PAM df PAMdata_stats make for T0, T1, TF
-PAM_psy<- PAMdata2_stats2
+PAM_psy<- PAMdata2_stats
 
 PAM_psy$Days<-as.character(PAM_psy$Days)
 PAM_psy$Days[PAM_psy$Days == "0"] <- "T0" #change 
@@ -5162,6 +5162,34 @@ names(PAM_psy)[names(PAM_psy) == "mean"] <- "PAM.Yield_cu" #change name
 PAM_psy<-PAM_psy[,c("Code","Parent.ID", "Treatment","Species","PAM.Yield_cu","Time.Point")] #remove col
 PAM_psy<-unique(PAM_psy) #remove duplicates, now you have 
 
+# Photosynthesis PR.df_B
+
+PR_psy<-PR.df_B
+    PR_psy$Code<-paste(PR_psy$Species,PR_psy$Treatment,PR_psy$Parent.ID, PR_psy$Time.Point)
+
+  #photo
+  Photo_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","Photo","Code")] 
+    Photo_psy<-Photo_psy %>% group_by(Code) %>% mutate(mean=mean(Photo)) # mean by code, this worked
+    names(Photo_psy)[names(Photo_psy) == "mean"] <- "Photosynthesis" #change name
+    Photo_psy<-Photo_psy[,c("Code","Photosynthesis")] #remove col
+    Photo_psy<-unique(Photo_psy) #remove duplicates, now you have 
+  
+   #Resp
+  Resp_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","Resp","Code")] 
+    Resp_psy<-Resp_psy %>% group_by(Code) %>% mutate(mean=mean(Resp)) # mean by code, this worked
+    names(Resp_psy)[names(Resp_psy) == "mean"] <- "Respiration" #change name
+    Resp_psy<-Resp_psy[,c("Code","Respiration")] #remove col
+    Resp_psy<-unique(Resp_psy) #remove duplicates, now you have 
+
+   #PR
+  PR_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","PR","Code")] 
+    PR_psy<-PR_psy %>% group_by(Code) %>% mutate(mean=mean(PR)) # mean by code, this worked
+    names(PR_psy)[names(PR_psy) == "mean"] <- "PR" #change name
+    PR_psy<-PR_psy[,c("Code","PR")] #remove col
+    PR_psy<-unique(PR_psy) #remove duplicates, now you have 
+    
+ PRPR_phy<-merge(Photo_psy,Resp_psy, all = T)   
+     PRPR_phy<-merge(PRPR_phy,PR_psy, all = T)   
  
 ```
 #merging full physio 
