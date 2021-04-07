@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-rm(list=ls())
+# rm(list=ls())
 
 library(tidyverse)
 library(readxl)
@@ -86,10 +86,11 @@ coral_RAW <- phyloseq(otu, tax, sam)
 ```
 Read in coral post-QC sequence variants: "coralDIV_RELA"
 ```{r}
-#sam0 <- Symp_sub_Meta
-#rownames(sam0) <- sam0$sample_name
-#sam0$Parent.ID<-as.factor(as.character(sam0$Parent.ID))
-#sam <- sample_data(data.frame(sam0))
+sam0 <- Symp_sub_Meta
+rownames(sam0) <- sam0$sample_name
+sam0$Parent.ID<-as.factor(as.character(sam0$Parent.ID))
+sam <- sample_data(data.frame(sam0))
+
 taxnames <- read_tsv(file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_only.txt",
   n_max = 0) %>%
   select(-1) %>%

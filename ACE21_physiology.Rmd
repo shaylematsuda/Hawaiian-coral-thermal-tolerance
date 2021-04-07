@@ -21,7 +21,7 @@ PAM
 
 
 #Data and libraries
-```{r}  
+```{r}   
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 
@@ -228,7 +228,7 @@ Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
 
 ```
 Stats - T0 is n=6, not n=12. T1 and TF
-```{r}  
+```{r}   
 Biomass_stats<-biomass2
 
 biomass_stats_T1TF<-biomass2
@@ -264,6 +264,13 @@ biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora_acuta"
 #mcap
 #lmer
 Biomass_Mcap_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap)
+  anova(Biomass_Mcap_model) 
+  qqPlot(residuals(Biomass_Mcap_model)) 
+  emm<-emmeans(Biomass_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Biomass_Mcap_model<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap)
   anova(Biomass_Mcap_model) 
   qqPlot(residuals(Biomass_Mcap_model)) 
   emm<-emmeans(Biomass_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -308,7 +315,7 @@ Biomass_Mcap_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|
     
 #Pcomp
 #lmer
-Biomass_Pcomp_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp)
+Biomass_Pcomp_model<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pcomp)
   anova(Biomass_Pcomp_model) 
   qqPlot(residuals(Biomass_Pcomp_model)) 
   emm<-emmeans(Biomass_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -365,10 +372,10 @@ Biomass_Pcomp_model.Clade<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.
     
 #Pvar
 #lmer
-Biomass_Pvar_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pvar)
+Biomass_Pvar_model<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pvar)
   anova(Biomass_Pvar_model) 
   qqPlot(residuals(Biomass_Pvar_model)) 
-  emm<-emmeans(Biomass_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  emm<-emmeans(Biomass_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
@@ -735,7 +742,7 @@ Pacu_FC_Sum #display table
 
 ```
 Stats
-```{r}  
+```{r}   
 
 FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
@@ -821,7 +828,7 @@ FC_Mcap_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
     
 #Pcomp
 #lmer
-FC_Pcomp_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
+FC_Pcomp_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
   anova(FC_Pcomp_model) 
   qqPlot(residuals(FC_Pcomp_model)) 
   emm<-emmeans(FC_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -875,7 +882,14 @@ FC_Pcomp_model.Clade<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)
     
 #Pvar
 #lmer
-FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
+FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
+  anova(FC_Pvar_model) 
+  qqPlot(residuals(FC_Pvar_model)) 
+  emm<-emmeans(FC_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
   anova(FC_Pvar_model) 
   qqPlot(residuals(FC_Pvar_model)) 
   emm<-emmeans(FC_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
@@ -922,6 +936,11 @@ FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
 #lmer
     FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
   anova(FC_Pacu_model)
+  emm<-emmeans(FC_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
 FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
   anova(FC_Pacu_model) 
   qqPlot(residuals(FC_Pacu_model)) 
@@ -1643,7 +1662,7 @@ grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
 ``` 
  
 stats
-```{r}    
+```{r}     
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth")
 Growth <- Growth[GrowthKeep]
@@ -1939,7 +1958,7 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 
 
-#Chl-a 
+#Chl-a  
 dfs: Slurry=airbrush, SA=wax dip, 
 ```{r}     
 
@@ -2098,7 +2117,7 @@ chlatest<-merge(meta, Chla, all = T)
 
 means for plots
 ```{r}   
-
+ 
 chlatest<-merge(meta, Chla, all.x = T)
 
 duplicated(Chla) #look for duplicate entries
@@ -2311,6 +2330,13 @@ Chla_stats_T1TF_Pacu<-subset(Chla_stats_T1TF, Species=="Pocillopora_acuta")
   
 #mcap
 #lmer
+  Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Mcap)
+  anova(Chla_Mcap_model) 
+  qqPlot(residuals(Chla_Mcap_model)) 
+  emm<-emmeans(Chla_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Mcap)
   anova(Chla_Mcap_model) 
   qqPlot(residuals(Chla_Mcap_model)) 
@@ -2412,6 +2438,10 @@ Chla_Pcomp_model.Clade<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.I
 #lmer
     Chla_Pvar_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar)
   anova(Chla_Pvar_model) 
+   emm<-emmeans(Chla_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Chla_Pvar_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar)
   anova(Chla_Pvar_model) 
   qqPlot(residuals(Chla_Pvar_model)) 
@@ -2459,6 +2489,11 @@ Chla_Pvar_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
 #lmer
     Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu)
   anova(Chla_Pacu_model)
+  emm<-emmeans(Chla_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
 Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pacu)
   anova(Chla_Pacu_model) 
   qqPlot(residuals(Chla_Pacu_model)) 
@@ -2594,7 +2629,7 @@ PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 ```
 Stats 
 ```{r}       
-#remove notes
+#remove notes 
 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
 PAMdata2_stats$Days<-as.factor(as.character(PAMdata2_stats$Days))
@@ -2679,6 +2714,9 @@ emm<-emmeans(Yield_cu_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
 #lmer
  Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap)
   anova(Yield_cu_Mcap_model) 
+    emm<-emmeans(Yield_cu_Mcap_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
   
 Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Mcap)
   anova(Yield_cu_Mcap_model) 
@@ -2727,7 +2765,10 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 #lmer 
     Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp)
   anova(Yield_cu_Pcomp_model) 
-  
+   emm<-emmeans(Yield_cu_Pcomp_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
 Yield_cu_Pcomp_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pcomp)
   anova(Yield_cu_Pcomp_model) 
   qqPlot(residuals(Yield_cu_Pcomp_model)) 
@@ -2775,6 +2816,13 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
     
 #Pvar
 #lmer
+    Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pvar)
+  anova(Yield_cu_Pvar_model) 
+  qqPlot(residuals(Yield_cu_Pvar_model)) 
+  emm<-emmeans(Yield_cu_Pvar_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pvar)
   anova(Yield_cu_Pvar_model) 
   qqPlot(residuals(Yield_cu_Pvar_model)) 
@@ -2820,6 +2868,11 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 #lmer
     Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu)
   anova(Yield_cu_Pacu_model) 
+   qqPlot(residuals(Yield_cu_Pacu_model)) 
+  emm<-emmeans(Yield_cu_Pacu_model,  ~ Days*Treatment, adjust="Tukey")
+  cld(emm)
+    pairs(emm)
+
 Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats_Pacu)
   anova(Yield_cu_Pacu_model) 
   qqPlot(residuals(Yield_cu_Pacu_model)) 
@@ -3024,7 +3077,7 @@ grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 
 ```
 
 #Protein
-```{r}   
+```{r}    
 Protein <- read.csv("Data/Protein_TT17_20190214.csv")
 prottest<-merge(meta, Protein, all=T)
 keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
@@ -3068,7 +3121,7 @@ hist(Protein$mg.mm2_sqrt) #better
 ```
 Stats
 ```{r}  
-
+ 
 Prot_stats_T1TF<-subset(Protein, Time.Point=="T1"|Time.Point=="TF")
 
 
@@ -3095,7 +3148,7 @@ pairs(emm)
 
 
 # by Species df: Prot_stats_T1TF_Mcap, Prot_stats_T1TF_Pcomp, Prot_stats_T1TF_Pvar, Prot_stats_T1TF_Pacu
-Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF_Mcap, Species=="Montipora_capitata")
+Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF, Species=="Montipora_capitata")
   Prot_stats_T1TF_Mcap.C<-subset(Prot_stats_T1TF_Mcap, Clade=="C")
   Prot_stats_T1TF_Mcap.CD<-subset(Prot_stats_T1TF_Mcap, Clade=="CD")
 Prot_stats_T1TF_Pcomp<-subset(Prot_stats_T1TF, Species=="Porites_compressa")
@@ -3123,7 +3176,7 @@ Prot_Mcap_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
     Prot_Mcap_model.T1<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Mcap.T1)
   anova(Prot_Mcap_model.T1) 
   qqPlot(residuals(Prot_Mcap_model.T1)) 
-  emm<-emmeans(Prot_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Prot_Mcap_model.T1,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -3212,6 +3265,9 @@ Prot_Pcomp_model.Clade<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID
 #lmer
     Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar)
   anova(Prot_Pvar_model) 
+  emm<-emmeans(Prot_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
 Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pvar)
   anova(Prot_Pvar_model) 
   qqPlot(residuals(Prot_Pvar_model)) 
@@ -3259,6 +3315,9 @@ Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
 #lmer
     Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu)
   anova(Prot_Pacu_model)
+   emm<-emmeans(Prot_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+   cld(emm)
+    pairs(emm)
 Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_T1TF_Pacu)
   anova(Prot_Pacu_model) 
   qqPlot(residuals(Prot_Pacu_model)) 
@@ -3795,7 +3854,7 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 ```
 
 Photosynthesis stats 
-```{r} 
+```{r}  
 #df PR.df_B, use all time points bc repeated measures 
 
 hist(PR.df_B$Photo)
@@ -3828,7 +3887,14 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
   
 #mcap
 #lmer
-Photo_Mcap_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+Photo_Mcap_model<-lmer(Photo~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(Photo_Mcap_model) 
+  qqPlot(residuals(Photo_Mcap_model)) 
+  emm<-emmeans(Photo_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Photo_Mcap_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
   anova(Photo_Mcap_model) 
   qqPlot(residuals(Photo_Mcap_model)) 
   emm<-emmeans(Photo_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -3933,6 +3999,10 @@ Photo_Pcomp_model.Clade<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag
 #lmer
     Photo_Pvar_model<-lmer(Photo~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
   anova(Photo_Pvar_model) 
+    emm<-emmeans(Photo_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Photo_Pvar_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
   anova(Photo_Pvar_model) 
   qqPlot(residuals(Photo_Pvar_model)) 
@@ -3981,6 +4051,10 @@ Photo_Pvar_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 #lmer
     Photo_Pacu_model<-lmer(Photo~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
   anova(Photo_Pacu_model) 
+  emm<-emmeans(Photo_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Photo_Pacu_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
   anova(Photo_Pacu_model) 
   qqPlot(residuals(Photo_Pacu_model)) 
@@ -4027,7 +4101,7 @@ Photo_Pacu_model<-lmer(Photo~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     
 ```
 Respiration
-```{r}  
+```{r}   
 Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -4326,10 +4400,17 @@ anova(Resp_stats_modelC)
 emm<-emmeans(Resp_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
  cld(emm)
  pairs(emm)
-  
+   
 #mcap
 #lmer
-Resp_Mcap_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+Resp_Mcap_model<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
+  anova(Resp_Mcap_model) 
+  qqPlot(residuals(Resp_Mcap_model)) 
+  emm<-emmeans(Resp_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Resp_Mcap_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
   anova(Resp_Mcap_model) 
   qqPlot(residuals(Resp_Mcap_model)) 
   emm<-emmeans(Resp_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -4418,14 +4499,20 @@ Resp_Pcomp_model.Clade<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.I
     
 #Pvar
 #lmer
+Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
+  anova(Resp_Pvar_model) 
+  qqPlot(residuals(Resp_Pvar_model)) 
+  emm<-emmeans(Resp_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
 Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
   anova(Resp_Pvar_model) 
   qqPlot(residuals(Resp_Pvar_model)) 
   emm<-emmeans(Resp_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
-
-
+  
    #T1 only
     PR.df_B_Pvar_model.T1<-lmer(Resp~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.T1)
   anova(PR.df_B_Pvar_model.T1) 
@@ -4461,13 +4548,19 @@ Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
 
 #Pacu
 #lmer
+Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
+  anova(Resp_Pacu_model) 
+  qqPlot(residuals(Resp_Pacu_model)) 
+  emm<-emmeans(Resp_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
   anova(Resp_Pacu_model) 
   qqPlot(residuals(Resp_Pacu_model)) 
   emm<-emmeans(Resp_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
-
  
    #T1 only
     PR.df_B_Pacu_model.T1<-lmer(Resp~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pacu.T1)
@@ -4786,7 +4879,7 @@ grid.arrange(Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR
 ```
 
 PR stats
-```{r}  
+```{r}   
 #df PR.df_B
 
 hist(PR.df_B$PR) #fube
@@ -4835,6 +4928,10 @@ emm<-emmeans(PR_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
 #lmer
  PR_Mcap_model<-lmer(PR~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
   anova(PR_Mcap_model) 
+    emm<-emmeans(PR_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 PR_Mcap_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Mcap)
   anova(PR_Mcap_model) 
   qqPlot(residuals(PR_Mcap_model)) 
@@ -4879,6 +4976,11 @@ PR_Mcap_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.
 #lmer
     PR_Pcomp_model<-lmer(PR~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
   anova(PR_Pcomp_model) 
+   emm<-emmeans(PR_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
 PR_Pcomp_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp)
   anova(PR_Pcomp_model) 
   qqPlot(residuals(PR_Pcomp_model)) 
@@ -4930,6 +5032,11 @@ PR_Pcomp_model.Clade<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(
 #lmer
     PR_Pvar_model<-lmer(PR~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
   anova(PR_Pvar_model) 
+    qqPlot(residuals(PR_Pvar_model)) 
+  emm<-emmeans(PR_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 PR_Pvar_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar)
   anova(PR_Pvar_model) 
   qqPlot(residuals(PR_Pvar_model)) 
@@ -4973,6 +5080,12 @@ PR_Pvar_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.
 #lmer
     PR_Pacu_model<-lmer(PR~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
   anova(PR_Pacu_model) 
+  qqPlot(residuals(PR_Pacu_model)) 
+  emm<-emmeans(PR_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
 PR_Pacu_model<-lmer(PR~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pacu)
   anova(PR_Pacu_model) 
   qqPlot(residuals(PR_Pacu_model)) 
@@ -5134,6 +5247,7 @@ Calcification_psy<-unique(Calcification_psy) #remove duplicates, now you have
 
 Calcification_psy<-merge(metaPhysio, Calcification_psy, all.x = T)
 Calcification_psy$calc.percentchange[is.na(Calcification_psy$calc.percentchange)] <- 0 #change T0 growth to 0s
+Calcification_psy<- Calcification_psy[,c("Code","calc.percentchange")] # keep only columns you need
 
 
 #PAM df PAMdata_stats make for T0, T1, TF
@@ -5161,6 +5275,9 @@ PAM_psy<-PAM_psy %>% group_by(Code) %>% mutate(mean=mean(Yield_cu)) # mean by co
 names(PAM_psy)[names(PAM_psy) == "mean"] <- "PAM.Yield_cu" #change name
 PAM_psy<-PAM_psy[,c("Code","Parent.ID", "Treatment","Species","PAM.Yield_cu","Time.Point")] #remove col
 PAM_psy<-unique(PAM_psy) #remove duplicates, now you have 
+PAM_psy<- PAM_psy[,c("Code","PAM.Yield_cu")] # keep only columns you need
+
+
 
 # Photosynthesis PR.df_B
 
@@ -5168,51 +5285,51 @@ PR_psy<-PR.df_B
     PR_psy$Code<-paste(PR_psy$Species,PR_psy$Treatment,PR_psy$Parent.ID, PR_psy$Time.Point)
 
   #photo
-  Photo_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","Photo","Code")] 
+  Photo_psy<- PR_psy[,c("Photo","Code")] 
     Photo_psy<-Photo_psy %>% group_by(Code) %>% mutate(mean=mean(Photo)) # mean by code, this worked
     names(Photo_psy)[names(Photo_psy) == "mean"] <- "Photosynthesis" #change name
-    Photo_psy<-Photo_psy[,c("Code","Photosynthesis")] #remove col
+    Photo_psy<-Photo_psy[,c("Code","Photosynthesis")] #remove col with uniq
     Photo_psy<-unique(Photo_psy) #remove duplicates, now you have 
   
    #Resp
-  Resp_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","Resp","Code")] 
+   Resp_psy<- PR_psy[,c("Resp","Code")] 
     Resp_psy<-Resp_psy %>% group_by(Code) %>% mutate(mean=mean(Resp)) # mean by code, this worked
     names(Resp_psy)[names(Resp_psy) == "mean"] <- "Respiration" #change name
     Resp_psy<-Resp_psy[,c("Code","Respiration")] #remove col
     Resp_psy<-unique(Resp_psy) #remove duplicates, now you have 
 
    #PR
-  PR_psy<- PR_psy[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","PR","Code")] 
-    PR_psy<-PR_psy %>% group_by(Code) %>% mutate(mean=mean(PR)) # mean by code, this worked
-    names(PR_psy)[names(PR_psy) == "mean"] <- "PR" #change name
-    PR_psy<-PR_psy[,c("Code","PR")] #remove col
-    PR_psy<-unique(PR_psy) #remove duplicates, now you have 
+  P_R_psy<- PR_psy[,c("PR","Code")] 
+    P_R_psy2<-P_R_psy %>% group_by(Code) %>% mutate(mean=mean(PR)) # mean by code, this worked
+    names(P_R_psy2)[names(P_R_psy2) == "mean"] <- "P_R" #change name
+    P_R_psy2<-P_R_psy2[,c("Code","P_R")] #remove col
+    P_R_psy2<-unique(P_R_psy2) #remove duplicates, now you have 
     
- PRPR_phy<-merge(Photo_psy,Resp_psy, all = T)   
-     PRPR_phy<-merge(PRPR_phy,PR_psy, all = T)   
+ PRPR_psy<-merge(Photo_psy,Resp_psy, all = T)   
+     PRPR_psy<-merge(PRPR_psy,P_R_psy2, all = T)   
  
 ```
 #merging full physio 
-```{r}
+```{r} 
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
-
+ 
 #prep metadata for by Parent.ID df for ordinations
 metaPhysio<-subset(meta, select= -X)#remove X from df
 metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
 metaPhysio<-subset(metaPhysio, select= -Frag.ID)#remove tank from df
-
-#create duplicate T0 for H or A that isn't there for each parent. id
-MetaT0<-metaPhysio #copy
-MetaT0<-subset(MetaT0, Time.Point=="T0")
-MetaT0Amb<-MetaT0
-MetaT0Amb$Treatment[MetaT0Amb$Treatment == "High"] <- "Ambient" #change 
-MetaT0High<-MetaT0
-MetaT0High$Treatment[MetaT0High$Treatment == "Ambient"] <- "High" #change 
-MetaT02<-rbind(MetaT0Amb,MetaT0High) #now oyu have T0 for Amb and High
-metaPhysio<-metaPhysio[!(metaPhysio$Time.Point=="T0"),] #remove T0s 
-metaPhysio<-rbind(metaPhysio,MetaT02) # add the full T0 dataset
-metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID,metaPhysio$Time.Point) #make code
-
+metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID, metaPhysio$Time.Point)
+# #create duplicate T0 for H or A that isn't there for each parent. id
+# MetaT0<-metaPhysio #copy
+# MetaT0<-subset(MetaT0, Time.Point=="T0")
+# MetaT0Amb<-MetaT0
+# MetaT0Amb$Treatment[MetaT0Amb$Treatment == "High"] <- "Ambient" #change 
+# MetaT0High<-MetaT0
+# MetaT0High$Treatment[MetaT0High$Treatment == "Ambient"] <- "High" #change 
+# MetaT02<-rbind(MetaT0Amb,MetaT0High) #now oyu have T0 for Amb and High
+# metaPhysio<-metaPhysio[!(metaPhysio$Time.Point=="T0"),] #remove T0s 
+# metaPhysio<-rbind(metaPhysio,MetaT02) # add the full T0 dataset
+# metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID,metaPhysio$Time.Point) #make code
+# 
 
 #MERGE
 PhysioData<-merge(metaPhysio,Biomass_psy, all.x=T)
@@ -5221,32 +5338,46 @@ PhysioData<-merge(PhysioData,Calcification_psy,all.x=T)
 PhysioData<-merge(PhysioData,Chla_psy,all.x=T)
 PhysioData<-merge(PhysioData,Protein_psy,all.x=T)
 PhysioData<-merge(PhysioData,PAM_psy,all.x=T)
+PhysioData<-merge(PhysioData,PRPR_psy,all.x=T)
+  PhysioData$Parent.ID<-as.factor(PhysioData$Parent.ID)
+  PhysioData$Code<-as.factor(PhysioData$Code)
 
 #check
 duplicated(PhysioData$Code)
 PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 
-PhysioData$Parent.ID<-as.factor(as.character(PhysioData$Parent.ID))
-PhysioData$Code<-as.factor(as.character(PhysioData$Code))
+#Remove Time 0
+pData.T1TF<-subset(PhysioData, Time.Point=="T1"|Time.Point=="TF")
 
-duplicated(PhysioData$Code)
-PhysioData$Code[duplicated(PhysioData$Code)]
+pData.T1TF<-na.omit(pData.T1TF) #this removes 9 samples (partent/time/species)
 
-PhysioData_noMissing<-na.omit(PhysioData) #this removes 4 samples (partent/time/species)
-#write.csv(PhysioData,"PhysioData_20210310.csv")
+#deal with negatives by adding a constant (only P, R and P:R)
+pData.T1TF$Photosynthesis<-pData.T1TF$Photosynthesis+1
+pData.T1TF$Respiration<-pData.T1TF$Respiration+1
+pData.T1TF$P_R<-pData.T1TF$P_R+1
+
+
+
 ```
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data
 ```{r}   
-Phy_nmds<-PhysioData_noMissing
- 
-   
+Phy_nmds<-pData.T1TF
+#bray curtis presence-absense and abundance
+
+
+
+
+
+
+
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
-Phy_nmds.MDS<-metaMDS(PhysioData_noMissing[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds.MDS<-metaMDS(Phy_nmds[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS)
+Phy_nmds.MDS
 Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS)) #make the nMDS scores into a dataframe
 Phy_nmds.MDS #get summary info, stress is 0.096 great
 
@@ -5262,143 +5393,33 @@ Phy_nmds.MDS.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
 Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
 Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
 
-##You can make hulls for your data clouds to group them by a variable
-Phy_MY.hull <- Phy_nmds.MDS.scores %>% group_by(Species) %>%
-  do({
-    x = .
-    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
-  })
-
-##or you can make 95% ellipses using the following commands:
-
-#first make the function veganCovEllipse:
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds.MDS.scores)
-
-#Make your ellipse:
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds.MDS.scores$Species)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Species==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##Next we plot the nMDS:
-
-##With hulls:
-#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
-#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
-#  theme_classic() 
-
-##With ellipses:
-library("ggsci")
-#use locuszoom pal
-# Mcap   #D43F3AFF  red
-# Pcomp  #EEA236FF   yellow
-# Pvar  #5CB85CFF  green
-# Pacu #46B8DAFF lt blue
-#   scale_color_locuszoom()+
-
 
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
-  
-ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
-    scale_color_manual(values=Sp.colors)+
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Speices+Time+Treatment")
 
+ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
 
-# DO BY TREATMENT
-#Make elippses by TREATMENT
-
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds.MDS.scores$Treatment)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Treatment==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-
-ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-      scale_color_manual(values=Sp.colors)+
-  ggtitle("NMDS Speices+Time+Treatment")
-
-# DO BY CODE
-#Make elippses by CODE
-
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores[Phy_nmds.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-
-ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Speices+Time+Treatment")
 
 #################### Subset PLOTS (do not rerun nmds) for T1 and TF visualizations
 
 
 Phy_nmds.MDS.scores_T1<-subset(Phy_nmds.MDS.scores, Time.Point=="T1")
 
-
-
-#first make the function veganCovEllipse:
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds.MDS.scores)
-
-#Make your ellipse:
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds.MDS.scores_T1$Code3)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores_T1[Phy_nmds.MDS.scores_T1$Code3==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##Next we plot the nMDS:
-
-##With hulls:
-#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
-#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
-#  theme_classic() 
-
-##With ellipses:
-cbp1 <- c("blue", "red", "green4", "green",
-          "darkviolet", "hotpink", "darkorange3", "gold","turquoise4", "turquoise")
-
-ggplot(Phy_nmds.MDS.scores_T1, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape=Treatment)) +
-   scale_color_manual(values = cbp1)+
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Speices T1")
-
+ggplot(Phy_nmds.MDS.scores_T1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
 
 #################### Subset PLOTS (do not rerun nmds) for TF visualizations
 
@@ -5406,59 +5427,55 @@ ggplot(Phy_nmds.MDS.scores_T1, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour
 Phy_nmds.MDS.scores_TF<-subset(Phy_nmds.MDS.scores, Time.Point=="TF")
 
 
+ggplot(Phy_nmds.MDS.scores_TF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
 
-#first make the function veganCovEllipse:
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
+######### ok now do it by rerun
+Phy_nmds.T1<-subset(Phy_nmds, Time.Point=="T1")
+  set.seed(30)
 
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds.MDS.scores)
+Phy_nmds.MDS.T1<-metaMDS(Phy_nmds.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds.MDS)
+Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds.MDS #get summary info, stress is 0.096 great
 
-#Make your ellipse:
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds.MDS.scores_TF$Code3)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds.MDS.scores_TF[Phy_nmds.MDS.scores_TF$Code3==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
+##Add variables that you want to test to your scores data sheet
+Phy_nmds.MDS.scores$Parent.ID <- Phy_nmds$Parent.ID
+Phy_nmds.MDS.scores$Treatment <- Phy_nmds$Treatment
+Phy_nmds.MDS.scores$Species <- Phy_nmds$Species
+Phy_nmds.MDS.scores$Time.Point <- Phy_nmds$Time.Point
+Phy_nmds.MDS.scores$Code <- Phy_nmds$Code # move the code 
+Phy_nmds.MDS.scores$Code2 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
+Phy_nmds.MDS.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
 
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
+Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
+Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
 
-
-##Next we plot the nMDS:
-
-##With hulls:
-#ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Species)) +
-#  geom_polygon(data = Phy_MY.hull, aes(x = NMDS1, y = NMDS2, colour= Code2, fill = Species), alpha = 0.1) #+
-#  theme_classic() 
-
-##With ellipses:
-cbp1 <- c("blue", "red", "green4", "green",
-          "darkviolet", "hotpink", "darkorange3", "gold","turquoise4", "turquoise")
-
-ggplot(Phy_nmds.MDS.scores_TF, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape=Treatment)) +
-   scale_color_manual(values = cbp1)+
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Speices TF")
+ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS Physio T1") +
+  theme_classic()
 
 ```
 #### By SPECIES. Make a NEW ordination for each species. 
-Mcap
-```{r}
-Phy_nmds_Mcap<-PhysioData_noMissing
+Mcap phys
+```{r} 
+Phy_nmds_Mcap<-pData.T1TF
   
 
 Phy_nmds_Mcap<-subset(Phy_nmds_Mcap, Species=="Montipora_capitata")
 
 set.seed(30)
 
-Phy_nmds_Mcap.MDS<-metaMDS(Phy_nmds_Mcap[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds_Mcap.MDS<-metaMDS(Phy_nmds_Mcap[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds_Mcap.MDS)
 Phy_nmds_Mcap.MDS.scores <- as.data.frame(scores(Phy_nmds_Mcap.MDS)) #make the nMDS scores into a dataframe
 Phy_nmds_Mcap.MDS #get summary info, stress is 0.096 great
@@ -5468,444 +5485,440 @@ Phy_nmds_Mcap.MDS.scores$Parent.ID <- Phy_nmds_Mcap$Parent.ID
 Phy_nmds_Mcap.MDS.scores$Treatment <- Phy_nmds_Mcap$Treatment
 Phy_nmds_Mcap.MDS.scores$Species <- Phy_nmds_Mcap$Species
 Phy_nmds_Mcap.MDS.scores$Time.Point <- Phy_nmds_Mcap$Time.Point
-Phy_nmds_Mcap.MDS.scores$Code <- Phy_nmds_Mcap$Code # move the code 
-Phy_nmds_Mcap.MDS.scores$Code2 <- paste(Phy_nmds_Mcap.MDS.scores$Treatment,Phy_nmds_Mcap.MDS.scores$Time.Point) # create new code species, time point treatment 
-Phy_nmds_Mcap.MDS.scores$Code2<-as.factor(Phy_nmds_Mcap.MDS.scores$Code2)
-
-
-#### BY Ttreatment 
-##or you can make 95% ellipses using the following commands:
-
-#first make the function veganCovEllipse:
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Mcap.MDS.scores)
-
-#Make your ellipse:
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Mcap.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Mcap.MDS.scores[Phy_nmds_Mcap.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
+Phy_nmds_Mcap.MDS.scores$Code <- paste(Phy_nmds_Mcap$Parent.ID,Phy_nmds_Mcap$Time.Point)
+Phy_nmds_Mcap.MDS.scores$Code2 <- paste(Phy_nmds_Mcap$Treatment,Phy_nmds_Mcap$Time.Point)
+Phy_nmds_Mcap.MDS.scores$Code3 <- paste(Phy_nmds_Mcap$Treatment,Phy_nmds_Mcap$Time.Point,Phy_nmds_Mcap$Parent.ID)
 
 #colors
-Time.colors <- c("T0"= "#e8aa38","T1"="#666698","TF"="#76a6b6", "High"="#bd0212","Ambient"="#0e2ffb")
-Code2.colors <- c("High"="","Ambient"="#c0cbd0",
-                  "Ambient T0"= "#c9c9c9","High T0"= "#c9c9c9",
-                  "Ambient T1"="#001eff","High T1"="#cc0000",
-                  "Ambient TF"="#091f92","High TF"="#990000")
-##Next we plot the nMDS:
+## create palette for parent.ID and treatments
+Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
+                        "Ambient" = "dodgerblue", "High" = "darkred",
+                        "C Ambient"="#DDCC77","C High"="#999933", "CD Ambient"="#44AA99", "CD High"="#117733", 
+                        "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
 
 
-ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-      scale_color_manual(values=Code2.colors)+
-  ggtitle("NMDS Mcap Time+Treatment")
+ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
+  scale_shape_manual(values = c(21, 22,24,25)) + 
+    scale_color_manual(values=Mcap.Parent.colors)+
+stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("M. capitata T1TF") +
+  theme_classic()
+
+ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ geom_point(aes(size = 5) )+
+    #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
+    scale_shape_manual(values = c(21, 22,24,25)) + 
+  scale_color_manual(values=Mcap.Parent.colors)+
+   # geom_line(aes(group = Code), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("M. capitata T1TF") +
+  theme_classic()
+#ggsave("McapT1its2.pdf")
+
+#T1
+Phy_nmds_Mcap.T1<-subset(Phy_nmds_Mcap, Time.Point=="T1")
+ord.mcap.T1<-metaMDS(Phy_nmds_Mcap.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.mcap.T1)
+ord.mcap.T1.df<-as.data.frame(cbind(vegan::scores(ord.mcap.T1, display="sites"))) # these are "points" ask hannah 
+ord.mcap.T1.df$Time.Point <- Phy_nmds_Mcap.T1$Time.Point
+ord.mcap.T1.df$Parent.ID <- Phy_nmds_Mcap.T1$Parent.ID
+ord.mcap.T1.df$Treatment <- Phy_nmds_Mcap.T1$Treatment
+ord.mcap.T1.df$Clade <- Phy_nmds_Mcap.T1$Clade
+ord.mcap.T1.df$Code <- paste(ord.mcap.T1.df$Parent.ID,ord.mcap.T1.df$Time.Point)
+ord.mcap.T1.df$Code2 <- paste(ord.mcap.T1.df$Clade,ord.mcap.T1.df$Treatment)
+ord.mcap.T1.df$Code2 <- as.factor(ord.mcap.T1.df$Code2)
+
+ggplot(ord.mcap.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("M. capitata physio T1") +
+  theme_classic()
+#ggsave("McapT1its2.pdf")
+
+#workaround-for when this randomly breaks
+# plot_ordination(mcap.bac.TF, ordinate(mcap.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
-#### BY Time and Treat:
+#TF
+Phy_nmds_Mcap.TF<-subset(Phy_nmds_Mcap, Time.Point=="TF")
+ord.mcap.TF<-metaMDS(Phy_nmds_Mcap.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.mcap.TF)
+ord.mcap.TF.df<-as.data.frame(cbind(vegan::scores(ord.mcap.TF, display="sites"))) # these are "points" ask hannah 
+ord.mcap.TF.df$Time.Point <- Phy_nmds_Mcap.TF$Time.Point
+ord.mcap.TF.df$Parent.ID <- Phy_nmds_Mcap.TF$Parent.ID
+ord.mcap.TF.df$Treatment <- Phy_nmds_Mcap.TF$Treatment
+ord.mcap.TF.df$Clade <- Phy_nmds_Mcap.TF$Clade
+ord.mcap.TF.df$Code <- paste(Phy_nmds_Mcap.TF$Parent.ID,Phy_nmds_Mcap.TF$Time.Point)
+ord.mcap.TF.df$Code2 <- paste(Phy_nmds_Mcap.TF$Clade,Phy_nmds_Mcap.TF$Treatment)
+ord.mcap.TF.df$Code2 <- as.factor(Phy_nmds_Mcap.TF$Code2)
 
-#first make the function veganCovEllipse:
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
+ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=Mcap.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("M. capitata physio TF") +
+  theme_classic()
 
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Mcap.MDS.scores)
 
-#Make your ellipse:
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Mcap.MDS.scores$Code)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Mcap.MDS.scores[Phy_nmds_Mcap.MDS.scores$Code==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
 
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
+
+```
+pcomp phys
+```{r}  
 
 #colors
-Time.colors <- c("T0"= "#e8aa38","T1"="#666698","TF"="#76a6b6", "High"="#bd0212","Ambient"="#0e2ffb")
-Code2.colors <- c( "Ambient T0"= "#c9c9c9","High T0"= "#c9c9c9",
-                  "Ambient T1"="#001eff","High T1"="#cc0000",
-                  "Ambient TF"="#091f92","High TF"="#990000")
-##Next we plot the nMDS:
+## create palette for parent.ID and treatments
+pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "cyan", "322" = "darkorange","323" ="darkorchid1", "324" = "lightblue", 
+                         "Ambient" = "Blue", "High" = "Red",
+                         "C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", 
+                         "Ambient T1"="blue", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
+ 
 
-
-ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Time.Point, shape =Time.Point, size=2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-      scale_color_manual(values=Time.colors)+
-  ggtitle("NMDS Mcap Time+Treatment")
-
-
-
-
-```
-Pcomp
-```{r} 
-Phy_nmds_Pcomp<-PhysioData_noMissing
-Phy_nmds_Pcomp<-subset(Phy_nmds_Pcomp, Species=="Porites_compressa")
+Phy_nmds_pcomp<-pData.T1TF
+Phy_nmds_pcomp<-subset(Phy_nmds_pcomp, Species=="Porites_compressa")
 
 set.seed(30)
 
-Phy_nmds_Pcomp.MDS<-metaMDS(Phy_nmds_Pcomp[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
-stressplot(Phy_nmds_Pcomp.MDS)
-Phy_nmds_Pcomp.MDS.scores <- as.data.frame(scores(Phy_nmds_Pcomp.MDS)) #make the nMDS scores into a dataframe
-Phy_nmds_Pcomp.MDS #get summary info, stress is 0.096 great
+Phy_nmds_pcomp.MDS<-metaMDS(Phy_nmds_pcomp[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_pcomp.MDS)
+Phy_nmds_pcomp.MDS.scores <- as.data.frame(scores(Phy_nmds_pcomp.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pcomp.MDS #get summary info,
 
 ##Add variables that you want to test to your scores data sheet
-Phy_nmds_Pcomp.MDS.scores$Parent.ID <- Phy_nmds_Pcomp$Parent.ID
-Phy_nmds_Pcomp.MDS.scores$Treatment <- Phy_nmds_Pcomp$Treatment
-Phy_nmds_Pcomp.MDS.scores$Species <- Phy_nmds_Pcomp$Species
-Phy_nmds_Pcomp.MDS.scores$Time.Point <- Phy_nmds_Pcomp$Time.Point
-Phy_nmds_Pcomp.MDS.scores$Code <- Phy_nmds_Pcomp$Code # move the code 
-Phy_nmds_Pcomp.MDS.scores$Code2 <- paste(Phy_nmds_Pcomp.MDS.scores$Treatment,Phy_nmds_Pcomp.MDS.scores$Time.Point) # create new code species, time point treatment 
-Phy_nmds_Pcomp.MDS.scores$Code2<-as.factor(Phy_nmds_Pcomp.MDS.scores$Code2)
+Phy_nmds_pcomp.MDS.scores$Parent.ID <- Phy_nmds_pcomp$Parent.ID
+Phy_nmds_pcomp.MDS.scores$Treatment <- Phy_nmds_pcomp$Treatment
+Phy_nmds_pcomp.MDS.scores$Species <- Phy_nmds_pcomp$Species
+Phy_nmds_pcomp.MDS.scores$Time.Point <- Phy_nmds_pcomp$Time.Point
+Phy_nmds_pcomp.MDS.scores$Code <- paste(Phy_nmds_pcomp$Parent.ID,Phy_nmds_pcomp$Time.Point)
+Phy_nmds_pcomp.MDS.scores$Code2 <- paste(Phy_nmds_pcomp$Treatment,Phy_nmds_pcomp$Time.Point)
+Phy_nmds_pcomp.MDS.scores$Code3 <- paste(Phy_nmds_pcomp$Treatment,Phy_nmds_pcomp$Time.Point,Phy_nmds_pcomp$Parent.ID)
 
-##You can make hulls for your data clouds to group them by a variable
-#Phy_MY.hull <- Phy_nmds_Pcomp.MDS.scores %>% group_by(Treatment) %>%
-#  do({
-#    x = .
-#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
-#  })
+#plot
+ggplot(Phy_nmds_pcomp.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
+  scale_shape_manual(values = c(21, 22,24,25)) + 
+    scale_color_manual(values=pcomp.Parent.colors)+
+stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. comp T1TF") +
+  theme_classic()
+
+ggplot(Phy_nmds_pcomp.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ geom_point(aes(size = 5) )+
+    #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
+    scale_shape_manual(values = c(21, 22,24,25)) + 
+  scale_color_manual(values=Pcomp.Parent.colors)+
+   # geom_line(aes(group = Code), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. comp T1TF") +
+  theme_classic()
+#ggsave("pcompT1its2.pdf")
+
+#T1
+Phy_nmds_pcomp.T1<-subset(Phy_nmds_pcomp, Time.Point=="T1")
+ord.pcomp.T1<-metaMDS(Phy_nmds_pcomp.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pcomp.T1)
+ord.pcomp.T1.df<-as.data.frame(cbind(vegan::scores(ord.pcomp.T1, display="sites"))) # these are "points" ask hannah 
+ord.pcomp.T1.df$Time.Point <- Phy_nmds_pcomp.T1$Time.Point
+ord.pcomp.T1.df$Parent.ID <- Phy_nmds_pcomp.T1$Parent.ID
+ord.pcomp.T1.df$Treatment <- Phy_nmds_pcomp.T1$Treatment
+ord.pcomp.T1.df$Clade <- Phy_nmds_pcomp.T1$Clade
+ord.pcomp.T1.df$Code <- paste(Phy_nmds_pcomp.T1$Parent.ID,Phy_nmds_pcomp.T1$Time.Point)
+ord.pcomp.T1.df$Code2 <- paste(Phy_nmds_pcomp.T1$Clade,Phy_nmds_pcomp.T1$Treatment)
+ord.pcomp.T1.df$Code2 <- as.factor(Phy_nmds_pcomp.T1$Code2)
+
+ggplot(ord.pcomp.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=Pcomp.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. comp physio T1") +
+  theme_classic()
+#ggsave("pcompT1its2.pdf")
+
+#workaround-for when this randomly breaks
+# plot_ordination(pcomp.bac.TF, ordinate(pcomp.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
+#TF
+Phy_nmds_pcomp.TF<-subset(Phy_nmds_pcomp, Time.Point=="TF")
+ord.pcomp.TF<-metaMDS(Phy_nmds_pcomp.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pcomp.TF)
+ord.pcomp.TF.df<-as.data.frame(cbind(vegan::scores(ord.pcomp.TF, display="sites"))) # these are "points" ask hannah 
+ord.pcomp.TF.df$Time.Point <- Phy_nmds_pcomp.TF$Time.Point
+ord.pcomp.TF.df$Parent.ID <- Phy_nmds_pcomp.TF$Parent.ID
+ord.pcomp.TF.df$Treatment <- Phy_nmds_pcomp.TF$Treatment
+ord.pcomp.TF.df$Clade <- Phy_nmds_pcomp.TF$Clade
+ord.pcomp.TF.df$Code <- paste(Phy_nmds_pcomp.TF$Parent.ID,Phy_nmds_pcomp.TF$Time.Point)
+ord.pcomp.TF.df$Code2 <- paste(Phy_nmds_pcomp.TF$Clade,Phy_nmds_pcomp.TF$Treatment)
+ord.pcomp.TF.df$Code2 <- as.factor(Phy_nmds_pcomp.TF$Code2)
 
-############################################# BY TREATMENT
+#try envfit
+# env = Phy_nmds_pcomp.TF[,3] NOT WORKING SORT OUT LATER
+# 
+# en = envfit(ord.pcomp.TF, env, permutations = 999, na.rm = TRUE)
 
 
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Pcomp.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Pcomp.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pcomp.MDS.scores[Phy_nmds_Pcomp.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##plot the nMDS:
-##With ellipses:
-Time.colors <- c("T0"= "#e8aa38","T1"="#666698","TF"="#76a6b6", "High"="#bd0212","Ambient"="#0e2ffb")
-Code2.colors <- c( "Ambient T0"= "#c9c9c9","High T0"= "#c9c9c9",
-                  "Ambient T1"="#001eff","High T1"="#cc0000",
-                  "Ambient TF"="#091f92","High TF"="#990000")
-
-ggplot(Phy_nmds_Pcomp.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-        scale_color_manual(values=Code2.colors)+
-  ggtitle("NMDS Pcomp Time+Treatment")
-
+ggplot(ord.pcomp.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=Pcomp.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. comp physio TF") +
+  theme_classic()
 
 
 ```
-Pvar
-```{r}
-Phy_nmds_Pvar<-PhysioData_noMissing
-Phy_nmds_Pvar<-subset(Phy_nmds_Pvar, Species=="Pavona_varians")
+pvar phys
+```{r}  
+pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
+                       "Ambient" = "dodgerblue", "High" = "darkred",
+                        "C1 Ambient"="#DDCC77","C1 High"="#999933", "C27 Ambient"="#44AA99", "C27 High"="#117733", 
+                         "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
+
+Phy_nmds_pvar<-pData.T1TF
+  
+
+Phy_nmds_pvar<-subset(Phy_nmds_pvar, Species=="Pavona_varians")
 
 set.seed(30)
 
-Phy_nmds_Pvar.MDS<-metaMDS(Phy_nmds_Pvar[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
-stressplot(Phy_nmds_Pvar.MDS)
-Phy_nmds_Pvar.MDS.scores <- as.data.frame(scores(Phy_nmds_Pvar.MDS)) #make the nMDS scores into a dataframe
-Phy_nmds_Pvar.MDS #get summary info, stress is 0.096 great
+Phy_nmds_pvar.MDS<-metaMDS(Phy_nmds_pvar[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_pvar.MDS)
+Phy_nmds_pvar.MDS.scores <- as.data.frame(scores(Phy_nmds_pvar.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pvar.MDS #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
-Phy_nmds_Pvar.MDS.scores$Parent.ID <- Phy_nmds_Pvar$Parent.ID
-Phy_nmds_Pvar.MDS.scores$Treatment <- Phy_nmds_Pvar$Treatment
-Phy_nmds_Pvar.MDS.scores$Species <- Phy_nmds_Pvar$Species
-Phy_nmds_Pvar.MDS.scores$Time.Point <- Phy_nmds_Pvar$Time.Point
-Phy_nmds_Pvar.MDS.scores$Code <- Phy_nmds_Pvar$Code # move the code 
-Phy_nmds_Pvar.MDS.scores$Code2 <- paste(Phy_nmds_Pvar.MDS.scores$Treatment,Phy_nmds_Pvar.MDS.scores$Time.Point) # create new code species, time point treatment 
-Phy_nmds_Pvar.MDS.scores$Code2<-as.factor(Phy_nmds_Pvar.MDS.scores$Code2)
+Phy_nmds_pvar.MDS.scores$Parent.ID <- Phy_nmds_pvar$Parent.ID
+Phy_nmds_pvar.MDS.scores$Treatment <- Phy_nmds_pvar$Treatment
+Phy_nmds_pvar.MDS.scores$Species <- Phy_nmds_pvar$Species
+Phy_nmds_pvar.MDS.scores$Time.Point <- Phy_nmds_pvar$Time.Point
+Phy_nmds_pvar.MDS.scores$Code <- paste(Phy_nmds_pvar$Parent.ID,Phy_nmds_pvar$Time.Point)
+Phy_nmds_pvar.MDS.scores$Code2 <- paste(Phy_nmds_pvar$Treatment,Phy_nmds_pvar$Time.Point)
+Phy_nmds_pvar.MDS.scores$Code3 <- paste(Phy_nmds_pvar$Treatment,Phy_nmds_pvar$Time.Point,Phy_nmds_pvar$Parent.ID)
 
 
-############################################# BY TREATMENT * Time
+ggplot(Phy_nmds_pvar.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
+  scale_shape_manual(values = c(21, 22,24,25)) + 
+    scale_color_manual(values=pvar.Parent.colors)+
+stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. varians T1TF") +
+  theme_classic()
+
+ggplot(Phy_nmds_pvar.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ geom_point(aes(size = 5) )+
+    #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
+    scale_shape_manual(values = c(21, 22,24,25)) + 
+  scale_color_manual(values=pvar.Parent.colors)+
+   # geom_line(aes(group = Code), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. varians T1TF") +
+  theme_classic()
+#ggsave("pvarT1its2.pdf")
+
+#T1
+Phy_nmds_pvar.T1<-subset(Phy_nmds_pvar, Time.Point=="T1")
+ord.pvar.T1<-metaMDS(Phy_nmds_pvar.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pvar.T1)
+ord.pvar.T1.df<-as.data.frame(cbind(vegan::scores(ord.pvar.T1, display="sites"))) # these are "points" ask hannah 
+ord.pvar.T1.df$Time.Point <- Phy_nmds_pvar.T1$Time.Point
+ord.pvar.T1.df$Parent.ID <- Phy_nmds_pvar.T1$Parent.ID
+ord.pvar.T1.df$Treatment <- Phy_nmds_pvar.T1$Treatment
+ord.pvar.T1.df$Clade <- Phy_nmds_pvar.T1$Clade
+ord.pvar.T1.df$Code <- paste(Phy_nmds_pvar.T1$Parent.ID,Phy_nmds_pvar.T1$Time.Point)
+ord.pvar.T1.df$Code2 <- paste(Phy_nmds_pvar.T1$Clade,Phy_nmds_pvar.T1$Treatment)
+ord.pvar.T1.df$Code2 <- as.factor(Phy_nmds_pvar.T1$Code2)
+
+ggplot(ord.pvar.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. varians physio T1") +
+  theme_classic()
+#ggsave("pvarT1its2.pdf")
+
+#workaround-for when this randomly breaks
+# plot_ordination(pvar.bac.TF, ordinate(pvar.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Pvar.MDS.scores)
+#TF
+Phy_nmds_pvar.TF<-subset(Phy_nmds_pvar, Time.Point=="TF")
+ord.pvar.TF<-metaMDS(Phy_nmds_pvar.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pvar.TF)
+ord.pvar.TF.df<-as.data.frame(cbind(vegan::scores(ord.pvar.TF, display="sites"))) # these are "points" ask hannah 
+ord.pvar.TF.df$Time.Point <- Phy_nmds_pvar.TF$Time.Point
+ord.pvar.TF.df$Parent.ID <- Phy_nmds_pvar.TF$Parent.ID
+ord.pvar.TF.df$Treatment <- Phy_nmds_pvar.TF$Treatment
+ord.pvar.TF.df$Clade <- Phy_nmds_pvar.TF$Clade
+ord.pvar.TF.df$Code <- paste(Phy_nmds_pvar.TF$Parent.ID,Phy_nmds_pvar.TF$Time.Point)
+ord.pvar.TF.df$Code2 <- paste(Phy_nmds_pvar.TF$Clade,Phy_nmds_pvar.TF$Treatment)
+ord.pvar.TF.df$Code2 <- as.factor(Phy_nmds_pvar.TF$Code2)
 
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Pvar.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pvar.MDS.scores[Phy_nmds_Pvar.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
+ggplot(ord.pvar.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. varians physio TF") +
+  theme_classic()
 
-
-##plot the nMDS:
-##With ellipses: 
-#https://www.color-hex.com/color-palette/106923
-Code2.colors <- c("High"="","Ambient"="#c0cbd0",
-                  "Ambient T0"= "#c9c9c9","High T0"= "#c9c9c9",
-                  "Ambient T1"="#001eff","High T1"="#cc0000",
-                  "Ambient TF"="#091f92","High TF"="#990000")
-
-ggplot(Phy_nmds_Pvar.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-          scale_color_manual(values=Code2.colors)+
-  ggtitle("NMDS Pvar Time+Treatment")
-
-############################################# BY TIME
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Pvar.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Pvar.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pvar.MDS.scores[Phy_nmds_Pvar.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##plot the nMDS:
-##With ellipses:
-
-ggplot(Phy_nmds_Pvar.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2, shape =Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Pvar Time+Treatment")
+ 
 
 
 ```
-P acuta
-```{r}
 
-Phy_nmds_Pacu<-PhysioData_noMissing
-Phy_nmds_Pacu<-subset(Phy_nmds_Pacu, Species=="Pocillopora_acuta")
+pacu phys
+```{r}   
+## create palette for parent.ID and treatments
+pacu.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppink4", "311" = "orange", "301" = "green1","302" = "gold",  "308"= "hotpink", "310" ="darkslateblue", "312" = "cyan", "303" = "darkorange","304" ="darkorchid1", "306" = "lightblue", 
+                        "Ambient" = "dodgerblue", "High" = "darkred",
+                        "C42 Ambient"="#DDCC77","C42 High"="#999933", "CCC Ambient"="#44AA99", "CCC High"="#117733", 
+                        "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
+
+
+
+Phy_nmds_pacu<-pData.T1TF
+Phy_nmds_pacu<-subset(Phy_nmds_pacu, Species=="Pocillopora_acuta")
 
 set.seed(30)
 
-Phy_nmds_Pacu.MDS<-metaMDS(Phy_nmds_Pacu[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
-stressplot(Phy_nmds_Pacu.MDS)
-Phy_nmds_Pacu.MDS.scores <- as.data.frame(scores(Phy_nmds_Pacu.MDS)) #make the nMDS scores into a dataframe
-Phy_nmds_Pacu.MDS #get summary info, stress is 0.096 great
+Phy_nmds_pacu.MDS<-metaMDS(Phy_nmds_pacu[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(Phy_nmds_pacu.MDS)
+Phy_nmds_pacu.MDS.scores <- as.data.frame(scores(Phy_nmds_pacu.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pacu.MDS #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
-Phy_nmds_Pacu.MDS.scores$Parent.ID <- Phy_nmds_Pacu$Parent.ID
-Phy_nmds_Pacu.MDS.scores$Treatment <- Phy_nmds_Pacu$Treatment
-Phy_nmds_Pacu.MDS.scores$Species <- Phy_nmds_Pacu$Species
-Phy_nmds_Pacu.MDS.scores$Time.Point <- Phy_nmds_Pacu$Time.Point
-Phy_nmds_Pacu.MDS.scores$Code <- Phy_nmds_Pacu$Code # move the code 
-Phy_nmds_Pacu.MDS.scores$Code2 <- paste(Phy_nmds_Pacu.MDS.scores$Treatment,Phy_nmds_Pacu.MDS.scores$Time.Point) # create new code species, time point treatment 
-Phy_nmds_Pacu.MDS.scores$Code2<-as.factor(Phy_nmds_Pacu.MDS.scores$Code2)
+Phy_nmds_pacu.MDS.scores$Parent.ID <- Phy_nmds_pacu$Parent.ID
+Phy_nmds_pacu.MDS.scores$Treatment <- Phy_nmds_pacu$Treatment
+Phy_nmds_pacu.MDS.scores$Species <- Phy_nmds_pacu$Species
+Phy_nmds_pacu.MDS.scores$Time.Point <- Phy_nmds_pacu$Time.Point
+Phy_nmds_pacu.MDS.scores$Code <- paste(Phy_nmds_pacu$Parent.ID,Phy_nmds_pacu$Time.Point)
+Phy_nmds_pacu.MDS.scores$Code2 <- paste(Phy_nmds_pacu$Treatment,Phy_nmds_pacu$Time.Point)
+Phy_nmds_pacu.MDS.scores$Code3 <- paste(Phy_nmds_pacu$Treatment,Phy_nmds_pacu$Time.Point,Phy_nmds_pacu$Parent.ID)
 
-##You can make hulls for your data clouds to group them by a variable
-#Phy_MY.hull <- Phy_nmds_Pacu.MDS.scores %>% group_by(Treatment) %>%
-#  do({
-#    x = .
-#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
-#  })
+ggplot(Phy_nmds_pacu.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
+  scale_shape_manual(values = c(21, 22,24,25)) + 
+    scale_color_manual(values=pacu.Parent.colors)+
+stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. acuta T1TF") +
+  theme_classic()
 
+ggplot(Phy_nmds_pacu.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ geom_point(aes(size = 5) )+
+    #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
+    scale_shape_manual(values = c(21, 22,24,25)) + 
+  scale_color_manual(values=pacu.Parent.colors)+
+   # geom_line(aes(group = Code), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  scale_linetype_manual(values=c(2,3,2,3))+
+  ggtitle("P. acuta T1TF") +
+  theme_classic()
+#ggsave("pacuT1its2.pdf")
 
+#T1
+Phy_nmds_pacu.T1<-subset(Phy_nmds_pacu, Time.Point=="T1")
+ord.pacu.T1<-metaMDS(Phy_nmds_pacu.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pacu.T1)
+ord.pacu.T1.df<-as.data.frame(cbind(vegan::scores(ord.pacu.T1, display="sites"))) # these are "points" ask hannah 
+ord.pacu.T1.df$Time.Point <- Phy_nmds_pacu.T1$Time.Point
+ord.pacu.T1.df$Parent.ID <- Phy_nmds_pacu.T1$Parent.ID
+ord.pacu.T1.df$Treatment <- Phy_nmds_pacu.T1$Treatment
+ord.pacu.T1.df$Clade <- Phy_nmds_pacu.T1$Clade
+ord.pacu.T1.df$Code <- paste(Phy_nmds_pacu.T1$Parent.ID,Phy_nmds_pacu.T1$Time.Point)
+ord.pacu.T1.df$Code2 <- paste(Phy_nmds_pacu.T1$Clade,Phy_nmds_pacu.T1$Treatment)
+ord.pacu.T1.df$Code2 <- as.factor(Phy_nmds_pacu.T1$Code2)
 
-############################################# BY TREATMENT
+ggplot(ord.pacu.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pacu.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. acuta physio T1") +
+  theme_classic()
+#ggsave("pacuT1its2.pdf")
 
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Pacu.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Pacu.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pacu.MDS.scores[Phy_nmds_Pacu.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##plot the nMDS:
-##With ellipses:
-
-ggplot(Phy_nmds_Pacu.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-            scale_color_manual(values=Code2.colors)+
-  ggtitle("NMDS Pacu Treatment")
-
-############################################# BY TIME
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_Pacu.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_Pacu.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_Pacu.MDS.scores[Phy_nmds_Pacu.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
+#workaround-for when this randomly breaks
+# plot_ordination(pacu.bac.TF, ordinate(pacu.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
-##plot the nMDS:
-##With ellipses:
+#TF
+Phy_nmds_pacu.TF<-subset(Phy_nmds_pacu, Time.Point=="TF")
+ord.pacu.TF<-metaMDS(Phy_nmds_pacu.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+stressplot(ord.pacu.TF)
+ord.pacu.TF.df<-as.data.frame(cbind(vegan::scores(ord.pacu.TF, display="sites"))) # these are "points" ask hannah 
+ord.pacu.TF.df$Time.Point <- Phy_nmds_pacu.TF$Time.Point
+ord.pacu.TF.df$Parent.ID <- Phy_nmds_pacu.TF$Parent.ID
+ord.pacu.TF.df$Treatment <- Phy_nmds_pacu.TF$Treatment
+ord.pacu.TF.df$Clade <- Phy_nmds_pacu.TF$Clade
+ord.pacu.TF.df$Code <- paste(ord.pacu.TF.df$Parent.ID,ord.pacu.TF.df$Time.Point)
+ord.pacu.TF.df$Code2 <- paste(ord.pacu.TF.df$Clade,ord.pacu.TF.df$Treatment)
+ord.pacu.TF.df$Code2 <- as.factor(ord.pacu.TF.df$Code2)
 
-ggplot(Phy_nmds_Pacu.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Code2, shape =Code2)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS Pacu Time+Treatment")
+ggplot(ord.pacu.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pacu.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(3,3))+
+  ggtitle("P. acuta physio TF") +
+  theme_classic()
+
+
+
 
 ```
 
-T1- only all species: RERUN NMDS
-```{r}
-
-Phy_nmds_T1only<-PhysioData_noMissing
-Phy_nmds_T1only<-subset(Phy_nmds_T1only, Time.Point=="T1")
-
-set.seed(30)
-
-Phy_nmds_T1only.MDS<-metaMDS(Phy_nmds_T1only[,7:12], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
-stressplot(Phy_nmds_T1only.MDS)
-Phy_nmds_T1only.MDS.scores <- as.data.frame(scores(Phy_nmds_T1only.MDS)) #make the nMDS scores into a dataframe
-Phy_nmds_T1only.MDS #get summary info, stress is 0.096 great
-
-##Add variables that you want to test to your scores data sheet
-Phy_nmds_T1only.MDS.scores$Parent.ID <- Phy_nmds_T1only$Parent.ID
-Phy_nmds_T1only.MDS.scores$Treatment <- Phy_nmds_T1only$Treatment
-Phy_nmds_T1only.MDS.scores$Species <- Phy_nmds_T1only$Species
-Phy_nmds_T1only.MDS.scores$Time.Point <- Phy_nmds_T1only$Time.Point
-Phy_nmds_T1only.MDS.scores$Code <- Phy_nmds_T1only$Code # move the code 
-Phy_nmds_T1only.MDS.scores$Code2 <- paste(Phy_nmds_T1only.MDS.scores$Treatment,Phy_nmds_T1only.MDS.scores$Species) # create new code species, time point treatment 
-Phy_nmds_T1only.MDS.scores$Code2<-as.factor(Phy_nmds_T1only.MDS.scores$Code2)
-
-##You can make hulls for your data clouds to group them by a variable
-#Phy_MY.hull <- Phy_nmds_T1only.MDS.scores %>% group_by(Treatment) %>%
-#  do({
-#    x = .
-#    data.frame(x[chull(x$NMDS1, x$NMDS2), ])
-#  })
 
 
 
-############################################# BY TREATMENT
 
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_T1only.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_T1only.MDS.scores$Treatment)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_T1only.MDS.scores[Phy_nmds_T1only.MDS.scores$Treatment==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##plot the nMDS:
-##With ellipses:
-
-ggplot(Phy_nmds_T1only.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Time.Point)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS T1only Treatment")
-
-############################################# BY TIME
-veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
-{
-  theta <- (0:npoints) * 2 * pi/npoints
-  Circle <- cbind(cos(theta), sin(theta))
-  t(center + scale * t(Circle %*% chol(cov)))
-}
-
-#Next, make sure that your variable you are after is a factor:
-str(Phy_nmds_T1only.MDS.scores)
-
-## make 95% ellipses using the following commands: CODE2
-phy_ell <- data.frame()
-for(g in levels(Phy_nmds_T1only.MDS.scores$Code2)){
-  phy_ell <- rbind(phy_ell, cbind(as.data.frame(with(Phy_nmds_T1only.MDS.scores[Phy_nmds_T1only.MDS.scores$Code2==g,],
-                                                   veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2)))))
-                                ,group=g))
-}
-#Check that the command worked - often I run into issues if the variable is not a factor (important to check as above!)
-str(phy_ell)
-
-
-##plot the nMDS:
-##With ellipses:
-
-ggplot(Phy_nmds_T1only.MDS.scores, aes(x = NMDS1, y= NMDS2)) + geom_point(aes(colour = Treatment, shape =Treatment)) +
-  geom_path(data = phy_ell, aes(x = NMDS1, y = NMDS2, colour= group),size = 0.5, linetype = 1) +
-  theme_classic()+
-  ggtitle("NMDS T1only Species and Treatment")
-
-```
 
 #PERMANOVA on physio only
 
-```{r}   
+```{r}    
   
 #ALL THE DATA
 
-phy.dist <- vegdist(PhysioData_noMissing [7:12], method="bray") #make dist matrix
-phy.div <- adonis2(PhysioData_noMissing [7:12] ~ Species*Treatment*Time.Point, data = PhysioData_noMissing [1:6], permutations = 999, method="bray")
+phy.dist <- vegdist(pData.T1TF [8:16], method="bray") #make dist matrix
+phy.div <- adonis2(pData.T1TF [8:16] ~ Species*Treatment*Time.Point, data = pData.T1TF [1:6], permutations = 999, method="bray")
 phy.div #view, everything is significant
 
 ##Check for homogeneity of dispersions (you want this to be insignificant)
-phy.dist.disp <- betadisper(phy.dist, phy.dist$Treatment, type = "centroid")
+phy.dist.disp <- betadisper(phy.dist, pData.T1TF$Species, type = "centroid")
 #par(pty = 's')
-#boxplot(phy.dist.disp) #visualise your dispersion
-#permutest(phy.dist.disp) #this is your PERMDISP test
+boxplot(phy.dist.disp) #visualise your dispersion
+permutest(phy.dist.disp) #this is your PERMDISP test
 
 #this runs but it's only univariate so not helpful. 
-pairwise.adonis(PhysioData_noMissing [7:12], PhysioData_noMissing$Species)
-
-
-#krissy code not running 
-adonis(PhysioData_noMissing [7:12]~ Species + Treatment+ Time.Point+ Species:Treatment:Time.Point, data=PhysioData_noMissing [1:6], contr.unordered = "contr.treatment", by = "margin", distance = "bray", set.seed(30))
-#all significant. 
-
-
+# pairwise.adonis(PhysioData_noMissing [7:12], PhysioData_noMissing$Species)
 
 
 
@@ -5913,28 +5926,43 @@ adonis(PhysioData_noMissing [7:12]~ Species + Treatment+ Time.Point+ Species:Tre
 
 
 ##By SPECIES
-```{r}   
+```{r}    
 #Mcap, Phy_nmds_Mcap
-phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [7:12], method="bray") #make dist matrix
-phy_Mcap.div <- adonis2(Phy_nmds_Mcap [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:6], permutations = 999, method="bray")
+phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [8:16], method="bray") #make dist matrix
+phy_Mcap.div <- adonis2(Phy_nmds_Mcap [8:16] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:7], permutations = 999, method="bray")
 phy_Mcap.div #view, Time is significant
+  ##Check for homogeneity of dispersions (you want this to be insignificant)
+  phy.dist.disp <- betadisper(phy_Mcap.dist, Phy_nmds_Mcap$Treatment, type = "centroid")
+  boxplot(phy.dist.disp) #visualise your dispersion
+  permutest(phy.dist.disp) #this is your PERMDISP test
 
-#Pcomp, Phy_nmds_Pcomp
-phy_Pcomp.dist <- vegdist(Phy_nmds_Pcomp [7:12], method="bray") #make dist matrix
-phy_Pcomp.div <- adonis2(Phy_nmds_Pcomp [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pcomp [1:6], permutations = 999, method="bray")
-phy_Pcomp.div #view, all is significant
-
+#Pcomp, Phy_nmds_Pcomp 
+phy_Pcomp.dist <- vegdist(Phy_nmds_pcomp [8:16], method="bray") #make dist matrix
+phy_Pcomp.div <- adonis2(Phy_nmds_pcomp [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pcomp [1:7], permutations = 999, method="bray")
+phy_Pcomp.div 
+  ##Check for homogeneity of dispersions (you want this to be insignificant)
+  phy.dist.disp <- betadisper(phy_Pcomp.dist, Phy_nmds_pcomp$Treatment, type = "centroid")
+  boxplot(phy.dist.disp) #visualise your dispersion
+  permutest(phy.dist.disp) #this is your PERMDISP test
 
 #Pvar, Phy_nmds_Pvar
-phy_Pvar.dist <- vegdist(Phy_nmds_Pvar [7:12], method="bray") #make dist matrix
-phy_Pvar.div <- adonis2(Phy_nmds_Pvar [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pvar [1:6], permutations = 999, method="bray")
+phy_Pvar.dist <- vegdist(Phy_nmds_pvar [8:16], method="bray") #make dist matrix
+phy_Pvar.div <- adonis2(Phy_nmds_pvar [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pvar [1:7], permutations = 999, method="bray")
 phy_Pvar.div #view, all is significant
-
+    ##Check for homogeneity of dispersions (you want this to be insignificant)
+  phy.dist.disp <- betadisper(phy_Pvar.dist, Phy_nmds_pvar$Treatment, type = "centroid")
+  boxplot(phy.dist.disp) #visualise your dispersion
+  permutest(phy.dist.disp) #this is your PERMDISP test
+  
+  
 #Pacu, Phy_nmds_Pacu
-phy_Pacu.dist <- vegdist(Phy_nmds_Pacu [7:12], method="bray") #make dist matrix
-phy_Pacu.div <- adonis2(Phy_nmds_Pacu [7:12] ~ Treatment*Time.Point, data = Phy_nmds_Pacu [1:6], permutations = 999, method="bray")
+phy_Pacu.dist <- vegdist(Phy_nmds_pacu [8:16], method="bray") #make dist matrix
+phy_Pacu.div <- adonis2(Phy_nmds_pacu [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pacu [1:7], permutations = 999, method="bray")
 phy_Pacu.div #view, all is significant
-
+   ##Check for homogeneity of dispersions (you want this to be insignificant)
+  phy.dist.disp <- betadisper(phy_Pacu.dist, Phy_nmds_pacu$Treatment, type = "centroid")
+  boxplot(phy.dist.disp) #visualise your dispersion
+  permutest(phy.dist.disp) #this is your PERMDISP test
 
 ```
 
@@ -5946,7 +5974,7 @@ phy_Pacu.div #view, all is significant
 ####ITS2
 ## ITS2
 #Analysis (RCunning Script) REL Abundance -  
-```{r} 
+```{r}  
 library(tidyverse)
 library(janitor)
 library(phyloseq)  # source('http://bioconductor.org/biocLite.R'); biocLite('phyloseq')
@@ -6186,16 +6214,16 @@ otu  = otu_table(coralDIV2_rare2)
 
    coralDIV2_rare2<-merge_phyloseq(tax, otu, sd)
    coralDIV2_rare2
-# coralDIV2_rare2.sd <- as(sample_data(coralDIV2_rare2), "data.frame") #create sample data frame to view
+#coralDIV2_rare2.sd <- as(sample_data(coralDIV2_rare2), "data.frame") #create sample data frame to view
 
 ```
 
 # DIV analysis and plots, use rarefied coralDIV2_rare2
-```{r}    
+```{r}     
 #RELA
 DIV_RelA  = transform_sample_counts(coralDIV2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
 data.ra <- as(sample_data(DIV_RelA), "data.frame") #look at samp data
-write.csv(data.ra, "DIV_its2_sampledata.csv")
+#write.csv(data.ra, "DIV_its2_sampledata.csv")
 
 # pull df sections for craig 
 
@@ -6236,6 +6264,24 @@ TopNOTUsMcap = names(sort(taxa_sums(Mcap_DIV_RA), TRUE)[1:50])
 Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_DIV_RA)
 McapBarPlot<-plot_bar(Mcapent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");McapBarPlot
 #ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
+nb.cols <- 52
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcapent50, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+Mcap_its2.melt <- psmelt(Mcap_DIV_RA)
+
+
+
+
+
+
 
 #Mcap C and CD
 #C
@@ -6272,6 +6318,113 @@ PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.P
 #ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
 
 ```
+Make way nicer bar plots
+```{r}
+
+#try glom use raw counts its2.s2
+Mcap_its2.s2<-subset_samples(coralDIV2_rare2, Species=="Montipora_capitata") #use raw counts here
+
+Mcap_its2 <- Mcap_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_its2.s2.melt <- psmelt(Mcap_its2)
+
+Mcap_its2.s2.melt$Code<-paste(Mcap_its2.s2.melt$Treatment, Mcap_its2.s2.melt$Time.Point)
+Mcap_its2.s2.melt$Parent.ID <- factor(Mcap_its2.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+                                                                    "366","368",  "369","374"))
+Mcap_its2.s2.melt$Code <- factor(Mcap_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcap_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+#try glom use raw counts its2.s2
+Pcomp_its2.s2<-subset_samples(coralDIV2_rare2, Species=="Porites_compressa") #use raw counts here
+
+Pcomp_its2 <- Pcomp_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pcomp_its2.s2.melt <- psmelt(Pcomp_its2)
+
+Pcomp_its2.s2.melt$Code<-paste(Pcomp_its2.s2.melt$Treatment, Pcomp_its2.s2.melt$Time.Point)
+Pcomp_its2.s2.melt$Parent.ID <- factor(Pcomp_its2.s2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+Pcomp_its2.s2.melt$Code <- factor(Pcomp_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pcomp.p <- ggplot(Pcomp_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))#+
+ # theme(legend.position = "none")
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+#try glom use raw counts its2.s2
+Pvar_its2.s2<-subset_samples(coralDIV2_rare2, Species=="Pavona_varians") #use raw counts here
+
+Pvar_its2 <- Pvar_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pvar_its2.s2.melt <- psmelt(Pvar_its2)
+
+Pvar_its2.s2.melt$Code<-paste(Pvar_its2.s2.melt$Treatment, Pvar_its2.s2.melt$Time.Point)
+Pvar_its2.s2.melt$Parent.ID <- factor(Pvar_its2.s2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+Pvar_its2.s2.melt$Code <- factor(Pvar_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pvar.p <- ggplot(Pvar_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+Pvar.p +  facet_wrap(~ Code, nrow=2)
+
+
+#try glom use raw counts its2.s2
+Pacu_its2.s2<-subset_samples(coralDIV2_rare2, Species=="Pocillopora_acuta") #use raw counts here
+
+Pacu_its2 <- Pacu_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pacu_its2.s2.melt <- psmelt(Pacu_its2)
+
+Pacu_its2.s2.melt$Code<-paste(Pacu_its2.s2.melt$Treatment, Pacu_its2.s2.melt$Time.Point)
+Pacu_its2.s2.melt$Parent.ID <- factor(Pacu_its2.s2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+Pacu_its2.s2.melt$Code <- factor(Pacu_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pacu.p <- ggplot(Pacu_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+Pacu.p +  facet_wrap(~ Code, nrow=2)
+
+
+```
+
+
+
 
 #Ordination DIV_RelA <- you might not need this section, code below for each species  
 try vegan nmds - its the same, delete when CN says cool
@@ -6370,7 +6523,7 @@ print(DIVrareRel1_Pcomp)
 ```
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species
-```{r}      
+```{r}       
 #DIV_RelA is coralDIV2_rare2 with RELA
 
 DIV_RelA_stats<- DIV_RelA #make a copy
@@ -6421,12 +6574,12 @@ ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 #Split data by species 
 Beta
 Montipora - T1 and TF together, then independent. PERMANOVA
-```{r}    
+```{r}     
 #DIV_RelA_stats.T1F
 #mcap
 mcap.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "montipora")
-mcap.RelRare.T1 <- subset_samples(mcap.RelRareT1F, Time.Point == "T1")
-mcap.RelRare.TF <- subset_samples(mcap.RelRareT1F, Time.Point == "TF")
+mcap.RelRare.T1 <- subset_samples(mcap.RelRare.T1F, Time.Point == "T1")
+mcap.RelRare.TF <- subset_samples(mcap.RelRare.T1F, Time.Point == "TF")
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -6735,7 +6888,7 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 ```
 
 Porites - T1 and TF together, then independent. PERMANOVA
-```{r}   
+```{r}    
 #DIV_RelA_stats.T1F
 #Pcomp
 Pcomp.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "porites")
@@ -7050,7 +7203,7 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 ```
 Pavona - T1 and TF together, then independent. PERMANOVA
-```{r}   
+```{r}    
 #DIV_RelA_stats.T1F
 #Pvar
 Pvar.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "pavona")
@@ -7378,7 +7531,8 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 ```
 
 Pocillopora - T1 and TF together, then independent. PERMANOVA
-```{r}   
+```{r}  
+
 #DIV_RelA_stats.T1F
 #Pacu
 Pacu.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "pocillopora")
@@ -7389,9 +7543,10 @@ Pacu.RelRare.TF <- subset_samples(Pacu.RelRare.T1F, Time.Point == "TF")
 #make bray curtis data matrix -T1 and TF
   bc.Pacu.T1F <- phyloseq::distance(Pacu.RelRare.T1F, method = "bray")
   Pacu.samp.df.T1F <- as(sample_data(Pacu.RelRare.T1F), "data.frame")            #sample df
-  adonis(bc.Pacu.T1F ~ Treatment*Time.Point, data = Pacu.samp.df.T1F)      #adonis test
+  adonis(bc.Pacu.T1F ~ Treatment*Time.Point*Clade, data = Pacu.samp.df.T1F)      #adonis test
 #write.csv(Pacu.samp.df.T1F, "Pacu_its2_samp_df.csv")
-#T1
+
+  #T1
 #make bray curtis data matrix 
   bc.PacuT1 <- phyloseq::distance(Pacu.RelRare.T1, method = "bray")
   Pacu.samp.df.T1 <- as(sample_data(Pacu.RelRare.T1), "data.frame") #sample df

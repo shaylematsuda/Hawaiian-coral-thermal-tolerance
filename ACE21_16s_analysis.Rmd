@@ -30,7 +30,7 @@ library(reshape)
 library(tidyverse)
 library(factoextra)
 library(reshape2)
-library(vegan)
+library(vegan) 
 library(pairwiseAdonis)
 library("scales")
 packageVersion("scales")
@@ -39,13 +39,16 @@ library(colorRamps)
 library(devtools)
 library(phyloseq)
 library(readr)
+library(microbiome)
 ```
 
 
 #Load in data and get into phyloseq
-```{r}
+```{r}  
+
+#load in 3000 rare instead
 #read in sample data
-MetaData16<-read.csv("Data/Meta_16s_new.csv") #run in physio script first
+MetaData16<-read.csv("Data/Meta16s_3k.csv") #run in physio script first
 MetaData16$Parent.ID<-as.factor(as.character(MetaData16$Parent.ID))
 MetaData16$Tank.num<-as.factor(as.character(MetaData16$Tank.num))
 
@@ -54,51 +57,95 @@ sam1 <- as.matrix(sam0[, -1])
 rownames(sam1) <- sam0$sample_name
 sam <- sample_data(data.frame(sam1))
 
-
 #load in OUT:raw_abundanceTable_100.shared
-OTU2<-read.table("Data/TT17_3000_summer_16S-pipeline_outputs/raw_abundanceTable_100_shared.csv", sep=',', header=T)
 
-#from its3
+OTU3k<-read.table("Data/TT17_3000_summer_16S-pipeline_outputs/abundance_table_100_shared.csv", sep=',', header=T)
+
+#from its  
 #otu
-otu5 <- as.matrix(OTU2[, -1])
-rownames(otu5) <- OTU2$sample_name
-otu <- otu_table(otu5, taxa_are_rows = FALSE)
+otu3k1 <- as.matrix(OTU3k[, -1])
+rownames(otu3k1) <- OTU3k$sample_name
+otu <- otu_table(otu3k1, taxa_are_rows = FALSE)
 
 
-#tax
-TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/raw_consensusClassification_100_taxonomy.csv", colClasses = "character")
+#tax table annotations_100.taxonomy.csv
+TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/annotations_100.taxonomy.csv", colClasses = "character")
 tax1 <- as.matrix(TAX[, -1], dimnames = list(TAX$OTU, colnames(TAX[-1])))
 rownames(tax1) <- TAX$OTU
 tax <- tax_table(tax1)
 
-# Read the data into phyloseq
-Bac.seqAll = phyloseq(otu, tax,sam) #THIS WORKS
-Bac.seqAll
 
-save(Bac.seqAll, file = "Data/Bac.seqAll_phyloseq.RData")
+# Read the data into phyloseq
+Bac.seq = phyloseq(otu, tax,sam) #THIS WORKS
+Bac.seq
+Bac.seq.df <- sample_data(Bac.seq)
+
+save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
+
+
+
+
+
+
+
+
+########################################################
+# ## THIS IS FOR INCLUDING ALL SAMPLES YOU NEED FOR phylotype analysis.
+# #read in sample data
+# MetaData16<-read.csv("Data/Meta_16s_new.csv") #run in physio script first
+# MetaData16$Parent.ID<-as.factor(as.character(MetaData16$Parent.ID))
+# MetaData16$Tank.num<-as.factor(as.character(MetaData16$Tank.num))
+# 
+# sam0 <- MetaData16
+# sam1 <- as.matrix(sam0[, -1])
+# rownames(sam1) <- sam0$sample_name
+# sam <- sample_data(data.frame(sam1))
+# 
+# 
+# #load in OUT:raw_abundanceTable_100.shared
+# OTU2<-read.table("Data/TT17_3000_summer_16S-pipeline_outputs/raw_abundanceTable_100_shared.csv", sep=',', header=T)
+# 
+# #from its3
+# #otu
+# otu5 <- as.matrix(OTU2[, -1])
+# rownames(otu5) <- OTU2$sample_name
+# otu <- otu_table(otu5, taxa_are_rows = FALSE)
+# 
+# 
+# #tax
+# TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/raw_consensusClassification_100_taxonomy.csv", colClasses = "character")
+# tax1 <- as.matrix(TAX[, -1], dimnames = list(TAX$OTU, colnames(TAX[-1])))
+# rownames(tax1) <- TAX$OTU
+# tax <- tax_table(tax1)
+# 
+# # Read the data into phyloseq
+# Bac.seqAll = phyloseq(otu, tax,sam) #THIS WORKS
+# Bac.seqAll
+# 
+# save(Bac.seqAll, file = "Data/Bac.seqAll_phyloseq.RData")
 
 ```
-Look at the data
-```{r}
+Look at the data, Bac.seq for 3k
+```{r} 
 ## check out data
-ntaxa(Bac.seqAll)  #num taxa
-nsamples(Bac.seqAll)   #num samples
-sample_names(Bac.seqAll)[1:300] #samp names
+ntaxa(Bac.seq)  #num taxa
+nsamples(Bac.seq)   #num samples
+sample_names(Bac.seq)[1:300] #samp names
  #sampsy<-sample_names(physeq)[1:300]
 #write.csv(sampsy,"sampsy.csv")
 
-# OK Now you need to do the steps in the pipeline.
+# OK Now you need to do the steps in the pipeline. ONLY for >3K dfs
 #1 filter out taxa: get rid of unknown, mitochondria and chloroplast
-Bac.seqAll<-subset_taxa(Bac.seqAll, Family !="Mitochondria")
-Bac.seqAll<-subset_taxa(Bac.seqAll, Order !="Chloroplast")
-Bac.seqAll<-subset_taxa(Bac.seqAll, Domain !="unknown")
-Bac.seqAll<-subset_taxa(Bac.seqAll, Domain !="Archaea")
+# Bac.seq<-subset_taxa(Bac.seq, Family !="Mitochondria")
+# Bac.seq<-subset_taxa(Bac.seq, Order !="Chloroplast")
+# Bac.seq<-subset_taxa(Bac.seq, Domain !="unknown")
+# Bac.seq<-subset_taxa(Bac.seq, Domain !="Archaea")
 
 # now get rid of things not represnted 2x or more
 #Prune singletons (these are reads that are only found once)
-Bac.seqAll.prune <- prune_taxa(taxa_sums(Bac.seqAll) > 2, Bac.seqAll)
-
-  save(Bac.seqAll, file = "Data/Bac.seqAll.prune.RData")
+# Bac.seq.prune <- prune_taxa(taxa_sums(Bac.seq) > 2, Bac.seq)
+# 
+#   save(Bac.seq, file = "Data/Bac.seq.prune.RData")
   
 ```
 
@@ -106,30 +153,30 @@ Bac.seqAll.prune <- prune_taxa(taxa_sums(Bac.seqAll) > 2, Bac.seqAll)
 Load in your data
 ```{r} 
 # Load data (see data_exploration.Rmd)
-load("Data/Bac.seqAll.prune.RData") #use RAW data that has been pruned. 
+load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
-rank_names(Bac.seqAll) #ranks are DIV and clade
+rank_names(Bac.seq) #ranks are DIV and clade
 
 
 #remove field samples
-Bac.s = subset_samples(Bac.seqAll, Type== "sample" )
+Bac.s = subset_samples(Bac.seq, Type== "sample" )
 
-# #Bac.seqAll all not 3k use to check who you lose
+# #Bac.seq  not 3k use to check who you lose
 # # create df of sample data to view 
-# sample.dataAll <- as(sample_data(Bac.seqAll), "data.frame") #create sample data frame to view
-# sample.dataAll$LibrarySize <- sample_sums(Bac.seqAll)
-# #sample.dataAll <- sample.data[order(sample.dataAll$LibrarySize),]
-# #sample.dataAll$Index <- seq(nrow(sample.dataAll))  # check 3k rare
-# ggplot(data = sample.dataAll, aes(x=Index, y=LibrarySize, color = Species)) +
+# sample.data <- as(sample_data(Bac.seq), "data.frame") #create sample data frame to view
+# sample.data$LibrarySize <- sample_sums(Bac.seq)
+# #sample.data <- sample.data[order(sample.data$LibrarySize),]
+# #sample.data$Index <- seq(nrow(sample.data))  # check 3k rare
+# ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = Species)) +
 #   geom_point()
-# write.csv(sample.dataAll, "sampscheck.csv")
+# write.csv(sample.data, "sampscheck.csv")
 
 ## check out data
 ntaxa(Bac.s)  #num taxa
 nsamples(Bac.s)   #num samples
 sample_names(Bac.s)[1:5] #samp names
 rank_names(Bac.s) #ranks are DIV and clade
-sample_variables(Bac.s) #all metadata cats
+sample_variables(Bac.s) # metadata cats
 
 # create df of sample data to view 
 sample.data <- as(sample_data(Bac.s), "data.frame") #create sample data frame to view
@@ -148,24 +195,24 @@ TopNOTUsB = names(sort(taxa_sums(Dups), TRUE)[1:100])
 bac50 = prune_taxa(TopNOTUsB, Dups)
 bacBarPlot<-plot_bar(bac50,  fill="Phylum");bacBarPlot
 #ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
-Bac.s <- subset_samples(Bac.s, realsample_name != "S1753b" )
-Bac.s <- subset_samples(Bac.s, realsample_name != "S208" )
-Bac.s <- subset_samples(Bac.s, realsample_name != "S3476" )
-Bac.s <- subset_samples(Bac.s, realsample_name != "SN35b" )
-Bac.s <- subset_samples(Bac.s, realsample_name != "SN111b" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S1753b" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S208" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "S3476" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "SN35b" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "SN111b" )
 
-Bac.s <- subset_samples(Bac.s, realsample_name != "Field" )
+Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 
 
-# Subsample to 2K
-Bac.s2 <- prune_samples(sample_sums(Bac.s)>=1764, Bac.s) #keep things over 2k
+# Subsample to 2K <- only for phylotypes
+# Bac.s2 <- prune_samples(sample_sums(Bac.s)>=1764, Bac.s) #keep things over 2k
 #Rarefied to 2000 reads
-Bac.r <- rarefy_even_depth(Bac.s2, sample.size = 1764, rngseed = 711) 
+# Bac.r <- rarefy_even_depth(Bac.s2, sample.size = 1764, rngseed = 711) 
 
 
 #### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
 #not
-controlT0_Amb = subset_samples(Bac.r, Time.Point == "T0"&Treatment == "Ambient")  #copy
+controlT0_Amb = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "Ambient")  #copy
 
 #tax table
 tax  = tax_table(controlT0_Amb)
@@ -217,20 +264,44 @@ Controldups
 
 #merg them to the original df:
 
-Bac.r2 = merge_phyloseq(Bac.r,Controldups)
-Bac.r2
-Bac.r2.sd <- as(sample_data(Bac.r2), "data.frame") #create sample data frame to view
-Bac.r2.sd
+Bac.s2 = merge_phyloseq(Bac.s,Controldups)
+Bac.s2
+Bac.s2.sd <- as(sample_data(Bac.s2), "data.frame") #create sample data frame to view
+Bac.s2.sd
 
 ```
-Set up, Bac.r2.sd <- this df is rarefied raw counts
+Set up, Bac.s2
 ```{r}
 #make relative abundance df Bac.s2
-Bac.r.rel  = transform_sample_counts(Bac.r2, function(x) x / sum(x) )  #save as RELA DIVs
-data.Bac.r.rel <- as(sample_data(Bac.r.rel), "data.frame") #look at samp data
+Bac.s.rel  = transform_sample_counts(Bac.s2, function(x) x / sum(x) )  #save as RELA DIVs
+data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 
 #heatmap
   #plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
+
+
+
+# # export into table 
+# taxCN  = tax_table(Bac.s2)
+# taxCN = as(tax_table(Bac.s2), "matrix")
+# taxCN2 = as.data.frame(taxCN)
+# write.csv(taxCN2, "taxCN.csv")
+# 
+# taxCN2$OTU <- rownames(taxCN2) #make row names a col
+# taxCN3<-taxCN2[,c("OTU","Family")] # keep only columns you need
+# rownames(taxCN3) <- c() #remove row namds
+# 
+# 
+# OTUCN = otu_table(Bac.s2)
+# # Extract abundance matrix from the phyloseq object
+# OTU.cn = as(otu_table(OTUCN), "matrix")
+# if(taxa_are_rows(Bac.s2)){OTU.cn <- t(OTU.cn)}
+# OTU.cn2 = as.data.frame(OTU.cn)
+# write.csv(OTU.cn2, "OTU.cn2.csv")
+# 
+# #OK can we fucking merge
+# CNtab<-merge(OTU.cn2,taxCN3)
+
 
 ```
 
@@ -239,15 +310,15 @@ data.Bac.r.rel <- as(sample_data(Bac.r.rel), "data.frame") #look at samp data
 #MCAP
 PHYLUM
 ```{r}
-#try glom use raw counts Bac.r2
-Mcap_Bac.r2<-subset_samples(Bac.r2, Species=="Montipora_capitata")
+#try glom use raw counts Bac.s2
+Mcap_Bac.s2<-subset_samples(Bac.s2, Species=="Montipora_capitata")
 
-Mcap_Bac.r2.phy <- Mcap_Bac.r2 %>% 
+Mcap_Bac.s2.phy <- Mcap_Bac.s2 %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.phy)
+Mcap_Bac.s2.melt <- psmelt(Mcap_Bac.s2.phy)
 
-# sum.ra.mcap <- ddply(Mcap_Bac.r2.melt, c("Phylum", "Time.Point", "Treatment","Parent.ID"), summarise,
+# sum.ra.mcap <- ddply(Mcap_Bac.s2.melt, c("Phylum", "Time.Point", "Treatment","Parent.ID"), summarise,
 #                 N = length(Abundance),
 #                 mean = mean(Abundance),
 #                 sd = sd(Abundance), 
@@ -255,15 +326,15 @@ Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.phy)
 # )
 # sum.ra.mcap
 
-Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
-Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Mcap_Bac.s2.melt$Code<-paste(Mcap_Bac.s2.melt$Treatment, Mcap_Bac.s2.melt$Time.Point)
+Mcap_Bac.s2.melt$Parent.ID <- factor(Mcap_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s2.melt$Code <- factor(Mcap_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -272,12 +343,13 @@ mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phyl
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 
-### by C or CD
+################################## 
+#by C or CD
 # C ONLY
 
-Mcap_Bac.r2.C<-subset_samples(Mcap_Bac.r2.melt, Clade=="C")
+Mcap_Bac.s2.C<-subset_samples(Mcap_Bac.s2.melt, Clade=="C")
 
-mcap.p <- ggplot(Mcap_Bac.r2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -287,9 +359,9 @@ mcap.p <- ggplot(Mcap_Bac.r2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Mcap_Bac.r2.CD<-subset_samples(Mcap_Bac.r2.melt, Clade=="CD")
+Mcap_Bac.s2.CD<-subset_samples(Mcap_Bac.s2.melt, Clade=="CD")
 
-mcap.p <- ggplot(Mcap_Bac.r2.CD.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s2.CD.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -301,23 +373,23 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 CLASS
 ```{r}
-#try glom use raw counts Bac.r2
-Mcap_Bac.r2<-subset_samples(Bac.r2, Species=="Montipora_capitata")
+#try glom use raw counts Bac.s2
+Mcap_Bac.s2<-subset_samples(Bac.s2, Species=="Montipora_capitata")
 
-Mcap_Bac.r2.Cla <- Mcap_Bac.r2 %>% 
+Mcap_Bac.s2.Cla <- Mcap_Bac.s2 %>% 
   tax_glom(taxrank = "Class", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.Cla)
+Mcap_Bac.s2.melt <- psmelt(Mcap_Bac.s2.Cla)
 
-Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
-Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Mcap_Bac.s2.melt$Code<-paste(Mcap_Bac.s2.melt$Treatment, Mcap_Bac.s2.melt$Time.Point)
+Mcap_Bac.s2.melt$Parent.ID <- factor(Mcap_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s2.melt$Code <- factor(Mcap_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 123
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -327,12 +399,13 @@ mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Clas
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 
-### by C or CD
+########## 
+#by C or CD
 # C ONLY
 
-Mcap_Bac.r2.melt.C<-subset(Mcap_Bac.r2.melt, Clade=="C")
+Mcap_Bac.s2.melt.C<-subset(Mcap_Bac.s2.melt, Clade=="C")
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -343,10 +416,10 @@ mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Cl
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Mcap_Bac.r2.melt.CD<-subset(Mcap_Bac.r2.melt, Clade=="CD")
+Mcap_Bac.s2.melt.CD<-subset(Mcap_Bac.s2.melt, Clade=="CD")
 
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -361,21 +434,93 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 Family
 ```{r}
-#try glom use raw counts Bac.r2
-Mcap_Bac.r2.Fam <- Mcap_Bac.r2 %>% 
+library(tidy)
+
+
+#try glom use raw counts Bac.s2
+Mcap_Bac.s2.Fam <- Mcap_Bac.s2 %>% 
   tax_glom(taxrank = "Family", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Mcap_Bac.r2.melt <- psmelt(Mcap_Bac.r2.Fam)
+Mcap_Bac.s2.melt <- psmelt(Mcap_Bac.s2.Fam)
 
-Mcap_Bac.r2.melt$Code<-paste(Mcap_Bac.r2.melt$Treatment, Mcap_Bac.r2.melt$Time.Point)
-Mcap_Bac.r2.melt$Parent.ID <- factor(Mcap_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+
+#before I melt it, do phyloseq to DF command
+
+testFAM<-phyloseq_to_df(Mcap_Bac.s2.Fam, addtax = T, addtot = F, addmaxrank = F,
+  sorting = "abundance")
+
+
+#### try doing tax_glom in one step, then the second one. 
+# Mcap_Bac.s2.FamT <- Mcap_Bac.s2 %>% 
+#   tax_glom(taxrank = "Family", NArm = FALSE)
+
+
+
+Mcap_Bac.s2.FamT<-tax_glom(Mcap_Bac.s2, "Family")
+
+
+
+testFAM2<-phyloseq_to_df(Mcap_Bac.s2.FamT, addtax = T, addtot = F, addmaxrank = F,
+  sorting = "abundance")
+
+
+#Get the dataframe in to a usable format. DF will be converted to long format
+df_Long <- testFAM2 %>%
+  gather(Sample.ID, value, 9:ncol(testFAM2))%>%
+  arrange(Family) %>%
+  transmute(Sample.ID = Sample.ID, Family = str_c(Domain, Phylum, Class, Order, Family, sep = "_"), value = value) %>%
+  #spread(Family, value)
+#pivot_wider(names_from = "Family", values_from = "value")
+
+df_Long3<-aggregate(df_Long$value, by=list(Category=df_Long$Family), FUN=sum)
+
+
+df_Long % > %
+	group_by(Family) % > %
+	summarise(sum_homerun_league = sum(HR))
+
+
+
+
+df_LongPhy <- testFAM2 %>%
+  gather(Sample.ID, value, 9:ncol(testFAM2))%>%
+  arrange(Phylum) %>%
+  transmute(Sample.ID = Sample.ID, Phylum = str_c(Domain, Phylum, sep = "_"), value = value) %>%
+  #spread(Phylum, value)
+pivot_wider(names_from = "Phylum", values_from = "value")
+
+
+#make the dfcreate the code, agg, then convert to long Mcap_Bac.s2
+
+Family.test<-phyloseq_to_df(Mcap_Bac.s2, addtax = T, addtot = F, addmaxrank = F,
+  sorting = "abundance")
+
+Family.test2<-Family.test[-c("Phyulum","Class","Order","Genus","Size")] # keep only columns you need
+
+
+library(dplyr)
+Family.test3 = select(Family.test, -Size) #remove all but family
+Family.test3 = select(Family.test3, -Domain)
+Family.test3 = select(Family.test3, -Phylum)
+Family.test3 = select(Family.test3, -Order)
+Family.test3 = select(Family.test3, -Class)
+Family.test3 = select(Family.test3, -Genus)
+Family.test3 = select(Family.test3, -OTU)
+
+Family.test4<-aggregate(Family.test3, by=Family, FUN=sum)
+
+#fuck this so hard.None of this is working
+
+
+Mcap_Bac.s2.melt$Code<-paste(Mcap_Bac.s2.melt$Treatment, Mcap_Bac.s2.melt$Time.Point)
+Mcap_Bac.s2.melt$Parent.ID <- factor(Mcap_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.r2.melt$Code <- factor(Mcap_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s2.melt$Code <- factor(Mcap_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 123
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -388,9 +533,9 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Mcap_Bac.r2.melt.C<-subset(Mcap_Bac.r2.melt, Clade=="C")
+Mcap_Bac.s2.melt.C<-subset(Mcap_Bac.s2.melt, Clade=="C")
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -401,10 +546,10 @@ mcap.p <- ggplot(Mcap_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Fa
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Mcap_Bac.r2.melt.CD<-subset(Mcap_Bac.r2.melt, Clade=="CD")
+Mcap_Bac.s2.melt.CD<-subset(Mcap_Bac.s2.melt, Clade=="CD")
 
 
-mcap.p <- ggplot(Mcap_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -420,23 +565,23 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 #Pcomp
 PHYLUM
 ```{r} 
-#try glom use raw counts Bac.r2
-Pcomp_Bac.r2<-subset_samples(Bac.r2, Species=="Porites_compressa")
+#try glom use raw counts Bac.s2
+Pcomp_Bac.s2<-subset_samples(Bac.s2, Species=="Porites_compressa")
 
-Pcomp_Bac.r2.phy <- Pcomp_Bac.r2 %>% 
+Pcomp_Bac.s2.phy <- Pcomp_Bac.s2 %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.phy)
+Pcomp_Bac.s2.melt <- psmelt(Pcomp_Bac.s2.phy)
 
-Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
-Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+Pcomp_Bac.s2.melt$Code<-paste(Pcomp_Bac.s2.melt$Treatment, Pcomp_Bac.s2.melt$Time.Point)
+Pcomp_Bac.s2.melt$Parent.ID <- factor(Pcomp_Bac.s2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
 
-Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pcomp_Bac.s2.melt$Code <- factor(Pcomp_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -451,9 +596,9 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ### by C15cj or C15n
 # C15cj ONLY
 
-Pcomp_Bac.r2.C15cj<-subset(Pcomp_Bac.r2.melt, Clade=="C15cj")
+Pcomp_Bac.s2.C15cj<-subset(Pcomp_Bac.s2.melt, Clade=="C15cj")
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -464,9 +609,9 @@ Pcomp.p <- ggplot(Pcomp_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = P
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 # C15n ONLY
-Pcomp_Bac.r2.C15n<-subset(Pcomp_Bac.r2.melt, Clade=="C15n")
+Pcomp_Bac.s2.C15n<-subset(Pcomp_Bac.s2.melt, Clade=="C15n")
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.C15n, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.C15n, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -479,22 +624,22 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ```
 CLASS
 ```{r}
-#try glom use raw counts Bac.r2
+#try glom use raw counts Bac.s2
 
-Pcomp_Bac.r2.Cla <- Pcomp_Bac.r2 %>% 
+Pcomp_Bac.s2.Cla <- Pcomp_Bac.s2 %>% 
   tax_glom(taxrank = "Class", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.Cla)
+Pcomp_Bac.s2.melt <- psmelt(Pcomp_Bac.s2.Cla)
 
-Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
-Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Pcomp_Bac.s2.melt$Code<-paste(Pcomp_Bac.s2.melt$Treatment, Pcomp_Bac.s2.melt$Time.Point)
+Pcomp_Bac.s2.melt$Parent.ID <- factor(Pcomp_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pcomp_Bac.s2.melt$Code <- factor(Pcomp_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 123
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -507,9 +652,9 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Pcomp_Bac.r2.melt.C<-subset(Pcomp_Bac.r2.melt, Clade=="C")
+Pcomp_Bac.s2.melt.C<-subset(Pcomp_Bac.s2.melt, Clade=="C")
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -520,10 +665,10 @@ Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = 
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Pcomp_Bac.r2.melt.CD<-subset(Pcomp_Bac.r2.melt, Clade=="CD")
+Pcomp_Bac.s2.melt.CD<-subset(Pcomp_Bac.s2.melt, Clade=="CD")
 
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -538,21 +683,21 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ```
 Family
 ```{r}
-#try glom use raw counts Bac.r2
-Pcomp_Bac.r2.Fam <- Pcomp_Bac.r2 %>% 
+#try glom use raw counts Bac.s2
+Pcomp_Bac.s2.Fam <- Pcomp_Bac.s2 %>% 
   tax_glom(taxrank = "Family", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pcomp_Bac.r2.melt <- psmelt(Pcomp_Bac.r2.Fam)
+Pcomp_Bac.s2.melt <- psmelt(Pcomp_Bac.s2.Fam)
 
-Pcomp_Bac.r2.melt$Code<-paste(Pcomp_Bac.r2.melt$Treatment, Pcomp_Bac.r2.melt$Time.Point)
-Pcomp_Bac.r2.melt$Parent.ID <- factor(Pcomp_Bac.r2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Pcomp_Bac.s2.melt$Code<-paste(Pcomp_Bac.s2.melt$Treatment, Pcomp_Bac.s2.melt$Time.Point)
+Pcomp_Bac.s2.melt$Parent.ID <- factor(Pcomp_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Pcomp_Bac.r2.melt$Code <- factor(Pcomp_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pcomp_Bac.s2.melt$Code <- factor(Pcomp_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 123
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -565,9 +710,9 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Pcomp_Bac.r2.melt.C<-subset(Pcomp_Bac.r2.melt, Clade=="C")
+Pcomp_Bac.s2.melt.C<-subset(Pcomp_Bac.s2.melt, Clade=="C")
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -578,10 +723,10 @@ Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.C, aes(x = Parent.ID, y = Abundance, fill = 
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Pcomp_Bac.r2.melt.CD<-subset(Pcomp_Bac.r2.melt, Clade=="CD")
+Pcomp_Bac.s2.melt.CD<-subset(Pcomp_Bac.s2.melt, Clade=="CD")
 
 
-Pcomp.p <- ggplot(Pcomp_Bac.r2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -597,23 +742,23 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 #Pvar
 PHYLUM
 ```{r}
-#try glom use raw counts Bac.r2
-Pvar_Bac.r2<-subset_samples(Bac.r2, Species=="Pavona_varians")
+#try glom use raw counts Bac.s2
+Pvar_Bac.s2<-subset_samples(Bac.s2, Species=="Pavona_varians")
 
-Pvar_Bac.r2.phy <- Pvar_Bac.r2 %>% 
+Pvar_Bac.s2.phy <- Pvar_Bac.s2 %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pvar_Bac.r2.melt <- psmelt(Pvar_Bac.r2.phy)
+Pvar_Bac.s2.melt <- psmelt(Pvar_Bac.s2.phy)
 
-Pvar_Bac.r2.melt$Code<-paste(Pvar_Bac.r2.melt$Treatment, Pvar_Bac.r2.melt$Time.Point)
-Pvar_Bac.r2.melt$Parent.ID <- factor(Pvar_Bac.r2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+Pvar_Bac.s2.melt$Code<-paste(Pvar_Bac.s2.melt$Treatment, Pvar_Bac.s2.melt$Time.Point)
+Pvar_Bac.s2.melt$Parent.ID <- factor(Pvar_Bac.s2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
 
-Pvar_Bac.r2.melt$Code <- factor(Pvar_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pvar_Bac.s2.melt$Code <- factor(Pvar_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pvar.p <- ggplot(Pvar_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -628,9 +773,9 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 ### by C1 or C127
 # C15cj ONLY
 
-Pvar_Bac.r2.C15cj<-subset(Pvar_Bac.r2.melt, Clade=="C1")
+Pvar_Bac.s2.C15cj<-subset(Pvar_Bac.s2.melt, Clade=="C1")
 
-Pvar.p <- ggplot(Pvar_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -641,9 +786,9 @@ Pvar.p <- ggplot(Pvar_Bac.r2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phy
 Pvar.p +  facet_wrap(~ Code, nrow=2)
 
 # C15n ONLY
-Pvar_Bac.r2.C27<-subset(Pvar_Bac.r2.melt, Clade=="C27")
+Pvar_Bac.s2.C27<-subset(Pvar_Bac.s2.melt, Clade=="C27")
 
-Pvar.p <- ggplot(Pvar_Bac.r2.C27, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s2.C27, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -657,23 +802,23 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 #Pacu
 PHYLUM
 ```{r}
-#try glom use raw counts Bac.r2
-Pacu_Bac.r2<-subset_samples(Bac.r2, Species=="Pocillopora_acuta")
+#try glom use raw counts Bac.s2
+Pacu_Bac.s2<-subset_samples(Bac.s2, Species=="Pocillopora_acuta")
 
-Pacu_Bac.r2.phy <- Pacu_Bac.r2 %>% 
+Pacu_Bac.s2.phy <- Pacu_Bac.s2 %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pacu_Bac.r2.melt <- psmelt(Pacu_Bac.r2.phy)
+Pacu_Bac.s2.melt <- psmelt(Pacu_Bac.s2.phy)
 
-Pacu_Bac.r2.melt$Code<-paste(Pacu_Bac.r2.melt$Treatment, Pacu_Bac.r2.melt$Time.Point)
-Pacu_Bac.r2.melt$Parent.ID <- factor(Pacu_Bac.r2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+Pacu_Bac.s2.melt$Code<-paste(Pacu_Bac.s2.melt$Treatment, Pacu_Bac.s2.melt$Time.Point)
+Pacu_Bac.s2.melt$Parent.ID <- factor(Pacu_Bac.s2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
 
-Pacu_Bac.r2.melt$Code <- factor(Pacu_Bac.r2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pacu_Bac.s2.melt$Code <- factor(Pacu_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pacu.p <- ggplot(Pacu_Bac.r2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -688,9 +833,9 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 ### by CCC or C42
 # CCC ONLY
 
-Pacu_Bac.r2.CCC<-subset(Pacu_Bac.r2.melt, Clade=="CCC")
+Pacu_Bac.s2.CCC<-subset(Pacu_Bac.s2.melt, Clade=="CCC")
 
-Pacu.p <- ggplot(Pacu_Bac.r2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -701,9 +846,9 @@ Pacu.p <- ggplot(Pacu_Bac.r2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylu
 Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 # C42 ONLY
-Pacu_Bac.r2.C42<-subset(Pacu_Bac.r2.melt, Clade=="C42")
+Pacu_Bac.s2.C42<-subset(Pacu_Bac.s2.melt, Clade=="C42")
 
-Pacu.p <- ggplot(Pacu_Bac.r2.C42, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s2.C42, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -717,7 +862,7 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 
 #16s - bar plots df Bac.s2RelA YOU Don't need now
-```{r}  
+```{r}   
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
 Bac.r.rel.ord <- ordinate(Bac.r.rel, "NMDS", "bray", set.seed(30))
 Bac.RelA.ord_plot = plot_ordination(Bac.r.rel, Bac.r.rel.ord, type="samples", shape="Treatment",color="Species", title="species")
@@ -896,7 +1041,7 @@ orditorp(df16s.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r}         
+```{r}          
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
@@ -957,8 +1102,8 @@ print(DIVrareRel1_Pcomp)
 ```
 
 #Beta Diversity: df rarefied and relative abudnaces  
-All Species Bac.r.rel 
-```{r}       
+All Species Bac.r.rel .  relative abundances 
+```{r}        
 #Bac.r.rel 
 
 Bac.r.rel_stats<- Bac.r.rel #make a copy
@@ -984,7 +1129,11 @@ bc.all <- phyloseq::distance(Bac_RelA_stats.T1F, method = "bray")
 adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df)
     adonis(bc.all ~ Species*Treatment*Time.Point*Clade, data = samp.df)
 
+adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df, contr.unordered = "contr.treatement")
 
+    
+    
+    
 # Homogeneity of dispersion test
 betaAll <- betadisper(bc.all, samp.df$Species)
 permutest(betaAll, pairwise = T) 
@@ -1350,7 +1499,7 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 ```
 Porites - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
-```{r}    
+```{r}     
 # df Bac_RelA_stats.T1F
 #Pcomp
 Pcomp.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Porites_compressa")
@@ -1442,7 +1591,7 @@ Pcomp.bac.TF.C15n <- subset_samples(Pcomp.bac.TF, Clade == "C15n")
     permutest(beta.Pcomp.TF.C15n, pairwise = T) 
 ``` 
 Pcomp NMDS
-```{r}
+```{r} 
 ## create palette for parent.ID and treatments
 Pcomp.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
@@ -1674,14 +1823,14 @@ CHANGE PHYLOTYPES
 #Pvar
 Pvar.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pavona_varians")
 Pvar.bac.T1F = prune_taxa(taxa_sums(Pvar.bac.T1F) > 0, Pvar.bac.T1F) #this removes any OTU with 0s
-
+ 
 #make dfs you need 
 Pvar.bac.T1 <- subset_samples(Pvar.bac.T1F, Time.Point == "T1")
   Pvar.bac.T1 = prune_taxa(taxa_sums(Pvar.bac.T1) > 0, Pvar.bac.T1) #this removes any OTU with 0s
 
 Pvar.bac.TF <- subset_samples(Pvar.bac.T1F, Time.Point == "TF")
   Pvar.bac.TF = prune_taxa(taxa_sums(Pvar.bac.TF) > 0, Pvar.bac.TF) #this removes any OTU with 0s
-
+ 
 #T1TF
 #make bray curtis data matrix -T1 and TF
   bc.Pvar.T1F <- phyloseq::distance(Pvar.bac.T1F, method = "bray")
@@ -1761,7 +1910,7 @@ Pvar.bac.TF.C1 <- subset_samples(Pvar.bac.TF, Clade == "C1")
     permutest(beta.Pvar.TF.C1, pairwise = T) 
 ``` 
 Pvar NMDS
-```{r}
+```{r} 
 ## create palette for parent.ID and treatments
 Pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
                        "Ambient" = "dodgerblue", "High" = "darkred",
@@ -3384,6 +3533,587 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 
 
+
+
+
+
+
+
+
+#Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
+Use rarefied data, not relative abunances   
+df:Bac.r2 and Bac.r2.sd sample data
+```{r}  
+#trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
+Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+
+Bac.r2.alpha<-Bac.r2 #make a copy of df
+
+Bac.r2.alpha<-subset_samples(Bac.r2.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
+Bac.r2.alpha2 <- prune_taxa(taxa_sums(Bac.r2.alpha) > 0, Bac.r2.alpha) #prune taxa 0s
+Bac.r2.alpha2.sd <- as(sample_data(Bac.r2.alpha2), "data.frame") #create sample data frame to view
+
+
+#####try microbiome package for evenness and alpha diversity. use raw counts
+library(microbiome)  
+library(knitr)
+
+erich.tab <-microbiome::alpha(Bac.r2.alpha2, index = "all") # pull out: observed, diversity_shannon, evenness_pielou
+
+erich.tab2<-erich.tab[-c(2:4,6:8,10:22)] #keep the cols you need
+
+erich.tab2
+ erich.tab2$Treatment <- Bac.r2.alpha2.sd$Treatment       #add back in meta
+  erich.tab2$Time.Point <- Bac.r2.alpha2.sd$Time.Point
+  erich.tab2$Parent.ID <- Bac.r2.alpha2.sd$Parent.ID
+  erich.tab2$ID <- Bac.r2.alpha2.sd$Frag.ID
+  erich.tab2$Species <- Bac.r2.alpha2.sd$Species
+  erich.tab2$Time.Point = factor(erich.tab2$Time.Point, levels = c("T0", "T1", "TF"))
+
+
+#all species - to show significance and to subset
+
+#ANOVA
+#shannon
+  aov.shannon.species = aov(diversity_shannon ~ Species, data=erich.tab2)
+  summary(aov.shannon.species) # sig diff between species
+  TukeyHSD(aov.shannon.species)
+#observed  
+  aov.observed.species = aov(observed ~ Species, data=erich.tab2)
+  summary(aov.observed.species) # sig diff between species
+  TukeyHSD(aov.observed.species)
+#evenness
+  aov.evenness.species = aov(evenness_pielou ~ Species, data=erich.tab2)
+  summary(aov.evenness.species) # sig diff between species
+  TukeyHSD(aov.evenness.species)  
+#Plot
+  boxplot(diversity_shannon ~ Species, data=erich.tab2, ylab="Shannon's diversity") 
+  boxplot(observed ~ Species, data=erich.tab2, ylab="Observed") 
+  boxplot(evenness_pielou ~ Species, data=erich.tab2, ylab="Evenness_pielou") 
+
+#violin plots
+  # create a list of pairwise comaprisons
+al.species <- levels(erich.tab2$Species) # get the variables
+
+# make a pairwise list that we want to compare.
+  al.species.pairs <- combn(seq_along(al.species), 2, simplify = FALSE, FUN = function(i)al.species[i])
+  print(al.species.pairs)
+
+#observed
+p1 <- ggviolin(erich.tab2, x = "Species", y = "observed",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+    
+#Shannon
+p1 <- ggviolin(erich.tab2, x = "Species", y = "diversity_shannon",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+  
+#Evenness
+p1 <- ggviolin(erich.tab2, x = "Species", y = "evenness_pielou",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+
+
+#by species:
+erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
+erich.tab2.pcomp<-subset(erich.tab2, Species=="Porites_compressa")
+erich.tab2.pvar<-subset(erich.tab2, Species=="Pavona_varians")
+erich.tab2.pacu<-subset(erich.tab2, Species=="Pocillopora_acuta")
+
+```
+OLDER alpha, delete when ready
+```{r}
+#### older alpha
+
+#########OK you are removing T0 here and then you need to make a new samp data frame and then do below. 
+
+
+
+
+erich <- estimate_richness(Bac.r2.alpha2, measures = c("Observed", "Shannon")) #select which estimates and estimate
+  erich$Treatment <- Bac.r2.sd$Treatment       #add back in meta
+  erich$Time.Point <- Bac.r2.sd$Time.Point
+  erich$Parent.ID <- Bac.r2.sd$Parent.ID
+  erich$ID <- Bac.r2.sd$ID
+  erich$Species <- Bac.r2.sd$Species
+  erich$Time.Point = factor(erich$Time.Point, levels = c("T0", "T1", "TF"))
+
+  
+  
+ 
+#stats ALL THE DATA
+ library(ggpubr)
+  #look at data
+  
+#observed
+# hist(erich$Observed) 
+# ggqqplot(erich$Observed)
+# erich$Observed_log<-log10(erich$Observed)
+# hist(erich$Observed_log) 
+
+## subset by coral species for OBSERVED
+erich.mcap<-subset(erich, Species=="Montipora_capitata")
+  hist(erich.mcap$Observed) 
+  # hist(erich.mcap$Observed_log) 
+
+erich.pcomp<-subset(erich, Species=="Porites_compressa")
+  hist(erich.pcomp$Observed) #meh
+  #   hist(erich.pcomp$Observed_log) #Better 
+  # ggqqplot(erich.pcomp$Observed_log) 
+ 
+erich.pvar<-subset(erich, Species=="Pavona_varians")
+ hist(erich.pvar$Observed) #
+ # hist(erich.pvar$Observed_log) #better
+ #  ggqqplot(erich.pvar$Observed_log) #
+
+erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
+ hist(erich.pacu$Observed) 
+  hist(erich.pacu$Observed_log) 
+  ggqqplot(erich.pacu$Observed_log) 
+
+  
+## subset for Shannon
+#shannon
+hist(erich$Shannon)
+ggqqplot(erich$Shannon)
+# erich$Shannon_log<-log10(erich$Shannon)
+# hist(erich$Shannon_log)
+# ggqqplot(erich$Shannon_log)
+# erich$Shannon_sq<-sqrt(erich$Shannon)
+# hist(erich$Shannon_sq)
+# ggqqplot(erich$Shannon_sq)
+
+
+erich.mcap<-subset(erich, Species=="Montipora_capitata")
+  hist(erich.mcap$Shannon) # 
+  ggqqplot(erich.mcap$Shannon) #
+  #   hist(erich.mcap$Shannon_log) # 
+  # ggqqplot(erich.mcap$Shannon) #
+ 
+erich.pcomp<-subset(erich, Species=="Porites_compressa")
+  hist(erich.pcomp$Shannon) # normal 
+  ggqqplot(erich.pcomp$Shannon) 
+  # hist(erich.pcomp$Shannon_log) # normal 
+  # ggqqplot(erich.pcomp$Shannon) 
+
+erich.pvar<-subset(erich, Species=="Pavona_varians")
+ hist(erich.pvar$Shannon) #not normal 
+  ggqqplot(erich.pvar$Shannon) #
+  
+erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
+ hist(erich.pacu$Shannon) #not awfuk 
+  ggqqplot(erich.pacu$Shannon) #not bad
+  
+
+### ALL SPECIES
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.species = aov(Shannon ~ Species, data=erich)
+
+#Call for the summary of that ANOVA, which will include P-values
+  summary(aov.shannon.species) # sig diff between species
+  TukeyHSD(aov.shannon.species)
+
+#Plot
+  boxplot(Shannon ~ Species, data=erich, ylab="Shannon's diversity") 
+
+  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.species = aov(Observed ~ Species*Treatment*Time.Point, data=erich)
+  #aov.observed.species = aov(Observed ~ Species, data=erich)
+
+#Call for the summary of that ANOVA, which will include P-values
+  summary(aov.observed.species) # sig diff between species
+  TukeyHSD(aov.observed.species)
+
+#Plot
+  boxplot(Observed ~ Species, data=erich, ylab="observed's diversity") 
+  
+#### LHK paper code
+  
+alphaplot <- plot_richness(Bac.r2.alpha, x="Species", measures=c("Observed","Shannon", "Simpson"), color="Time.Point") + 
+  labs(x="Genet") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  theme(strip.text.x = element_text(size=10, face="bold"),
+        strip.background = element_rect(fill="#FFFFFF"))
+
+
+alphaplot
+
+
+#stats
+erich <- estimate_richness(Bac.r2.alpha, measures=c("Observed","Shannon", "Simpson"))
+#make dataframe
+SampleID <- row.names(erich) 
+# makes a new dataframe with the specified columnes
+alpha <- data.frame(SampleID, erich) 
+s <- data.frame(sample_data(Bac.r2.alpha)) 
+# Change first column title to SampleID to match distances dataframe
+colnames(s)[1] <- "SampleID" 
+# merges metadata df and distances df
+alphaGC <- merge(alpha, s, by = "SampleID") 
+
+```
+
+### MCAP alpha, df: erich.tab2.mcap
+```{r} 
+#ANOVA
+erich.tab2.mcap$treat.time<-paste(erich.tab2.mcap$Treatment,erich.tab2.mcap$Time.Point)
+erich.tab2.mcap$treat.time<-as.factor(erich.tab2.mcap$treat.time)
+
+#shannon
+  aov.shannon.treat.time = aov(diversity_shannon ~ treat.time, data=erich.tab2.mcap)
+  summary(aov.shannon.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.shannon.treat.time)
+#observed  
+  aov.observed.treat.time = aov(observed ~ treat.time, data=erich.tab2.mcap)
+  summary(aov.observed.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.observed.treat.time)
+#evenness
+  aov.evenness.treat.time = aov(evenness_pielou ~ treat.time, data=erich.tab2.mcap)
+  summary(aov.evenness.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.evenness.treat.time)  
+#Plot
+  boxplot(diversity_shannon ~ treat.time, data=erich.tab2.mcap, ylab="Shannon's diversity") 
+  boxplot(observed ~ treat.time, data=erich.tab2.mcap, ylab="Observed") 
+  boxplot(evenness_pielou ~ treat.time, data=erich.tab2.mcap, ylab="Evenness_pielou") 
+
+#violin plots
+  # create a list of pairwise comaprisons
+al.treat.time <- levels(erich.tab2.mcap$treat.time) # get the variables
+
+# make a pairwise list that we want to compare.
+  al.treat.time.pairs <- combn(seq_along(al.treat.time), 2, simplify = FALSE, FUN = function(i)al.treat.time[i])
+  print(al.treat.time.pairs)
+
+#observed
+p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "observed",
+   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+    
+#Shannon
+p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "diversity_shannon",
+   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+  
+#Evenness
+p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "evenness_pielou",
+   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+
+
+
+
+
+
+#OLD
+
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesMcap = aov(Shannon ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.shannon.speciesMcap) # sig diff between species
+  TukeyHSD(aov.shannon.speciesMcap)
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.mcap, ylab="Shannon's diversity") 
+
+  
+  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesMcap = aov(Observed ~ Treatment*Time.Point, data=erich.mcap)
+  summary(aov.observed.speciesMcap) # sig diff between species
+  TukeyHSD(aov.observed.speciesMcap)
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.mcap, ylab="observed's diversity") 
+```
+#### Do by C and CD
+```{r}
+#mcap  erich.mcap
+
+
+  # by parent ID set clade dom
+  erich.mcap$Clade[erich.mcap$Parent.ID==363]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==364]<-"CD"
+  erich.mcap$Clade[erich.mcap$Parent.ID==365]<-"CD"
+  erich.mcap$Clade[erich.mcap$Parent.ID==366]<-"CD"
+  erich.mcap$Clade[erich.mcap$Parent.ID==367]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==368]<-"CD"
+  erich.mcap$Clade[erich.mcap$Parent.ID==369]<-"CD"
+  erich.mcap$Clade[erich.mcap$Parent.ID==370]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==371]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==372]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==373]<-"C"
+  erich.mcap$Clade[erich.mcap$Parent.ID==374]<-"CD"
+  erich.mcap$Clade<-as.factor(erich.mcap$Clade) #change to factor
+
+## let look at C vs CD
+  #Run the ANOVA and save it as an object
+  aov.shannon.speciesMcap_CCD = aov(Shannon ~ Clade*Treatment*Time.Point, data=erich.mcap)
+  summary(aov.shannon.speciesMcap_CCD) # sig diff between species
+  TukeyHSD(aov.shannon.speciesMcap_CCD)
+
+#Plot
+  boxplot(Shannon ~ Clade*Treatment*Time.Point, data=erich.mcap, ylab="Shannon's diversity") 
+
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesMcap_CCD = aov(Observed ~ Clade*Treatment*Time.Point, data=erich.mcap)
+  summary(aov.observed.speciesMcap_CCD) # sig diff between species
+  TukeyHSD(aov.observed.speciesMcap_CCD)
+#Plot
+  boxplot(Observed ~ Clade*Treatment*Time.Point, data=erich.mcap, ylab="observed's diversity") 
+  
+``` 
+# Pcomp alpha
+```{r} 
+#ANOVA
+erich.tab2.pcomp$treat.time<-paste(erich.tab2.pcomp$Treatment,erich.tab2.pcomp$Time.Point)
+erich.tab2.pcomp$treat.time<-as.factor(erich.tab2.pcomp$treat.time)
+
+#shannon
+  aov.shannon.treat.time = aov(diversity_shannon ~ treat.time, data=erich.tab2.pcomp)
+  summary(aov.shannon.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.shannon.treat.time)
+#observed  
+  aov.observed.treat.time = aov(observed ~ treat.time, data=erich.tab2.pcomp)
+  summary(aov.observed.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.observed.treat.time)
+#evenness
+  aov.evenness.treat.time = aov(evenness_pielou ~ treat.time, data=erich.tab2.pcomp)
+  summary(aov.evenness.treat.time) # sig diff between treat.time
+  TukeyHSD(aov.evenness.treat.time)  
+#Plot
+  boxplot(diversity_shannon ~ treat.time, data=erich.tab2.pcomp, ylab="Shannon's diversity") 
+  boxplot(observed ~ treat.time, data=erich.tab2.pcomp, ylab="Observed") 
+  boxplot(evenness_pielou ~ treat.time, data=erich.tab2.pcomp, ylab="Evenness_pielou") 
+
+#violin plots
+  # create a list of pairwise comaprisons
+al.treat.time <- levels(erich.tab2.pcomp$treat.time) # get the variables
+
+# make a pairwise list that we want to compare.
+  al.treat.time.pairs <- combn(seq_along(al.treat.time), 2, simplify = FALSE, FUN = function(i)al.treat.time[i])
+  print(al.treat.time.pairs)
+
+#observed
+p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "observed",
+   add = "boxplot", fill = "treat.time", palette = c(Pcomp.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+    
+#Shannon
+p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "diversity_shannon",
+   add = "boxplot", fill = "treat.time", palette = c(pcomp.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+  
+#Evenness
+p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "evenness_pielou",
+   add = "boxplot", fill = "treat.time", palette = c(pcomp.Parent.colors)) 
+  print(p1)
+p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
+  print(p1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#old
+#Shannon 
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPcomp = aov(Shannon ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.shannon.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPcomp)
+  
+ 
+ 
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pcomp, ylab="Shannon's diversity") 
+
+#Pcomp  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPcomp = aov(Observed ~ Treatment*Time.Point, data=erich.pcomp)
+  summary(aov.observed.speciesPcomp) # sig diff between species
+  TukeyHSD(aov.observed.speciesPcomp)
+  
+
+
+  
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.pcomp, ylab="observed's diversity") 
+
+
+  
+``` 
+# Pvar
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPvar = aov(Shannon ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.shannon.speciesPvar) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPvar)
+
+  
+
+#Plot
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pvar, ylab="Shannon's diversity") 
+  
+ 
+  
+  
+  
+  
+  
+  
+
+#Pvar  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPvar = aov(Observed ~ Treatment*Time.Point, data=erich.pvar)
+  summary(aov.observed.speciesPvar) # sig diff between species
+  TukeyHSD(aov.observed.speciesPvar)
+
+
+  
+#Plot
+  boxplot(log(Observed) ~ Treatment*Time.Point, data=erich.pvar, ylab="observed's diversity") 
+  
+  
+``` 
+
+# Pacu
+```{r}
+#Shannon
+#Run the ANOVA and save it as an object
+  aov.shannon.speciesPacu = aov(Shannon ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.shannon.speciesPacu) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPacu)
+
+
+#Plot
+  aov.shannon.speciesPacu$Time.Point = factor(aov.shannon.speciesPacu$Time.Point, levels = c("T0", "T1", "TF"))
+
+  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pacu, ylab="Shannon's diversity") 
+  
+ 
+  
+  
+  
+  
+  
+  
+
+#Pvar  
+#Observed
+#Run the ANOVA and save it as an object
+  aov.observed.speciesPacu = aov(Observed ~ Treatment*Time.Point, data=erich.pacu)
+  summary(aov.observed.speciesPacu) # sig diff between species
+  TukeyHSD(aov.observed.speciesPacu)
+
+
+  
+#Plot
+  boxplot(Observed ~ Treatment*Time.Point, data=erich.pacu, ylab="observed's diversity") 
+
+# Just T1
+  erich.pacuT1<-subset(erich.pacu, Time.Point=="T1")
+  hist(log10(erich.pacuT1$Observed))
+  aov.observed.speciesPacuT1 = aov(log10(Observed) ~ Treatment, data=erich.pacuT1)
+  summary(aov.observed.speciesPacuT1) # sig diff between species
+  TukeyHSD(aov.observed.speciesPacuT1)
+  
+  hist((erich.pacuT1$Shannon))
+  aov.shannon.speciesPacuT1 = aov(log10(Shannon) ~ Treatment, data=erich.pacuT1)
+  summary(aov.shannon.speciesPacuT1) # sig diff between species
+  TukeyHSD(aov.shannon.speciesPacuT1)
+  
+  
+``` 
+ 
+
+
+
+
+
+ 
+```{r}
+#for non normal Kruskal wallis rank sum  
+  kruskal.test(x ~ AgeGroup, data=meta)
+
+  
+#testing
+  
+  coral <- get_variable(coralDIV2_rare.alpha2, "host_genus") %in% c("montipora",  "pocillopora")
+sample_data(coralDIV2_rare.alpha2)$human <- factor(coral)
+
+ #estimate_richness(coralDIV2_rare, "coral","host_genus", measures = c("Observed", "Shannon")) #select which estimates and estimate CANNOT GET TO WORK with X
+  
+## from tutorial can't get it to wokr in my code.   
+  GP <- prune_taxa(taxa_sums(GlobalPatterns) > 0, GlobalPatterns)
+
+human <- get_variable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+sample_data(GP)$human <- factor(human)
+
+alpha_meas = c("Observed", "Shannon")
+(p <- plot_richness(GP, "human", "SampleType", measures=alpha_meas))
+
+
+
+
+
+
+##
+## make bar plot of rank abundance of all DIVs
+par(mar = c(10, 4, 4, 2) + 0.1) # make more room on bottom margin
+N <- 50
+barplot(sort(taxa_sums(coralDIV2_rare.alpha2), TRUE)[1:N]/nsamples(coralDIV2_rare.alpha2), las=2)
+
+sample_variables(coralDIV2_rare.alpha2) #check sample variables
+
+#plot_bar(coralDIV2_rare.alpha2, "Species", fill="DIV", facet_grid=~DIV)
+
+
+#make network - not helpful for ITS2 here
+
+ig <- make_network(coralDIV2_rare.alpha2, max.dist=0.3)
+plot_network(ig, coralDIV2_rare.alpha2, color="Parent.ID", shape="Species", line_weight=0.4, label=NULL)
+
+
+
+
+
+
+```
 
 
 
