@@ -42,6 +42,7 @@ library(devtools)
 library(phyloseq)
 library(readr)
 library(microbiome)
+library(vegan)
 ```
 
 
@@ -126,7 +127,7 @@ save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 # 
 # save(Bac.seqAll, file = "Data/Bac.seqAll_phyloseq.RData")
 
-```
+```  
 Look at the data, Bac.seq for 3k
 ```{r}  
 ## check out data
@@ -153,7 +154,7 @@ sample_names(Bac.seq)[1:300] #samp names
 
 #16S
 Load in your data
-```{r} 
+```{r}  
 # Load data (see data_exploration.Rmd)
 #load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
@@ -213,69 +214,69 @@ Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 
 
 #### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
-#not
-controlT0_Amb = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "Ambient")  #copy
-
-#tax table
-tax  = tax_table(controlT0_Amb)
-
-  # sample data
-  sd = sample_data(controlT0_Amb)
-  rownames(sd) <- paste0(rownames(sd), "_dup")
-  # otu_table
-  OTU = otu_table(controlT0_Amb)
-  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
-  # Avoid conflict between factor and character
-  # sd$Treatment <- as.character(sd$Treatment)
-  # sd$ID <- as.character(sd$ID)
-  sd$Treatment <- "High"    #rename HIGH
-  sd$ID <- paste0(sd$ID, "_dup")
-  sd$Treatment <- as.factor(sd$Treatment)
-  # sd$ID <- as.factor(sd$ID)
-
-  Amb2<-phyloseq(OTU, sd, tax)
-#sample.dataAmb2 <- as(sample_data(Amb2), "data.frame") #create sample data frame to view
-
-##High
-  controlT0_High = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "High")  #copy
-
-#tax table
-tax  = tax_table(controlT0_High)
-
-  # sample data
-  sd = sample_data(controlT0_High)
-  rownames(sd) <- paste0(rownames(sd), "_dup")
-# otu_table
-OTU = otu_table(controlT0_High)
-  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
-  # Avoid conflict between factor and character
-  sd$Treatment <- as.character(sd$Treatment)
-  # sd$ID <- as.character(sd$ID)
-  sd$Treatment <- "Ambient"    #rename HIGH
-  sd$ID <- paste0(sd$ID, "_dup")
-  sd$Treatment <- as.factor(sd$Treatment)
-  sd$ID <- as.factor(sd$ID)
-
-  High2<-phyloseq(OTU, sd, tax)
-  #sample.dataHigh2 <- as(sample_data(High2), "data.frame") #create sample data frame to view
-
-#Merge control dups H and A  
-Controldups = merge_phyloseq(Amb2,High2)
-Controldups
-    #sample.dataControldups2 <- as(sample_data(Controldups), "data.frame") #create sample data frame to view
-
-#merg them to the original df:
-
-Bac.s2 = merge_phyloseq(Bac.s,Controldups)
-Bac.s2
-Bac.s2.sd <- as(sample_data(Bac.s2), "data.frame") #create sample data frame to view
-Bac.s2.sd
+# #not
+# controlT0_Amb = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "Ambient")  #copy
+# 
+# #tax table
+# tax  = tax_table(controlT0_Amb)
+# 
+#   # sample data
+#   sd = sample_data(controlT0_Amb)
+#   rownames(sd) <- paste0(rownames(sd), "_dup")
+#   # otu_table
+#   OTU = otu_table(controlT0_Amb)
+#   sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+#   # Avoid conflict between factor and character
+#   # sd$Treatment <- as.character(sd$Treatment)
+#   # sd$ID <- as.character(sd$ID)
+#   sd$Treatment <- "High"    #rename HIGH
+#   sd$ID <- paste0(sd$ID, "_dup")
+#   sd$Treatment <- as.factor(sd$Treatment)
+#   # sd$ID <- as.factor(sd$ID)
+# 
+#   Amb2<-phyloseq(OTU, sd, tax)
+# #sample.dataAmb2 <- as(sample_data(Amb2), "data.frame") #create sample data frame to view
+# 
+# ##High
+#   controlT0_High = subset_samples(Bac.s, Time.Point == "T0"&Treatment == "High")  #copy
+# 
+# #tax table
+# tax  = tax_table(controlT0_High)
+# 
+#   # sample data
+#   sd = sample_data(controlT0_High)
+#   rownames(sd) <- paste0(rownames(sd), "_dup")
+# # otu_table
+# OTU = otu_table(controlT0_High)
+#   sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+#   # Avoid conflict between factor and character
+#   sd$Treatment <- as.character(sd$Treatment)
+#   # sd$ID <- as.character(sd$ID)
+#   sd$Treatment <- "Ambient"    #rename HIGH
+#   sd$ID <- paste0(sd$ID, "_dup")
+#   sd$Treatment <- as.factor(sd$Treatment)
+#   sd$ID <- as.factor(sd$ID)
+# 
+#   High2<-phyloseq(OTU, sd, tax)
+#   #sample.dataHigh2 <- as(sample_data(High2), "data.frame") #create sample data frame to view
+# 
+# #Merge control dups H and A  
+# Controldups = merge_phyloseq(Amb2,High2)
+# Controldups
+#     #sample.dataControldups2 <- as(sample_data(Controldups), "data.frame") #create sample data frame to view
+# 
+# #merg them to the original df:
+# 
+# Bac.s2 = merge_phyloseq(Bac.s,Controldups)
+# Bac.s2
+# Bac.s2.sd <- as(sample_data(Bac.s2), "data.frame") #create sample data frame to view
+# Bac.s2.sd
 #write.csv(Bac.s2.sd,"16sMetadata.csv")
 ```
 
 
 Set up, Bac.s2
-```{r} 
+```{r}  
 #make relative abundance df Bac.s2
 Bac.s.rel  = transform_sample_counts(Bac.s2, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
@@ -308,15 +309,15 @@ data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 
 
 ``` 
-For plotting only, subset the data:
+For plotting only, subset the data: ok you can't figure this out jump to next chunk
 - Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample. https://bioconductor.riken.jp/packages/3.0/bioc/vignettes/phyloseq/inst/doc/phyloseq-basics.html
-```{r}
+```{r} 
 library(genefilter)
 #df use counts not Rel A
 #tax glom should let you glom at Family
 # phyFam<-tax_glom(Bac.s, taxrank="Family")  #this isn't doing it by family. wtf
 
-otu_table(phyFam)[1:5, 1:5]
+otu_table(phyFam)[1:5, 1:5] 
 tax_table(phyFam)[1:5, 1:4]
 taxFAM  = tax_table(phyFam)
 taxFAM<-taxFAM[!(taxFAM$Size)]
@@ -442,8 +443,444 @@ theme_set(theme_bw())
   
   
 ```
-Crap you were working on for above
+#Let's try this again with vegan: THIS IS THE WAY
+USE THIS FOR STATS HELP:
+https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
 ```{r}
+#from above
+#this works for fam level and relA. now we have 543 families
+phyFamTest2 <- Bac.s %>% 
+  tax_glom(taxrank = "Family", NArm=FALSE) %>% #glom to family and remove anything not classified at family level
+  transform_sample_counts(function(x) {x/sum(x)} ) #then turn to REl A
+    sum(is.na(otu_table(phyFamTest2))) #check if there are any NA
+        otu_table(phyFamTest2)[1:5, 1:5]
+        tax_table(phyFamTest2)[1:6, 1:6]
+        
+      phyFamTest2 <- prune_taxa(taxa_sums(phyFamTest2) > 0, phyFamTest2) #prune taxa 0s, this take 543 down to 495
+      
+#this fucking worked 20210410
+# Extract abundance matrix from the phyloseq object< 
+#OK some of your samples now have zero taxa. 
+OTUfam.v = as(otu_table(phyFamTest2), "matrix")
+# transpose if necessary
+if(taxa_are_rows(phyFamTest2)){OTUfam.v <- t(OTUfam.v)}
+# Coerce to data.frame
+OTUfam.v.df = as.data.frame(OTUfam.v)
+#write.csv(OTUfam.v.df,"OTUfam_df_20210410_take4.csv")
+
+#ok the above gets you the OTU table, now replace those names with family names
+
+    taxFAM  = tax_table(phyFamTest2) #look at it
+    tax_table(taxFAM)[1:7, 1:6]
+    # write.csv(taxFAM,"taxFAM.csv")
+
+    taxFAM  = tax_table(phyFamTest2) #look at it again
+    tax_table(taxFAM)[1:7, 1:6]
+    #write.csv(taxFAM,"taxFAM_take4.csv")
+
+    #reuplaod the OTU tble with family names - YOU DID THIS IN EXCEL, you can prob do in code but will take a hot min to learn how
+    Fam.16s<-read.csv("Data/OTUfam_df_20210410_take4.csv")
+    #OTUfam.v.df <- same as above but by OTU name!
+      #for vegan. see below for phyloseq
+
+
+# filter: goal 
+#Keep Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample.
+#get summary stats with dplry
+
+# df Fam.16s krissy zoom
+
+Fam.16s.summary <- OTUfam.v.df %>%
+  gather(taxa, value, -(1)) %>% #WIDE TO LONG FORMAT, minus sample name in col 1. if you want to include species, add the meta and include here and the next step
+  group_by(taxa) %>% #you want summary stat for each unique taxa
+  dplyr::summarise(
+    Mean = mean(value, na.rm=TRUE),
+    Min = min(value, na.rm=TRUE),
+    Max = max(value, na.rm=TRUE),
+    StDev = sd(value, na.rm = TRUE)
+  )
+
+#use this summary df to do filtering
+abundFam<-Fam.16s.summary %>%
+  filter(Max>0.005) #try diff things to see how many you keep, here this get you to 257 families (0.005). do this by species later
+
+#THIS APPLIES ABOVE TO DF
+OTU_name <- abundFam$taxa # a list of all the families that met filter criteria
+col.nos <- which(colnames(OTUfam.v.df) %in% OTU_name) #which call nam is in the list of names we are keeping
+Fam.abund.f <- cbind(OTUfam.v.df[1], OTUfam.v.df[col.nos]) #if you have metadata you need to deal, this removes those
+
+#sort from most abund to least abund
+arrange(abundFam, desc(Mean)) #ie if you want to know the top 20 families across entire dataset. 
+
+    #smash in meta in vegan, multivariate stats
+    #MetaData16 metadata
+    MetaData16Keep<- MetaData16[,c("sample_name", "Species","Parent.ID", "Treatment","Time.Point","Tank.num","Clade")] # keep only columns     you need
+    Fam.filter.16s<-merge(MetaData16Keep,Fam.abund.f) #merge on the metadata
+
+
+#### OR Fam.abund.f  and smash back into a phyloseq
+outfam <- otu_table(Fam.abund.f, taxa_are_rows=F)  
+
+# Read the data into phyloseq
+Bac.seqFam = phyloseq(outfam, tax,sam) #THIS WORKS
+Bac.seqFam
+Bac.seqFam.df <- sample_data(Bac.seqFam)
+
+
+#do permanova with this new phyloseq obj for FAM that is filetered 
+
+
+Bac.seqFam_stats<- Bac.seqFam #make a copy
+otu_table(Bac.s.rel_stats)[1:5, 1:5] #check rela worked
+
+
+#bray curtis presence-absense and abundance
+## REMOVE T0 for models
+Bac.seqFam_stats.T1F<-subset_samples(Bac.seqFam_stats, Time.Point=="T1"|Time.Point=="TF")
+
+#bray curtis presence-absense and abundance
+ 
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+Fam.16s.all <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "bray")
+  Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
+
+  #adonis test
+adonis(Fam.16s.all ~ Species*Treatment*Time.Point, data = Fam.samp.df)
+    adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
+    
+# Homogeneity of dispersion test <-NOT WORKING...why
+betaAll <- betadisper(Fam.16s.all, Fam.samp.df$Species)
+permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species, T1Tf
+set.seed(50)
+ord.Bac_RelA_stats <- ordinate(Bac.seqFam_stats.T1F, "NMDS", "bray", trymax = 500) 
+stressplot(ord.Bac_RelA_stats)
+scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
+
+scores.ord.Bac_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.Bac_RelA_stats$Species <- samp.df$Species
+
+
+ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("Family NMDS 16s Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+############# mcap
+
+
+# df Bac.seqFam_stats.T1F
+
+#Mcap
+mcap.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
+mcap.bac.T1F = prune_taxa(taxa_sums(mcap.bac.T1F) > 0, mcap.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+mcap.bac.T1 <- subset_samples(mcap.bac.T1F, Time.Point == "T1")
+  mcap.bac.T1 = prune_taxa(taxa_sums(mcap.bac.T1) > 0, mcap.bac.T1) #this removes any OTU with 0s
+mcap.bac.TF <- subset_samples(mcap.bac.T1F, Time.Point == "TF")
+  mcap.bac.TF = prune_taxa(taxa_sums(mcap.bac.TF) > 0, mcap.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  bc.mcap.T1F <- phyloseq::distance(mcap.bac.T1F, method = "bray")
+     mcap.samp.df.T1F <- as(sample_data(mcap.bac.T1F), "data.frame") #sample df
+    adonis(bc.mcap.T1F ~ Treatment*Time.Point, data = mcap.samp.df.T1F) #adonis test no clade
+    adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(mcap.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    
+#T1
+  bc.mcapT1 <- phyloseq::distance(mcap.bac.T1, method = "bray") 
+      mcap.samp.df.T1 <- as(sample_data(mcap.bac.T1), "data.frame") 
+    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Clade)  #clade
+    permutest(beta.mcap.T1, pairwise = T) 
+  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Treatment) #treatment
+    permutest(beta.mcap.T1, pairwise = T) 
+
+#TF
+  bc.mcap.TF <- phyloseq::distance(mcap.bac.TF, method = "bray")
+     mcap.samp.df.TF <- as(sample_data(mcap.bac.TF), "data.frame") 
+    adonis(bc.mcap.TF ~ Clade*Treatment, data = mcap.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Clade) 
+    permutest(beta.mcap.TF, pairwise = T) 
+  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Treatment) 
+    permutest(beta.mcap.TF, pairwise = T) 
+
+############ pcomp
+#Pcomp
+Pcomp.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
+Pcomp.bac.T1F = prune_taxa(taxa_sums(Pcomp.bac.T1F) > 0, Pcomp.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+Pcomp.bac.T1 <- subset_samples(Pcomp.bac.T1F, Time.Point == "T1")
+  Pcomp.bac.T1 = prune_taxa(taxa_sums(Pcomp.bac.T1) > 0, Pcomp.bac.T1) #this removes any OTU with 0s
+
+Pcomp.bac.TF <- subset_samples(Pcomp.bac.T1F, Time.Point == "TF")
+  Pcomp.bac.TF = prune_taxa(taxa_sums(Pcomp.bac.TF) > 0, Pcomp.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  bc.Pcomp.T1F <- phyloseq::distance(Pcomp.bac.T1F, method = "bray")
+     Pcomp.samp.df.T1F <- as(sample_data(Pcomp.bac.T1F), "data.frame") #sample df
+    adonis(bc.Pcomp.T1F ~ Treatment*Time.Point, data = Pcomp.samp.df.T1F) #adonis test no clade
+    adonis(bc.Pcomp.T1F ~ Clade*Treatment*Time.Point, data = Pcomp.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(Pcomp.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    
+#T1
+  bc.PcompT1 <- phyloseq::distance(Pcomp.bac.T1, method = "bray") 
+      Pcomp.samp.df.T1 <- as(sample_data(Pcomp.bac.T1), "data.frame") 
+    adonis(bc.PcompT1 ~ Clade*Treatment, data = Pcomp.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Clade)  #clade
+    permutest(beta.Pcomp.T1, pairwise = T) 
+  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Treatment) #treatment
+    permutest(beta.Pcomp.T1, pairwise = T) 
+
+#TF
+  bc.Pcomp.TF <- phyloseq::distance(Pcomp.bac.TF, method = "bray")
+     Pcomp.samp.df.TF <- as(sample_data(Pcomp.bac.TF), "data.frame") 
+    adonis(bc.Pcomp.TF ~ Clade*Treatment, data = Pcomp.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Clade) 
+    permutest(beta.Pcomp.TF, pairwise = T) 
+  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Treatment) 
+    permutest(beta.Pcomp.TF, pairwise = T) 
+
+#######pvar
+    #Pvar
+Pvar.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pavona_varians")
+Pvar.bac.T1F = prune_taxa(taxa_sums(Pvar.bac.T1F) > 0, Pvar.bac.T1F) #this removes any OTU with 0s
+ 
+#make dfs you need 
+Pvar.bac.T1 <- subset_samples(Pvar.bac.T1F, Time.Point == "T1")
+  Pvar.bac.T1 = prune_taxa(taxa_sums(Pvar.bac.T1) > 0, Pvar.bac.T1) #this removes any OTU with 0s
+
+Pvar.bac.TF <- subset_samples(Pvar.bac.T1F, Time.Point == "TF")
+  Pvar.bac.TF = prune_taxa(taxa_sums(Pvar.bac.TF) > 0, Pvar.bac.TF) #this removes any OTU with 0s
+ 
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  bc.Pvar.T1F <- phyloseq::distance(Pvar.bac.T1F, method = "bray")
+     Pvar.samp.df.T1F <- as(sample_data(Pvar.bac.T1F), "data.frame") #sample df
+    adonis(bc.Pvar.T1F ~ Treatment*Time.Point, data = Pvar.samp.df.T1F) #adonis test no clade
+    adonis(bc.Pvar.T1F ~ Clade*Treatment*Time.Point, data = Pvar.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(Pvar.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    
+#T1
+  bc.PvarT1 <- phyloseq::distance(Pvar.bac.T1, method = "bray") 
+      Pvar.samp.df.T1 <- as(sample_data(Pvar.bac.T1), "data.frame") 
+    adonis(bc.PvarT1 ~ Clade*Treatment, data = Pvar.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Clade)  #clade
+    permutest(beta.Pvar.T1, pairwise = T) 
+  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Treatment) #treatment
+    permutest(beta.Pvar.T1, pairwise = T) 
+
+#TF
+  bc.Pvar.TF <- phyloseq::distance(Pvar.bac.TF, method = "bray")
+     Pvar.samp.df.TF <- as(sample_data(Pvar.bac.TF), "data.frame") 
+    adonis(bc.Pvar.TF ~ Clade*Treatment, data = Pvar.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Clade) 
+    permutest(beta.Pvar.TF, pairwise = T) 
+  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Treatment) 
+    permutest(beta.Pvar.TF, pairwise = T) 
+
+####### pacuta
+
+#Pacu
+Pacu.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pocillopora_acuta")
+Pacu.bac.T1F = prune_taxa(taxa_sums(Pacu.bac.T1F) > 0, Pacu.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+Pacu.bac.T1 <- subset_samples(Pacu.bac.T1F, Time.Point == "T1")
+  Pacu.bac.T1 = prune_taxa(taxa_sums(Pacu.bac.T1) > 0, Pacu.bac.T1) #this removes any OTU with 0s
+
+Pacu.bac.TF <- subset_samples(Pacu.bac.T1F, Time.Point == "TF")
+  Pacu.bac.TF = prune_taxa(taxa_sums(Pacu.bac.TF) > 0, Pacu.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  bc.Pacu.T1F <- phyloseq::distance(Pacu.bac.T1F, method = "bray")
+     Pacu.samp.df.T1F <- as(sample_data(Pacu.bac.T1F), "data.frame") #sample df
+    adonis(bc.Pacu.T1F ~ Treatment*Time.Point, data = Pacu.samp.df.T1F) #adonis test no clade
+    adonis(bc.Pacu.T1F ~ Clade*Treatment*Time.Point, data = Pacu.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(Pacu.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    
+#T1
+  bc.PacuT1 <- phyloseq::distance(Pacu.bac.T1, method = "bray") 
+      Pacu.samp.df.T1 <- as(sample_data(Pacu.bac.T1), "data.frame") 
+    adonis(bc.PacuT1 ~ Clade*Treatment, data = Pacu.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Clade)  #clade
+    permutest(beta.Pacu.T1, pairwise = T) 
+  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Treatment) #treatment
+    permutest(beta.Pacu.T1, pairwise = T) 
+
+#TF
+  bc.Pacu.TF <- phyloseq::distance(Pacu.bac.TF, method = "bray")
+     Pacu.samp.df.TF <- as(sample_data(Pacu.bac.TF), "data.frame") 
+    adonis(bc.Pacu.TF ~ Clade*Treatment, data = Pacu.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Clade) 
+    permutest(beta.Pacu.TF, pairwise = T) 
+  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Treatment) 
+    permutest(beta.Pacu.TF, pairwise = T) 
+
+
+
+
+```
+For lmers of each taxa
+```{r}
+#adonis in vegan - you have the otu table and the taxa df, you need to add in the metadata to do this
+#for regressions (uni) lmtest, KR code, start with metatdata in otu df, with cols as taxa, lme4 or lmertest
+OTU<-abundFam$taxa #create a list of all the taxa names (from above)
+
+Mod2_output <- data.frame() #create df 
+for(i in OTU){
+  lmFAM = lmer(Fam.abund.f[,i] ~ Species, data = Fam.abund.f, REML = TRUE)
+  output = anova(lmFAM, Fam.abund.f, type = 3)  #run anova on the output
+  Mod2_output = rbind(Mod2_output, data.frame("OTU" = i,     #records ouput
+                                                # "Temp P-Value" = output$`Pr(>F)`[which(rownames(output) == "Temp")],
+                                                "Speices P-value" = output$`Pr(>F)`[which(rownames(output) == "Speices")] #,
+                                               # "Temp:Speices P-value" = output$`Pr(>F)`[which(rownames(output)== "Temp:Species")]
+                                              ))
+}
+#package indexspecies hannah or deseq2 only 2 teratments
+
+#creates df with pval for all effects by taxa, then I pull out ones that are significant (do lines 508 and 509 to pull those out)
+```
+
+
+
+
+All species by family df phy,FamTest2TEST relA, this is phyloseq
+```{r}        
+###### ADONIS PERMANOVA,Fam.filter.16s, [1:6] are meta
+
+Fam.filter.16s.T1TF<-subset(Fam.filter.16s, Time.Point=="T1"|Time.Point=="TF")
+
+# Fam.filter.16s you need sample data and data matrix
+Fam.filter.16s.T1TF.m<-Fam.filter.16s.T1TF[7:263]
+Fam.filter.16s.T1TF.sd<-Fam.filter.16s.T1TF[1:6]
+
+# Calculate distance matrix 
+Fam.distmat <- vegdist(Fam.filter.16s.m, method = "bray")
+# Creating easy to view matrix and writing .csv
+Fam.distmat2 <- as.matrix(Fam.distmat, labels = T)
+
+#bray curtis presence-absense and abundance
+#all speices
+set.seed(30)
+
+
+#adonis test
+adonis(Fam.distmat ~ Species*Treatment*Time.Point, data = Fam.filter.16s.T1TF.sd)
+    
+
+adonis(bc.all ~ Species*Treatment*Time.Point*Clade, data = samp.df)
+
+
+
+
+
+
+
+
+
+
+
+
+# Running NMDS in vegan (metaMDS)
+Fam_NMDS <-
+  metaMDS(Fam.distmat,
+          distance = "bray",
+          k =2,
+          maxit = 999, 
+          trymax = 500,
+          wascores = TRUE, set.seed(10))
+
+# Shepards test/goodness of fit
+goodness(df16s.spp_NMS) # Produces a results of test statistics for goodness of fit for each point
+
+stressplot(df16s.spp_NMS) # Produces a Shepards diagram
+
+# Plotting points in ordination space
+plot(df16s.spp_NMS, "sites")   # Produces distance 
+orditorp(df16s.spp_NMS, "sites")   # Gives points labels
+
+ 
+
+#older
+#phyFamTest2TEST 
+
+phyFamTest2TEST_stats<- phyFamTest2TEST #make a copy
+otu_table(phyFamTest2TEST_stats)[1:5, 1:5] #check rela worked
+
+#get rid of NA OTUs now!
+phyFamTest2TEST_stats = prune_taxa(taxa_sums(phyFamTest2TEST_stats) > 0, phyFamTest2TEST_stats) #this removes any OTU with 0s
+
+
+
+
+
+
+    
+  
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all, samp.df$Species)
+permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species, T1Tf
+set.seed(50)
+ord.Bac_RelA_stats <- ordinate(Bac_RelA_stats.T1F, "NMDS", "bray", trymax = 500) 
+stressplot(ord.Bac_RelA_stats)
+scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
+
+scores.ord.Bac_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.Bac_RelA_stats$Species <- samp.df$Species
+scores.ord.Bac_RelA_stats$Code <- paste(samp.df$Species,samp.df$Treatment, samp.df$Time.Point)
+
+
+ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+ 
+
+```
+
+
+
+
+Crap you were working on for above
+```{r} 
 #everything below here is shit that doesn't work
 
 # phyFamTest2.f2 = filter_taxa(phyFamTest2.f, function(x) sum(x > 3) > (0.013*length(x)), TRUE)
@@ -576,7 +1013,7 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 
 Family
-```{r}  
+```{r}   
 library(tidy)
 
 Mcap_Bac.s2.melt <- psmelt(Mcap_phyFam)
@@ -989,7 +1426,7 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 
 #16s - bar plots df Bac.s2RelA YOU Don't need now
-```{r}    
+```{r}     
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
 Bac.s.rel.ord <- ordinate(Bac.s.rel, "NMDS", "bray", set.seed(30))
 Bac.RelA.ord_plot = plot_ordination(Bac.s.rel, Bac.s.rel.ord, type="samples", shape="Treatment",color="Species", title="species")
@@ -1121,10 +1558,10 @@ PacuBarPlot<-plot_bar(Pacu_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "T
 
 #Ordination DIV_RelA <- you might not need this section, code below for each species  
 try vegan nmds - its the same, delete when CN says cool, Bac.s.rel
-```{r}  
+```{r}    
   ##this isn't working, not converging. 
 # convert the sample_data() within a phyloseq object to a vegan compatible data object
-df16s2veg <- function(Bac.s.rel) { 
+df16s2veg <- function(Bac.s.rel) {  
   sd <- sample_data(Bac.s.rel)
   return(as(sd,"data.frame"))
 }
@@ -1138,7 +1575,7 @@ df16sotu2veg <- function(Bac.s.rel) {
   return(as(OTU, "matrix"))
 }
 
-# Calculate distance matrix
+# Calculate distance matrix 
 df16s.spp_distmat <- vegdist(OTU, method = "bray")
 # Creating easy to view matrix and writing .csv
 df16s.spp_distmat <- 
@@ -1168,7 +1605,7 @@ orditorp(df16s.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r}           
+```{r }           
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
@@ -1230,7 +1667,7 @@ print(DIVrareRel1_Pcomp)
 
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species Bac.s.rel .  relative abundances 
-```{r}         
+```{r}          
 #Bac.s.rel 
 
 Bac.s.rel_stats<- Bac.s.rel #make a copy
@@ -1245,7 +1682,7 @@ Bac.s.rel_stats = prune_taxa(taxa_sums(Bac.s.rel_stats) > 0, Bac.s.rel_stats) #t
 Bac_RelA_stats.T1F<-subset_samples(Bac.s.rel_stats, Time.Point=="T1"|Time.Point=="TF")
 
 #bray curtis presence-absense and abundance
-
+ 
 #all speices
 set.seed(30)
 
@@ -1289,67 +1726,11 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 
 
 ```
-All species by family df phy,FamTest2TEST relA
-```{r}         
-#phyFamTest2TEST 
 
-phyFamTest2TEST_stats<- phyFamTest2TEST #make a copy
-otu_table(phyFamTest2TEST_stats)[1:5, 1:5] #check rela worked
-
-#get rid of NA OTUs now!
-phyFamTest2TEST_stats = prune_taxa(taxa_sums(phyFamTest2TEST_stats) > 0, phyFamTest2TEST_stats) #this removes any OTU with 0s
-
-
-#bray curtis presence-absense and abundance
-## REMOVE T0 for models
-Bac_RelA_stats.T1F<-subset_samples(phyFamTest2TEST_stats, Time.Point=="T1"|Time.Point=="TF")
-
-#bray curtis presence-absense and abundance
-
-#all speices
-set.seed(30)
-
-#make bray curtis data matrix
-bc.all <- phyloseq::distance(Bac_RelA_stats.T1F, method = "bray")
-  samp.df <- as(sample_data(Bac_RelA_stats.T1F), "data.frame") #sample df
-#adonis test
-adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df)
-    adonis(bc.all ~ Species*Treatment*Time.Point*Clade, data = samp.df)
-    
-  
-# Homogeneity of dispersion test
-betaAll <- betadisper(bc.all, samp.df$Species)
-permutest(betaAll, pairwise = T) 
-(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
-plot(bc.all.HSD)
-
-
-#Ordination NMDS for all species, T1Tf
-set.seed(50)
-ord.Bac_RelA_stats <- ordinate(Bac_RelA_stats.T1F, "NMDS", "bray", trymax = 500) 
-stressplot(ord.Bac_RelA_stats)
-scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
-
-scores.ord.Bac_RelA_stats$Treatment <- samp.df$Treatment
-scores.ord.Bac_RelA_stats$Species <- samp.df$Species
-scores.ord.Bac_RelA_stats$Code <- paste(samp.df$Species,samp.df$Treatment, samp.df$Time.Point)
-
-
-ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Species), size = 4) +
-  #scale_color_manual(values=Mcap.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
-  ggtitle("NMDS its2 Bray Curtis") +
-  theme_classic()
-#ggsave("bc_all.pdf")
- 
-
-```
 # Beta Split data by species 
 Beta div
 Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
-```{r}     
+```{r}      
 # df Bac_RelA_stats.T1F
 #Mcap
 mcap.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
@@ -1441,7 +1822,7 @@ mcap.bac.TF.CD <- subset_samples(mcap.bac.TF, Clade == "CD")
     permutest(beta.mcap.TF.CD, pairwise = T) 
 ``` 
 Mcap NMDS
-```{r} 
+```{r}  
 ## create palette for parent.ID and treatments
 Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "dodgerblue", "High" = "darkred",
@@ -2021,7 +2402,7 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 
 Porites - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
-```{r}     
+```{r}      
 # df Bac_RelA_stats.T1F
 #Pcomp
 Pcomp.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Porites_compressa")
@@ -2340,7 +2721,7 @@ ggsave("Pcomp_ITS2.C15n_TF.pdf")
 Pavona - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
 
-```{r}     
+```{r}      
 # df Bac_RelA_stats.T1F
 #Pvar
 Pvar.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pavona_varians")
@@ -4065,11 +4446,11 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances   
 df:Bac.r2 and Bac.r2.sd sample data
-```{r}  
+```{r}   
 #trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
-Bac.r2.alpha<-Bac.r2 #make a copy of df
+Bac.r2.alpha<-Bac.s2 #make a copy of df
 
 Bac.r2.alpha<-subset_samples(Bac.r2.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
 Bac.r2.alpha2 <- prune_taxa(taxa_sums(Bac.r2.alpha) > 0, Bac.r2.alpha) #prune taxa 0s
