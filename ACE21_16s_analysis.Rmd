@@ -15,7 +15,7 @@ Last updated: 8 apr 2021
 
 16s data analysis
 #Data and libraries
-```{r} 
+```{r}  
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 
@@ -47,7 +47,7 @@ library(vegan)
 
 
 #Load in data and get into phyloseq
-```{r}   
+```{r}    
 
 #load in 3000 rare instead
 #read in sample data
@@ -85,9 +85,12 @@ Bac.seq.df <- sample_data(Bac.seq)
 
 save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
+#load your .tre otu_repr_100.tre
+library(ape)
+treefile<- read.tree("Data/TT17_3000_summer_16S-pipeline_outputs/Results/postprocessing/unifrac/otu_repr_100.tre")
 
-
-
+phy_tree(Bac.seq) <- treefile
+Bac.seq
 
 
 
@@ -129,7 +132,7 @@ save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
 ```  
 Look at the data, Bac.seq for 3k
-```{r}  
+```{r}   
 ## check out data
 ntaxa(Bac.seq)  #num taxa
 nsamples(Bac.seq)   #num samples
@@ -154,7 +157,7 @@ sample_names(Bac.seq)[1:300] #samp names
 
 #16S
 Load in your data
-```{r}  
+```{r}   
 # Load data (see data_exploration.Rmd)
 #load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
@@ -278,7 +281,7 @@ Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 Set up, Bac.s2
 ```{r}  
 #make relative abundance df Bac.s2
-Bac.s.rel  = transform_sample_counts(Bac.s2, function(x) x / sum(x) )  #save as RELA DIVs
+Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 
 #heatmap
@@ -311,7 +314,7 @@ data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 ``` 
 For plotting only, subset the data: ok you can't figure this out jump to next chunk
 - Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample. https://bioconductor.riken.jp/packages/3.0/bioc/vignettes/phyloseq/inst/doc/phyloseq-basics.html
-```{r} 
+```{r}  
 library(genefilter)
 #df use counts not Rel A
 #tax glom should let you glom at Family
@@ -456,7 +459,10 @@ phyFamTest2 <- Bac.s %>%
         otu_table(phyFamTest2)[1:5, 1:5]
         tax_table(phyFamTest2)[1:6, 1:6]
         
-      phyFamTest2 <- prune_taxa(taxa_sums(phyFamTest2) > 0, phyFamTest2) #prune taxa 0s, this take 543 down to 495
+      #phyFamTest2 <- prune_taxa(taxa_sums(phyFamTest2) > 0, phyFamTest2) #prune taxa 0s, this take 543 down to 495
+    
+      
+      
       
 #this fucking worked 20210410
 # Extract abundance matrix from the phyloseq object< 
@@ -470,16 +476,16 @@ OTUfam.v.df = as.data.frame(OTUfam.v)
 
 #ok the above gets you the OTU table, now replace those names with family names
 
-    taxFAM  = tax_table(phyFamTest2) #look at it
-    tax_table(taxFAM)[1:7, 1:6]
-    # write.csv(taxFAM,"taxFAM.csv")
-
-    taxFAM  = tax_table(phyFamTest2) #look at it again
-    tax_table(taxFAM)[1:7, 1:6]
-    #write.csv(taxFAM,"taxFAM_take4.csv")
-
-    #reuplaod the OTU tble with family names - YOU DID THIS IN EXCEL, you can prob do in code but will take a hot min to learn how
-    Fam.16s<-read.csv("Data/OTUfam_df_20210410_take4.csv")
+    # taxFAM  = tax_table(phyFamTest2) #look at it
+    # tax_table(taxFAM)[1:7, 1:6]
+    # # write.csv(taxFAM,"taxFAM.csv")
+    # 
+    # taxFAM  = tax_table(phyFamTest2) #look at it again
+    # tax_table(taxFAM)[1:7, 1:6]
+    # #write.csv(taxFAM,"taxFAM_take4.csv")
+    # 
+    # #reuplaod the OTU tble with family names - YOU DID THIS IN EXCEL, you can prob do in code but will take a hot min to learn how
+    # Fam.16s<-read.csv("Data/OTUfam_df_20210410_take4.csv")
     #OTUfam.v.df <- same as above but by OTU name!
       #for vegan. see below for phyloseq
 
@@ -522,10 +528,11 @@ arrange(abundFam, desc(Mean)) #ie if you want to know the top 20 families across
 outfam <- otu_table(Fam.abund.f, taxa_are_rows=F)  
 
 # Read the data into phyloseq
-Bac.seqFam = phyloseq(outfam, tax,sam) #THIS WORKS
+Bac.seqFam = phyloseq(outfam,tax, sam,treefile) #THIS WORKS
 Bac.seqFam
 Bac.seqFam.df <- sample_data(Bac.seqFam)
-
+#write.csv(Fam.abund.f,"Fam.abund.f.csv")
+#write.csv(Bac.seqFam.df,"Bac.seqFam.df.csv")
 
 #do permanova with this new phyloseq obj for FAM that is filetered 
 
@@ -546,7 +553,6 @@ set.seed(30)
 #make bray curtis data matrix
 Fam.16s.all <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "bray")
   Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
-
   #adonis test
 adonis(Fam.16s.all ~ Species*Treatment*Time.Point, data = Fam.samp.df)
     adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
@@ -583,181 +589,780 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 # df Bac.seqFam_stats.T1F
 
 #Mcap
-mcap.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
-mcap.bac.T1F = prune_taxa(taxa_sums(mcap.bac.T1F) > 0, mcap.bac.T1F) #this removes any OTU with 0s
+mcap.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
+#mcap.f.bac.T1F = prune_taxa(taxa_sums(mcap.f.bac.T1F) > 0, mcap.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-mcap.bac.T1 <- subset_samples(mcap.bac.T1F, Time.Point == "T1")
-  mcap.bac.T1 = prune_taxa(taxa_sums(mcap.bac.T1) > 0, mcap.bac.T1) #this removes any OTU with 0s
-mcap.bac.TF <- subset_samples(mcap.bac.T1F, Time.Point == "TF")
-  mcap.bac.TF = prune_taxa(taxa_sums(mcap.bac.TF) > 0, mcap.bac.TF) #this removes any OTU with 0s
+mcap.f.bac.T1 <- subset_samples(mcap.f.bac.T1F, Time.Point == "T1")
+ # mcap.f.bac.T1 = prune_taxa(taxa_sums(mcap.f.bac.T1) > 0, mcap.f.bac.T1) #this removes any OTU with 0s
+mcap.f.bac.TF <- subset_samples(mcap.f.bac.T1F, Time.Point == "TF")
+ # mcap.f.bac.TF = prune_taxa(taxa_sums(mcap.f.bac.TF) > 0, mcap.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.mcap.T1F <- phyloseq::distance(mcap.bac.T1F, method = "bray")
-     mcap.samp.df.T1F <- as(sample_data(mcap.bac.T1F), "data.frame") #sample df
-    adonis(bc.mcap.T1F ~ Treatment*Time.Point, data = mcap.samp.df.T1F) #adonis test no clade
-    adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)#adonis test with clade
+  set.seed(30)
+  bc.mcap.f.T1F <- phyloseq::distance(mcap.f.bac.T1F, method = "bray")
+     mcap.f.samp.df.T1F <- as(sample_data(mcap.f.bac.T1F), "data.frame") #sample df
+    adonis(bc.mcap.f.T1F ~ Treatment*Time.Point, data = mcap.f.samp.df.T1F) #adonis test no clade
+    adonis(bc.mcap.f.T1F ~ Clade*Treatment*Time.Point, data = mcap.f.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(mcap.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(mcap.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.mcapT1 <- phyloseq::distance(mcap.bac.T1, method = "bray") 
-      mcap.samp.df.T1 <- as(sample_data(mcap.bac.T1), "data.frame") 
-    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.samp.df.T1)  
+    set.seed(30)
+  bc.mcapT1 <- phyloseq::distance(mcap.f.bac.T1, method = "bray") 
+      mcap.f.samp.df.T1 <- as(sample_data(mcap.f.bac.T1), "data.frame") 
+    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.f.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Clade)  #clade
-    permutest(beta.mcap.T1, pairwise = T) 
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Treatment) #treatment
-    permutest(beta.mcap.T1, pairwise = T) 
+  beta.mcap.f.T1 <- betadisper(bc.mcapT1, mcap.f.samp.df.T1$Clade)  #clade
+    permutest(beta.mcap.f.T1, pairwise = T) 
+  beta.mcap.f.T1 <- betadisper(bc.mcapT1, mcap.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.mcap.f.T1, pairwise = T) 
 
 #TF
-  bc.mcap.TF <- phyloseq::distance(mcap.bac.TF, method = "bray")
-     mcap.samp.df.TF <- as(sample_data(mcap.bac.TF), "data.frame") 
-    adonis(bc.mcap.TF ~ Clade*Treatment, data = mcap.samp.df.TF)
+        set.seed(30)
+
+  bc.mcap.f.TF <- phyloseq::distance(mcap.f.bac.TF, method = "bray")
+     mcap.f.samp.df.TF <- as(sample_data(mcap.f.bac.TF), "data.frame") 
+    adonis(bc.mcap.f.TF ~ Clade*Treatment, data = mcap.f.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Clade) 
-    permutest(beta.mcap.TF, pairwise = T) 
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Treatment) 
-    permutest(beta.mcap.TF, pairwise = T) 
+  beta.mcap.f.TF <- betadisper(bc.mcap.f.TF, mcap.f.samp.df.TF$Clade) 
+    permutest(beta.mcap.f.TF, pairwise = T) 
+  beta.mcap.f.TF <- betadisper(bc.mcap.f.TF, mcap.f.samp.df.TF$Treatment) 
+    permutest(beta.mcap.f.TF, pairwise = T) 
 
 ############ pcomp
 #Pcomp
-Pcomp.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
-Pcomp.bac.T1F = prune_taxa(taxa_sums(Pcomp.bac.T1F) > 0, Pcomp.bac.T1F) #this removes any OTU with 0s
+pcomp.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
+#pcomp.f.bac.T1F = prune_taxa(taxa_sums(pcomp.f.bac.T1F) > 0, pcomp.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-Pcomp.bac.T1 <- subset_samples(Pcomp.bac.T1F, Time.Point == "T1")
-  Pcomp.bac.T1 = prune_taxa(taxa_sums(Pcomp.bac.T1) > 0, Pcomp.bac.T1) #this removes any OTU with 0s
+pcomp.f.bac.T1 <- subset_samples(pcomp.f.bac.T1F, Time.Point == "T1")
+ # pcomp.f.bac.T1 = prune_taxa(taxa_sums(pcomp.f.bac.T1) > 0, pcomp.f.bac.T1) #this removes any OTU with 0s
 
-Pcomp.bac.TF <- subset_samples(Pcomp.bac.T1F, Time.Point == "TF")
-  Pcomp.bac.TF = prune_taxa(taxa_sums(Pcomp.bac.TF) > 0, Pcomp.bac.TF) #this removes any OTU with 0s
+pcomp.f.bac.TF <- subset_samples(pcomp.f.bac.T1F, Time.Point == "TF")
+ # pcomp.f.bac.TF = prune_taxa(taxa_sums(pcomp.f.bac.TF) > 0, pcomp.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pcomp.T1F <- phyloseq::distance(Pcomp.bac.T1F, method = "bray")
-     Pcomp.samp.df.T1F <- as(sample_data(Pcomp.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pcomp.T1F ~ Treatment*Time.Point, data = Pcomp.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pcomp.T1F ~ Clade*Treatment*Time.Point, data = Pcomp.samp.df.T1F)#adonis test with clade
+          set.seed(30)
+
+  bc.pcomp.f.T1F <- phyloseq::distance(pcomp.f.bac.T1F, method = "bray")
+     pcomp.f.samp.df.T1F <- as(sample_data(pcomp.f.bac.T1F), "data.frame") #sample df
+    adonis(bc.pcomp.f.T1F ~ Treatment*Time.Point, data = pcomp.f.samp.df.T1F) #adonis test no clade
+    adonis(bc.pcomp.f.T1F ~ Clade*Treatment*Time.Point, data = pcomp.f.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pcomp.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(pcomp.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PcompT1 <- phyloseq::distance(Pcomp.bac.T1, method = "bray") 
-      Pcomp.samp.df.T1 <- as(sample_data(Pcomp.bac.T1), "data.frame") 
-    adonis(bc.PcompT1 ~ Clade*Treatment, data = Pcomp.samp.df.T1)  
+              set.seed(30)
+
+  bc.PcompT1 <- phyloseq::distance(pcomp.f.bac.T1, method = "bray") 
+      pcomp.f.samp.df.T1 <- as(sample_data(pcomp.f.bac.T1), "data.frame") 
+    adonis(bc.PcompT1 ~ Clade*Treatment, data = pcomp.f.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Clade)  #clade
-    permutest(beta.Pcomp.T1, pairwise = T) 
-  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pcomp.T1, pairwise = T) 
+  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pcomp.f.T1, pairwise = T) 
+  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pcomp.f.T1, pairwise = T) 
 
 #TF
-  bc.Pcomp.TF <- phyloseq::distance(Pcomp.bac.TF, method = "bray")
-     Pcomp.samp.df.TF <- as(sample_data(Pcomp.bac.TF), "data.frame") 
-    adonis(bc.Pcomp.TF ~ Clade*Treatment, data = Pcomp.samp.df.TF)
+              set.seed(30)
+
+  bc.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "bray")
+     pcomp.f.samp.df.TF <- as(sample_data(pcomp.f.bac.TF), "data.frame") 
+    adonis(bc.pcomp.f.TF ~ Clade*Treatment, data = pcomp.f.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Clade) 
-    permutest(beta.Pcomp.TF, pairwise = T) 
-  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Treatment) 
-    permutest(beta.Pcomp.TF, pairwise = T) 
+  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Clade) 
+    permutest(beta.pcomp.f.TF, pairwise = T) 
+  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment) 
+    permutest(beta.pcomp.f.TF, pairwise = T) 
 
 #######pvar
     #Pvar
-Pvar.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pavona_varians")
-Pvar.bac.T1F = prune_taxa(taxa_sums(Pvar.bac.T1F) > 0, Pvar.bac.T1F) #this removes any OTU with 0s
+pvar.f.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pavona_varians")
+#pvar.f.f.bac.T1F = prune_taxa(taxa_sums(pvar.f.f.bac.T1F) > 0, pvar.f.f.bac.T1F) #this removes any OTU with 0s
  
 #make dfs you need 
-Pvar.bac.T1 <- subset_samples(Pvar.bac.T1F, Time.Point == "T1")
-  Pvar.bac.T1 = prune_taxa(taxa_sums(Pvar.bac.T1) > 0, Pvar.bac.T1) #this removes any OTU with 0s
+pvar.f.f.bac.T1 <- subset_samples(pvar.f.f.bac.T1F, Time.Point == "T1")
+ # pvar.f.f.bac.T1 = prune_taxa(taxa_sums(pvar.f.f.bac.T1) > 0, pvar.f.f.bac.T1) #this removes any OTU with 0s
 
-Pvar.bac.TF <- subset_samples(Pvar.bac.T1F, Time.Point == "TF")
-  Pvar.bac.TF = prune_taxa(taxa_sums(Pvar.bac.TF) > 0, Pvar.bac.TF) #this removes any OTU with 0s
+pvar.f.f.bac.TF <- subset_samples(pvar.f.f.bac.T1F, Time.Point == "TF")
+#  pvar.f.f.bac.TF = prune_taxa(taxa_sums(pvar.f.f.bac.TF) > 0, pvar.f.f.bac.TF) #this removes any OTU with 0s
  
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pvar.T1F <- phyloseq::distance(Pvar.bac.T1F, method = "bray")
-     Pvar.samp.df.T1F <- as(sample_data(Pvar.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pvar.T1F ~ Treatment*Time.Point, data = Pvar.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pvar.T1F ~ Clade*Treatment*Time.Point, data = Pvar.samp.df.T1F)#adonis test with clade
+                set.seed(30)
+
+  bc.pvar.f.f.T1F <- phyloseq::distance(pvar.f.f.bac.T1F, method = "bray")
+     pvar.f.f.samp.df.T1F <- as(sample_data(pvar.f.f.bac.T1F), "data.frame") #sample df
+    adonis(bc.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adonis test no clade
+    adonis(bc.pvar.f.f.T1F ~ Clade*Treatment*Time.Point, data = pvar.f.f.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pvar.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(pvar.f.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PvarT1 <- phyloseq::distance(Pvar.bac.T1, method = "bray") 
-      Pvar.samp.df.T1 <- as(sample_data(Pvar.bac.T1), "data.frame") 
-    adonis(bc.PvarT1 ~ Clade*Treatment, data = Pvar.samp.df.T1)  
+                  set.seed(30)
+
+  bc.PvarT1 <- phyloseq::distance(pvar.f.f.bac.T1, method = "bray") 
+      pvar.f.f.samp.df.T1 <- as(sample_data(pvar.f.f.bac.T1), "data.frame") 
+    adonis(bc.PvarT1 ~ Treatment, data = pvar.f.f.samp.df.T1) 
+        adonis(bc.PvarT1 ~ Clade*Treatment, data = pvar.f.f.samp.df.T1)  
+
 # Homogeneity of dispersion test  
-  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Clade)  #clade
-    permutest(beta.Pvar.T1, pairwise = T) 
-  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pvar.T1, pairwise = T) 
+  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pvar.f.f.T1, pairwise = T) 
+  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pvar.f.f.T1, pairwise = T) 
 
 #TF
-  bc.Pvar.TF <- phyloseq::distance(Pvar.bac.TF, method = "bray")
-     Pvar.samp.df.TF <- as(sample_data(Pvar.bac.TF), "data.frame") 
-    adonis(bc.Pvar.TF ~ Clade*Treatment, data = Pvar.samp.df.TF)
+                  set.seed(30)
+
+  bc.pvar.f.f.TF <- phyloseq::distance(pvar.f.f.bac.TF, method = "bray")
+     pvar.f.f.samp.df.TF <- as(sample_data(pvar.f.f.bac.TF), "data.frame") 
+    adonis(bc.pvar.f.f.TF ~ Treatment, data = pvar.f.f.samp.df.TF)
+        adonis(bc.pvar.f.f.TF ~ Clade*Treatment, data = pvar.f.f.samp.df.TF)
+
   # Homogeneity of dispersion test  
-  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Clade) 
-    permutest(beta.Pvar.TF, pairwise = T) 
-  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Treatment) 
-    permutest(beta.Pvar.TF, pairwise = T) 
+  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Clade) 
+    permutest(beta.pvar.f.f.TF, pairwise = T) 
+  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment) 
+    permutest(beta.pvar.f.f.TF, pairwise = T) 
 
 ####### pacuta
 
 #Pacu
-Pacu.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pocillopora_acuta")
-Pacu.bac.T1F = prune_taxa(taxa_sums(Pacu.bac.T1F) > 0, Pacu.bac.T1F) #this removes any OTU with 0s
+pacu.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pocillopora_acuta")
+#pacu.f.bac.T1F = prune_taxa(taxa_sums(pacu.f.bac.T1F) > 0, pacu.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-Pacu.bac.T1 <- subset_samples(Pacu.bac.T1F, Time.Point == "T1")
-  Pacu.bac.T1 = prune_taxa(taxa_sums(Pacu.bac.T1) > 0, Pacu.bac.T1) #this removes any OTU with 0s
+pacu.f.bac.T1 <- subset_samples(pacu.f.bac.T1F, Time.Point == "T1")
+#  pacu.f.bac.T1 = prune_taxa(taxa_sums(pacu.f.bac.T1) > 0, pacu.f.bac.T1) #this removes any OTU with 0s
 
-Pacu.bac.TF <- subset_samples(Pacu.bac.T1F, Time.Point == "TF")
-  Pacu.bac.TF = prune_taxa(taxa_sums(Pacu.bac.TF) > 0, Pacu.bac.TF) #this removes any OTU with 0s
+pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
+ # pacu.f.bac.TF = prune_taxa(taxa_sums(pacu.f.bac.TF) > 0, pacu.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pacu.T1F <- phyloseq::distance(Pacu.bac.T1F, method = "bray")
-     Pacu.samp.df.T1F <- as(sample_data(Pacu.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pacu.T1F ~ Treatment*Time.Point, data = Pacu.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pacu.T1F ~ Clade*Treatment*Time.Point, data = Pacu.samp.df.T1F)#adonis test with clade
+  set.seed(30)
+  bc.pacu.f.T1F <- phyloseq::distance(pacu.f.bac.T1F, method = "bray")
+     pacu.f.samp.df.T1F <- as(sample_data(pacu.f.bac.T1F), "data.frame") #sample df
+    adonis(bc.pacu.f.T1F ~ Treatment*Time.Point, data = pacu.f.samp.df.T1F) #adonis test no clade
+    adonis(bc.pacu.f.T1F ~ Clade*Treatment*Time.Point, data = pacu.f.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pacu.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(pacu.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PacuT1 <- phyloseq::distance(Pacu.bac.T1, method = "bray") 
-      Pacu.samp.df.T1 <- as(sample_data(Pacu.bac.T1), "data.frame") 
-    adonis(bc.PacuT1 ~ Clade*Treatment, data = Pacu.samp.df.T1)  
+    set.seed(30)
+  bc.PacuT1 <- phyloseq::distance(pacu.f.bac.T1, method = "bray") 
+      pacu.f.samp.df.T1 <- as(sample_data(pacu.f.bac.T1), "data.frame") 
+    adonis(bc.PacuT1 ~ Clade*Treatment, data = pacu.f.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Clade)  #clade
-    permutest(beta.Pacu.T1, pairwise = T) 
-  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pacu.T1, pairwise = T) 
+  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pacu.f.T1, pairwise = T) 
+  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pacu.f.T1, pairwise = T) 
+
+    
+#TF
+    set.seed(30)
+  bc.pacu.f.TF <- phyloseq::distance(pacu.f.bac.TF, method = "bray")
+     pacu.f.samp.df.TF <- as(sample_data(pacu.f.bac.TF), "data.frame") 
+    adonis(bc.pacu.f.TF ~ Clade*Treatment, data = pacu.f.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Clade) 
+    permutest(beta.pacu.f.TF, pairwise = T) 
+  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Treatment) 
+    permutest(beta.pacu.f.TF, pairwise = T) 
+```
+
+# unifrac load in tree above
+http://bioconductor.riken.jp/packages/3.5/bioc/vignettes/phyloseq/inst/doc/phyloseq-analysis.html
+http://joey711.github.io/phyloseq-demo/unifrac.html
+http://joey711.github.io/phyloseq-demo/
+
+Weighted UniFrac - which does take into account differences in abundance of taxa between samples, but takes longer to calculate; and
+
+Unweighted UniFrac - which only considers the presence/absence of taxa between sample pairs.
+```{r}
+
+#look at your trees
+bac.prot <- subset_taxa(Bac.seqFam_stats.T1F, Phylum=="Proteobacteria")
+
+plot_tree(bac.prot, color="Species", label.tips="Genus", size="Abundance")
+
+
+#what if we try this on T0 just to prove diff?
+Bac.seqFam_stats.T0<-subset_samples(Bac.seqFam_stats, Time.Point=="T0")
+
+#exmaple, first pcoa then nmds
+
+GPUF <- UniFrac(Bac.seqFam_stats.T0, weighted=T)
+GloPa.pcoa = ordinate(Bac.seqFam_stats.T0, method="PCoA", distance=GPUF)
+plot_scree(GloPa.pcoa, "T0 only, UniFrac/PCoA")
+
+GPUF2 <- UniFrac(Bac.seqFam_stats.T1F, weighted=T)
+GloPa.pcoa2 = ordinate(Bac.seqFam_stats.T1F, method="PCoA", distance=GPUF2)
+plot_scree(GloPa.pcoa2, "T1F only, UniFrac/PCoA")
+
+#PcoA
+# df Bac.seqFam_stats.T0
+ordu = ordinate(Bac.seqFam_stats.T0, "PCoA", "unifrac", weighted=TRUE)
+plot_ordination(Bac.seqFam_stats.T0, ordu, color="Species", shape="Species")
+dis<-distance(Bac.seqFam_stats.T0, method="unifrac")
+(plot <- plot_ordination(Bac.seqFam_stats.T0, ordu, "samples", color="Species") + 
+  geom_point(size=5) + geom_path() + scale_colour_hue(guide = FALSE) )
+
+# df Bac.seqFam_stats.T1F
+ordu = ordinate(Bac.seqFam_stats.T1F, "PCoA", "unifrac", weighted=TRUE)
+plot_ordination(Bac.seqFam_stats.T1F, ordu, color="Species", shape="Species")
+dis<-distance(Bac.seqFam_stats.T1F, method="unifrac")
+(plot <- plot_ordination(Bac.seqFam_stats.T1F, ordu, "samples", color="Species") + 
+  geom_point(size=5) + geom_path() + scale_colour_hue(guide = FALSE) )
+
+#nmds, T0
+GP.NMDS <- ordinate(Bac.seqFam_stats.T0, "NMDS", GPUF)
+
+(p <- plot_ordination(Bac.seqFam_stats.T0, GP.NMDS, "samples", color="Species") +
+geom_point(size=5) )
+
+#nmds, T1TF
+GP.NMDS2 <- ordinate(Bac.seqFam_stats.T1F, "NMDS", GPUF2)
+
+(p <- plot_ordination(Bac.seqFam_stats.T1F, GP.NMDS2, "samples", color="Species") +
+geom_point(size=5) )
+
+
+#weighted Unifrac (presence absence + abundance + phylogeny) HE code  
+wu.mfol <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac")
+adonis(wu.mfol ~ Species*Treatment*Time.Point, strata = Fam.samp.df$Species, data = Fam.samp.df) #not sig
+permutest(betadisper(wu.mfol, Fam.samp.df$Species, type = "centroid")) #sig
+
+
+
+#make unifrac matrix
+Bac.fam.T1F <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac")
+Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
+  #adonis test
+set.seed(30)
+adonis(Bac.fam.T1F ~ Species*Treatment*Time.Point, data = Fam.samp.df)
+set.seed(30)    
+adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
+  # Homogeneity of dispersion test  
+set.seed(30)    
+  beta <- betadisper(Bac.fam.T1F, Fam.samp.df$Clade)  #clade
+    permutest(beta, pairwise = T) 
+set.seed(30)    
+  beta <- betadisper(Bac.fam.T1F, Fam.samp.df$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+############# mcap
+
+#Mcap
+mcap.u.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
+#mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+mcap.u.f.bac.T1 <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "T1")
+ # mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
+mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
+ # mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  set.seed(30)
+  bc.mcap.u.f.T1F <- phyloseq::distance(mcap.u.f.bac.T1F, method = "wunifrac")
+     mcap.u.f.samp.df.T1F <- as(sample_data(mcap.u.f.bac.T1F), "data.frame") #sample df
+       set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Treatment*Time.Point, data = mcap.u.f.samp.df.T1F) #adonis test no clade
+      set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.f.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(mcap.u.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+      # Homogeneity of dispersion test  
+set.seed(30)    
+  beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade)  #clade
+    permutest(beta, pairwise = T) 
+set.seed(30)    
+  beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+    
+#T1
+    set.seed(30)
+  bc.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
+      mcap.u.f.samp.df.T1 <- as(sample_data(mcap.u.f.bac.T1), "data.frame") 
+          set.seed(30)
+    adonis(bc.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
+     set.seed(30)
+    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.mcap.u.f.T1 <- betadisper(bc.mcapT1, mcap.u.f.samp.df.T1$Clade)  #clade
+    permutest(beta.mcap.u.f.T1, pairwise = T) 
+  beta.mcap.u.f.T1 <- betadisper(bc.mcapT1, mcap.u.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.mcap.u.f.T1, pairwise = T) 
 
 #TF
-  bc.Pacu.TF <- phyloseq::distance(Pacu.bac.TF, method = "bray")
-     Pacu.samp.df.TF <- as(sample_data(Pacu.bac.TF), "data.frame") 
-    adonis(bc.Pacu.TF ~ Clade*Treatment, data = Pacu.samp.df.TF)
+  bc.mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
+     mcap.u.f.samp.df.TF <- as(sample_data(mcap.u.f.bac.TF), "data.frame")
+    set.seed(30)
+    adonis(bc.mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
+    set.seed(30)
+    adonis(bc.mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Clade) 
-    permutest(beta.Pacu.TF, pairwise = T) 
-  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Treatment) 
-    permutest(beta.Pacu.TF, pairwise = T) 
+  beta.mcap.u.f.TF <- betadisper(bc.mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade) 
+    permutest(beta.mcap.u.f.TF, pairwise = T) 
+  beta.mcap.u.f.TF <- betadisper(bc.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment) 
+    permutest(beta.mcap.u.f.TF, pairwise = T) 
 
+############ pcomp
+#Pcomp
+pcomp.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
+#pcomp.f.bac.T1F = prune_taxa(taxa_sums(pcomp.f.bac.T1F) > 0, pcomp.f.bac.T1F) #this removes any OTU with 0s
 
+#make dfs you need 
+pcomp.f.bac.T1 <- subset_samples(pcomp.f.bac.T1F, Time.Point == "T1")
+ # pcomp.f.bac.T1 = prune_taxa(taxa_sums(pcomp.f.bac.T1) > 0, pcomp.f.bac.T1) #this removes any OTU with 0s
 
+pcomp.f.bac.TF <- subset_samples(pcomp.f.bac.T1F, Time.Point == "TF")
+ # pcomp.f.bac.TF = prune_taxa(taxa_sums(pcomp.f.bac.TF) > 0, pcomp.f.bac.TF) #this removes any OTU with 0s
 
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  bc.pcomp.f.T1F <- phyloseq::distance(pcomp.f.bac.T1F, method = "wunifrac")
+     pcomp.f.samp.df.T1F <- as(sample_data(pcomp.f.bac.T1F), "data.frame") #sample df
+      set.seed(30)
+    adonis(bc.pcomp.f.T1F ~ Treatment*Time.Point, data = pcomp.f.samp.df.T1F) #adonis test no clade
+   set.seed(30)
+    adonis(bc.pcomp.f.T1F ~ Clade*Treatment*Time.Point, data = pcomp.f.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pcomp.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    
+#T1
+  bc.PcompT1 <- phyloseq::distance(pcomp.f.bac.T1, method = "wunifrac") 
+      pcomp.f.samp.df.T1 <- as(sample_data(pcomp.f.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(bc.PcompT1 ~ Treatment, data = pcomp.f.samp.df.T1)  
+    set.seed(30)
+   adonis(bc.PcompT1 ~ Clade*Treatment, data = pcomp.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pcomp.f.T1, pairwise = T) 
+  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pcomp.f.T1, pairwise = T) 
+
+#TF
+bc.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "wunifrac")
+     pcomp.f.samp.df.TF <- as(sample_data(pcomp.f.bac.TF), "data.frame") 
+      set.seed(30)
+    adonis(bc.pcomp.f.TF ~ Treatment, data = pcomp.f.samp.df.TF)
+     set.seed(30)
+    adonis(bc.pcomp.f.TF ~ Clade*Treatment, data = pcomp.f.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Clade) 
+    permutest(beta.pcomp.f.TF, pairwise = T) 
+  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment) 
+    permutest(beta.pcomp.f.TF, pairwise = T) 
+
+#######pvar
+    #Pvar
+pvar.f.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pavona_varians")
+#pvar.f.f.bac.T1F = prune_taxa(taxa_sums(pvar.f.f.bac.T1F) > 0, pvar.f.f.bac.T1F) #this removes any OTU with 0s
+ 
+#make dfs you need 
+pvar.f.f.bac.T1 <- subset_samples(pvar.f.f.bac.T1F, Time.Point == "T1")
+ # pvar.f.f.bac.T1 = prune_taxa(taxa_sums(pvar.f.f.bac.T1) > 0, pvar.f.f.bac.T1) #this removes any OTU with 0s
+
+pvar.f.f.bac.TF <- subset_samples(pvar.f.f.bac.T1F, Time.Point == "TF")
+#  pvar.f.f.bac.TF = prune_taxa(taxa_sums(pvar.f.f.bac.TF) > 0, pvar.f.f.bac.TF) #this removes any OTU with 0s
+ 
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+                set.seed(30)
+
+  bc.pvar.f.f.T1F <- phyloseq::distance(pvar.f.f.bac.T1F, method = "wunifrac")
+     pvar.f.f.samp.df.T1F <- as(sample_data(pvar.f.f.bac.T1F), "data.frame") #sample df
+     set.seed(30)
+adonis(bc.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adonis test no clade
+    set.seed(30)
+    adonis(bc.pvar.f.f.T1F ~ Clade*Treatment*Time.Point, data = pvar.f.f.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pvar.f.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    
+#T1
+                 
+
+  bc.PvarT1 <- phyloseq::distance(pvar.f.f.bac.T1, method = "wunifrac") 
+      pvar.f.f.samp.df.T1 <- as(sample_data(pvar.f.f.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(bc.PvarT1 ~ Treatment, data = pvar.f.f.samp.df.T1) 
+     set.seed(30)
+     adonis(bc.PvarT1 ~ Clade*Treatment, data = pvar.f.f.samp.df.T1)  
+
+# Homogeneity of dispersion test  
+  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pvar.f.f.T1, pairwise = T) 
+  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pvar.f.f.T1, pairwise = T) 
+
+#TF
+  bc.pvar.f.f.TF <- phyloseq::distance(pvar.f.f.bac.TF, method = "wunifrac")
+     pvar.f.f.samp.df.TF <- as(sample_data(pvar.f.f.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(bc.pvar.f.f.TF ~ Treatment, data = pvar.f.f.samp.df.TF)
+        set.seed(30)
+        adonis(bc.pvar.f.f.TF ~ Clade*Treatment, data = pvar.f.f.samp.df.TF)
+
+  # Homogeneity of dispersion test  
+  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Clade) 
+    permutest(beta.pvar.f.f.TF, pairwise = T) 
+  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment) 
+    permutest(beta.pvar.f.f.TF, pairwise = T) 
+
+####### pacuta
+
+#Pacu
+pacu.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pocillopora_acuta")
+#pacu.f.bac.T1F = prune_taxa(taxa_sums(pacu.f.bac.T1F) > 0, pacu.f.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+pacu.f.bac.T1 <- subset_samples(pacu.f.bac.T1F, Time.Point == "T1")
+#  pacu.f.bac.T1 = prune_taxa(taxa_sums(pacu.f.bac.T1) > 0, pacu.f.bac.T1) #this removes any OTU with 0s
+
+pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
+ # pacu.f.bac.TF = prune_taxa(taxa_sums(pacu.f.bac.TF) > 0, pacu.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  bc.pacu.f.T1F <- phyloseq::distance(pacu.f.bac.T1F, method = "wunifrac")
+     pacu.f.samp.df.T1F <- as(sample_data(pacu.f.bac.T1F), "data.frame") #sample df
+     set.seed(30)
+     adonis(bc.pacu.f.T1F ~ Treatment*Time.Point, data = pacu.f.samp.df.T1F) #adonis test no clade
+     set.seed(30)
+     adonis(bc.pacu.f.T1F ~ Clade*Treatment*Time.Point, data = pacu.f.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pacu.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    
+#T1
+  bc.PacuT1 <- phyloseq::distance(pacu.f.bac.T1, method = "wunifrac") 
+      pacu.f.samp.df.T1 <- as(sample_data(pacu.f.bac.T1), "data.frame") 
+      set.seed(30)
+      adonis(bc.PacuT1 ~ Treatment, data = pacu.f.samp.df.T1)  
+      set.seed(30)
+      adonis(bc.PacuT1 ~ Clade*Treatment, data = pacu.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Clade)  #clade
+    permutest(beta.pacu.f.T1, pairwise = T) 
+  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Treatment) #treatment
+    permutest(beta.pacu.f.T1, pairwise = T) 
+
+    
+#TF
+ 
+  bc.pacu.f.TF <- phyloseq::distance(pacu.f.bac.TF, method = "wunifrac")
+     pacu.f.samp.df.TF <- as(sample_data(pacu.f.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(bc.pacu.f.TF ~Treatment, data = pacu.f.samp.df.TF)
+      set.seed(30)
+      adonis(bc.pacu.f.TF ~ Clade*Treatment, data = pacu.f.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Clade) 
+    permutest(beta.pacu.f.TF, pairwise = T) 
+  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Treatment) 
+    permutest(beta.pacu.f.TF, pairwise = T) 
 ```
-For lmers of each taxa
+Permanova UNIFRAC by ASV (no filter)
 ```{r}
+#Bac.s.rel
+
+Bac.s.rel.u<-Bac.s.rel #make a copy
+
+Bac.s.rel.u.T1F<-subset_samples(Bac.s.rel.u, Time.Point=="T1"|Time.Point=="TF")
+
+#make unifrac matrix
+Bac.s.u.T1F <- phyloseq::distance(Bac.s.rel.u.T1F, method = "wunifrac")
+s.u.samp.df <- as(sample_data(Bac.s.rel.u.T1F), "data.frame") #sample df
+  #adonis test
+set.seed(30)
+adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point, data = s.u.samp.df)
+set.seed(30)    
+adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
+
+    beta.mcap.u.T1F <- betadisper(Bac.s.u.T1F, s.u.samp.df$Clade)  #clade
+    permutest(beta.mcap.u.T1F, pairwise = T) 
+      
+     beta.mcap.u.f.T1 <- betadisper(Bac.s.u.T1F, s.u.samp.df$Species) #treatment
+    permutest(beta.mcap.u.T1F, pairwise = T) 
+############# mcap
+
+#Mcap
+mcap.u.f.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
+#mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+mcap.u.f.bac.T1 <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "T1")
+ # mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
+mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
+ # mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  bc.mcap.u.f.T1F <- phyloseq::distance(mcap.u.f.bac.T1F, method = "wunifrac")
+     mcap.u.f.samp.df.T1F <- as(sample_data(mcap.u.f.bac.T1F), "data.frame") #sample df
+       set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Treatment*Time.Point, data = mcap.u.f.samp.df.T1F) #adonis test no clade
+      set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.f.samp.df.T1F)#adonis test with clade
+         set.seed(30)
+    beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade)  #clade
+    permutest(beta, pairwise = T) 
+          set.seed(30)
+     beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+    
+#T1
+  mcap.u.f.bac.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
+      mcap.u.f.samp.df.T1 <- as(sample_data(mcap.u.f.bac.T1), "data.frame") 
+          set.seed(30)
+    adonis(mcap.u.f.bac.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
+     set.seed(30)
+    adonis(mcap.u.f.bac.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+            set.seed(30)
+  beta <- betadisper(mcap.u.f.bac.mcapT1, mcap.u.f.samp.df.T1$Clade)  #clade
+    permutest(beta, pairwise = T) 
+            set.seed(30)
+  beta <- betadisper(mcap.u.f.bac.mcapT1, mcap.u.f.samp.df.T1$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+
+#TF
+  mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
+     mcap.u.f.samp.df.TF <- as(sample_data(mcap.u.f.bac.TF), "data.frame")
+    set.seed(30)
+    adonis(mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
+    set.seed(30)
+    adonis(mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
+  # Homogeneity of dispersion test  
+  beta <- betadisper(mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade) 
+    permutest(beta, pairwise = T) 
+  beta <- betadisper(mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment) 
+    permutest(beta, pairwise = T) 
+
+############ pcomp
+#Pcomp
+pcomp.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Porites_compressa")
+#pcomp.u.bac.T1F = prune_taxa(taxa_sums(pcomp.u.bac.T1F) > 0, pcomp.u.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+pcomp.u.bac.T1 <- subset_samples(pcomp.u.bac.T1F, Time.Point == "T1")
+ # pcomp.u.bac.T1 = prune_taxa(taxa_sums(pcomp.u.bac.T1) > 0, pcomp.u.bac.T1) #this removes any OTU with 0s
+
+pcomp.u.bac.TF <- subset_samples(pcomp.u.bac.T1F, Time.Point == "TF")
+ # pcomp.u.bac.TF = prune_taxa(taxa_sums(pcomp.u.bac.TF) > 0, pcomp.u.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  pcomp.u.T1F <- phyloseq::distance(pcomp.u.bac.T1F, method = "wunifrac")
+     pcomp.u.samp.df.T1F <- as(sample_data(pcomp.u.bac.T1F), "data.frame") #sample df
+      set.seed(30)
+    adonis(pcomp.u.T1F ~ Treatment*Time.Point, data = pcomp.u.samp.df.T1F) #adonis test no clade
+   set.seed(30)
+    adonis(pcomp.u.T1F ~ Clade*Treatment*Time.Point, data = pcomp.u.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pcomp.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+       set.seed(30)
+     beta <- betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Clade)  #clade
+    permutest(beta, pairwise = T) 
+          set.seed(30)
+     beta <- betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+    
+#T1
+  pcomp.u.T1 <- phyloseq::distance(pcomp.u.bac.T1, method = "wunifrac") 
+      pcomp.u.samp.df.T1 <- as(sample_data(pcomp.u.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(pcomp.u.T1 ~ Treatment, data = pcomp.u.samp.df.T1)  
+    set.seed(30)
+   adonis(pcomp.u.T1 ~ Clade*Treatment, data = pcomp.u.samp.df.T1)  
+# Homogeneity of dispersion test  
+       set.seed(30)
+  beta <- betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade)  #clade
+    permutest(beta, pairwise = T) 
+        set.seed(30)
+  beta <- betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+
+#TF
+pcomp.u.TF <- phyloseq::distance(pcomp.u.bac.TF, method = "wunifrac")
+     pcomp.u.samp.df.TF <- as(sample_data(pcomp.u.bac.TF), "data.frame") 
+      set.seed(30)
+    adonis(pcomp.u.TF ~ Treatment, data = pcomp.u.samp.df.TF)
+     set.seed(30)
+    adonis(pcomp.u.TF ~ Clade*Treatment, data = pcomp.u.samp.df.TF)
+  # Homogeneity of dispersion test  
+      set.seed(30)
+  beta <- betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade) 
+    permutest(beta, pairwise = T) 
+      set.seed(30)
+  beta <- betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment) 
+    permutest(beta, pairwise = T) 
+
+#######pvar
+    #Pvar
+pvar.u.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pavona_varians")
+#pvar.u.u.bac.T1F = prune_taxa(taxa_sums(pvar.u.u.bac.T1F) > 0, pvar.u.u.bac.T1F) #this removes any OTU with 0s
+ 
+#make dfs you need 
+pvar.u.u.bac.T1 <- subset_samples(pvar.u.u.bac.T1F, Time.Point == "T1")
+ # pvar.u.u.bac.T1 = prune_taxa(taxa_sums(pvar.u.u.bac.T1) > 0, pvar.u.u.bac.T1) #this removes any OTU with 0s
+
+pvar.u.u.bac.TF <- subset_samples(pvar.u.u.bac.T1F, Time.Point == "TF")
+#  pvar.u.u.bac.TF = prune_taxa(taxa_sums(pvar.u.u.bac.TF) > 0, pvar.u.u.bac.TF) #this removes any OTU with 0s
+ 
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+                set.seed(30)
+
+  pvar.u.u.T1F <- phyloseq::distance(pvar.u.u.bac.T1F, method = "wunifrac")
+     pvar.u.u.samp.df.T1F <- as(sample_data(pvar.u.u.bac.T1F), "data.frame") #sample df
+     set.seed(30)
+adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis test no clade
+    set.seed(30)
+    adonis(pvar.u.u.T1F ~ Clade*Treatment*Time.Point, data = pvar.u.u.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pvar.u.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    # Homogeneity of dispersion test  
+        set.seed(30)
+  beta <- betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Clade)  #clade
+    permutest(beta, pairwise = T) 
+        set.seed(30)
+  beta <- betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+
+#T1
+                
+  pvar.u.u.T1 <- phyloseq::distance(pvar.u.u.bac.T1, method = "wunifrac") 
+      pvar.u.u.samp.df.T1 <- as(sample_data(pvar.u.u.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(pvar.u.u.T1 ~ Treatment, data = pvar.u.u.samp.df.T1) 
+     set.seed(30)
+     adonis(pvar.u.u.T1 ~ Clade*Treatment, data = pvar.u.u.samp.df.T1)  
+
+# Homogeneity of dispersion test  
+          set.seed(30)
+  beta.pvar.u.u.T1 <- betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Clade)  #clade
+    permutest(beta.pvar.u.u.T1, pairwise = T) 
+         set.seed(30)
+  beta.pvar.u.u.T1 <- betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Treatment) #treatment
+    permutest(beta.pvar.u.u.T1, pairwise = T) 
+
+#TF
+  pvar.u.u.TF<- phyloseq::distance(pvar.u.u.bac.TF, method = "wunifrac")
+     pvar.u.u.samp.df.TF <- as(sample_data(pvar.u.u.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(pvar.u.u.TF ~ Treatment, data = pvar.u.u.samp.df.TF)
+        set.seed(30)
+        adonis(pvar.u.u.TF ~ Clade*Treatment, data = pvar.u.u.samp.df.TF)
+
+  # Homogeneity of dispersion test  
+              set.seed(30)
+  beta <- betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Clade) 
+    permutest(beta, pairwise = T) 
+          set.seed(30)
+  beta <- betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Treatment) 
+    permutest(beta, pairwise = T) 
+
+####### pacuta
+
+#Pacu
+pacu.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pocillopora_acuta")
+#pacu.u.bac.T1F = prune_taxa(taxa_sums(pacu.u.bac.T1F) > 0, pacu.u.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+pacu.u.bac.T1 <- subset_samples(pacu.u.bac.T1F, Time.Point == "T1")
+#  pacu.u.bac.T1 = prune_taxa(taxa_sums(pacu.u.bac.T1) > 0, pacu.u.bac.T1) #this removes any OTU with 0s
+
+pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
+ # pacu.u.bac.TF = prune_taxa(taxa_sums(pacu.u.bac.TF) > 0, pacu.u.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  pacu.u.T1F <- phyloseq::distance(pacu.u.bac.T1F, method = "wunifrac")
+     pacu.u.samp.df.T1F <- as(sample_data(pacu.u.bac.T1F), "data.frame") #sample df
+     set.seed(30)
+     adonis(pacu.u.T1F ~ Treatment*Time.Point, data = pacu.u.samp.df.T1F) #adonis test no clade
+     set.seed(30)
+     adonis(pacu.u.T1F ~ Clade*Treatment*Time.Point, data = pacu.u.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(pacu.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    # Homogeneity of dispersion test  
+        set.seed(30)
+  beta <- betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Clade)  #clade
+    permutest(beta, pairwise = T) 
+       set.seed(30)
+  beta <- betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+     
+     
+#T1
+  Pacu.u.T1 <- phyloseq::distance(pacu.u.bac.T1, method = "wunifrac") 
+      pacu.u.samp.df.T1 <- as(sample_data(pacu.u.bac.T1), "data.frame") 
+      set.seed(30)
+      adonis(Pacu.u.T1 ~ Treatment, data = pacu.u.samp.df.T1)  
+      set.seed(30)
+      adonis(Pacu.u.T1 ~ Clade*Treatment, data = pacu.u.samp.df.T1)  
+# Homogeneity of dispersion test 
+            set.seed(30)
+  beta <- betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Clade)  #clade
+    permutest(beta, pairwise = T) 
+          set.seed(30)
+  beta <- betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Treatment) #treatment
+    permutest(beta, pairwise = T) 
+
+    
+#TF
+ 
+pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
+     pacu.u.samp.df.TF <- as(sample_data(pacu.u.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(pacu.u.TF ~Treatment, data = pacu.u.samp.df.TF)
+      set.seed(30)
+      adonis(pacu.u.TF ~ Clade*Treatment, data = pacu.u.samp.df.TF)
+  # Homogeneity of dispersion test  
+       set.seed(30)
+  beta <- betadisper(pacu.u.TF, pacu.u.samp.df.TF$Clade) 
+    permutest(beta, pairwise = T) 
+     set.seed(30)
+  beta <- betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment) 
+    permutest(beta, pairwise = T) 
+```
+
+
+
+
+
+
+#For lmers of each taxa: do on full dataset, rel abund Bac.s.rel
+```{r} 
 #adonis in vegan - you have the otu table and the taxa df, you need to add in the metadata to do this
 #for regressions (uni) lmtest, KR code, start with metatdata in otu df, with cols as taxa, lme4 or lmertest
-OTU<-abundFam$taxa #create a list of all the taxa names (from above)
+
+#df Bac.s.rel is rel a. Split this by species, then remove T0, then pull out of phyloseq
+Bac.s.rel.mcap<-subset_samples(Bac.s.rel, Species=="Montipora_capitata")
+Bac.s.rel.mcap.df <- sample_data(Bac.s.rel.mcap)
+Bac.s.rel.mcap.df<-as.data.frame(Bac.s.rel.mcap.df)
+
+
+#take out of phyloseq
+OTUfamMcap.v = as(otu_table(Bac.s.rel.mcap), "matrix")
+# transpose if necessary
+if(taxa_are_rows(Bac.s.rel.mcap)){OTUfamMcap.v <- t(OTUfamMcap.v)}
+# Coerce to data.frame
+OTUfamMcap.v.df = as.data.frame(OTUfamMcap.v)
+
+OTU<-abundFam$taxa #create a list of all the taxa names 
 
 Mod2_output <- data.frame() #create df 
 for(i in OTU){
-  lmFAM = lmer(Fam.abund.f[,i] ~ Species, data = Fam.abund.f, REML = TRUE)
+  lmFAM = lmer(Fam.abund.f[,i] ~ Species, data = Fam.abund.f, REML = TRUE) #otu matrix
   output = anova(lmFAM, Fam.abund.f, type = 3)  #run anova on the output
   Mod2_output = rbind(Mod2_output, data.frame("OTU" = i,     #records ouput
                                                 # "Temp P-Value" = output$`Pr(>F)`[which(rownames(output) == "Temp")],
@@ -949,7 +1554,7 @@ Crap you were working on for above
 16 bar plots in ggplot (to make faster than next section)  
 #MCAP
 PHYLUM
-```{r} 
+```{r}   
 #try glom use raw counts Bac.s2
 Mcap_Bac.s2<-subset_samples(Bac.s2, Species=="Montipora_capitata")
 
@@ -1667,14 +2272,14 @@ print(DIVrareRel1_Pcomp)
 
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species Bac.s.rel .  relative abundances 
-```{r}          
+```{r}            
 #Bac.s.rel 
 
 Bac.s.rel_stats<- Bac.s.rel #make a copy
 otu_table(Bac.s.rel_stats)[1:5, 1:5] #check rela worked
 
 #get rid of NA OTUs now!
-Bac.s.rel_stats = prune_taxa(taxa_sums(Bac.s.rel_stats) > 0, Bac.s.rel_stats) #this removes any OTU with 0s
+#Bac.s.rel_stats = prune_taxa(taxa_sums(Bac.s.rel_stats) > 0, Bac.s.rel_stats) #this removes any OTU with 0s ~~~ this really drops stuff
 
 
 #bray curtis presence-absense and abundance
@@ -1684,19 +2289,17 @@ Bac_RelA_stats.T1F<-subset_samples(Bac.s.rel_stats, Time.Point=="T1"|Time.Point=
 #bray curtis presence-absense and abundance
  
 #all speices
-set.seed(30)
+
 
 #make bray curtis data matrix
+
 bc.all <- phyloseq::distance(Bac_RelA_stats.T1F, method = "bray")
   samp.df <- as(sample_data(Bac_RelA_stats.T1F), "data.frame") #sample df
 #adonis test
+  set.seed(30)
 adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df)
+set.seed(30)
     adonis(bc.all ~ Species*Treatment*Time.Point*Clade, data = samp.df)
-
-adonis(bc.all ~ Species*Treatment*Time.Point, data = samp.df, contr.unordered = "contr.treatement")
-
-    
-    
     
 # Homogeneity of dispersion test
 betaAll <- betadisper(bc.all, samp.df$Species)
@@ -1730,132 +2333,139 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 # Beta Split data by species 
 Beta div
 Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
-```{r}      
+```{r}       
 # df Bac_RelA_stats.T1F
 #Mcap
-mcap.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
-mcap.bac.T1F = prune_taxa(taxa_sums(mcap.bac.T1F) > 0, mcap.bac.T1F) #this removes any OTU with 0s
+mcap.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
+# mcap.g.bac.T1F = prune_taxa(taxa_sums(mcap.g.bac.T1F) > 0, mcap.g.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-mcap.bac.T1 <- subset_samples(mcap.bac.T1F, Time.Point == "T1")
-  mcap.bac.T1 = prune_taxa(taxa_sums(mcap.bac.T1) > 0, mcap.bac.T1) #this removes any OTU with 0s
+mcap.g.bac.T1 <- subset_samples(mcap.g.bac.T1F, Time.Point == "T1")
+ # mcap.g.bac.T1 = prune_taxa(taxa_sums(mcap.g.bac.T1) > 0, mcap.g.bac.T1) #this removes any OTU with 0s
 
-mcap.bac.TF <- subset_samples(mcap.bac.T1F, Time.Point == "TF")
-  mcap.bac.TF = prune_taxa(taxa_sums(mcap.bac.TF) > 0, mcap.bac.TF) #this removes any OTU with 0s
+mcap.g.bac.TF <- subset_samples(mcap.g.bac.T1F, Time.Point == "TF")
+ # mcap.g.bac.TF = prune_taxa(taxa_sums(mcap.g.bac.TF) > 0, mcap.g.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.mcap.T1F <- phyloseq::distance(mcap.bac.T1F, method = "bray")
-     mcap.samp.df.T1F <- as(sample_data(mcap.bac.T1F), "data.frame") #sample df
-    adonis(bc.mcap.T1F ~ Treatment*Time.Point, data = mcap.samp.df.T1F) #adonis test no clade
-    adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)#adonis test with clade
+  set.seed(30)
+  bc.mcap.g.T1F <- phyloseq::distance(mcap.g.bac.T1F, method = "bray")
+     mcap.g.samp.df.T1F <- as(sample_data(mcap.g.bac.T1F), "data.frame") #sample df
+    adonis(bc.mcap.g.T1F ~ Treatment*Time.Point, data = mcap.g.samp.df.T1F) #adonis test no clade
+    adonis(bc.mcap.g.T1F ~ Clade*Treatment*Time.Point, data = mcap.g.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(mcap.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(mcap.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.mcapT1 <- phyloseq::distance(mcap.bac.T1, method = "bray") 
-      mcap.samp.df.T1 <- as(sample_data(mcap.bac.T1), "data.frame") 
-    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.samp.df.T1)  
+      set.seed(30)
+  bc.mcapT1 <- phyloseq::distance(mcap.g.bac.T1, method = "bray") 
+      mcap.g.samp.df.T1 <- as(sample_data(mcap.g.bac.T1), "data.frame") 
+    adonis(bc.mcapT1 ~ Treatment, data = mcap.g.samp.df.T1)  
+        adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.g.samp.df.T1)  
+
 # Homogeneity of dispersion test  
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Clade)  #clade
-    permutest(beta.mcap.T1, pairwise = T) 
-  beta.mcap.T1 <- betadisper(bc.mcapT1, mcap.samp.df.T1$Treatment) #treatment
-    permutest(beta.mcap.T1, pairwise = T) 
+  beta.mcap.g.T1 <- betadisper(bc.mcapT1, mcap.g.samp.df.T1$Clade)  #clade
+    permutest(beta.mcap.g.T1, pairwise = T) 
+  beta.mcap.g.T1 <- betadisper(bc.mcapT1, mcap.g.samp.df.T1$Treatment) #treatment
+    permutest(beta.mcap.g.T1, pairwise = T) 
 
 #TF
-  bc.mcap.TF <- phyloseq::distance(mcap.bac.TF, method = "bray")
-     mcap.samp.df.TF <- as(sample_data(mcap.bac.TF), "data.frame") 
-    adonis(bc.mcap.TF ~ Clade*Treatment, data = mcap.samp.df.TF)
+    set.seed(30)
+  bc.mcap.g.TF <- phyloseq::distance(mcap.g.bac.TF, method = "bray")
+     mcap.g.samp.df.TF <- as(sample_data(mcap.g.bac.TF), "data.frame") 
+    adonis(bc.mcap.g.TF ~ Treatment, data = mcap.g.samp.df.TF)
+        adonis(bc.mcap.g.TF ~ Clade*Treatment, data = mcap.g.samp.df.TF)
+
   # Homogeneity of dispersion test  
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Clade) 
-    permutest(beta.mcap.TF, pairwise = T) 
-  beta.mcap.TF <- betadisper(bc.mcap.TF, mcap.samp.df.TF$Treatment) 
-    permutest(beta.mcap.TF, pairwise = T) 
+  beta.mcap.g.TF <- betadisper(bc.mcap.g.TF, mcap.g.samp.df.TF$Clade) 
+    permutest(beta.mcap.g.TF, pairwise = T) 
+  beta.mcap.g.TF <- betadisper(bc.mcap.g.TF, mcap.g.samp.df.TF$Treatment) 
+    permutest(beta.mcap.g.TF, pairwise = T) 
 
 ######### by phylotype: C vs CD
 # C ONLY
-  mcap.bac.T1F.C <- subset_samples(mcap.bac.T1F, Clade == "C")
-  mcap.bac.T1.C <- subset_samples(mcap.bac.T1, Clade == "C")
-  mcap.bac.TF.C <- subset_samples(mcap.bac.TF, Clade == "C")
+  mcap.g.bac.T1F.C <- subset_samples(mcap.g.bac.T1F, Clade == "C")
+  mcap.g.bac.T1.C <- subset_samples(mcap.g.bac.T1, Clade == "C")
+  mcap.g.bac.TF.C <- subset_samples(mcap.g.bac.TF, Clade == "C")
   
 #T1TF.C
-  bc.mcap.T1F.C <- phyloseq::distance(mcap.bac.T1F.C, method = "bray")
-    mcap.samp.df.T1F.C <- as(sample_data(mcap.bac.T1F.C), "data.frame") 
-  adonis(bc.mcap.T1F.C ~ Treatment*Time.Point, data = mcap.samp.df.T1F.C)
+  bc.mcap.g.T1F.C <- phyloseq::distance(mcap.g.bac.T1F.C, method = "bray")
+    mcap.g.samp.df.T1F.C <- as(sample_data(mcap.g.bac.T1F.C), "data.frame") 
+  adonis(bc.mcap.g.T1F.C ~ Treatment*Time.Point, data = mcap.g.samp.df.T1F.C)
 
 #T1.C
-  bc.mcapT1.C <- phyloseq::distance(mcap.bac.T1.C, method = "bray")
-    mcap.samp.df.T1.C <- as(sample_data(mcap.bac.T1.C), "data.frame") #sample df
-  adonis(bc.mcapT1.C ~ Treatment, data = mcap.samp.df.T1.C)
-  beta.mcap.T1.C <- betadisper(bc.mcapT1.C, mcap.samp.df.T1.C$Treatment)
-    permutest(beta.mcap.T1.C, pairwise = T) 
+  bc.mcapT1.C <- phyloseq::distance(mcap.g.bac.T1.C, method = "bray")
+    mcap.g.samp.df.T1.C <- as(sample_data(mcap.g.bac.T1.C), "data.frame") #sample df
+  adonis(bc.mcapT1.C ~ Treatment, data = mcap.g.samp.df.T1.C)
+  beta.mcap.g.T1.C <- betadisper(bc.mcapT1.C, mcap.g.samp.df.T1.C$Treatment)
+    permutest(beta.mcap.g.T1.C, pairwise = T) 
 
 #TF.C
-  bc.mcap.TF.C <- phyloseq::distance(mcap.bac.TF.C, method = "bray")
-    mcap.samp.df.TF.C <- as(sample_data(mcap.bac.TF.C), "data.frame") #sample df
-  adonis(bc.mcap.TF.C ~ Treatment, data = mcap.samp.df.TF.C)
-  beta.mcap.TF.C <- betadisper(bc.mcap.TF.C, mcap.samp.df.TF.C$Treatment)
-    permutest(beta.mcap.TF.C, pairwise = T) 
+  bc.mcap.g.TF.C <- phyloseq::distance(mcap.g.bac.TF.C, method = "bray")
+    mcap.g.samp.df.TF.C <- as(sample_data(mcap.g.bac.TF.C), "data.frame") #sample df
+  adonis(bc.mcap.g.TF.C ~ Treatment, data = mcap.g.samp.df.TF.C)
+  beta.mcap.g.TF.C <- betadisper(bc.mcap.g.TF.C, mcap.g.samp.df.TF.C$Treatment)
+    permutest(beta.mcap.g.TF.C, pairwise = T) 
 
 # CD ONLY
-mcap.bac.T1F.CD <- subset_samples(mcap.bac.T1F, Clade == "CD")
-mcap.bac.T1.CD <- subset_samples(mcap.bac.T1, Clade == "CD")
-mcap.bac.TF.CD <- subset_samples(mcap.bac.TF, Clade == "CD")
+mcap.g.bac.T1F.CD <- subset_samples(mcap.g.bac.T1F, Clade == "CD")
+mcap.g.bac.T1.CD <- subset_samples(mcap.g.bac.T1, Clade == "CD")
+mcap.g.bac.TF.CD <- subset_samples(mcap.g.bac.TF, Clade == "CD")
   
 #T1TF.CD
-  bc.mcap.T1F.CD <- phyloseq::distance(mcap.bac.T1F.CD, method = "bray")
-  mcap.samp.df.T1F.CD <- as(sample_data(mcap.bac.T1F.CD), "data.frame") 
-  adonis(bc.mcap.T1F.CD ~ Treatment*Time.Point, data = mcap.samp.df.T1F.CD)
+  bc.mcap.g.T1F.CD <- phyloseq::distance(mcap.g.bac.T1F.CD, method = "bray")
+  mcap.g.samp.df.T1F.CD <- as(sample_data(mcap.g.bac.T1F.CD), "data.frame") 
+  adonis(bc.mcap.g.T1F.CD ~ Treatment*Time.Point, data = mcap.g.samp.df.T1F.CD)
 
 #T1.CD
-  bc.mcapT1.CD <- phyloseq::distance(mcap.bac.T1.CD, method = "bray")
-    mcap.samp.df.T1.CD <- as(sample_data(mcap.bac.T1.CD), "data.frame") 
-  adonis(bc.mcapT1.CD ~ Treatment, data = mcap.samp.df.T1.CD)
-    beta.mcap.T1.CD <- betadisper(bc.mcapT1.CD, mcap.samp.df.T1.CD$Treatment)
-  permutest(beta.mcap.T1.CD, pairwise = T) 
+  bc.mcapT1.CD <- phyloseq::distance(mcap.g.bac.T1.CD, method = "bray")
+    mcap.g.samp.df.T1.CD <- as(sample_data(mcap.g.bac.T1.CD), "data.frame") 
+  adonis(bc.mcapT1.CD ~ Treatment, data = mcap.g.samp.df.T1.CD)
+    beta.mcap.g.T1.CD <- betadisper(bc.mcapT1.CD, mcap.g.samp.df.T1.CD$Treatment)
+  permutest(beta.mcap.g.T1.CD, pairwise = T) 
 
 #TF.CD
-  bc.mcap.TF.CD <- phyloseq::distance(mcap.bac.TF.CD, method = "bray")
-    mcap.samp.df.TF.CD <- as(sample_data(mcap.bac.TF.CD), "data.frame") 
-  adonis(bc.mcap.TF.CD ~ Treatment, data = mcap.samp.df.TF.CD)
-  beta.mcap.TF.CD <- betadisper(bc.mcap.TF.CD, mcap.samp.df.TF.CD$Treatment)
-    permutest(beta.mcap.TF.CD, pairwise = T) 
+  bc.mcap.g.TF.CD <- phyloseq::distance(mcap.g.bac.TF.CD, method = "bray")
+    mcap.g.samp.df.TF.CD <- as(sample_data(mcap.g.bac.TF.CD), "data.frame") 
+  adonis(bc.mcap.g.TF.CD ~ Treatment, data = mcap.g.samp.df.TF.CD)
+  beta.mcap.g.TF.CD <- betadisper(bc.mcap.g.TF.CD, mcap.g.samp.df.TF.CD$Treatment)
+    permutest(beta.mcap.g.TF.CD, pairwise = T) 
 ``` 
 Mcap NMDS
 ```{r}  
 ## create palette for parent.ID and treatments
-Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
+mcap.g.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#DDCC77","C High"="#999933", "CD Ambient"="#44AA99", "CD High"="#117733", 
                         "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
 
 #T1 and TF
-ord.mcap2 <- ordinate(mcap.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+ord.mcap2 <- ordinate(mcap.g.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
 stressplot(ord.mcap2)
 
-scores.mcap.samp.df<-as.data.frame(cbind(vegan::scores(ord.mcap2, display="sites"))) # these are "points" ask hannah 
-scores.mcap.samp.df$Time.Point <- mcap.samp.df.T1F$Time.Point
-scores.mcap.samp.df$Parent.ID <- mcap.samp.df.T1F$Parent.ID
-scores.mcap.samp.df$Treatment <- mcap.samp.df.T1F$Treatment
-scores.mcap.samp.df$Clade <- mcap.samp.df.T1F$Clade
-scores.mcap.samp.df$Code <- paste(mcap.samp.df.T1F$Parent.ID,mcap.samp.df.T1F$Time.Point)
-scores.mcap.samp.df$Code2 <- paste(mcap.samp.df.T1F$Treatment,mcap.samp.df.T1F$Time.Point)
-scores.mcap.samp.df$Code3 <- paste(mcap.samp.df.T1F$Treatment,mcap.samp.df.T1F$Time.Point,mcap.samp.df.T1F$Parent.ID)
+scores.mcap.g.samp.df<-as.data.frame(cbind(vegan::scores(ord.mcap2, display="sites"))) # these are "points" ask hannah 
+scores.mcap.g.samp.df$Time.Point <- mcap.g.samp.df.T1F$Time.Point
+scores.mcap.g.samp.df$Parent.ID <- mcap.g.samp.df.T1F$Parent.ID
+scores.mcap.g.samp.df$Treatment <- mcap.g.samp.df.T1F$Treatment
+scores.mcap.g.samp.df$Clade <- mcap.g.samp.df.T1F$Clade
+scores.mcap.g.samp.df$Code <- paste(mcap.g.samp.df.T1F$Parent.ID,mcap.g.samp.df.T1F$Time.Point)
+scores.mcap.g.samp.df$Code2 <- paste(mcap.g.samp.df.T1F$Treatment,mcap.g.samp.df.T1F$Time.Point)
+scores.mcap.g.samp.df$Code3 <- paste(mcap.g.samp.df.T1F$Treatment,mcap.g.samp.df.T1F$Time.Point,mcap.g.samp.df.T1F$Parent.ID)
 
-ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) +
+ggplot(scores.mcap.g.samp.df, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
   scale_shape_manual(values = c(21, 22,24,25)) + 
-    scale_color_manual(values=Mcap.Parent.colors)+
+    scale_color_manual(values=mcap.g.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
   ggtitle("M. capitata T1TF") +
   theme_classic()
 
-ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ggplot(scores.mcap.g.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -1864,23 +2474,23 @@ ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatmen
 #ggsave("McapT1its2.pdf")
 
 #T1
-ord.mcap.T1 <- ordinate(mcap.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
-stressplot(ord.mcap.T1)
+ord.mcap.g.T1 <- ordinate(mcap.g.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+stressplot(ord.mcap.g.T1)
 
-ord.mcap.T1.df<-as.data.frame(cbind(vegan::scores(ord.mcap.T1, display="sites"))) # these are "points" ask hannah 
-ord.mcap.T1.df$Time.Point <- mcap.samp.df.T1$Time.Point
-ord.mcap.T1.df$Parent.ID <- mcap.samp.df.T1$Parent.ID
-ord.mcap.T1.df$Treatment <- mcap.samp.df.T1$Treatment
-ord.mcap.T1.df$Clade <- mcap.samp.df.T1$Clade
-ord.mcap.T1.df$Code <- paste(mcap.samp.df.T1$Parent.ID,mcap.samp.df.T1$Time.Point)
-ord.mcap.T1.df$Code2 <- paste(mcap.samp.df.T1$Clade,mcap.samp.df.T1$Treatment)
-ord.mcap.T1.df$Code2 <- as.factor(ord.mcap.T1.df$Code2)
+ord.mcap.g.T1.df<-as.data.frame(cbind(vegan::scores(ord.mcap.g.T1, display="sites"))) # these are "points" ask hannah 
+ord.mcap.g.T1.df$Time.Point <- mcap.g.samp.df.T1$Time.Point
+ord.mcap.g.T1.df$Parent.ID <- mcap.g.samp.df.T1$Parent.ID
+ord.mcap.g.T1.df$Treatment <- mcap.g.samp.df.T1$Treatment
+ord.mcap.g.T1.df$Clade <- mcap.g.samp.df.T1$Clade
+ord.mcap.g.T1.df$Code <- paste(mcap.g.samp.df.T1$Parent.ID,mcap.g.samp.df.T1$Time.Point)
+ord.mcap.g.T1.df$Code2 <- paste(mcap.g.samp.df.T1$Clade,mcap.g.samp.df.T1$Treatment)
+ord.mcap.g.T1.df$Code2 <- as.factor(ord.mcap.g.T1.df$Code2)
 
 
-ggplot(ord.mcap.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.mcap.g.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -1889,26 +2499,26 @@ ggplot(ord.mcap.T1.df, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("McapT1its2.pdf")
 
 #workaround-for when this randomly breaks
-# plot_ordination(mcap.bac.TF, ordinate(mcap.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
+# plot_ordination(mcap.g.bac.TF, ordinate(mcap.g.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
 #TF only
 set.seed(30)
-ord.mcapTF <- ordinate(mcap.bac.TF, "NMDS", "bray", trymax = 100) 
+ord.mcapTF <- ordinate(mcap.g.bac.TF, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcapTF)
-ord.mcap.TF.df<-as.data.frame(cbind(vegan::scores(ord.mcapTF, display="sites"))) # these are "points" ask hannah 
-ord.mcap.TF.df$Treatment <- mcap.samp.df.TF$Treatment
-ord.mcap.TF.df$Parent.ID <- mcap.samp.df.TF$Parent.ID
-ord.mcap.TF.df$Clade <- mcap.samp.df.TF$Clade
-ord.mcap.TF.df$CladeTreat <- as.factor(paste(mcap.samp.df.TF$Clade,mcap.samp.df.TF$Treatment))
-ord.mcap.TF.df$Code <- as.factor(paste(mcap.samp.df.TF$Parent.ID,mcap.samp.df.TF$Treatment))
-ord.mcap.TF.df$Code2 <- paste(mcap.samp.df.TF$Clade,mcap.samp.df.TF$Treatment)
-ord.mcap.TF.df$Code2 <- as.factor(ord.mcap.TF.df$Code2)
+ord.mcap.g.TF.df<-as.data.frame(cbind(vegan::scores(ord.mcapTF, display="sites"))) # these are "points" ask hannah 
+ord.mcap.g.TF.df$Treatment <- mcap.g.samp.df.TF$Treatment
+ord.mcap.g.TF.df$Parent.ID <- mcap.g.samp.df.TF$Parent.ID
+ord.mcap.g.TF.df$Clade <- mcap.g.samp.df.TF$Clade
+ord.mcap.g.TF.df$CladeTreat <- as.factor(paste(mcap.g.samp.df.TF$Clade,mcap.g.samp.df.TF$Treatment))
+ord.mcap.g.TF.df$Code <- as.factor(paste(mcap.g.samp.df.TF$Parent.ID,mcap.g.samp.df.TF$Treatment))
+ord.mcap.g.TF.df$Code2 <- paste(mcap.g.samp.df.TF$Clade,mcap.g.samp.df.TF$Treatment)
+ord.mcap.g.TF.df$Code2 <- as.factor(ord.mcap.g.TF.df$Code2)
 
-ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.mcap.g.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -1924,18 +2534,18 @@ ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 #C T1 and TF 
 set.seed(30)
-ord.mcap_C <- ordinate(mcap.bac.T1F.C , "NMDS", "bray", trymax = 100) 
+ord.mcap_C <- ordinate(mcap.g.bac.T1F.C , "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_C)
 scores.mcap_C<-as.data.frame(cbind(vegan::scores(ord.mcap_C, display="sites"))) # these are "points" ask hannah 
-scores.mcap_C$Treatment <- mcap.samp.df.T1F.C$Treatment
-scores.mcap_C$Parent.ID <- mcap.samp.df.T1F.C$Parent.ID
-scores.mcap_C$Time.Point <- mcap.samp.df.T1F.C$Time.Point
+scores.mcap_C$Treatment <- mcap.g.samp.df.T1F.C$Treatment
+scores.mcap_C$Parent.ID <- mcap.g.samp.df.T1F.C$Parent.ID
+scores.mcap_C$Time.Point <- mcap.g.samp.df.T1F.C$Time.Point
 scores.mcap_C$Code2<-as.factor(paste(scores.mcap_C$Treatment, scores.mcap_C$Time.Point))
 
 ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(shape =Code2 , color = Parent.ID, fill=Code2), size = 5,stroke = 1) + 
   scale_shape_manual(values = c(21, 22,24,25)) + 
-    scale_color_manual(values=Mcap.Parent.colors)+
+    scale_color_manual(values=mcap.g.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
   ggtitle("M. capitata C only T1TF") +
@@ -1945,7 +2555,7 @@ ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) +
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -1955,7 +2565,7 @@ ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) +
 ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -1965,17 +2575,17 @@ ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) +
 
 #C T1
 set.seed(30)
-ord.mcap_C.T1 <- ordinate(mcap.bac.T1.C, "NMDS", "bray", trymax = 100) 
+ord.mcap_C.T1 <- ordinate(mcap.g.bac.T1.C, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_C.T1)
 scores.mcap_C.T1<-as.data.frame(cbind(vegan::scores(ord.mcap_C.T1, display="sites"))) # these are "points" ask hannah 
-scores.mcap_C.T1$Treatment <- mcap.samp.df.T1.C$Treatment
-scores.mcap_C.T1$Parent.ID <- mcap.samp.df.T1.C$Parent.ID
-scores.mcap_C.T1$Time.Point <- mcap.samp.df.T1.C$Time.Point
+scores.mcap_C.T1$Treatment <- mcap.g.samp.df.T1.C$Treatment
+scores.mcap_C.T1$Parent.ID <- mcap.g.samp.df.T1.C$Parent.ID
+scores.mcap_C.T1$Time.Point <- mcap.g.samp.df.T1.C$Time.Point
 
 ggplot(scores.mcap_C.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 Cladocopium") +
@@ -1984,17 +2594,17 @@ geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
 
 #C TF
 set.seed(30)
-ord.mcap_C.TF <- ordinate(mcap.bac.TF.C, "NMDS", "bray", trymax = 100) 
+ord.mcap_C.TF <- ordinate(mcap.g.bac.TF.C, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_C.TF)
 scores.mcap_C.TF<-as.data.frame(cbind(vegan::scores(ord.mcap_C.TF, display="sites"))) # these are "points" ask hannah 
-scores.mcap_C.TF$Treatment <- mcap.samp.df.TF.C$Treatment
-scores.mcap_C.TF$Parent.ID <- mcap.samp.df.TF.C$Parent.ID
-scores.mcap_C.TF$Time.Point <- mcap.samp.df.TF.C$Time.Point
+scores.mcap_C.TF$Treatment <- mcap.g.samp.df.TF.C$Treatment
+scores.mcap_C.TF$Parent.ID <- mcap.g.samp.df.TF.C$Parent.ID
+scores.mcap_C.TF$Time.Point <- mcap.g.samp.df.TF.C$Time.Point
 
 ggplot(scores.mcap_C.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C TF") +
@@ -2002,19 +2612,19 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
 #ggsave("Mcap_TF_its_TF_C.pdf")
 
 
-#CD mcap.bacT1F.CD
+#CD mcap.g.bacT1F.CD
 set.seed(30)
-ord.mcap_CD <- ordinate(mcap.bac.T1F.CD, "NMDS", "bray", trymax = 100) 
+ord.mcap_CD <- ordinate(mcap.g.bac.T1F.CD, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_CD)
 scores.mcap_CD<-as.data.frame(cbind(vegan::scores(ord.mcap_CD, display="sites"))) # these are "points" ask hannah 
-scores.mcap_CD$Treatment <- mcap.samp.df.T1F.CD$Treatment
-scores.mcap_CD$Parent.ID <- mcap.samp.df.T1F.CD$Parent.ID
-scores.mcap_CD$Time.Point <- mcap.samp.df.T1F.CD$Time.Point
+scores.mcap_CD$Treatment <- mcap.g.samp.df.T1F.CD$Treatment
+scores.mcap_CD$Parent.ID <- mcap.g.samp.df.T1F.CD$Parent.ID
+scores.mcap_CD$Time.Point <- mcap.g.samp.df.T1F.CD$Time.Point
 
 ggplot(scores.mcap_CD, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C&D T1 TF") +
   theme_classic()
@@ -2022,17 +2632,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
 
 #CD T1
 set.seed(30)
-ord.mcap_CD.T1 <- ordinate(mcap.bac.T1.CD , "NMDS", "bray", trymax = 100) 
+ord.mcap_CD.T1 <- ordinate(mcap.g.bac.T1.CD , "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_CD.T1)
 scores.mcap_CD.T1<-as.data.frame(cbind(vegan::scores(ord.mcap_CD.T1, display="sites"))) # these are "points" ask hannah 
-scores.mcap_CD.T1$Treatment <- mcap.samp.df.T1.CD$Treatment
-scores.mcap_CD.T1$Parent.ID <- mcap.samp.df.T1.CD$Parent.ID
-scores.mcap_CD.T1$Time.Point <- mcap.samp.df.T1.CD$Time.Point
+scores.mcap_CD.T1$Treatment <- mcap.g.samp.df.T1.CD$Treatment
+scores.mcap_CD.T1$Parent.ID <- mcap.g.samp.df.T1.CD$Parent.ID
+scores.mcap_CD.T1$Time.Point <- mcap.g.samp.df.T1.CD$Time.Point
 
 ggplot(scores.mcap_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 CD") +
@@ -2041,17 +2651,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 #CD TF
 set.seed(30)
-ord.mcap_CD.TF <- ordinate(mcap.bac.TF.CD, "NMDS", "bray", trymax = 100) 
+ord.mcap_CD.TF <- ordinate(mcap.g.bac.TF.CD, "NMDS", "bray", trymax = 100) 
 stressplot(ord.mcap_CD.TF)
 scores.mcap_CD.TF<-as.data.frame(cbind(vegan::scores(ord.mcap_CD.TF, display="sites"))) # these are "points" ask hannah 
-scores.mcap_CD.TF$Treatment <- mcap.samp.df.TF.CD$Treatment
-scores.mcap_CD.TF$Parent.ID <- mcap.samp.df.TF.CD$Parent.ID
-scores.mcap_CD.TF$Time.Point <- mcap.samp.df.TF.CD$Time.Point
+scores.mcap_CD.TF$Treatment <- mcap.g.samp.df.TF.CD$Treatment
+scores.mcap_CD.TF$Parent.ID <- mcap.g.samp.df.TF.CD$Parent.ID
+scores.mcap_CD.TF$Time.Point <- mcap.g.samp.df.TF.CD$Time.Point
 
 ggplot(scores.mcap_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Mcap.Parent.colors)+
+  scale_color_manual(values=mcap.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata CD TF") +
@@ -2402,129 +3012,134 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 
 Porites - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
-```{r}      
+```{r}       
 # df Bac_RelA_stats.T1F
 #Pcomp
-Pcomp.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Porites_compressa")
-Pcomp.bac.T1F = prune_taxa(taxa_sums(Pcomp.bac.T1F) > 0, Pcomp.bac.T1F) #this removes any OTU with 0s
+pcomp.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Porites_compressa")
+#pcomp.g.bac.T1F = prune_taxa(taxa_sums(pcomp.g.bac.T1F) > 0, pcomp.g.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-Pcomp.bac.T1 <- subset_samples(Pcomp.bac.T1F, Time.Point == "T1")
-  Pcomp.bac.T1 = prune_taxa(taxa_sums(Pcomp.bac.T1) > 0, Pcomp.bac.T1) #this removes any OTU with 0s
+pcomp.g.bac.T1 <- subset_samples(pcomp.g.bac.T1F, Time.Point == "T1")
+  #pcomp.g.bac.T1 = prune_taxa(taxa_sums(pcomp.g.bac.T1) > 0, pcomp.g.bac.T1) #this removes any OTU with 0s
 
-Pcomp.bac.TF <- subset_samples(Pcomp.bac.T1F, Time.Point == "TF")
-  Pcomp.bac.TF = prune_taxa(taxa_sums(Pcomp.bac.TF) > 0, Pcomp.bac.TF) #this removes any OTU with 0s
+pcomp.g.bac.TF <- subset_samples(pcomp.g.bac.T1F, Time.Point == "TF")
+ # pcomp.g.bac.TF = prune_taxa(taxa_sums(pcomp.g.bac.TF) > 0, pcomp.g.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pcomp.T1F <- phyloseq::distance(Pcomp.bac.T1F, method = "bray")
-     Pcomp.samp.df.T1F <- as(sample_data(Pcomp.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pcomp.T1F ~ Treatment*Time.Point, data = Pcomp.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pcomp.T1F ~ Clade*Treatment*Time.Point, data = Pcomp.samp.df.T1F)#adonis test with clade
+      set.seed(30)
+  bc.pcomp.g.T1F <- phyloseq::distance(pcomp.g.bac.T1F, method = "bray")
+     pcomp.g.samp.df.T1F <- as(sample_data(pcomp.g.bac.T1F), "data.frame") #sample df
+    adonis(bc.pcomp.g.T1F ~ Treatment*Time.Point, data = pcomp.g.samp.df.T1F) #adonis test no clade
+    adonis(bc.pcomp.g.T1F ~ Clade*Treatment*Time.Point, data = pcomp.g.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pcomp.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(pcomp.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PcompT1 <- phyloseq::distance(Pcomp.bac.T1, method = "bray") 
-      Pcomp.samp.df.T1 <- as(sample_data(Pcomp.bac.T1), "data.frame") 
-    adonis(bc.PcompT1 ~ Clade*Treatment, data = Pcomp.samp.df.T1)  
+        set.seed(30)
+
+  bc.PcompT1 <- phyloseq::distance(pcomp.g.bac.T1, method = "bray") 
+      pcomp.g.samp.df.T1 <- as(sample_data(pcomp.g.bac.T1), "data.frame") 
+    adonis(bc.PcompT1 ~ Clade*Treatment, data = pcomp.g.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Clade)  #clade
-    permutest(beta.Pcomp.T1, pairwise = T) 
-  beta.Pcomp.T1 <- betadisper(bc.PcompT1, Pcomp.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pcomp.T1, pairwise = T) 
+  beta.pcomp.g.T1 <- betadisper(bc.PcompT1, pcomp.g.samp.df.T1$Clade)  #clade
+    permutest(beta.pcomp.g.T1, pairwise = T) 
+  beta.pcomp.g.T1 <- betadisper(bc.PcompT1, pcomp.g.samp.df.T1$Treatment) #treatment
+    permutest(beta.pcomp.g.T1, pairwise = T) 
 
 #TF
-  bc.Pcomp.TF <- phyloseq::distance(Pcomp.bac.TF, method = "bray")
-     Pcomp.samp.df.TF <- as(sample_data(Pcomp.bac.TF), "data.frame") 
-    adonis(bc.Pcomp.TF ~ Clade*Treatment, data = Pcomp.samp.df.TF)
+        set.seed(30)
+
+  bc.pcomp.g.TF <- phyloseq::distance(pcomp.g.bac.TF, method = "bray")
+     pcomp.g.samp.df.TF <- as(sample_data(pcomp.g.bac.TF), "data.frame") 
+    adonis(bc.pcomp.g.TF ~ Clade*Treatment, data = pcomp.g.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Clade) 
-    permutest(beta.Pcomp.TF, pairwise = T) 
-  beta.Pcomp.TF <- betadisper(bc.Pcomp.TF, Pcomp.samp.df.TF$Treatment) 
-    permutest(beta.Pcomp.TF, pairwise = T) 
+  beta.pcomp.g.TF <- betadisper(bc.pcomp.g.TF, pcomp.g.samp.df.TF$Clade) 
+    permutest(beta.pcomp.g.TF, pairwise = T) 
+  beta.pcomp.g.TF <- betadisper(bc.pcomp.g.TF, pcomp.g.samp.df.TF$Treatment) 
+    permutest(beta.pcomp.g.TF, pairwise = T) 
 
 ######### by phylotype: C15cj vs C15n
 # C ONLY
-  Pcomp.bac.T1F.C15cj <- subset_samples(Pcomp.bac.T1F, Clade == "C15cj")
-  Pcomp.bac.T1.C15cj <- subset_samples(Pcomp.bac.T1, Clade == "C15cj")
-  Pcomp.bac.TF.C15cj <- subset_samples(Pcomp.bac.TF, Clade == "C15cj")
+  pcomp.g.bac.T1F.C15cj <- subset_samples(pcomp.g.bac.T1F, Clade == "C15cj")
+  pcomp.g.bac.T1.C15cj <- subset_samples(pcomp.g.bac.T1, Clade == "C15cj")
+  pcomp.g.bac.TF.C15cj <- subset_samples(pcomp.g.bac.TF, Clade == "C15cj")
   
 #T1TF.C15cj
-  bc.Pcomp.T1F.C15cj <- phyloseq::distance(Pcomp.bac.T1F.C15cj, method = "bray")
-    Pcomp.samp.df.T1F.C15cj <- as(sample_data(Pcomp.bac.T1F.C15cj), "data.frame") 
-  adonis(bc.Pcomp.T1F.C15cj ~ Treatment*Time.Point, data = Pcomp.samp.df.T1F.C15cj)
+  bc.pcomp.g.T1F.C15cj <- phyloseq::distance(pcomp.g.bac.T1F.C15cj, method = "bray")
+    pcomp.g.samp.df.T1F.C15cj <- as(sample_data(pcomp.g.bac.T1F.C15cj), "data.frame") 
+  adonis(bc.pcomp.g.T1F.C15cj ~ Treatment*Time.Point, data = pcomp.g.samp.df.T1F.C15cj)
 
 #T1.C15cj
-  bc.PcompT1.C15cj <- phyloseq::distance(Pcomp.bac.T1.C15cj, method = "bray")
-    Pcomp.samp.df.T1.C15cj <- as(sample_data(Pcomp.bac.T1.C15cj), "data.frame") #sample df
-  adonis(bc.PcompT1.C15cj ~ Treatment, data = Pcomp.samp.df.T1.C15cj)
-  beta.Pcomp.T1.C15cj <- betadisper(bc.PcompT1.C15cj, Pcomp.samp.df.T1.C15cj$Treatment)
-    permutest(beta.Pcomp.T1.C15cj, pairwise = T) 
+  bc.PcompT1.C15cj <- phyloseq::distance(pcomp.g.bac.T1.C15cj, method = "bray")
+    pcomp.g.samp.df.T1.C15cj <- as(sample_data(pcomp.g.bac.T1.C15cj), "data.frame") #sample df
+  adonis(bc.PcompT1.C15cj ~ Treatment, data = pcomp.g.samp.df.T1.C15cj)
+  beta.pcomp.g.T1.C15cj <- betadisper(bc.PcompT1.C15cj, pcomp.g.samp.df.T1.C15cj$Treatment)
+    permutest(beta.pcomp.g.T1.C15cj, pairwise = T) 
 
 #TF.C15cj
-  bc.Pcomp.TF.C15cj <- phyloseq::distance(Pcomp.bac.TF.C15cj, method = "bray")
-    Pcomp.samp.df.TF.C15cj <- as(sample_data(Pcomp.bac.TF.C15cj), "data.frame") #sample df
-  adonis(bc.Pcomp.TF.C15cj ~ Treatment, data = Pcomp.samp.df.TF.C15cj)
-  beta.Pcomp.TF.C15cj <- betadisper(bc.Pcomp.TF.C15cj, Pcomp.samp.df.TF.C15cj$Treatment)
-    permutest(beta.Pcomp.TF.C15cj, pairwise = T) 
+  bc.pcomp.g.TF.C15cj <- phyloseq::distance(pcomp.g.bac.TF.C15cj, method = "bray")
+    pcomp.g.samp.df.TF.C15cj <- as(sample_data(pcomp.g.bac.TF.C15cj), "data.frame") #sample df
+  adonis(bc.pcomp.g.TF.C15cj ~ Treatment, data = pcomp.g.samp.df.TF.C15cj)
+  beta.pcomp.g.TF.C15cj <- betadisper(bc.pcomp.g.TF.C15cj, pcomp.g.samp.df.TF.C15cj$Treatment)
+    permutest(beta.pcomp.g.TF.C15cj, pairwise = T) 
 
 # CD ONLY
-Pcomp.bac.T1F.C15n <- subset_samples(Pcomp.bac.T1F, Clade == "C15n")
-Pcomp.bac.T1.C15n <- subset_samples(Pcomp.bac.T1, Clade == "C15n")
-Pcomp.bac.TF.C15n <- subset_samples(Pcomp.bac.TF, Clade == "C15n")
+pcomp.g.bac.T1F.C15n <- subset_samples(pcomp.g.bac.T1F, Clade == "C15n")
+pcomp.g.bac.T1.C15n <- subset_samples(pcomp.g.bac.T1, Clade == "C15n")
+pcomp.g.bac.TF.C15n <- subset_samples(pcomp.g.bac.TF, Clade == "C15n")
   
 #T1TF.C15n
-  bc.Pcomp.T1F.C15n <- phyloseq::distance(Pcomp.bac.T1F.C15n, method = "bray")
-  Pcomp.samp.df.T1F.C15n <- as(sample_data(Pcomp.bac.T1F.C15n), "data.frame") 
-  adonis(bc.Pcomp.T1F.C15n ~ Treatment*Time.Point, data = Pcomp.samp.df.T1F.C15n)
+  bc.pcomp.g.T1F.C15n <- phyloseq::distance(pcomp.g.bac.T1F.C15n, method = "bray")
+  pcomp.g.samp.df.T1F.C15n <- as(sample_data(pcomp.g.bac.T1F.C15n), "data.frame") 
+  adonis(bc.pcomp.g.T1F.C15n ~ Treatment*Time.Point, data = pcomp.g.samp.df.T1F.C15n)
 
 #T1.C15n
-  bc.PcompT1.C15n <- phyloseq::distance(Pcomp.bac.T1.C15n, method = "bray")
-    Pcomp.samp.df.T1.C15n <- as(sample_data(Pcomp.bac.T1.C15n), "data.frame") 
-  adonis(bc.PcompT1.C15n ~ Treatment, data = Pcomp.samp.df.T1.C15n)
-    beta.Pcomp.T1.C15n <- betadisper(bc.PcompT1.C15n, Pcomp.samp.df.T1.C15n$Treatment)
-  permutest(beta.Pcomp.T1.C15n, pairwise = T) 
+  bc.PcompT1.C15n <- phyloseq::distance(pcomp.g.bac.T1.C15n, method = "bray")
+    pcomp.g.samp.df.T1.C15n <- as(sample_data(pcomp.g.bac.T1.C15n), "data.frame") 
+  adonis(bc.PcompT1.C15n ~ Treatment, data = pcomp.g.samp.df.T1.C15n)
+    beta.pcomp.g.T1.C15n <- betadisper(bc.PcompT1.C15n, pcomp.g.samp.df.T1.C15n$Treatment)
+  permutest(beta.pcomp.g.T1.C15n, pairwise = T) 
 
 #TF.C15n
-  bc.Pcomp.TF.C15n <- phyloseq::distance(Pcomp.bac.TF.C15n, method = "bray")
-    Pcomp.samp.df.TF.C15n <- as(sample_data(Pcomp.bac.TF.C15n), "data.frame") 
-  adonis(bc.Pcomp.TF.C15n ~ Treatment, data = Pcomp.samp.df.TF.C15n)
-  beta.Pcomp.TF.C15n <- betadisper(bc.Pcomp.TF.C15n, Pcomp.samp.df.TF.C15n$Treatment)
-    permutest(beta.Pcomp.TF.C15n, pairwise = T) 
+  bc.pcomp.g.TF.C15n <- phyloseq::distance(pcomp.g.bac.TF.C15n, method = "bray")
+    pcomp.g.samp.df.TF.C15n <- as(sample_data(pcomp.g.bac.TF.C15n), "data.frame") 
+  adonis(bc.pcomp.g.TF.C15n ~ Treatment, data = pcomp.g.samp.df.TF.C15n)
+  beta.pcomp.g.TF.C15n <- betadisper(bc.pcomp.g.TF.C15n, pcomp.g.samp.df.TF.C15n$Treatment)
+    permutest(beta.pcomp.g.TF.C15n, pairwise = T) 
 ``` 
 Pcomp NMDS
 ```{r} 
 ## create palette for parent.ID and treatments
-Pcomp.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
+pcomp.g.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", Ambient = "Blue", High = "Red","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
 #T1 and TF
-ord.Pcomp2 <- ordinate(Pcomp.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+ord.Pcomp2 <- ordinate(pcomp.g.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
 stressplot(ord.Pcomp2)
 
-scores.Pcomp.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pcomp2, display="sites"))) # these are "points" ask hannah 
-scores.Pcomp.samp.df$Time.Point <- Pcomp.samp.df.T1F$Time.Point
-scores.Pcomp.samp.df$Parent.ID <- Pcomp.samp.df.T1F$Parent.ID
-scores.Pcomp.samp.df$Treatment <- Pcomp.samp.df.T1F$Treatment
-scores.Pcomp.samp.df$Clade <- Pcomp.samp.df.T1F$Clade
-scores.Pcomp.samp.df$Code <- paste(Pcomp.samp.df.T1F$Parent.ID,Pcomp.samp.df.T1F$Time.Point)
-scores.Pcomp.samp.df$Code2 <- paste(Pcomp.samp.df.T1F$Treatment,Pcomp.samp.df.T1F$Time.Point)
-scores.Pcomp.samp.df$Code3 <- paste(Pcomp.samp.df.T1F$Treatment,Pcomp.samp.df.T1F$Time.Point,Pcomp.samp.df.T1F$Parent.ID)
+scores.pcomp.g.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pcomp2, display="sites"))) # these are "points" ask hannah 
+scores.pcomp.g.samp.df$Time.Point <- pcomp.g.samp.df.T1F$Time.Point
+scores.pcomp.g.samp.df$Parent.ID <- pcomp.g.samp.df.T1F$Parent.ID
+scores.pcomp.g.samp.df$Treatment <- pcomp.g.samp.df.T1F$Treatment
+scores.pcomp.g.samp.df$Clade <- pcomp.g.samp.df.T1F$Clade
+scores.pcomp.g.samp.df$Code <- paste(pcomp.g.samp.df.T1F$Parent.ID,pcomp.g.samp.df.T1F$Time.Point)
+scores.pcomp.g.samp.df$Code2 <- paste(pcomp.g.samp.df.T1F$Treatment,pcomp.g.samp.df.T1F$Time.Point)
+scores.pcomp.g.samp.df$Code3 <- paste(pcomp.g.samp.df.T1F$Treatment,pcomp.g.samp.df.T1F$Time.Point,pcomp.g.samp.df.T1F$Parent.ID)
 
-ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) +
+ggplot(scores.pcomp.g.samp.df, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
   scale_shape_manual(values = c(21, 22,24,25)) + 
-    scale_color_manual(values=Pcomp.Parent.colors)+
+    scale_color_manual(values=pcomp.g.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
   ggtitle("P. com T1TF") +
   theme_classic()
 
-ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ggplot(scores.pcomp.g.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -2536,9 +3151,9 @@ ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatme
 
 
 
-ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.pcomp.g.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2), linetype = 2) +
   ggtitle("Pcmop T1TF") +
@@ -2548,21 +3163,21 @@ ggplot(scores.Pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 #T1
-ord.Pcomp.T1 <- ordinate(Pcomp.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
-stressplot(ord.Pcomp.T1)
+ord.pcomp.g.T1 <- ordinate(pcomp.g.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+stressplot(ord.pcomp.g.T1)
 
-ord.Pcomp.T1.df<-as.data.frame(cbind(vegan::scores(ord.Pcomp.T1, display="sites"))) # these are "points" ask hannah 
-ord.Pcomp.T1.df$Time.Point <- Pcomp.samp.df.T1$Time.Point
-ord.Pcomp.T1.df$Parent.ID <- Pcomp.samp.df.T1$Parent.ID
-ord.Pcomp.T1.df$Treatment <- Pcomp.samp.df.T1$Treatment
-ord.Pcomp.T1.df$Clade <- Pcomp.samp.df.T1$Clade
-ord.Pcomp.T1.df$Code <- paste(Pcomp.samp.df.T1$Parent.ID,Pcomp.samp.df.T1$Time.Point)
+ord.pcomp.g.T1.df<-as.data.frame(cbind(vegan::scores(ord.pcomp.g.T1, display="sites"))) # these are "points" ask hannah 
+ord.pcomp.g.T1.df$Time.Point <- pcomp.g.samp.df.T1$Time.Point
+ord.pcomp.g.T1.df$Parent.ID <- pcomp.g.samp.df.T1$Parent.ID
+ord.pcomp.g.T1.df$Treatment <- pcomp.g.samp.df.T1$Treatment
+ord.pcomp.g.T1.df$Clade <- pcomp.g.samp.df.T1$Clade
+ord.pcomp.g.T1.df$Code <- paste(pcomp.g.samp.df.T1$Parent.ID,pcomp.g.samp.df.T1$Time.Point)
 
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
-ggplot(ord.Pcomp.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.pcomp.g.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
     geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("Pcomp T1") +
@@ -2570,24 +3185,24 @@ ggplot(ord.Pcomp.T1.df, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("PcompT1its2.pdf")
 
 #workaround-for when this randomly breaks
-# plot_ordination(Pcomp.bac.TF, ordinate(Pcomp.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
+# plot_ordination(pcomp.g.bac.TF, ordinate(pcomp.g.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
 #TF only
 set.seed(30)
-ord.PcompTF <- ordinate(Pcomp.bac.TF, "NMDS", "bray", trymax = 100) 
+ord.PcompTF <- ordinate(pcomp.g.bac.TF, "NMDS", "bray", trymax = 100) 
 stressplot(ord.PcompTF)
-ord.Pcomp.TF.df<-as.data.frame(cbind(vegan::scores(ord.PcompTF, display="sites"))) # these are "points" ask hannah 
-ord.Pcomp.TF.df$Treatment <- Pcomp.samp.df.TF$Treatment
-ord.Pcomp.TF.df$Parent.ID <- Pcomp.samp.df.TF$Parent.ID
-ord.Pcomp.TF.df$Clade <- Pcomp.samp.df.TF$Clade
-ord.Pcomp.TF.df$CladeTreat <- as.factor(paste(Pcomp.samp.df.TF$Clade,Pcomp.samp.df.TF$Treatment))
-ord.Pcomp.TF.df$Code <- as.factor(paste(Pcomp.samp.df.TF$Parent.ID,Pcomp.samp.df.TF$Treatment))
+ord.pcomp.g.TF.df<-as.data.frame(cbind(vegan::scores(ord.PcompTF, display="sites"))) # these are "points" ask hannah 
+ord.pcomp.g.TF.df$Treatment <- pcomp.g.samp.df.TF$Treatment
+ord.pcomp.g.TF.df$Parent.ID <- pcomp.g.samp.df.TF$Parent.ID
+ord.pcomp.g.TF.df$Clade <- pcomp.g.samp.df.TF$Clade
+ord.pcomp.g.TF.df$CladeTreat <- as.factor(paste(pcomp.g.samp.df.TF$Clade,pcomp.g.samp.df.TF$Treatment))
+ord.pcomp.g.TF.df$Code <- as.factor(paste(pcomp.g.samp.df.TF$Parent.ID,pcomp.g.samp.df.TF$Treatment))
 
-ggplot(ord.Pcomp.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.pcomp.g.TF.df, aes(x = NMDS1, y = NMDS2)) + 
  geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-    scale_color_manual(values=Pcomp.Parent.colors)+
+    scale_color_manual(values=pcomp.g.Parent.colors)+
     #geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P. comp TF") +
@@ -2602,17 +3217,17 @@ ggplot(ord.Pcomp.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 #C15cj T1 and TF 
 set.seed(30)
-ord.Pcomp.C15cj <- ordinate(Pcomp.bac.T1F.C15cj , "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp.C15cj)
-scores.Pcomp.C15cj<-as.data.frame(cbind(vegan::scores(ord.Pcomp.C15cj, display="sites"))) # these are "points" ask hannah
-scores.Pcomp.C15cj$Treatment <- Pcomp.samp.df.T1F.C15cj$Treatment
-scores.Pcomp.C15cj$Parent.ID <- Pcomp.samp.df.T1F.C15cj$Parent.ID
-scores.Pcomp.C15cj$Time.Point <- Pcomp.samp.df.T1F.C15cj$Time.Point
+ord.pcomp.g.C15cj <- ordinate(pcomp.g.bac.T1F.C15cj , "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp.g.C15cj)
+scores.pcomp.g.C15cj<-as.data.frame(cbind(vegan::scores(ord.pcomp.g.C15cj, display="sites"))) # these are "points" ask hannah
+scores.pcomp.g.C15cj$Treatment <- pcomp.g.samp.df.T1F.C15cj$Treatment
+scores.pcomp.g.C15cj$Parent.ID <- pcomp.g.samp.df.T1F.C15cj$Parent.ID
+scores.pcomp.g.C15cj$Time.Point <- pcomp.g.samp.df.T1F.C15cj$Time.Point
 
-ggplot(scores.Pcomp.C15cj, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.pcomp.g.C15cj, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P.comp C15cj") +
   theme_classic()
@@ -2621,17 +3236,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
 
 #C15cj T1
 set.seed(30)
-ord.Pcomp_C.T1 <- ordinate(Pcomp.bac.T1.C15cj, "NMDS", "bray", trymax = 100) 
+ord.Pcomp_C.T1 <- ordinate(pcomp.g.bac.T1.C15cj, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pcomp_C.T1)
 scores.Pcomp_C.T1<-as.data.frame(cbind(vegan::scores(ord.Pcomp_C.T1, display="sites"))) # these are "points" ask hannah 
-scores.Pcomp_C.T1$Treatment <- Pcomp.samp.df.T1.C15cj$Treatment
-scores.Pcomp_C.T1$Parent.ID <- Pcomp.samp.df.T1.C15cj$Parent.ID
-scores.Pcomp_C.T1$Time.Point <- Pcomp.samp.df.T1.C15cj$Time.Point
+scores.Pcomp_C.T1$Treatment <- pcomp.g.samp.df.T1.C15cj$Treatment
+scores.Pcomp_C.T1$Parent.ID <- pcomp.g.samp.df.T1.C15cj$Parent.ID
+scores.Pcomp_C.T1$Time.Point <- pcomp.g.samp.df.T1.C15cj$Time.Point
 
 ggplot(scores.Pcomp_C.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P comp T1 Cladocopium") +
@@ -2640,17 +3255,17 @@ geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
 
 #C TF
 set.seed(30)
-ord.Pcomp_C15n.TF <- ordinate(Pcomp.bac.TF.C15cj, "NMDS", "bray", trymax = 100) 
+ord.Pcomp_C15n.TF <- ordinate(pcomp.g.bac.TF.C15cj, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pcomp_C15n.TF)
 scores.Pcomp_C15n.TF<-as.data.frame(cbind(vegan::scores(ord.Pcomp_C15n.TF, display="sites"))) # 
-scores.Pcomp_C15n.TF$Treatment <- Pcomp.samp.df.TF.C15cj$Treatment
-scores.Pcomp_C15n.TF$Parent.ID <- Pcomp.samp.df.TF.C15cj$Parent.ID
-scores.Pcomp_C15n.TF$Time.Point <- Pcomp.samp.df.TF.C15cj$Time.Point
+scores.Pcomp_C15n.TF$Treatment <- pcomp.g.samp.df.TF.C15cj$Treatment
+scores.Pcomp_C15n.TF$Parent.ID <- pcomp.g.samp.df.TF.C15cj$Parent.ID
+scores.Pcomp_C15n.TF$Time.Point <- pcomp.g.samp.df.TF.C15cj$Time.Point
 
 ggplot(scores.Pcomp_C15n.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P.comp C15 TF") +
@@ -2658,19 +3273,19 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
 #ggsave("Pcomp_TF_its_TF_C.pdf")
 
 
-#CD Pcomp.bacT1F.C15n
+#CD pcomp.g.bacT1F.C15n
 set.seed(30)
-ord.Pcomp.C15n <- ordinate(Pcomp.bac.T1F.C15n, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp.C15n)
-scores.Pcomp.C15n<-as.data.frame(cbind(vegan::scores(ord.Pcomp.C15n, display="sites"))) # these are "points" ask hannah 
-scores.Pcomp.C15n$Treatment <- Pcomp.samp.df.T1F.CD$Treatment
-scores.Pcomp.C15n$Parent.ID <- Pcomp.samp.df.T1F.CD$Parent.ID
-scores.Pcomp.C15n$Time.Point <- Pcomp.samp.df.T1F.CD$Time.Point
+ord.pcomp.g.C15n <- ordinate(pcomp.g.bac.T1F.C15n, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp.g.C15n)
+scores.pcomp.g.C15n<-as.data.frame(cbind(vegan::scores(ord.pcomp.g.C15n, display="sites"))) # these are "points" ask hannah 
+scores.pcomp.g.C15n$Treatment <- pcomp.g.samp.df.T1F.CD$Treatment
+scores.pcomp.g.C15n$Parent.ID <- pcomp.g.samp.df.T1F.CD$Parent.ID
+scores.pcomp.g.C15n$Time.Point <- pcomp.g.samp.df.T1F.CD$Time.Point
 
-ggplot(scores.Pcomp.C15n, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.pcomp.g.C15n, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C&D T1 TF") +
   theme_classic()
@@ -2678,17 +3293,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
 
 #CD T1
 set.seed(30)
-ord.Pcomp.C15n.T1 <- ordinate(Pcomp.bac.T1.CD , "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp.C15n.T1)
-scores.Pcomp.C15n.T1<-as.data.frame(cbind(vegan::scores(ord.Pcomp.C15n.T1, display="sites"))) # these are "points" ask hannah 
-scores.Pcomp.C15n.T1$Treatment <- Pcomp.samp.df.T1.CD$Treatment
-scores.Pcomp.C15n.T1$Parent.ID <- Pcomp.samp.df.T1.CD$Parent.ID
-scores.Pcomp.C15n.T1$Time.Point <- Pcomp.samp.df.T1.CD$Time.Point
+ord.pcomp.g.C15n.T1 <- ordinate(pcomp.g.bac.T1.CD , "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp.g.C15n.T1)
+scores.pcomp.g.C15n.T1<-as.data.frame(cbind(vegan::scores(ord.pcomp.g.C15n.T1, display="sites"))) # these are "points" ask hannah 
+scores.pcomp.g.C15n.T1$Treatment <- pcomp.g.samp.df.T1.CD$Treatment
+scores.pcomp.g.C15n.T1$Parent.ID <- pcomp.g.samp.df.T1.CD$Parent.ID
+scores.pcomp.g.C15n.T1$Time.Point <- pcomp.g.samp.df.T1.CD$Time.Point
 
-ggplot(scores.Pcomp.C15n.T1, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.pcomp.g.C15n.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 CD") +
@@ -2697,17 +3312,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 #CD TF
 set.seed(30)
-ord.Pcomp.C15n.TF <- ordinate(Pcomp.bac.TF.CD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.Pcomp.C15n.TF)
-scores.Pcomp.C15n.TF<-as.data.frame(cbind(vegan::scores(ord.Pcomp.C15n.TF, display="sites"))) # these are "points" ask hannah 
-scores.Pcomp.C15n.TF$Treatment <- Pcomp.samp.df.TF.CD$Treatment
-scores.Pcomp.C15n.TF$Parent.ID <- Pcomp.samp.df.TF.CD$Parent.ID
-scores.Pcomp.C15n.TF$Time.Point <- Pcomp.samp.df.TF.CD$Time.Point
+ord.pcomp.g.C15n.TF <- ordinate(pcomp.g.bac.TF.CD, "NMDS", "bray", trymax = 100) 
+stressplot(ord.pcomp.g.C15n.TF)
+scores.pcomp.g.C15n.TF<-as.data.frame(cbind(vegan::scores(ord.pcomp.g.C15n.TF, display="sites"))) # these are "points" ask hannah 
+scores.pcomp.g.C15n.TF$Treatment <- pcomp.g.samp.df.TF.CD$Treatment
+scores.pcomp.g.C15n.TF$Parent.ID <- pcomp.g.samp.df.TF.CD$Parent.ID
+scores.pcomp.g.C15n.TF$Time.Point <- pcomp.g.samp.df.TF.CD$Time.Point
 
-ggplot(scores.Pcomp.C15n.TF, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.pcomp.g.C15n.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata CD TF") +
@@ -2721,101 +3336,107 @@ ggsave("Pcomp_ITS2.C15n_TF.pdf")
 Pavona - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
 
-```{r}      
+```{r}       
 # df Bac_RelA_stats.T1F
 #Pvar
-Pvar.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pavona_varians")
-Pvar.bac.T1F = prune_taxa(taxa_sums(Pvar.bac.T1F) > 0, Pvar.bac.T1F) #this removes any OTU with 0s
+Pvar.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pavona_varians")
+#Pvar.g.bac.T1F = prune_taxa(taxa_sums(Pvar.g.bac.T1F) > 0, Pvar.g.bac.T1F) #this removes any OTU with 0s
  
 #make dfs you need 
-Pvar.bac.T1 <- subset_samples(Pvar.bac.T1F, Time.Point == "T1")
-  Pvar.bac.T1 = prune_taxa(taxa_sums(Pvar.bac.T1) > 0, Pvar.bac.T1) #this removes any OTU with 0s
+Pvar.g.bac.T1 <- subset_samples(Pvar.g.bac.T1F, Time.Point == "T1")
+  #Pvar.g.bac.T1 = prune_taxa(taxa_sums(Pvar.g.bac.T1) > 0, Pvar.g.bac.T1) #this removes any OTU with 0s
 
-Pvar.bac.TF <- subset_samples(Pvar.bac.T1F, Time.Point == "TF")
-  Pvar.bac.TF = prune_taxa(taxa_sums(Pvar.bac.TF) > 0, Pvar.bac.TF) #this removes any OTU with 0s
+Pvar.g.bac.TF <- subset_samples(Pvar.g.bac.T1F, Time.Point == "TF")
+  #Pvar.g.bac.TF = prune_taxa(taxa_sums(Pvar.g.bac.TF) > 0, Pvar.g.bac.TF) #this removes any OTU with 0s
  
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pvar.T1F <- phyloseq::distance(Pvar.bac.T1F, method = "bray")
-     Pvar.samp.df.T1F <- as(sample_data(Pvar.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pvar.T1F ~ Treatment*Time.Point, data = Pvar.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pvar.T1F ~ Clade*Treatment*Time.Point, data = Pvar.samp.df.T1F)#adonis test with clade
+          set.seed(30)
+
+  bc.Pvar.g.T1F <- phyloseq::distance(Pvar.g.bac.T1F, method = "bray")
+     Pvar.g.samp.df.T1F <- as(sample_data(Pvar.g.bac.T1F), "data.frame") #sample df
+    adonis(bc.Pvar.g.T1F ~ Treatment*Time.Point, data = Pvar.g.samp.df.T1F) #adonis test no clade
+    adonis(bc.Pvar.g.T1F ~ Clade*Treatment*Time.Point, data = Pvar.g.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pvar.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(Pvar.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PvarT1 <- phyloseq::distance(Pvar.bac.T1, method = "bray") 
-      Pvar.samp.df.T1 <- as(sample_data(Pvar.bac.T1), "data.frame") 
-    adonis(bc.PvarT1 ~ Clade*Treatment, data = Pvar.samp.df.T1)  
+            set.seed(30)
+
+  bc.PvarT1 <- phyloseq::distance(Pvar.g.bac.T1, method = "bray") 
+      Pvar.g.samp.df.T1 <- as(sample_data(Pvar.g.bac.T1), "data.frame") 
+    adonis(bc.PvarT1 ~ Clade*Treatment, data = Pvar.g.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Clade)  #clade
-    permutest(beta.Pvar.T1, pairwise = T) 
-  beta.Pvar.T1 <- betadisper(bc.PvarT1, Pvar.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pvar.T1, pairwise = T) 
+  beta.Pvar.g.T1 <- betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Clade)  #clade
+    permutest(beta.Pvar.g.T1, pairwise = T) 
+  beta.Pvar.g.T1 <- betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Treatment) #treatment
+    permutest(beta.Pvar.g.T1, pairwise = T) 
 
 #TF
-  bc.Pvar.TF <- phyloseq::distance(Pvar.bac.TF, method = "bray")
-     Pvar.samp.df.TF <- as(sample_data(Pvar.bac.TF), "data.frame") 
-    adonis(bc.Pvar.TF ~ Clade*Treatment, data = Pvar.samp.df.TF)
+            set.seed(30)
+
+  bc.Pvar.g.TF <- phyloseq::distance(Pvar.g.bac.TF, method = "bray")
+     Pvar.g.samp.df.TF <- as(sample_data(Pvar.g.bac.TF), "data.frame") 
+    adonis(bc.Pvar.g.TF ~ Clade*Treatment, data = Pvar.g.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Clade) 
-    permutest(beta.Pvar.TF, pairwise = T) 
-  beta.Pvar.TF <- betadisper(bc.Pvar.TF, Pvar.samp.df.TF$Treatment) 
-    permutest(beta.Pvar.TF, pairwise = T) 
+  beta.Pvar.g.TF <- betadisper(bc.Pvar.g.TF, Pvar.g.samp.df.TF$Clade) 
+    permutest(beta.Pvar.g.TF, pairwise = T) 
+  beta.Pvar.g.TF <- betadisper(bc.Pvar.g.TF, Pvar.g.samp.df.TF$Treatment) 
+    permutest(beta.Pvar.g.TF, pairwise = T) 
 
 ######### by phylotype: C vs CD
 # C ONLY
-  Pvar.bac.T1F.C27 <- subset_samples(Pvar.bac.T1F, Clade == "C27")
-  Pvar.bac.T1.C27 <- subset_samples(Pvar.bac.T1, Clade == "C27")
-  Pvar.bac.TF.C27 <- subset_samples(Pvar.bac.TF, Clade == "C27")
+  Pvar.g.bac.T1F.C27 <- subset_samples(Pvar.g.bac.T1F, Clade == "C27")
+  Pvar.g.bac.T1.C27 <- subset_samples(Pvar.g.bac.T1, Clade == "C27")
+  Pvar.g.bac.TF.C27 <- subset_samples(Pvar.g.bac.TF, Clade == "C27")
   
 #T1TF.C27
-  bc.Pvar.T1F.C27 <- phyloseq::distance(Pvar.bac.T1F.C27, method = "bray")
-    Pvar.samp.df.T1F.C27 <- as(sample_data(Pvar.bac.T1F.C27), "data.frame") 
-  adonis(bc.Pvar.T1F.C27 ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.C27)
+  bc.Pvar.g.T1F.C27 <- phyloseq::distance(Pvar.g.bac.T1F.C27, method = "bray")
+    Pvar.g.samp.df.T1F.C27 <- as(sample_data(Pvar.g.bac.T1F.C27), "data.frame") 
+  adonis(bc.Pvar.g.T1F.C27 ~ Treatment*Time.Point, data = Pvar.g.samp.df.T1F.C27)
 
 #T1.C27
-  bc.PvarT1.C27 <- phyloseq::distance(Pvar.bac.T1.C27, method = "bray")
-    Pvar.samp.df.T1.C27 <- as(sample_data(Pvar.bac.T1.C27), "data.frame") #sample df
-  adonis(bc.PvarT1.C27 ~ Treatment, data = Pvar.samp.df.T1.C27)
-  beta.Pvar.T1.C27 <- betadisper(bc.PvarT1.C27, Pvar.samp.df.T1.C27$Treatment)
-    permutest(beta.Pvar.T1.C27, pairwise = T) 
+  bc.PvarT1.C27 <- phyloseq::distance(Pvar.g.bac.T1.C27, method = "bray")
+    Pvar.g.samp.df.T1.C27 <- as(sample_data(Pvar.g.bac.T1.C27), "data.frame") #sample df
+  adonis(bc.PvarT1.C27 ~ Treatment, data = Pvar.g.samp.df.T1.C27)
+  beta.Pvar.g.T1.C27 <- betadisper(bc.PvarT1.C27, Pvar.g.samp.df.T1.C27$Treatment)
+    permutest(beta.Pvar.g.T1.C27, pairwise = T) 
 
 #TF.C27
-  bc.Pvar.TF.C27 <- phyloseq::distance(Pvar.bac.TF.C27, method = "bray")
-    Pvar.samp.df.TF.C27 <- as(sample_data(Pvar.bac.TF.C27), "data.frame") #sample df
-  adonis(bc.Pvar.TF.C27 ~ Treatment, data = Pvar.samp.df.TF.C27)
-  beta.Pvar.TF.C27 <- betadisper(bc.Pvar.TF.C27, Pvar.samp.df.TF.C27$Treatment)
-    permutest(beta.Pvar.TF.C27, pairwise = T) 
+  bc.Pvar.g.TF.C27 <- phyloseq::distance(Pvar.g.bac.TF.C27, method = "bray")
+    Pvar.g.samp.df.TF.C27 <- as(sample_data(Pvar.g.bac.TF.C27), "data.frame") #sample df
+  adonis(bc.Pvar.g.TF.C27 ~ Treatment, data = Pvar.g.samp.df.TF.C27)
+  beta.Pvar.g.TF.C27 <- betadisper(bc.Pvar.g.TF.C27, Pvar.g.samp.df.TF.C27$Treatment)
+    permutest(beta.Pvar.g.TF.C27, pairwise = T) 
 
 # C1 ONLY
-Pvar.bac.T1F.C1 <- subset_samples(Pvar.bac.T1F, Clade == "C1")
-Pvar.bac.T1.C1 <- subset_samples(Pvar.bac.T1, Clade == "C1")
-Pvar.bac.TF.C1 <- subset_samples(Pvar.bac.TF, Clade == "C1")
+Pvar.g.bac.T1F.C1 <- subset_samples(Pvar.g.bac.T1F, Clade == "C1")
+Pvar.g.bac.T1.C1 <- subset_samples(Pvar.g.bac.T1, Clade == "C1")
+Pvar.g.bac.TF.C1 <- subset_samples(Pvar.g.bac.TF, Clade == "C1")
   
 #T1TF.C1
-  bc.Pvar.T1F.C1 <- phyloseq::distance(Pvar.bac.T1F.C1, method = "bray")
-  Pvar.samp.df.T1F.C1 <- as(sample_data(Pvar.bac.T1F.C1), "data.frame") 
-  adonis(bc.Pvar.T1F.C1 ~ Treatment*Time.Point, data = Pvar.samp.df.T1F.C1)
+  bc.Pvar.g.T1F.C1 <- phyloseq::distance(Pvar.g.bac.T1F.C1, method = "bray")
+  Pvar.g.samp.df.T1F.C1 <- as(sample_data(Pvar.g.bac.T1F.C1), "data.frame") 
+  adonis(bc.Pvar.g.T1F.C1 ~ Treatment*Time.Point, data = Pvar.g.samp.df.T1F.C1)
 
 #T1.C1
-  bc.PvarT1.C1 <- phyloseq::distance(Pvar.bac.T1.C1, method = "bray")
-    Pvar.samp.df.T1.C1 <- as(sample_data(Pvar.bac.T1.C1), "data.frame") 
-  adonis(bc.PvarT1.C1 ~ Treatment, data = Pvar.samp.df.T1.C1)
-    beta.Pvar.T1.C1 <- betadisper(bc.PvarT1.C1, Pvar.samp.df.T1.C1$Treatment)
-  permutest(beta.Pvar.T1.C1, pairwise = T) 
+  bc.PvarT1.C1 <- phyloseq::distance(Pvar.g.bac.T1.C1, method = "bray")
+    Pvar.g.samp.df.T1.C1 <- as(sample_data(Pvar.g.bac.T1.C1), "data.frame") 
+  adonis(bc.PvarT1.C1 ~ Treatment, data = Pvar.g.samp.df.T1.C1)
+    beta.Pvar.g.T1.C1 <- betadisper(bc.PvarT1.C1, Pvar.g.samp.df.T1.C1$Treatment)
+  permutest(beta.Pvar.g.T1.C1, pairwise = T) 
 
 #TF.C1
-  bc.Pvar.TF.C1 <- phyloseq::distance(Pvar.bac.TF.C1, method = "bray")
-    Pvar.samp.df.TF.C1 <- as(sample_data(Pvar.bac.TF.C1), "data.frame") 
-  adonis(bc.Pvar.TF.C1 ~ Treatment, data = Pvar.samp.df.TF.C1)
-  beta.Pvar.TF.C1 <- betadisper(bc.Pvar.TF.C1, Pvar.samp.df.TF.C1$Treatment)
-    permutest(beta.Pvar.TF.C1, pairwise = T) 
+  bc.Pvar.g.TF.C1 <- phyloseq::distance(Pvar.g.bac.TF.C1, method = "bray")
+    Pvar.g.samp.df.TF.C1 <- as(sample_data(Pvar.g.bac.TF.C1), "data.frame") 
+  adonis(bc.Pvar.g.TF.C1 ~ Treatment, data = Pvar.g.samp.df.TF.C1)
+  beta.Pvar.g.TF.C1 <- betadisper(bc.Pvar.g.TF.C1, Pvar.g.samp.df.TF.C1$Treatment)
+    permutest(beta.Pvar.g.TF.C1, pairwise = T) 
 ``` 
 Pvar NMDS
 ```{r} 
 ## create palette for parent.ID and treatments
-Pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
+Pvar.g.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
                        "Ambient" = "dodgerblue", "High" = "darkred",
                         "C1 Ambient"="#DDCC77","C1 High"="#999933", "C27 Ambient"="#44AA99", "C27 High"="#117733", 
                         "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
@@ -2823,21 +3444,21 @@ Pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppin
 
  
 #T1 and TF
-ord.Pvar2 <- ordinate(Pvar.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+ord.Pvar2 <- ordinate(Pvar.g.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
 stressplot(ord.Pvar2)
 
-scores.Pvar.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pvar2, display="sites"))) # these are "points" ask hannah 
-scores.Pvar.samp.df$Time.Point <- Pvar.samp.df.T1F$Time.Point
-scores.Pvar.samp.df$Parent.ID <- Pvar.samp.df.T1F$Parent.ID
-scores.Pvar.samp.df$Treatment <- Pvar.samp.df.T1F$Treatment
-scores.Pvar.samp.df$Clade <- Pvar.samp.df.T1F$Clade
-scores.Pvar.samp.df$Code <- paste(Pvar.samp.df.T1F$Parent.ID,Pvar.samp.df.T1F$Time.Point)
-scores.Pvar.samp.df$Code2 <- paste(Pvar.samp.df.T1F$Treatment,Pvar.samp.df.T1F$Time.Point)
-scores.Pvar.samp.df$Code3 <- paste(Pvar.samp.df.T1F$Treatment,Pvar.samp.df.T1F$Time.Point,Pvar.samp.df.T1F$Parent.ID)
+scores.Pvar.g.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pvar2, display="sites"))) # these are "points" ask hannah 
+scores.Pvar.g.samp.df$Time.Point <- Pvar.g.samp.df.T1F$Time.Point
+scores.Pvar.g.samp.df$Parent.ID <- Pvar.g.samp.df.T1F$Parent.ID
+scores.Pvar.g.samp.df$Treatment <- Pvar.g.samp.df.T1F$Treatment
+scores.Pvar.g.samp.df$Clade <- Pvar.g.samp.df.T1F$Clade
+scores.Pvar.g.samp.df$Code <- paste(Pvar.g.samp.df.T1F$Parent.ID,Pvar.g.samp.df.T1F$Time.Point)
+scores.Pvar.g.samp.df$Code2 <- paste(Pvar.g.samp.df.T1F$Treatment,Pvar.g.samp.df.T1F$Time.Point)
+scores.Pvar.g.samp.df$Code3 <- paste(Pvar.g.samp.df.T1F$Treatment,Pvar.g.samp.df.T1F$Time.Point,Pvar.g.samp.df.T1F$Parent.ID)
 
-ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(scores.Pvar.g.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Time.Point), size = 4) +
-  scale_color_manual(values=Pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2), linetype = 2) +
   ggtitle("P. varians T1TF") +
@@ -2845,20 +3466,20 @@ ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("PvarT1its2.pdf")
 
 
-ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2)) +
+ggplot(scores.Pvar.g.samp.df, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
   scale_shape_manual(values = c(21, 22,24,25)) + 
-    scale_color_manual(values=Pvar.Parent.colors)+
+    scale_color_manual(values=Pvar.g.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
   ggtitle("P. var T1TF") +
   theme_classic()
 
-ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ggplot(scores.Pvar.g.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -2866,23 +3487,23 @@ ggplot(scores.Pvar.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatmen
   theme_classic()
 
 #T1
-ord.Pvar.T1 <- ordinate(Pvar.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
-stressplot(ord.Pvar.T1)
+ord.Pvar.g.T1 <- ordinate(Pvar.g.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+stressplot(ord.Pvar.g.T1)
 
-ord.Pvar.T1.df<-as.data.frame(cbind(vegan::scores(ord.Pvar.T1, display="sites"))) # these are "points" ask hannah 
-ord.Pvar.T1.df$Time.Point <- Pvar.samp.df.T1$Time.Point
-ord.Pvar.T1.df$Parent.ID <- Pvar.samp.df.T1$Parent.ID
-ord.Pvar.T1.df$Treatment <- Pvar.samp.df.T1$Treatment
-ord.Pvar.T1.df$Clade <- Pvar.samp.df.T1$Clade
-ord.Pvar.T1.df$Code <- paste(Pvar.samp.df.T1$Parent.ID,Pvar.samp.df.T1$Time.Point)
-ord.Pvar.T1.df$Code2 <- paste(Pvar.samp.df.T1$Clade,Pvar.samp.df.T1$Treatment)
-ord.Pvar.T1.df$Code2 <- as.factor(ord.Pvar.T1.df$Code2)
+ord.Pvar.g.T1.df<-as.data.frame(cbind(vegan::scores(ord.Pvar.g.T1, display="sites"))) # these are "points" ask hannah 
+ord.Pvar.g.T1.df$Time.Point <- Pvar.g.samp.df.T1$Time.Point
+ord.Pvar.g.T1.df$Parent.ID <- Pvar.g.samp.df.T1$Parent.ID
+ord.Pvar.g.T1.df$Treatment <- Pvar.g.samp.df.T1$Treatment
+ord.Pvar.g.T1.df$Clade <- Pvar.g.samp.df.T1$Clade
+ord.Pvar.g.T1.df$Code <- paste(Pvar.g.samp.df.T1$Parent.ID,Pvar.g.samp.df.T1$Time.Point)
+ord.Pvar.g.T1.df$Code2 <- paste(Pvar.g.samp.df.T1$Clade,Pvar.g.samp.df.T1$Treatment)
+ord.Pvar.g.T1.df$Code2 <- as.factor(ord.Pvar.g.T1.df$Code2)
 
 
-ggplot(ord.Pvar.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.Pvar.g.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -2891,26 +3512,26 @@ ggplot(ord.Pvar.T1.df, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("pvarT1its2.pdf")
 
 #workaround-for when this randomly breaks
-# plot_ordination(pvar.bac.TF, ordinate(pvar.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
+# plot_ordination(Pvar.g.bac.TF, ordinate(Pvar.g.bac, "MDS", set.seed=(30)), color = "Treatment", shape="Clade") + geom_point(size = 5)
 
 
 #TF only
 set.seed(30)
-ord.pvarTF <- ordinate(Pvar.bac.T1, "NMDS", "bray", trymax = 100) 
+ord.pvarTF <- ordinate(Pvar.g.bac.T1, "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvarTF)
-ord.pvar.TF.df<-as.data.frame(cbind(vegan::scores(ord.pvarTF, display="sites"))) # these are "points" ask hannah 
-ord.pvar.TF.df$Treatment <- Pvar.samp.df.TF$Treatment
-ord.pvar.TF.df$Parent.ID <- Pvar.samp.df.TF$Parent.ID
-ord.pvar.TF.df$Clade <- Pvar.samp.df.TF$Clade
-ord.pvar.TF.df$CladeTreat <- as.factor(paste(Pvar.samp.df.TF$Clade,Pvar.samp.df.TF$Treatment))
-ord.pvar.TF.df$Code <- as.factor(paste(Pvar.samp.df.TF$Parent.ID,Pvar.samp.df.TF$Treatment))
-ord.pvar.TF.df$Code2 <- paste(Pvar.samp.df.TF$Clade,Pvar.samp.df.TF$Treatment)
-ord.pvar.TF.df$Code2 <- as.factor(ord.pvar.TF.df$Code2)
+ord.Pvar.g.TF.df<-as.data.frame(cbind(vegan::scores(ord.pvarTF, display="sites"))) # these are "points" ask hannah 
+ord.Pvar.g.TF.df$Treatment <- Pvar.g.samp.df.TF$Treatment
+ord.Pvar.g.TF.df$Parent.ID <- Pvar.g.samp.df.TF$Parent.ID
+ord.Pvar.g.TF.df$Clade <- Pvar.g.samp.df.TF$Clade
+ord.Pvar.g.TF.df$CladeTreat <- as.factor(paste(Pvar.g.samp.df.TF$Clade,Pvar.g.samp.df.TF$Treatment))
+ord.Pvar.g.TF.df$Code <- as.factor(paste(Pvar.g.samp.df.TF$Parent.ID,Pvar.g.samp.df.TF$Treatment))
+ord.Pvar.g.TF.df$Code2 <- paste(Pvar.g.samp.df.TF$Clade,Pvar.g.samp.df.TF$Treatment)
+ord.Pvar.g.TF.df$Code2 <- as.factor(ord.Pvar.g.TF.df$Code2)
 
-ggplot(ord.pvar.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.Pvar.g.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -2926,12 +3547,12 @@ ggplot(ord.pvar.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 #C T1 and TF 
 set.seed(30)
-ord.pvar_C <- ordinate(pvar.bac.T1F.C , "NMDS", "bray", trymax = 100) 
+ord.pvar_C <- ordinate(Pvar.g.bac.T1F.C , "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvar_C)
 scores.pvar_C<-as.data.frame(cbind(vegan::scores(ord.pvar_C, display="sites"))) # these are "points" ask hannah 
-scores.pvar_C$Treatment <- pvar.samp.df.T1F.C$Treatment
-scores.pvar_C$Parent.ID <- pvar.samp.df.T1F.C$Parent.ID
-scores.pvar_C$Time.Point <- pvar.samp.df.T1F.C$Time.Point
+scores.pvar_C$Treatment <- Pvar.g.samp.df.T1F.C$Treatment
+scores.pvar_C$Parent.ID <- Pvar.g.samp.df.T1F.C$Parent.ID
+scores.pvar_C$Time.Point <- Pvar.g.samp.df.T1F.C$Time.Point
 scores.pvar_C$Code2<-as.factor(paste(scores.pvar_C$Treatment, scores.pvar_C$Time.Point))
 
 ggplot(scores.mcap_C, aes(x = NMDS1, y = NMDS2)) +
@@ -2981,7 +3602,7 @@ scores.mcap_C.T1$Time.Point <- mcap.samp.df.T1.C$Time.Point
 ggplot(scores.pvar_C.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
-  scale_color_manual(values=pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("Pvar T1") +
@@ -2990,17 +3611,17 @@ geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
 
 #C TF
 set.seed(30)
-ord.pvar_C.TF <- ordinate(pvar.bac.TF.C, "NMDS", "bray", trymax = 100) 
+ord.pvar_C.TF <- ordinate(Pvar.g.bac.TF.C, "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvar_C.TF)
 scores.pvar_C.TF<-as.data.frame(cbind(vegan::scores(ord.pvar_C.TF, display="sites"))) # these are "points" ask hannah 
-scores.pvar_C.TF$Treatment <- pvar.samp.df.TF.C$Treatment
-scores.pvar_C.TF$Parent.ID <- pvar.samp.df.TF.C$Parent.ID
-scores.pvar_C.TF$Time.Point <- pvar.samp.df.TF.C$Time.Point
+scores.pvar_C.TF$Treatment <- Pvar.g.samp.df.TF.C$Treatment
+scores.pvar_C.TF$Parent.ID <- Pvar.g.samp.df.TF.C$Parent.ID
+scores.pvar_C.TF$Time.Point <- Pvar.g.samp.df.TF.C$Time.Point
 
 ggplot(scores.pvar_C.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C TF") +
@@ -3008,19 +3629,19 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
 #ggsave("pvar_TF_its_TF_C.pdf")
 
 
-#CD pvar.bacT1F.CD
+#CD Pvar.g.bacT1F.CD
 set.seed(30)
-ord.pvar_CD <- ordinate(pvar.bac.T1F.CD, "NMDS", "bray", trymax = 100) 
+ord.pvar_CD <- ordinate(Pvar.g.bac.T1F.CD, "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvar_CD)
 scores.pvar_CD<-as.data.frame(cbind(vegan::scores(ord.pvar_CD, display="sites"))) # these are "points" ask hannah 
-scores.pvar_CD$Treatment <- pvar.samp.df.T1F.CD$Treatment
-scores.pvar_CD$Parent.ID <- pvar.samp.df.T1F.CD$Parent.ID
-scores.pvar_CD$Time.Point <- pvar.samp.df.T1F.CD$Time.Point
+scores.pvar_CD$Treatment <- Pvar.g.samp.df.T1F.CD$Treatment
+scores.pvar_CD$Parent.ID <- Pvar.g.samp.df.T1F.CD$Parent.ID
+scores.pvar_CD$Time.Point <- Pvar.g.samp.df.T1F.CD$Time.Point
 
 ggplot(scores.pvar_CD, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Time.Point)) +  
-  scale_color_manual(values=pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata C&D T1 TF") +
   theme_classic()
@@ -3028,17 +3649,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Time.Point,size = 4) )+
 
 #CD T1
 set.seed(30)
-ord.pvar_CD.T1 <- ordinate(pvar.bac.T1.CD , "NMDS", "bray", trymax = 100) 
+ord.pvar_CD.T1 <- ordinate(Pvar.g.bac.T1.CD , "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvar_CD.T1)
 scores.pvar_CD.T1<-as.data.frame(cbind(vegan::scores(ord.pvar_CD.T1, display="sites"))) # these are "points" ask hannah 
-scores.pvar_CD.T1$Treatment <- pvar.samp.df.T1.CD$Treatment
-scores.pvar_CD.T1$Parent.ID <- pvar.samp.df.T1.CD$Parent.ID
-scores.pvar_CD.T1$Time.Point <- pvar.samp.df.T1.CD$Time.Point
+scores.pvar_CD.T1$Treatment <- Pvar.g.samp.df.T1.CD$Treatment
+scores.pvar_CD.T1$Parent.ID <- Pvar.g.samp.df.T1.CD$Parent.ID
+scores.pvar_CD.T1$Time.Point <- Pvar.g.samp.df.T1.CD$Time.Point
 
 ggplot(scores.pvar_CD.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata T1 CD") +
@@ -3047,17 +3668,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 #CD TF
 set.seed(30)
-ord.pvar_CD.TF <- ordinate(pvar.bac.TF.CD, "NMDS", "bray", trymax = 100) 
+ord.pvar_CD.TF <- ordinate(Pvar.g.bac.TF.CD, "NMDS", "bray", trymax = 100) 
 stressplot(ord.pvar_CD.TF)
 scores.pvar_CD.TF<-as.data.frame(cbind(vegan::scores(ord.pvar_CD.TF, display="sites"))) # these are "points" ask hannah 
-scores.pvar_CD.TF$Treatment <- pvar.samp.df.TF.CD$Treatment
-scores.pvar_CD.TF$Parent.ID <- pvar.samp.df.TF.CD$Parent.ID
-scores.pvar_CD.TF$Time.Point <- pvar.samp.df.TF.CD$Time.Point
+scores.pvar_CD.TF$Treatment <- Pvar.g.samp.df.TF.CD$Treatment
+scores.pvar_CD.TF$Parent.ID <- Pvar.g.samp.df.TF.CD$Parent.ID
+scores.pvar_CD.TF$Time.Point <- Pvar.g.samp.df.TF.CD$Time.Point
 
 ggplot(scores.pvar_CD.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=pvar.Parent.colors)+
+  scale_color_manual(values=Pvar.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("M. capitata CD TF") +
@@ -3073,98 +3694,106 @@ CHANGE PHYLOTYPES
 ```{r}    
 # df Bac_RelA_stats.T1F 
 #Pacu
-Pacu.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pocillopora_acuta")
-Pacu.bac.T1F = prune_taxa(taxa_sums(Pacu.bac.T1F) > 0, Pacu.bac.T1F) #this removes any OTU with 0s
+Pacu.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pocillopora_acuta")
+#Pacu.g.bac.T1F = prune_taxa(taxa_sums(Pacu.g.bac.T1F) > 0, Pacu.g.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-Pacu.bac.T1 <- subset_samples(Pacu.bac.T1F, Time.Point == "T1")
-  Pacu.bac.T1 = prune_taxa(taxa_sums(Pacu.bac.T1) > 0, Pacu.bac.T1) #this removes any OTU with 0s
+Pacu.g.bac.T1 <- subset_samples(Pacu.g.bac.T1F, Time.Point == "T1")
+ # Pacu.g.bac.T1 = prune_taxa(taxa_sums(Pacu.g.bac.T1) > 0, Pacu.g.bac.T1) #this removes any OTU with 0s
 
-Pacu.bac.TF <- subset_samples(Pacu.bac.T1F, Time.Point == "TF")
-  Pacu.bac.TF = prune_taxa(taxa_sums(Pacu.bac.TF) > 0, Pacu.bac.TF) #this removes any OTU with 0s
+Pacu.g.bac.TF <- subset_samples(Pacu.g.bac.T1F, Time.Point == "TF")
+  #Pacu.g.bac.TF = prune_taxa(taxa_sums(Pacu.g.bac.TF) > 0, Pacu.g.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.Pacu.T1F <- phyloseq::distance(Pacu.bac.T1F, method = "bray")
-     Pacu.samp.df.T1F <- as(sample_data(Pacu.bac.T1F), "data.frame") #sample df
-    adonis(bc.Pacu.T1F ~ Treatment*Time.Point, data = Pacu.samp.df.T1F) #adonis test no clade
-    adonis(bc.Pacu.T1F ~ Clade*Treatment*Time.Point, data = Pacu.samp.df.T1F)#adonis test with clade
+              set.seed(30)
+
+  bc.Pacu.g.T1F <- phyloseq::distance(Pacu.g.bac.T1F, method = "bray")
+     Pacu.g.samp.df.T1F <- as(sample_data(Pacu.g.bac.T1F), "data.frame") #sample df
+    adonis(bc.Pacu.g.T1F ~ Treatment*Time.Point, data = Pacu.g.samp.df.T1F) #adonis test no clade
+    adonis(bc.Pacu.g.T1F ~ Clade*Treatment*Time.Point, data = Pacu.g.samp.df.T1F)#adonis test with clade
  #heatmap
-    #plot_heatmap(Pacu.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+    #plot_heatmap(Pacu.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
     
 #T1
-  bc.PacuT1 <- phyloseq::distance(Pacu.bac.T1, method = "bray") 
-      Pacu.samp.df.T1 <- as(sample_data(Pacu.bac.T1), "data.frame") 
-    adonis(bc.PacuT1 ~ Clade*Treatment, data = Pacu.samp.df.T1)  
+                set.seed(30)
+
+  bc.PacuT1 <- phyloseq::distance(Pacu.g.bac.T1, method = "bray") 
+      Pacu.g.samp.df.T1 <- as(sample_data(Pacu.g.bac.T1), "data.frame") 
+          adonis(bc.PacuT1 ~ Treatment, data = Pacu.g.samp.df.T1)  
+    adonis(bc.PacuT1 ~ Clade*Treatment, data = Pacu.g.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Clade)  #clade
-    permutest(beta.Pacu.T1, pairwise = T) 
-  beta.Pacu.T1 <- betadisper(bc.PacuT1, Pacu.samp.df.T1$Treatment) #treatment
-    permutest(beta.Pacu.T1, pairwise = T) 
+  beta.Pacu.g.T1 <- betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Clade)  #clade
+    permutest(beta.Pacu.g.T1, pairwise = T) 
+  beta.Pacu.g.T1 <- betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Treatment) #treatment
+    permutest(beta.Pacu.g.T1, pairwise = T) 
 
 #TF
-  bc.Pacu.TF <- phyloseq::distance(Pacu.bac.TF, method = "bray")
-     Pacu.samp.df.TF <- as(sample_data(Pacu.bac.TF), "data.frame") 
-    adonis(bc.Pacu.TF ~ Clade*Treatment, data = Pacu.samp.df.TF)
+                set.seed(30)
+
+  bc.Pacu.g.TF <- phyloseq::distance(Pacu.g.bac.TF, method = "bray")
+     Pacu.g.samp.df.TF <- as(sample_data(Pacu.g.bac.TF), "data.frame")
+         adonis(bc.Pacu.g.TF ~ Treatment, data = Pacu.g.samp.df.TF)
+    adonis(bc.Pacu.g.TF ~ Clade*Treatment, data = Pacu.g.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Clade) 
-    permutest(beta.Pacu.TF, pairwise = T) 
-  beta.Pacu.TF <- betadisper(bc.Pacu.TF, Pacu.samp.df.TF$Treatment) 
-    permutest(beta.Pacu.TF, pairwise = T) 
+  beta.Pacu.g.TF <- betadisper(bc.Pacu.g.TF, Pacu.g.samp.df.TF$Clade) 
+    permutest(beta.Pacu.g.TF, pairwise = T) 
+  beta.Pacu.g.TF <- betadisper(bc.Pacu.g.TF, Pacu.g.samp.df.TF$Treatment) 
+    permutest(beta.Pacu.g.TF, pairwise = T) 
 
 ######### by phylotype: CCC vs C42
 # C ONLY
-  Pacu.bac.T1F.CCC <- subset_samples(Pacu.bac.T1F, Clade == "CCC")
-  Pacu.bac.T1.CCC <- subset_samples(Pacu.bac.T1, Clade == "CCC")
-  Pacu.bac.TF.CCC <- subset_samples(Pacu.bac.TF, Clade == "CCC")
+  Pacu.g.bac.T1F.CCC <- subset_samples(Pacu.g.bac.T1F, Clade == "CCC")
+  Pacu.g.bac.T1.CCC <- subset_samples(Pacu.g.bac.T1, Clade == "CCC")
+  Pacu.g.bac.TF.CCC <- subset_samples(Pacu.g.bac.TF, Clade == "CCC")
   
 #T1TF.CCC
-  bc.Pacu.T1F.CCC <- phyloseq::distance(Pacu.bac.T1F.CCC, method = "bray")
-    Pacu.samp.df.T1F.CCC <- as(sample_data(Pacu.bac.T1F.CCC), "data.frame") 
-  adonis(bc.Pacu.T1F.CCC ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.CCC)
+  bc.Pacu.g.T1F.CCC <- phyloseq::distance(Pacu.g.bac.T1F.CCC, method = "bray")
+    Pacu.g.samp.df.T1F.CCC <- as(sample_data(Pacu.g.bac.T1F.CCC), "data.frame") 
+  adonis(bc.Pacu.g.T1F.CCC ~ Treatment*Time.Point, data = Pacu.g.samp.df.T1F.CCC)
 
 #T1.CCC
-  bc.PacuT1.CCC <- phyloseq::distance(Pacu.bac.T1.CCC, method = "bray")
-    Pacu.samp.df.T1.CCC <- as(sample_data(Pacu.bac.T1.CCC), "data.frame") #sample df
-  adonis(bc.PacuT1.CCC ~ Treatment, data = Pacu.samp.df.T1.CCC)
-  beta.Pacu.T1.CCC <- betadisper(bc.PacuT1.CCC, Pacu.samp.df.T1.CCC$Treatment)
-    permutest(beta.Pacu.T1.CCC, pairwise = T) 
+  bc.PacuT1.CCC <- phyloseq::distance(Pacu.g.bac.T1.CCC, method = "bray")
+    Pacu.g.samp.df.T1.CCC <- as(sample_data(Pacu.g.bac.T1.CCC), "data.frame") #sample df
+  adonis(bc.PacuT1.CCC ~ Treatment, data = Pacu.g.samp.df.T1.CCC)
+  beta.Pacu.g.T1.CCC <- betadisper(bc.PacuT1.CCC, Pacu.g.samp.df.T1.CCC$Treatment)
+    permutest(beta.Pacu.g.T1.CCC, pairwise = T) 
 
 #TF.CCC
-  bc.Pacu.TF.CCC <- phyloseq::distance(Pacu.bac.TF.CCC, method = "bray")
-    Pacu.samp.df.TF.CCC <- as(sample_data(Pacu.bac.TF.CCC), "data.frame") #sample df
-  adonis(bc.Pacu.TF.CCC ~ Treatment, data = Pacu.samp.df.TF.CCC)
-  beta.Pacu.TF.CCC <- betadisper(bc.Pacu.TF.CCC, Pacu.samp.df.TF.CCC$Treatment)
-    permutest(beta.Pacu.TF.CCC, pairwise = T) 
+  bc.Pacu.g.TF.CCC <- phyloseq::distance(Pacu.g.bac.TF.CCC, method = "bray")
+    Pacu.g.samp.df.TF.CCC <- as(sample_data(Pacu.g.bac.TF.CCC), "data.frame") #sample df
+  adonis(bc.Pacu.g.TF.CCC ~ Treatment, data = Pacu.g.samp.df.TF.CCC)
+  beta.Pacu.g.TF.CCC <- betadisper(bc.Pacu.g.TF.CCC, Pacu.g.samp.df.TF.CCC$Treatment)
+    permutest(beta.Pacu.g.TF.CCC, pairwise = T) 
 
 # C42 ONLY
-Pacu.bac.T1F.C42 <- subset_samples(Pacu.bac.T1F, Clade == "C42")
-Pacu.bac.T1.C42 <- subset_samples(Pacu.bac.T1, Clade == "C42")
-Pacu.bac.TF.C42 <- subset_samples(Pacu.bac.TF, Clade == "C42")
+Pacu.g.bac.T1F.C42 <- subset_samples(Pacu.g.bac.T1F, Clade == "C42")
+Pacu.g.bac.T1.C42 <- subset_samples(Pacu.g.bac.T1, Clade == "C42")
+Pacu.g.bac.TF.C42 <- subset_samples(Pacu.g.bac.TF, Clade == "C42")
   
 #T1TF.C42
-  bc.Pacu.T1F.C42 <- phyloseq::distance(Pacu.bac.T1F.C42, method = "bray")
-  Pacu.samp.df.T1F.C42 <- as(sample_data(Pacu.bac.T1F.C42), "data.frame") 
-  adonis(bc.Pacu.T1F.C42 ~ Treatment*Time.Point, data = Pacu.samp.df.T1F.C42)
+  bc.Pacu.g.T1F.C42 <- phyloseq::distance(Pacu.g.bac.T1F.C42, method = "bray")
+  Pacu.g.samp.df.T1F.C42 <- as(sample_data(Pacu.g.bac.T1F.C42), "data.frame") 
+  adonis(bc.Pacu.g.T1F.C42 ~ Treatment*Time.Point, data = Pacu.g.samp.df.T1F.C42)
 
 #T1.C42
-  bc.PacuT1.C42 <- phyloseq::distance(Pacu.bac.T1.C42, method = "bray")
-    Pacu.samp.df.T1.C42 <- as(sample_data(Pacu.bac.T1.C42), "data.frame") 
-  adonis(bc.PacuT1.C42 ~ Treatment, data = Pacu.samp.df.T1.C42)
-    beta.Pacu.T1.C42 <- betadisper(bc.PacuT1.C42, Pacu.samp.df.T1.C42$Treatment)
-  permutest(beta.Pacu.T1.C42, pairwise = T) 
+  bc.PacuT1.C42 <- phyloseq::distance(Pacu.g.bac.T1.C42, method = "bray")
+    Pacu.g.samp.df.T1.C42 <- as(sample_data(Pacu.g.bac.T1.C42), "data.frame") 
+  adonis(bc.PacuT1.C42 ~ Treatment, data = Pacu.g.samp.df.T1.C42)
+    beta.Pacu.g.T1.C42 <- betadisper(bc.PacuT1.C42, Pacu.g.samp.df.T1.C42$Treatment)
+  permutest(beta.Pacu.g.T1.C42, pairwise = T) 
 
 #TF.C42
-  bc.Pacu.TF.C42 <- phyloseq::distance(Pacu.bac.TF.C42, method = "bray")
-    Pacu.samp.df.TF.C42 <- as(sample_data(Pacu.bac.TF.C42), "data.frame") 
-  adonis(bc.Pacu.TF.C42 ~ Treatment, data = Pacu.samp.df.TF.C42)
-  beta.Pacu.TF.C42 <- betadisper(bc.Pacu.TF.C42, Pacu.samp.df.TF.C42$Treatment)
-    permutest(beta.Pacu.TF.C42, pairwise = T) 
+  bc.Pacu.g.TF.C42 <- phyloseq::distance(Pacu.g.bac.TF.C42, method = "bray")
+    Pacu.g.samp.df.TF.C42 <- as(sample_data(Pacu.g.bac.TF.C42), "data.frame") 
+  adonis(bc.Pacu.g.TF.C42 ~ Treatment, data = Pacu.g.samp.df.TF.C42)
+  beta.Pacu.g.TF.C42 <- betadisper(bc.Pacu.g.TF.C42, Pacu.g.samp.df.TF.C42$Treatment)
+    permutest(beta.Pacu.g.TF.C42, pairwise = T) 
 ``` 
 Pacu NMDS
 ```{r}
 ## create palette for parent.ID and treatments
-Pacu.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppink4", "311" = "orange", "301" = "green1","302" = "gold",  "308"= "hotpink", "310" ="darkslateblue", "312" = "cyan", "303" = "darkorange","304" ="darkorchid1", "306" = "lightblue", 
+Pacu.g.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppink4", "311" = "orange", "301" = "green1","302" = "gold",  "308"= "hotpink", "310" ="darkslateblue", "312" = "cyan", "303" = "darkorange","304" ="darkorchid1", "306" = "lightblue", 
                         "Ambient" = "dodgerblue", "High" = "darkred",
                         "C42 Ambient"="#DDCC77","C42 High"="#999933", "CCC Ambient"="#44AA99", "CCC High"="#117733", 
                         "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
@@ -3172,32 +3801,32 @@ Pacu.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppin
 
 
 #T1 and TF
-ord.Pacu2 <- ordinate(Pacu.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+ord.Pacu2 <- ordinate(Pacu.g.bac.T1F, method="NMDS", "bray", trymax = 300, set.seed(30)) 
 stressplot(ord.Pacu2)
 
-scores.Pacu.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pacu2, display="sites"))) # these are "points" ask hannah 
-scores.Pacu.samp.df$Time.Point <- Pacu.samp.df.T1F$Time.Point
-scores.Pacu.samp.df$Parent.ID <- Pacu.samp.df.T1F$Parent.ID
-scores.Pacu.samp.df$Treatment <- Pacu.samp.df.T1F$Treatment
-scores.Pacu.samp.df$Clade <- Pacu.samp.df.T1F$Clade
-scores.Pacu.samp.df$Code <- paste(Pacu.samp.df.T1F$Parent.ID,Pacu.samp.df.T1F$Time.Point)
-scores.Pacu.samp.df$Code2 <- paste(Pacu.samp.df.T1F$Treatment,Pacu.samp.df.T1F$Time.Point)
-scores.Pacu.samp.df$Code3 <- paste(Pacu.samp.df.T1F$Treatment,Pacu.samp.df.T1F$Time.Point,Pacu.samp.df.T1F$Parent.ID)
+scores.Pacu.g.samp.df<-as.data.frame(cbind(vegan::scores(ord.Pacu2, display="sites"))) # these are "points" ask hannah 
+scores.Pacu.g.samp.df$Time.Point <- Pacu.g.samp.df.T1F$Time.Point
+scores.Pacu.g.samp.df$Parent.ID <- Pacu.g.samp.df.T1F$Parent.ID
+scores.Pacu.g.samp.df$Treatment <- Pacu.g.samp.df.T1F$Treatment
+scores.Pacu.g.samp.df$Clade <- Pacu.g.samp.df.T1F$Clade
+scores.Pacu.g.samp.df$Code <- paste(Pacu.g.samp.df.T1F$Parent.ID,Pacu.g.samp.df.T1F$Time.Point)
+scores.Pacu.g.samp.df$Code2 <- paste(Pacu.g.samp.df.T1F$Treatment,Pacu.g.samp.df.T1F$Time.Point)
+scores.Pacu.g.samp.df$Code3 <- paste(Pacu.g.samp.df.T1F$Treatment,Pacu.g.samp.df.T1F$Time.Point,Pacu.g.samp.df.T1F$Parent.ID)
 
-ggplot(scores.Pacu.samp.df, aes(x = NMDS1, y = NMDS2)) +
+ggplot(scores.Pacu.g.samp.df, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(shape = Code2, color = Parent.ID, fill=Treatment), size = 5) + 
   scale_shape_manual(values = c(21, 22,24,25)) + 
-    scale_color_manual(values=Pacu.Parent.colors)+
+    scale_color_manual(values=Pacu.g.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
   ggtitle("P. acuta T1TF") +
   theme_classic()
 
-ggplot(scores.Pacu.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
+ggplot(scores.Pacu.g.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) + 
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -3206,23 +3835,23 @@ ggplot(scores.Pacu.samp.df, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatmen
 #ggsave("PacuT1its2.pdf")
 
 #T1
-ord.Pacu.T1 <- ordinate(Pacu.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
-stressplot(ord.Pacu.T1)
+ord.Pacu.g.T1 <- ordinate(Pacu.g.bac.T1, method="NMDS", "bray", trymax = 300, set.seed(30)) 
+stressplot(ord.Pacu.g.T1)
 
-ord.Pacu.T1.df<-as.data.frame(cbind(vegan::scores(ord.Pacu.T1, display="sites"))) # these are "points" ask hannah 
-ord.Pacu.T1.df$Time.Point <- Pacu.samp.df.T1$Time.Point
-ord.Pacu.T1.df$Parent.ID <- Pacu.samp.df.T1$Parent.ID
-ord.Pacu.T1.df$Treatment <- Pacu.samp.df.T1$Treatment
-ord.Pacu.T1.df$Clade <- Pacu.samp.df.T1$Clade
-ord.Pacu.T1.df$Code <- paste(Pacu.samp.df.T1$Parent.ID,Pacu.samp.df.T1$Time.Point)
-ord.Pacu.T1.df$Code2 <- paste(Pacu.samp.df.T1$Clade,Pacu.samp.df.T1$Treatment)
-ord.Pacu.T1.df$Code2 <- as.factor(ord.Pacu.T1.df$Code2)
+ord.Pacu.g.T1.df<-as.data.frame(cbind(vegan::scores(ord.Pacu.g.T1, display="sites"))) # these are "points" ask hannah 
+ord.Pacu.g.T1.df$Time.Point <- Pacu.g.samp.df.T1$Time.Point
+ord.Pacu.g.T1.df$Parent.ID <- Pacu.g.samp.df.T1$Parent.ID
+ord.Pacu.g.T1.df$Treatment <- Pacu.g.samp.df.T1$Treatment
+ord.Pacu.g.T1.df$Clade <- Pacu.g.samp.df.T1$Clade
+ord.Pacu.g.T1.df$Code <- paste(Pacu.g.samp.df.T1$Parent.ID,Pacu.g.samp.df.T1$Time.Point)
+ord.Pacu.g.T1.df$Code2 <- paste(Pacu.g.samp.df.T1$Clade,Pacu.g.samp.df.T1$Treatment)
+ord.Pacu.g.T1.df$Code2 <- as.factor(ord.Pacu.g.T1.df$Code2)
 
 
-ggplot(ord.Pacu.T1.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.Pacu.g.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -3234,21 +3863,21 @@ ggplot(ord.Pacu.T1.df, aes(x = NMDS1, y = NMDS2)) +
 
 #TF only
 set.seed(30)
-ord.PacuTF <- ordinate(Pacu.bac.TF, "NMDS", "bray", trymax = 100) 
+ord.PacuTF <- ordinate(Pacu.g.bac.TF, "NMDS", "bray", trymax = 100) 
 stressplot(ord.PacuTF)
-ord.Pacu.TF.df<-as.data.frame(cbind(vegan::scores(ord.PacuTF, display="sites"))) # these are "points" ask hannah 
-ord.Pacu.TF.df$Treatment <- Pacu.samp.df.TF$Treatment
-ord.Pacu.TF.df$Parent.ID <- Pacu.samp.df.TF$Parent.ID
-ord.Pacu.TF.df$Clade <- Pacu.samp.df.TF$Clade
-ord.Pacu.TF.df$CladeTreat <- as.factor(paste(Pacu.samp.df.TF$Clade,Pacu.samp.df.TF$Treatment))
-ord.Pacu.TF.df$Code <- as.factor(paste(Pacu.samp.df.TF$Parent.ID,Pacu.samp.df.TF$Treatment))
-ord.Pacu.TF.df$Code2 <- paste(Pacu.samp.df.TF$Clade,Pacu.samp.df.TF$Treatment)
-ord.Pacu.TF.df$Code2 <- as.factor(ord.Pacu.TF.df$Code2)
+ord.Pacu.g.TF.df<-as.data.frame(cbind(vegan::scores(ord.PacuTF, display="sites"))) # these are "points" ask hannah 
+ord.Pacu.g.TF.df$Treatment <- Pacu.g.samp.df.TF$Treatment
+ord.Pacu.g.TF.df$Parent.ID <- Pacu.g.samp.df.TF$Parent.ID
+ord.Pacu.g.TF.df$Clade <- Pacu.g.samp.df.TF$Clade
+ord.Pacu.g.TF.df$CladeTreat <- as.factor(paste(Pacu.g.samp.df.TF$Clade,Pacu.g.samp.df.TF$Treatment))
+ord.Pacu.g.TF.df$Code <- as.factor(paste(Pacu.g.samp.df.TF$Parent.ID,Pacu.g.samp.df.TF$Treatment))
+ord.Pacu.g.TF.df$Code2 <- paste(Pacu.g.samp.df.TF$Clade,Pacu.g.samp.df.TF$Treatment)
+ord.Pacu.g.TF.df$Code2 <- as.factor(ord.Pacu.g.TF.df$Code2)
 
-ggplot(ord.Pacu.TF.df, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(ord.Pacu.g.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -3264,12 +3893,12 @@ ggplot(ord.Pacu.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 #CCC T1 and TF 
 set.seed(30)
-ord.Pacu_CCC <- ordinate(Pacu.bac.T1F.CCC , "NMDS", "bray", trymax = 100) 
+ord.Pacu_CCC <- ordinate(Pacu.g.bac.T1F.CCC , "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_CCC)
 scores.Pacu_CCC<-as.data.frame(cbind(vegan::scores(ord.Pacu_CCC, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_CCC$Treatment <- Pacu.samp.df.T1F.CCC$Treatment
-scores.Pacu_CCC$Parent.ID <- Pacu.samp.df.T1F.CCC$Parent.ID
-scores.Pacu_CCC$Time.Point <- Pacu.samp.df.T1F.CCC$Time.Point
+scores.Pacu_CCC$Treatment <- Pacu.g.samp.df.T1F.CCC$Treatment
+scores.Pacu_CCC$Parent.ID <- Pacu.g.samp.df.T1F.CCC$Parent.ID
+scores.Pacu_CCC$Time.Point <- Pacu.g.samp.df.T1F.CCC$Time.Point
 scores.Pacu_CCC$Code2<-as.factor(paste(scores.Pacu_CCC$Treatment, scores.Pacu_CCC$Time.Point))
 
 
@@ -3277,7 +3906,7 @@ ggplot(scores.Pacu_CCC, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) 
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -3287,7 +3916,7 @@ ggplot(scores.Pacu_CCC, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Treatment)) 
 ggplot(scores.Pacu_CCC, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -3297,17 +3926,17 @@ ggplot(scores.Pacu_CCC, aes(x = NMDS1, y = NMDS2)) +
 
 #C T1
 set.seed(30)
-ord.Pacu_CCC.T1 <- ordinate(Pacu.bac.T1.CCC, "NMDS", "bray", trymax = 100) 
+ord.Pacu_CCC.T1 <- ordinate(Pacu.g.bac.T1.CCC, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_CCC.T1)
 scores.Pacu_CCC.T1<-as.data.frame(cbind(vegan::scores(ord.Pacu_CCC.T1, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_CCC.T1$Treatment <- Pacu.samp.df.T1.CCC$Treatment
-scores.Pacu_CCC.T1$Parent.ID <- Pacu.samp.df.T1.CCC$Parent.ID
-scores.Pacu_CCC.T1$Time.Point <- Pacu.samp.df.T1.CCC$Time.Point
+scores.Pacu_CCC.T1$Treatment <- Pacu.g.samp.df.T1.CCC$Treatment
+scores.Pacu_CCC.T1$Parent.ID <- Pacu.g.samp.df.T1.CCC$Parent.ID
+scores.Pacu_CCC.T1$Time.Point <- Pacu.g.samp.df.T1.CCC$Time.Point
 
 ggplot(scores.Pacu_CCC.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4,shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P. acuta T1 CCC") +
@@ -3316,17 +3945,17 @@ geom_point(aes(stroke=2, colour = Parent.ID,shape=Treatment, size = 4) )+
 
 #C TF
 set.seed(30)
-ord.Pacu_CCC.TF <- ordinate(Pacu.bac.TF.CCC, "NMDS", "bray", trymax = 100) 
+ord.Pacu_CCC.TF <- ordinate(Pacu.g.bac.TF.CCC, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_CCC.TF)
 scores.Pacu_CCC.TF<-as.data.frame(cbind(vegan::scores(ord.Pacu_CCC.TF, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_CCC.TF$Treatment <- Pacu.samp.df.TF.CCC$Treatment
-scores.Pacu_CCC.TF$Parent.ID <- Pacu.samp.df.TF.CCC$Parent.ID
-scores.Pacu_CCC.TF$Time.Point <- Pacu.samp.df.TF.CCC$Time.Point
+scores.Pacu_CCC.TF$Treatment <- Pacu.g.samp.df.TF.CCC$Treatment
+scores.Pacu_CCC.TF$Parent.ID <- Pacu.g.samp.df.TF.CCC$Parent.ID
+scores.Pacu_CCC.TF$Time.Point <- Pacu.g.samp.df.TF.CCC$Time.Point
 
 ggplot(scores.Pacu_C42, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -3335,21 +3964,21 @@ ggplot(scores.Pacu_C42, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("Pacu_TF_its_TF_CCC.pdf")
 
 
-#C42 Pacu.bacT1F C42
+#C42 Pacu.g.bacT1F C42
 set.seed(30)
-ord.Pacu_C42 <- ordinate(Pacu.bac.T1F.C42, "NMDS", "bray", trymax = 100) 
+ord.Pacu_C42 <- ordinate(Pacu.g.bac.T1F.C42, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_C42)
 scores.Pacu_C42<-as.data.frame(cbind(vegan::scores(ord.Pacu_C42, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_C42$Treatment <- Pacu.samp.df.T1F.C42$Treatment
-scores.Pacu_C42$Parent.ID <- Pacu.samp.df.T1F.C42$Parent.ID
-scores.Pacu_C42$Time.Point <- Pacu.samp.df.T1F.C42$Time.Point
-scores.Pacu_C42$Time.Point <- Pacu.samp.df.T1F.C42$Time.Point
+scores.Pacu_C42$Treatment <- Pacu.g.samp.df.T1F.C42$Treatment
+scores.Pacu_C42$Parent.ID <- Pacu.g.samp.df.T1F.C42$Parent.ID
+scores.Pacu_C42$Time.Point <- Pacu.g.samp.df.T1F.C42$Time.Point
+scores.Pacu_C42$Time.Point <- Pacu.g.samp.df.T1F.C42$Time.Point
 scores.Pacu_C42$Code2<-as.factor(paste(scores.Pacu_C42$Treatment, scores.Pacu_C42$Time.Point))
 
 ggplot(scores.Pacu_C42, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
@@ -3358,17 +3987,17 @@ ggplot(scores.Pacu_C42, aes(x = NMDS1, y = NMDS2)) +
 
 #CD T1
 set.seed(30)
-ord.Pacu_C42.T1 <- ordinate(Pacu.bac.T1.C42 , "NMDS", "bray", trymax = 100) 
+ord.Pacu_C42.T1 <- ordinate(Pacu.g.bac.T1.C42 , "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_C42.T1)
 scores.Pacu_C42.T1<-as.data.frame(cbind(vegan::scores(ord.Pacu_C42.T1, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_C42.T1$Treatment <- Pacu.samp.df.T1.C42$Treatment
-scores.Pacu_C42.T1$Parent.ID <- Pacu.samp.df.T1.C42$Parent.ID
-scores.Pacu_C42.T1$Time.Point <- Pacu.samp.df.T1.C42$Time.Point
+scores.Pacu_C42.T1$Treatment <- Pacu.g.samp.df.T1.C42$Treatment
+scores.Pacu_C42.T1$Parent.ID <- Pacu.g.samp.df.T1.C42$Parent.ID
+scores.Pacu_C42.T1$Time.Point <- Pacu.g.samp.df.T1.C42$Time.Point
 
 ggplot(scores.Pacu_C42.T1, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P. acuta T1 C42") +
@@ -3377,17 +4006,17 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 #CD TF
 set.seed(30)
-ord.Pacu_C42.TF <- ordinate(Pacu.bac.TF.C42, "NMDS", "bray", trymax = 100) 
+ord.Pacu_C42.TF <- ordinate(Pacu.g.bac.TF.C42, "NMDS", "bray", trymax = 100) 
 stressplot(ord.Pacu_C42.TF)
 scores.Pacu_C42.TF<-as.data.frame(cbind(vegan::scores(ord.Pacu_C42.TF, display="sites"))) # these are "points" ask hannah 
-scores.Pacu_C42.TF$Treatment <- Pacu.samp.df.TF.C42$Treatment
-scores.Pacu_C42.TF$Parent.ID <- Pacu.samp.df.TF.C42$Parent.ID
-scores.Pacu_C42.TF$Time.Point <- Pacu.samp.df.TF.C42$Time.Point
+scores.Pacu_C42.TF$Treatment <- Pacu.g.samp.df.TF.C42$Treatment
+scores.Pacu_C42.TF$Parent.ID <- Pacu.g.samp.df.TF.C42$Parent.ID
+scores.Pacu_C42.TF$Time.Point <- Pacu.g.samp.df.TF.C42$Time.Point
 
 ggplot(scores.Pacu_C42.TF, aes(x = NMDS1, y = NMDS2)) + 
 geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) + 
-  scale_color_manual(values=Pacu.Parent.colors)+
+  scale_color_manual(values=Pacu.g.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
   ggtitle("P. acuta CD TF") +
