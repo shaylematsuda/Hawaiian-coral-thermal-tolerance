@@ -839,22 +839,19 @@ adonis(wu.mfol ~ Species*Treatment*Time.Point, strata = Fam.samp.df$Species, dat
 permutest(betadisper(wu.mfol, Fam.samp.df$Species, type = "centroid")) #sig
 
 
-
+############################### Family unifrac stats
 #make unifrac matrix
-Bac.fam.T1F <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac")
+Bac.fam.T1F <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac") #dist matrix
 Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
-  #adonis test
-set.seed(30)
-adonis(Bac.fam.T1F ~ Species*Treatment*Time.Point, data = Fam.samp.df)
-set.seed(30)    
-adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
+  #adonis 
+    set.seed(30)
+      adonis(Bac.fam.T1F ~ Species*Treatment*Time.Point, data = Fam.samp.df)
+    set.seed(30)    
+      adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
   # Homogeneity of dispersion test  
-set.seed(30)    
-  beta <- betadisper(Bac.fam.T1F, Fam.samp.df$Clade)  #clade
-    permutest(beta, pairwise = T) 
-set.seed(30)    
-  beta <- betadisper(Bac.fam.T1F, Fam.samp.df$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+    set.seed(30)    
+      permutest(betadisper(Bac.fam.T1F, Fam.samp.df$Clade, type = "centroid")) #put in distance matrix
+
 ############# mcap
 
 #Mcap
@@ -879,39 +876,37 @@ mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
  #heatmap
     #plot_heatmap(mcap.u.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
       # Homogeneity of dispersion test  
-set.seed(30)    
-  beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade)  #clade
-    permutest(beta, pairwise = T) 
-set.seed(30)    
-  beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+set.seed(30)
+    permutest(betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
-    set.seed(30)
-  bc.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
+    
+  u.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
       mcap.u.f.samp.df.T1 <- as(sample_data(mcap.u.f.bac.T1), "data.frame") 
           set.seed(30)
-    adonis(bc.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
+    adonis(u.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
      set.seed(30)
-    adonis(bc.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
+    adonis(u.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.mcap.u.f.T1 <- betadisper(bc.mcapT1, mcap.u.f.samp.df.T1$Clade)  #clade
-    permutest(beta.mcap.u.f.T1, pairwise = T) 
-  beta.mcap.u.f.T1 <- betadisper(bc.mcapT1, mcap.u.f.samp.df.T1$Treatment) #treatment
-    permutest(beta.mcap.u.f.T1, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(u.mcapT1, mcap.u.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.mcapT1, mcap.u.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
 
 #TF
-  bc.mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
+  u.mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
      mcap.u.f.samp.df.TF <- as(sample_data(mcap.u.f.bac.TF), "data.frame")
     set.seed(30)
-    adonis(bc.mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
+    adonis(u.mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
     set.seed(30)
-    adonis(bc.mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
-  # Homogeneity of dispersion test  
-  beta.mcap.u.f.TF <- betadisper(bc.mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade) 
-    permutest(beta.mcap.u.f.TF, pairwise = T) 
-  beta.mcap.u.f.TF <- betadisper(bc.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment) 
-    permutest(beta.mcap.u.f.TF, pairwise = T) 
+    adonis(u.mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
 ############ pcomp
 #Pcomp
@@ -927,40 +922,43 @@ pcomp.f.bac.TF <- subset_samples(pcomp.f.bac.T1F, Time.Point == "TF")
 
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
-  bc.pcomp.f.T1F <- phyloseq::distance(pcomp.f.bac.T1F, method = "wunifrac")
+  u.pcomp.f.T1F <- phyloseq::distance(pcomp.f.bac.T1F, method = "wunifrac")
      pcomp.f.samp.df.T1F <- as(sample_data(pcomp.f.bac.T1F), "data.frame") #sample df
       set.seed(30)
-    adonis(bc.pcomp.f.T1F ~ Treatment*Time.Point, data = pcomp.f.samp.df.T1F) #adonis test no clade
+    adonis(u.pcomp.f.T1F ~ Treatment*Time.Point, data = pcomp.f.samp.df.T1F) #adonis test no clade
    set.seed(30)
-    adonis(bc.pcomp.f.T1F ~ Clade*Treatment*Time.Point, data = pcomp.f.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pcomp.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    adonis(u.pcomp.f.T1F ~ Clade*Treatment*Time.Point, data = pcomp.f.samp.df.T1F)#adonis test with clade
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pcomp.f.T1F, pcomp.f.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pcomp.f.T1F, pcomp.f.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
-  bc.PcompT1 <- phyloseq::distance(pcomp.f.bac.T1, method = "wunifrac") 
+  u.PcompT1 <- phyloseq::distance(pcomp.f.bac.T1, method = "wunifrac") 
       pcomp.f.samp.df.T1 <- as(sample_data(pcomp.f.bac.T1), "data.frame") 
    set.seed(30)
-   adonis(bc.PcompT1 ~ Treatment, data = pcomp.f.samp.df.T1)  
+   adonis(u.PcompT1 ~ Treatment, data = pcomp.f.samp.df.T1)  
     set.seed(30)
-   adonis(bc.PcompT1 ~ Clade*Treatment, data = pcomp.f.samp.df.T1)  
+   adonis(u.PcompT1 ~ Clade*Treatment, data = pcomp.f.samp.df.T1)  
 # Homogeneity of dispersion test  
-  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Clade)  #clade
-    permutest(beta.pcomp.f.T1, pairwise = T) 
-  beta.pcomp.f.T1 <- betadisper(bc.PcompT1, pcomp.f.samp.df.T1$Treatment) #treatment
-    permutest(beta.pcomp.f.T1, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(u.PcompT1, pcomp.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PcompT1, pcomp.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
 
 #TF
-bc.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "wunifrac")
+u.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "wunifrac")
      pcomp.f.samp.df.TF <- as(sample_data(pcomp.f.bac.TF), "data.frame") 
       set.seed(30)
-    adonis(bc.pcomp.f.TF ~ Treatment, data = pcomp.f.samp.df.TF)
+    adonis(u.pcomp.f.TF ~ Treatment, data = pcomp.f.samp.df.TF)
      set.seed(30)
-    adonis(bc.pcomp.f.TF ~ Clade*Treatment, data = pcomp.f.samp.df.TF)
+    adonis(u.pcomp.f.TF ~ Clade*Treatment, data = pcomp.f.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Clade) 
-    permutest(beta.pcomp.f.TF, pairwise = T) 
-  beta.pcomp.f.TF <- betadisper(bc.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment) 
-    permutest(beta.pcomp.f.TF, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(u.pcomp.f.TF, pcomp.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
 #######pvar
     #Pvar
@@ -978,44 +976,47 @@ pvar.f.f.bac.TF <- subset_samples(pvar.f.f.bac.T1F, Time.Point == "TF")
 #make wunifrac curtis data matrix -T1 and TF
                 set.seed(30)
 
-  bc.pvar.f.f.T1F <- phyloseq::distance(pvar.f.f.bac.T1F, method = "wunifrac")
+  u.pvar.f.f.T1F <- phyloseq::distance(pvar.f.f.bac.T1F, method = "wunifrac")
      pvar.f.f.samp.df.T1F <- as(sample_data(pvar.f.f.bac.T1F), "data.frame") #sample df
      set.seed(30)
-adonis(bc.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adonis test no clade
+adonis(u.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adonis test no clade
     set.seed(30)
-    adonis(bc.pvar.f.f.T1F ~ Clade*Treatment*Time.Point, data = pvar.f.f.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pvar.f.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+    adonis(u.pvar.f.f.T1F ~ Clade*Treatment*Time.Point, data = pvar.f.f.samp.df.T1F)#adonis test with clade
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pvar.f.f.T1F, pvar.f.f.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pvar.f.f.T1F, pvar.f.f.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
                  
 
-  bc.PvarT1 <- phyloseq::distance(pvar.f.f.bac.T1, method = "wunifrac") 
+  u.PvarT1 <- phyloseq::distance(pvar.f.f.bac.T1, method = "wunifrac") 
       pvar.f.f.samp.df.T1 <- as(sample_data(pvar.f.f.bac.T1), "data.frame") 
    set.seed(30)
-   adonis(bc.PvarT1 ~ Treatment, data = pvar.f.f.samp.df.T1) 
+   adonis(u.PvarT1 ~ Treatment, data = pvar.f.f.samp.df.T1) 
      set.seed(30)
-     adonis(bc.PvarT1 ~ Clade*Treatment, data = pvar.f.f.samp.df.T1)  
+     adonis(u.PvarT1 ~ Clade*Treatment, data = pvar.f.f.samp.df.T1)  
 
 # Homogeneity of dispersion test  
-  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Clade)  #clade
-    permutest(beta.pvar.f.f.T1, pairwise = T) 
-  beta.pvar.f.f.T1 <- betadisper(bc.PvarT1, pvar.f.f.samp.df.T1$Treatment) #treatment
-    permutest(beta.pvar.f.f.T1, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(u.PvarT1, pvar.f.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PvarT1, pvar.f.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
 
 #TF
-  bc.pvar.f.f.TF <- phyloseq::distance(pvar.f.f.bac.TF, method = "wunifrac")
+  u.pvar.f.f.TF <- phyloseq::distance(pvar.f.f.bac.TF, method = "wunifrac")
      pvar.f.f.samp.df.TF <- as(sample_data(pvar.f.f.bac.TF), "data.frame") 
       set.seed(30)
-      adonis(bc.pvar.f.f.TF ~ Treatment, data = pvar.f.f.samp.df.TF)
+      adonis(u.pvar.f.f.TF ~ Treatment, data = pvar.f.f.samp.df.TF)
         set.seed(30)
-        adonis(bc.pvar.f.f.TF ~ Clade*Treatment, data = pvar.f.f.samp.df.TF)
+        adonis(u.pvar.f.f.TF ~ Clade*Treatment, data = pvar.f.f.samp.df.TF)
 
   # Homogeneity of dispersion test  
-  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Clade) 
-    permutest(beta.pvar.f.f.TF, pairwise = T) 
-  beta.pvar.f.f.TF <- betadisper(bc.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment) 
-    permutest(beta.pvar.f.f.TF, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
 ####### pacuta
 
@@ -1032,46 +1033,50 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
 
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
-  bc.pacu.f.T1F <- phyloseq::distance(pacu.f.bac.T1F, method = "wunifrac")
+  u.pacu.f.T1F <- phyloseq::distance(pacu.f.bac.T1F, method = "wunifrac")
      pacu.f.samp.df.T1F <- as(sample_data(pacu.f.bac.T1F), "data.frame") #sample df
      set.seed(30)
-     adonis(bc.pacu.f.T1F ~ Treatment*Time.Point, data = pacu.f.samp.df.T1F) #adonis test no clade
+     adonis(u.pacu.f.T1F ~ Treatment*Time.Point, data = pacu.f.samp.df.T1F) #adonis test no clade
      set.seed(30)
-     adonis(bc.pacu.f.T1F ~ Clade*Treatment*Time.Point, data = pacu.f.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pacu.f.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
+     adonis(u.pacu.f.T1F ~ Clade*Treatment*Time.Point, data = pacu.f.samp.df.T1F)#adonis test with clade
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pacu.f.T1F, pacu.f.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pacu.f.T1F, pacu.f.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
-  bc.PacuT1 <- phyloseq::distance(pacu.f.bac.T1, method = "wunifrac") 
+  u.PacuT1 <- phyloseq::distance(pacu.f.bac.T1, method = "wunifrac") 
       pacu.f.samp.df.T1 <- as(sample_data(pacu.f.bac.T1), "data.frame") 
       set.seed(30)
-      adonis(bc.PacuT1 ~ Treatment, data = pacu.f.samp.df.T1)  
+      adonis(u.PacuT1 ~ Treatment, data = pacu.f.samp.df.T1)  
       set.seed(30)
-      adonis(bc.PacuT1 ~ Clade*Treatment, data = pacu.f.samp.df.T1)  
-# Homogeneity of dispersion test  
-  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Clade)  #clade
-    permutest(beta.pacu.f.T1, pairwise = T) 
-  beta.pacu.f.T1 <- betadisper(bc.PacuT1, pacu.f.samp.df.T1$Treatment) #treatment
-    permutest(beta.pacu.f.T1, pairwise = T) 
+      adonis(u.PacuT1 ~ Clade*Treatment, data = pacu.f.samp.df.T1)  
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.PacuT1, pacu.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PacuT1, pacu.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
 
     
 #TF
  
-  bc.pacu.f.TF <- phyloseq::distance(pacu.f.bac.TF, method = "wunifrac")
+  u.pacu.f.TF <- phyloseq::distance(pacu.f.bac.TF, method = "wunifrac")
      pacu.f.samp.df.TF <- as(sample_data(pacu.f.bac.TF), "data.frame") 
       set.seed(30)
-      adonis(bc.pacu.f.TF ~Treatment, data = pacu.f.samp.df.TF)
+      adonis(u.pacu.f.TF ~Treatment, data = pacu.f.samp.df.TF)
       set.seed(30)
-      adonis(bc.pacu.f.TF ~ Clade*Treatment, data = pacu.f.samp.df.TF)
-  # Homogeneity of dispersion test  
-  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Clade) 
-    permutest(beta.pacu.f.TF, pairwise = T) 
-  beta.pacu.f.TF <- betadisper(bc.pacu.f.TF, pacu.f.samp.df.TF$Treatment) 
-    permutest(beta.pacu.f.TF, pairwise = T) 
+      adonis(u.pacu.f.TF ~ Clade*Treatment, data = pacu.f.samp.df.TF)
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+
 ```
-Permanova UNIFRAC by ASV (no filter)
+Permanova UNIFRAC by ASV (no filter) to compare with above
 ```{r}
-#Bac.s.rel
+#Bac.s.rel 
 
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
@@ -1086,66 +1091,66 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point, data = s.u.samp.df)
 set.seed(30)    
 adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
 
-    beta.mcap.u.T1F <- betadisper(Bac.s.u.T1F, s.u.samp.df$Clade)  #clade
-    permutest(beta.mcap.u.T1F, pairwise = T) 
-      
-     beta.mcap.u.f.T1 <- betadisper(Bac.s.u.T1F, s.u.samp.df$Species) #treatment
-    permutest(beta.mcap.u.T1F, pairwise = T) 
+     # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Treatment, type = "centroid")) #put in distance matrix
 ############# mcap
 
 #Mcap
-mcap.u.f.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
+mcap.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
 #mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
-mcap.u.f.bac.T1 <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "T1")
+mcap.u.bac.T1 <- subset_samples(mcap.u.bac.T1F, Time.Point == "T1")
  # mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
-mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
+mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
  # mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
-  bc.mcap.u.f.T1F <- phyloseq::distance(mcap.u.f.bac.T1F, method = "wunifrac")
-     mcap.u.f.samp.df.T1F <- as(sample_data(mcap.u.f.bac.T1F), "data.frame") #sample df
+  u.mcap.u.T1F <- phyloseq::distance(mcap.u.bac.T1F, method = "wunifrac")
+     mcap.u.samp.df.T1F <- as(sample_data(mcap.u.bac.T1F), "data.frame") #sample df
        set.seed(30)
-    adonis(bc.mcap.u.f.T1F ~ Treatment*Time.Point, data = mcap.u.f.samp.df.T1F) #adonis test no clade
+    adonis2(u.mcap.u.T1F ~ Treatment*Time.Point, data = mcap.u.samp.df.T1F) #adonis test no clade
       set.seed(30)
-    adonis(bc.mcap.u.f.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.f.samp.df.T1F)#adonis test with clade
-         set.seed(30)
-    beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade)  #clade
-    permutest(beta, pairwise = T) 
-          set.seed(30)
-     beta <- betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+    adonis2(u.mcap.u.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.samp.df.T1F)#adonis test with clade
+   # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
-  mcap.u.f.bac.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
-      mcap.u.f.samp.df.T1 <- as(sample_data(mcap.u.f.bac.T1), "data.frame") 
+  mcap.u.bac.mcapT1 <- phyloseq::distance(mcap.u.bac.T1, method = "wunifrac") 
+      mcap.u.samp.df.T1 <- as(sample_data(mcap.u.bac.T1), "data.frame") 
           set.seed(30)
-    adonis(mcap.u.f.bac.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
+    adonis2(mcap.u.bac.mcapT1 ~ Treatment, data = mcap.u.samp.df.T1)  
      set.seed(30)
-    adonis(mcap.u.f.bac.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
+    adonis2(mcap.u.bac.mcapT1 ~ Clade*Treatment, data = mcap.u.samp.df.T1)  
 # Homogeneity of dispersion test  
-            set.seed(30)
-  beta <- betadisper(mcap.u.f.bac.mcapT1, mcap.u.f.samp.df.T1$Clade)  #clade
-    permutest(beta, pairwise = T) 
-            set.seed(30)
-  beta <- betadisper(mcap.u.f.bac.mcapT1, mcap.u.f.samp.df.T1$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+ 
+
 
 #TF
-  mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
-     mcap.u.f.samp.df.TF <- as(sample_data(mcap.u.f.bac.TF), "data.frame")
+  mcap.u.TF <- phyloseq::distance(mcap.u.bac.TF, method = "wunifrac")
+     mcap.u.samp.df.TF <- as(sample_data(mcap.u.bac.TF), "data.frame")
     set.seed(30)
-    adonis(mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
+    adonis2(mcap.u.TF ~ Treatment, data = mcap.u.samp.df.TF)
     set.seed(30)
-    adonis(mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
+    adonis2(mcap.u.TF ~ Clade*Treatment, data = mcap.u.samp.df.TF)
   # Homogeneity of dispersion test  
-  beta <- betadisper(mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade) 
-    permutest(beta, pairwise = T) 
-  beta <- betadisper(mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment) 
-    permutest(beta, pairwise = T) 
-
+    set.seed(30)
+    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    
+    
 ############ pcomp
 #Pcomp
 pcomp.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Porites_compressa")
@@ -1163,48 +1168,43 @@ pcomp.u.bac.TF <- subset_samples(pcomp.u.bac.T1F, Time.Point == "TF")
   pcomp.u.T1F <- phyloseq::distance(pcomp.u.bac.T1F, method = "wunifrac")
      pcomp.u.samp.df.T1F <- as(sample_data(pcomp.u.bac.T1F), "data.frame") #sample df
       set.seed(30)
-    adonis(pcomp.u.T1F ~ Treatment*Time.Point, data = pcomp.u.samp.df.T1F) #adonis test no clade
+    adonis2(pcomp.u.T1F ~ Treatment*Time.Point, data = pcomp.u.samp.df.T1F) #adonis test no clade
    set.seed(30)
-    adonis(pcomp.u.T1F ~ Clade*Treatment*Time.Point, data = pcomp.u.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pcomp.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
-       set.seed(30)
-     beta <- betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Clade)  #clade
-    permutest(beta, pairwise = T) 
-          set.seed(30)
-     beta <- betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+    adonis2(pcomp.u.T1F ~ Clade*Treatment*Time.Point, data = pcomp.u.samp.df.T1F)#adonis test with clade
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
     
 #T1
   pcomp.u.T1 <- phyloseq::distance(pcomp.u.bac.T1, method = "wunifrac") 
       pcomp.u.samp.df.T1 <- as(sample_data(pcomp.u.bac.T1), "data.frame") 
    set.seed(30)
-   adonis(pcomp.u.T1 ~ Treatment, data = pcomp.u.samp.df.T1)  
+   adonis2(pcomp.u.T1 ~ Treatment, data = pcomp.u.samp.df.T1)  
     set.seed(30)
    adonis(pcomp.u.T1 ~ Clade*Treatment, data = pcomp.u.samp.df.T1)  
-# Homogeneity of dispersion test  
-       set.seed(30)
-  beta <- betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade)  #clade
-    permutest(beta, pairwise = T) 
-        set.seed(30)
-  beta <- betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
 
 #TF
 pcomp.u.TF <- phyloseq::distance(pcomp.u.bac.TF, method = "wunifrac")
      pcomp.u.samp.df.TF <- as(sample_data(pcomp.u.bac.TF), "data.frame") 
       set.seed(30)
-    adonis(pcomp.u.TF ~ Treatment, data = pcomp.u.samp.df.TF)
+    adonis2(pcomp.u.TF ~ Treatment, data = pcomp.u.samp.df.TF)
      set.seed(30)
-    adonis(pcomp.u.TF ~ Clade*Treatment, data = pcomp.u.samp.df.TF)
+    adonis2(pcomp.u.TF ~ Clade*Treatment, data = pcomp.u.samp.df.TF)
   # Homogeneity of dispersion test  
-      set.seed(30)
-  beta <- betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade) 
-    permutest(beta, pairwise = T) 
-      set.seed(30)
-  beta <- betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment) 
-    permutest(beta, pairwise = T) 
-
+    set.seed(30)
+    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    
+    
+    
 #######pvar
     #Pvar
 pvar.u.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pavona_varians")
@@ -1219,7 +1219,6 @@ pvar.u.u.bac.TF <- subset_samples(pvar.u.u.bac.T1F, Time.Point == "TF")
  
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
-                set.seed(30)
 
   pvar.u.u.T1F <- phyloseq::distance(pvar.u.u.bac.T1F, method = "wunifrac")
      pvar.u.u.samp.df.T1F <- as(sample_data(pvar.u.u.bac.T1F), "data.frame") #sample df
@@ -1227,15 +1226,13 @@ pvar.u.u.bac.TF <- subset_samples(pvar.u.u.bac.T1F, Time.Point == "TF")
 adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis test no clade
     set.seed(30)
     adonis(pvar.u.u.T1F ~ Clade*Treatment*Time.Point, data = pvar.u.u.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pvar.u.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
-    # Homogeneity of dispersion test  
-        set.seed(30)
-  beta <- betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Clade)  #clade
-    permutest(beta, pairwise = T) 
-        set.seed(30)
-  beta <- betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
+    
+    
 
 #T1
                 
@@ -1245,14 +1242,13 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
    adonis(pvar.u.u.T1 ~ Treatment, data = pvar.u.u.samp.df.T1) 
      set.seed(30)
      adonis(pvar.u.u.T1 ~ Clade*Treatment, data = pvar.u.u.samp.df.T1)  
-
 # Homogeneity of dispersion test  
-          set.seed(30)
-  beta.pvar.u.u.T1 <- betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Clade)  #clade
-    permutest(beta.pvar.u.u.T1, pairwise = T) 
-         set.seed(30)
-  beta.pvar.u.u.T1 <- betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Treatment) #treatment
-    permutest(beta.pvar.u.u.T1, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+    
+    
 
 #TF
   pvar.u.u.TF<- phyloseq::distance(pvar.u.u.bac.TF, method = "wunifrac")
@@ -1263,12 +1259,10 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
         adonis(pvar.u.u.TF ~ Clade*Treatment, data = pvar.u.u.samp.df.TF)
 
   # Homogeneity of dispersion test  
-              set.seed(30)
-  beta <- betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Clade) 
-    permutest(beta, pairwise = T) 
-          set.seed(30)
-  beta <- betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Treatment) 
-    permutest(beta, pairwise = T) 
+    set.seed(30)
+    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
 ####### pacuta
 
@@ -1291,15 +1285,12 @@ pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
      adonis(pacu.u.T1F ~ Treatment*Time.Point, data = pacu.u.samp.df.T1F) #adonis test no clade
      set.seed(30)
      adonis(pacu.u.T1F ~ Clade*Treatment*Time.Point, data = pacu.u.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(pacu.u.bac.T1F, "NMDS", "wunifrac", "Parent.ID", "Phylum")
-    # Homogeneity of dispersion test  
-        set.seed(30)
-  beta <- betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Clade)  #clade
-    permutest(beta, pairwise = T) 
-       set.seed(30)
-  beta <- betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
+
      
      
 #T1
@@ -1309,13 +1300,13 @@ pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
       adonis(Pacu.u.T1 ~ Treatment, data = pacu.u.samp.df.T1)  
       set.seed(30)
       adonis(Pacu.u.T1 ~ Clade*Treatment, data = pacu.u.samp.df.T1)  
-# Homogeneity of dispersion test 
-            set.seed(30)
-  beta <- betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Clade)  #clade
-    permutest(beta, pairwise = T) 
-          set.seed(30)
-  beta <- betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Treatment) #treatment
-    permutest(beta, pairwise = T) 
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+
+     
 
     
 #TF
@@ -1326,15 +1317,37 @@ pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
       adonis(pacu.u.TF ~Treatment, data = pacu.u.samp.df.TF)
       set.seed(30)
       adonis(pacu.u.TF ~ Clade*Treatment, data = pacu.u.samp.df.TF)
-  # Homogeneity of dispersion test  
-       set.seed(30)
-  beta <- betadisper(pacu.u.TF, pacu.u.samp.df.TF$Clade) 
-    permutest(beta, pairwise = T) 
-     set.seed(30)
-  beta <- betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment) 
-    permutest(beta, pairwise = T) 
+# Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+YOU ARE HERE
+# dispersion models for ASVs
+```{r}
+#ok you need to do this univariate, which means at each time point between treatments (for now)
+
+#mcap 
+#T1 mcap.u.bac.mcapT1
+ mcap.u.bac.mcapT1 <- phyloseq::distance(mcap.u.bac.T1, method = "wunifrac") 
+      mcap.u.samp.df.T1 <- as(sample_data(mcap.u.bac.T1), "data.frame") 
+mcap.score.disp.T1<-betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = c("centroid"))
+
+disp.score<-scores(mcap.score.disp.T1, display = c("sites", "centroids"))
+```
 
 
 
@@ -1554,7 +1567,7 @@ Crap you were working on for above
 16 bar plots in ggplot (to make faster than next section)  
 #MCAP
 PHYLUM
-```{r}   
+```{r}    
 #try glom use raw counts Bac.s2
 Mcap_Bac.s2<-subset_samples(Bac.s2, Species=="Montipora_capitata")
 
@@ -2333,7 +2346,7 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 # Beta Split data by species 
 Beta div
 Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
-```{r}       
+```{r}        
 # df Bac_RelA_stats.T1F
 #Mcap
 mcap.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
@@ -2432,7 +2445,7 @@ mcap.g.bac.TF.CD <- subset_samples(mcap.g.bac.TF, Clade == "CD")
     permutest(beta.mcap.g.TF.CD, pairwise = T) 
 ``` 
 Mcap NMDS
-```{r}  
+```{r}   
 ## create palette for parent.ID and treatments
 mcap.g.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "dodgerblue", "High" = "darkred",
@@ -5074,32 +5087,34 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances   
-df:Bac.r2 and Bac.r2.sd sample data
-```{r}   
+df:Bac.s and
+```{r}    
 #trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
-Bac.r2.alpha<-Bac.s2 #make a copy of df
+Bac.al.alpha<-Bac.s #make a copy of df, use COUNTS
 
-Bac.r2.alpha<-subset_samples(Bac.r2.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
-Bac.r2.alpha2 <- prune_taxa(taxa_sums(Bac.r2.alpha) > 0, Bac.r2.alpha) #prune taxa 0s
-Bac.r2.alpha2.sd <- as(sample_data(Bac.r2.alpha2), "data.frame") #create sample data frame to view
+Bac.al.alpha<-subset_samples(Bac.al.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
+Bac.al.alpha2 <- prune_taxa(taxa_sums(Bac.al.alpha) > 0, Bac.al.alpha) #prune taxa 0s
+Bac.al.alpha2.sd <- as(sample_data(Bac.al.alpha2), "data.frame") #create sample data frame to view
 
 
 #####try microbiome package for evenness and alpha diversity. use raw counts
 library(microbiome)  
 library(knitr)
 
-erich.tab <-microbiome::alpha(Bac.r2.alpha2, index = "all") # pull out: observed, diversity_shannon, evenness_pielou
+erich.tab <-microbiome::alpha(Bac.al.alpha2, index = "all") # pull out: observed, diversity_shannon, evenness_pielou
 
 erich.tab2<-erich.tab[-c(2:4,6:8,10:22)] #keep the cols you need
 
-erich.tab2
- erich.tab2$Treatment <- Bac.r2.alpha2.sd$Treatment       #add back in meta
-  erich.tab2$Time.Point <- Bac.r2.alpha2.sd$Time.Point
-  erich.tab2$Parent.ID <- Bac.r2.alpha2.sd$Parent.ID
-  erich.tab2$ID <- Bac.r2.alpha2.sd$Frag.ID
-  erich.tab2$Species <- Bac.r2.alpha2.sd$Species
+ erich.tab2$Treatment <- Bac.al.alpha2.sd$Treatment       #add back in meta
+  erich.tab2$Time.Point <- Bac.al.alpha2.sd$Time.Point
+  erich.tab2$Parent.ID <- Bac.al.alpha2.sd$Parent.ID
+  erich.tab2$ID <- Bac.al.alpha2.sd$Frag.ID
+  erich.tab2$Species <- Bac.al.alpha2.sd$Species
+    erich.tab2$Clade <- Bac.al.alpha2.sd$Clade
+    erich.tab2$Tank.num <- Bac.al.alpha2.sd$Tank.num
+
   erich.tab2$Time.Point = factor(erich.tab2$Time.Point, levels = c("T0", "T1", "TF"))
 
 
@@ -5107,15 +5122,15 @@ erich.tab2
 
 #ANOVA
 #shannon
-  aov.shannon.species = aov(diversity_shannon ~ Species, data=erich.tab2)
+  aov.shannon.species = aov(diversity_shannon ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.shannon.species) # sig diff between species
   TukeyHSD(aov.shannon.species)
 #observed  
-  aov.observed.species = aov(observed ~ Species, data=erich.tab2)
+  aov.observed.species = aov(observed ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.observed.species) # sig diff between species
   TukeyHSD(aov.observed.species)
 #evenness
-  aov.evenness.species = aov(evenness_pielou ~ Species, data=erich.tab2)
+  aov.evenness.species = aov(evenness_pielou ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.evenness.species) # sig diff between species
   TukeyHSD(aov.evenness.species)  
 #Plot
@@ -5135,8 +5150,7 @@ al.species <- levels(erich.tab2$Species) # get the variables
 p1 <- ggviolin(erich.tab2, x = "Species", y = "observed",
    add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
   print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
+
     
 #Shannon
 p1 <- ggviolin(erich.tab2, x = "Species", y = "diversity_shannon",
@@ -5153,11 +5167,1200 @@ p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric te
   print(p1)
 
 
+
+
+
+#look at data
+#observed
+hist(erich.tab2$observed)
+ggqqplot(erich.tab2$observed)
+hist(log(erich.tab2$observed))
+ggqqplot(log10(erich.tab2$observed))
+erich.tab2$observed_log<-log10(erich.tab2$observed)
+
+# hist(sqrt(erich.tab2$observed))
+# ggqqplot(sqrt(erich.tab2$observed))
+
+
+hist(erich.tab2$diversity_shannon)
+ggqqplot(erich.tab2$diversity_shannon)
+hist(log10(erich.tab2$diversity_shannon))
+ggqqplot(log10(erich.tab2$diversity_shannon))
+hist(sqrt(erich.tab2$diversity_shannon))
+ggqqplot(sqrt(erich.tab2$diversity_shannon))
+hist((erich.tab2$diversity_shannon)^(1/4))
+ggqqplot(sqrt(erich.tab2$diversity_shannon))
+
+
+
+hist(erich.tab2$evenness_pielou) #best
+ggqqplot(erich.tab2$evenness_pielou)
+hist(log10(erich.tab2$evenness_pielou))#worse
+ggqqplot(erich.tab2$evenness_pielou)
+hist(sqrt(max(erich.tab2$evenness_pielou+1)-erich.tab2$evenness_pielou))#nope
+
+ggqqplot(erich.tab2$evenness_pielou)
+
+
+
+
+
+
+
+
 #by species:
 erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
 erich.tab2.pcomp<-subset(erich.tab2, Species=="Porites_compressa")
 erich.tab2.pvar<-subset(erich.tab2, Species=="Pavona_varians")
 erich.tab2.pacu<-subset(erich.tab2, Species=="Pocillopora_acuta")
+
+hist(erich.tab2.mcap$observed_log)
+hist(erich.tab2.mcap$observed) #better
+hist(erich.tab2.pcomp$observed_log)#better
+hist(erich.tab2.pcomp$observed) 
+hist(erich.tab2.pvar$observed_log)#better
+hist(erich.tab2.pvar$observed) 
+hist(erich.tab2.pacu$observed_log)#better
+hist(erich.tab2.pacu$observed) 
+```
+#Observed Richness 
+```{r}
+#observed  
+ #log it
+
+observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2) #adding tank is singularity
+  anova(observed_alpha_mod) 
+  qqPlot(residuals(observed_alpha_mod)) 
+  emm<-emmeans(observed_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2) #adding tank is singularity
+  anova(observed_alpha_mod) 
+  qqPlot(residuals(observed_alpha_mod)) 
+  emm<-emmeans(observed_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+
+
+################Mcap only
+ #t1TF
+  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
+
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
+
+   Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+####### PCOMP only
+  #t1TF
+  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
+
+  pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
+
+   pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.TF) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+####### pvar only
+  #t1TF
+  pvar_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pvar.T1<-subset(erich.tab2.pvar, Time.Point=="T1")
+
+  pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pvar.TF<-subset(erich.tab2.pvar, Time.Point=="TF")
+
+   pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar.TF) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
+  ####### pacu only
+  #t1TF
+  pacu_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
+
+  pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
+
+   pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu.TF) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.TF) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+```
+alpha Observed Plots, no clade
+```{r}
+#Means
+observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                 N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+observed_mean
+
+#Mcap 
+Mcap_observed_mean<-subset(observed_mean, Species=="Montipora_capitata") #Subset Mcap
+# Pcomp 
+Pcomp_observed_mean<-subset(observed_mean, Species=="Porites_compressa") #Subset Pcomp
+# Pacu 
+Pacu_observed_mean<-subset(observed_mean, Species=="Pocillopora_acuta") #Subset Pacu
+# Pvar 
+Pvar_observed_mean<-subset(observed_mean, Species=="Pavona_varians") #Subset Pvar
+
+#mcap plots
+#plot Mcap
+Mcap_observed_plot<-ggplot(data=Mcap_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
+
+
+#plot Pcomp
+Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pcomp Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
+
+#Pvar plots
+#plot Pvar
+Pvar_observed_plot<-ggplot(data=Pvar_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pvar Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
+
+
+#Pacu plots
+#plot Pacu
+Pacu_observed_plot<-ggplot(data=Pacu_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pacu Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
+
+###### All plots together
+Mcap_observed_plot<-Mcap_observed_plot+ theme(legend.position = "none") #remove legend
+Pcomp_observed_plot<-Pcomp_observed_plot+ theme(legend.position = "none") #remove legend
+Pvar_observed_plot<-Pvar_observed_plot+ theme(legend.position = "none") #remove legend
+Pacu_observed_plot<-Pacu_observed_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_observed_plot, nrow = 1)
+ 
+```  
+
+alpha Observed Plots, clade  
+```{r}
+# color pal from eta mcap.g.Parent.colors
+alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
+                        "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
+
+#Means
+observed_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                 N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+observed_mean.C
+observed_mean.C$Code<-paste(observed_mean.C$Clade, observed_mean.C$Treatment)
+
+#Mcap 
+Mcap_observed_mean.C<-subset(observed_mean.C, Species=="Montipora_capitata") #Subset Mcap
+# Pcomp 
+Pcomp_observed_mean.C<-subset(observed_mean.C, Species=="Porites_compressa") #Subset Pcomp
+# Pacu 
+Pacu_observed_mean.C<-subset(observed_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
+# Pvar 
+Pvar_observed_mean.C<-subset(observed_mean.C, Species=="Pavona_varians") #Subset Pvar
+
+#mcap plots
+#plot Mcap
+Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
+
+#Pcomp plots
+#plot Pcomp
+Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pcomp Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
+
+#Pvar plots
+#plot Pvar
+Pvar_observed_plot<-ggplot(data=Pvar_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pvar Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
+
+
+#plot Pacu
+Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pacu Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
+
+###### All plots together
+Mcap_observed_plot<-Mcap_observed_plot+ theme(legend.position = "none") #remove legend
+Pcomp_observed_plot<-Pcomp_observed_plot+ theme(legend.position = "none") #remove legend
+Pvar_observed_plot<-Pvar_observed_plot+ theme(legend.position = "none") #remove legend
+Pacu_observed_plot<-Pacu_observed_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_observed_plot, nrow = 1)
+ 
+```
+ 
+#evenness_pielou Richness 
+```{r}
+#evenness_pielou  
+#not transformeds
+
+evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2) #adding tank is singularity
+  anova(evenness_pielou_alpha_mod) 
+  qqPlot(residuals(evenness_pielou_alpha_mod)) 
+  emm<-emmeans(evenness_pielou_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2) #adding tank is singularity
+  anova(evenness_pielou_alpha_mod) 
+  qqPlot(residuals(evenness_pielou_alpha_mod)) 
+  emm<-emmeans(evenness_pielou_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+
+
+################Mcap only
+ #t1TF
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
+
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
+
+   Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+  
+####### PCOMP only
+  #t1TF
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
+
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
+
+   pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.TF) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+
+####### pvar only
+  #t1TF
+  pvar_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pvar.T1<-subset(erich.tab2.pvar, Time.Point=="T1")
+
+  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pvar.TF<-subset(erich.tab2.pvar, Time.Point=="TF")
+
+   pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar.TF) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
+  ####### pacu only
+  #t1TF
+  pacu_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ #t1
+  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
+
+  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #tf
+  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
+
+   pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu.TF) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.TF) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+```
+alpha evenness_pielou Plots, no clade
+```{r}
+#Means
+evenness_pielou_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+evenness_pielou_mean
+
+#Mcap 
+Mcap_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Montipora_capitata") #Subset Mcap
+# Pcomp 
+Pcomp_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Porites_compressa") #Subset Pcomp
+# Pacu 
+Pacu_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pocillopora_acuta") #Subset Pacu
+# Pvar 
+Pvar_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pavona_varians") #Subset Pvar
+
+#mcap plots
+#plot Mcap
+Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
+
+
+#plot Pcomp
+Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pcomp Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
+
+#Pvar plots
+#plot Pvar
+Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pvar Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
+
+
+#Pacu plots
+#plot Pacu
+Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pacu Richness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
+
+###### All plots together
+Mcap_evenness_pielou_plot<-Mcap_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pcomp_evenness_pielou_plot<-Pcomp_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pvar_evenness_pielou_plot<-Pvar_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pacu_evenness_pielou_plot<-Pacu_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evenness_pielou_plot,Pacu_evenness_pielou_plot, nrow = 1)
+ 
+```  
+
+alpha evenness_pielou Plots, clade  
+```{r}
+# color pal from eta mcap.g.Parent.colors
+alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
+                        "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
+
+#Means
+evenness_pielou_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+evenness_pielou_mean.C
+evenness_pielou_mean.C$Code<-paste(evenness_pielou_mean.C$Clade, evenness_pielou_mean.C$Treatment)
+
+#Mcap 
+Mcap_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Montipora_capitata") #Subset Mcap
+# Pcomp 
+Pcomp_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Porites_compressa") #Subset Pcomp
+# Pacu 
+Pacu_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
+# Pvar 
+Pvar_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Pavona_varians") #Subset Pvar
+
+#mcap plots
+#plot Mcap
+Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
+
+#Pcomp plots
+#plot Pcomp
+Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pcomp Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
+
+#Pvar plots
+#plot Pvar
+Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pvar Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
+
+
+#plot Pacu
+Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
+  scale_color_manual(values=alpha.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Pacu Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
+
+###### All plots together
+Mcap_evenness_pielou_plot<-Mcap_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pcomp_evenness_pielou_plot<-Pcomp_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pvar_evenness_pielou_plot<-Pvar_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+Pacu_evenness_pielou_plot<-Pacu_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evenness_pielou_plot,Pacu_evenness_pielou_plot, nrow = 1)
+ 
+```
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Observed Richness OLD ANOVA CODE DELETE WHEN UPDATED ABOVE
+```{r}
+#observed  
+
+
+################Mcap only
+
+
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.mcap)
+  summary(aov.diversity_shannon.mcap) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.mcap)
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.mcap)
+  summary(aov.diversity_shannon.mcap) # sig diff between species
+  
+  #lmer
+shannon_Mcap_model<-lmer(diversity_shannon~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), erich.tab2.mcap)
+  anova(shannon_Mcap_model) 
+  qqPlot(residuals(shannon_Mcap_model)) 
+  emm<-emmeans(shannon_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
+  
+  
+  
+ #t1
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
+
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment, data=erich.tab2.mcap.T1)
+  summary(aov.diversity_shannon.mcap) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.mcap)
+  
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.mcap.T1)
+  summary(aov.diversity_shannon.mcap) # sig diff between species 
+  
+  #tf
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
+
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment, data=erich.tab2.mcap.TF)
+  summary(aov.diversity_shannon.mcap) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.mcap)
+  
+  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.mcap.TF)
+  summary(aov.diversity_shannon.mcap) # sig diff between species 
+
+  
+####### PCOMP only
+ #t1TF
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.pcomp)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pcomp)
+  
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.pcomp)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species
+  
+ #t1
+  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
+
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment, data=erich.tab2.pcomp.T1)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pcomp)
+  
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pcomp.T1)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species 
+  
+  #tf
+  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
+
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment, data=erich.tab2.pcomp.TF)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pcomp)
+  
+  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pcomp.TF)
+  summary(aov.diversity_shannon.pcomp) # sig diff between species 
+  
+################pacu only
+ #t1TF
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.pacu)
+  summary(aov.diversity_shannon.pacu) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pacu)
+  
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.pacu)
+  summary(aov.diversity_shannon.pacu) # sig diff between species
+  
+ #t1
+  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
+
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment, data=erich.tab2.pacu.T1)
+  summary(aov.diversity_shannon.pacu) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pacu)
+  
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pacu.T1)
+  summary(aov.diversity_shannon.pacu) # sig diff between species 
+  
+  #tf
+  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
+
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment, data=erich.tab2.pacu.TF)
+  summary(aov.diversity_shannon.pacu) # sig diff between species
+  TukeyHSD(aov.diversity_shannon.pacu)
+  
+  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pacu.TF)
+  summary(aov.diversity_shannon.pacu) # sig diff between species 
 
 ```
 OLDER alpha, delete when ready
@@ -5166,7 +6369,7 @@ OLDER alpha, delete when ready
 
 #########OK you are removing T0 here and then you need to make a new samp data frame and then do below. 
 
-
+ 
 
 
 erich <- estimate_richness(Bac.r2.alpha2, measures = c("Observed", "Shannon")) #select which estimates and estimate
