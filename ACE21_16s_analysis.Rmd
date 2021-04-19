@@ -786,7 +786,7 @@ http://joey711.github.io/phyloseq-demo/
 
 Weighted UniFrac - which does take into account differences in abundance of taxa between samples, but takes longer to calculate; and
 
-Unweighted UniFrac - which only considers the presence/absence of taxa between sample pairs.
+#Unweighted UniFrac FAMILY - which only considers the presence/absence of taxa between sample pairs.
 ```{r} 
 
 #look at your trees
@@ -1077,8 +1077,8 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
     permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
 ```
-Permanova UNIFRAC by ASV (no filter) to compare with above
-```{r} 
+#Permanova UNIFRAC by ASV (no filter) to compare with above
+```{r}  
 
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
@@ -1096,9 +1096,9 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
 
      # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")) #put in distance matrix
+    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Treatment, type = "centroid")) 
     
 # #dipersion lmer  <-- only if necessary!
 #     wu.all<-betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")
@@ -1128,7 +1128,7 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
     
     
     
-############# mcap
+############# mcap ####
 
 #Mcap
 mcap.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
@@ -1158,9 +1158,13 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
     adonis(u.mcap.u.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.samp.df.T1F)#adonis test with clade
    # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Treatment, type = "centroid"))
+    set.seed(30)
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Time.Point, type = "centroid"))
+     set.seed(30)
+    permutest(betadisper(u.mcap.u.T1F, mcap.u.samp.df.T1F$Code, type = "centroid"))
     
   
     
@@ -1174,9 +1178,9 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
     adonis(mcap.u.bac.mcapT1 ~ Clade*Treatment, data = mcap.u.samp.df.T1)  
 # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid")) 
  
 
 
@@ -1189,12 +1193,12 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
     adonis(mcap.u.TF ~ Clade*Treatment, data = mcap.u.samp.df.TF)
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Treatment, type = "centroid")) 
     
     
-############ pcomp
+############ pcomp ####
 #Pcomp
 pcomp.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Porites_compressa")
 #pcomp.u.bac.T1F = prune_taxa(taxa_sums(pcomp.u.bac.T1F) > 0, pcomp.u.bac.T1F) #this removes any OTU with 0s
@@ -1210,41 +1214,53 @@ pcomp.u.bac.TF <- subset_samples(pcomp.u.bac.T1F, Time.Point == "TF")
 #make wunifrac curtis data matrix -T1 and TF
   pcomp.u.T1F <- phyloseq::distance(pcomp.u.bac.T1F, method = "wunifrac")
      pcomp.u.samp.df.T1F <- as(sample_data(pcomp.u.bac.T1F), "data.frame") #sample df
+     pcomp.u.samp.df.T1F$Code<-paste(pcomp.u.samp.df.T1F$Treatment, pcomp.u.samp.df.T1F$Time.Point)
+          pcomp.u.samp.df.T1F$Code2<-paste(pcomp.u.samp.df.T1F$Treatment, pcomp.u.samp.df.T1F$Time.Point,pcomp.u.samp.df.T1F$Clade)
+
       set.seed(30)
     adonis(pcomp.u.T1F ~ Treatment*Time.Point, data = pcomp.u.samp.df.T1F) #adonis test no clade
    set.seed(30)
     adonis(pcomp.u.T1F ~ Clade*Treatment*Time.Point, data = pcomp.u.samp.df.T1F)#adonis test with clade
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
-    
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Time.Point, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Code, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pcomp.u.T1F, pcomp.u.samp.df.T1F$Code2, type = "centroid")) 
 #T1
   pcomp.u.T1 <- phyloseq::distance(pcomp.u.bac.T1, method = "wunifrac") 
-      pcomp.u.samp.df.T1 <- as(sample_data(pcomp.u.bac.T1), "data.frame") 
+      pcomp.u.samp.df.T1 <- as(sample_data(pcomp.u.bac.T1), "data.frame")
+      pcomp.u.samp.df.T1$Code<-paste(pcomp.u.samp.df.T1$Treatment, pcomp.u.samp.df.T1$Clade)
    set.seed(30)
    adonis(pcomp.u.T1 ~ Treatment, data = pcomp.u.samp.df.T1)  
     set.seed(30)
    adonis(pcomp.u.T1 ~ Clade*Treatment, data = pcomp.u.samp.df.T1)  
  # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Code, type = "centroid")) 
 
 #TF
 pcomp.u.TF <- phyloseq::distance(pcomp.u.bac.TF, method = "wunifrac")
      pcomp.u.samp.df.TF <- as(sample_data(pcomp.u.bac.TF), "data.frame") 
-      set.seed(30)
+           pcomp.u.samp.df.TF$Code<-paste(pcomp.u.samp.df.TF$Treatment, pcomp.u.samp.df.TF$Clade)
+           set.seed(30)
     adonis(pcomp.u.TF ~ Treatment, data = pcomp.u.samp.df.TF)
      set.seed(30)
     adonis(pcomp.u.TF ~ Clade*Treatment, data = pcomp.u.samp.df.TF)
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Code, type = "centroid")) 
     
     
     
@@ -1265,6 +1281,8 @@ pvar.u.u.bac.TF <- subset_samples(pvar.u.u.bac.T1F, Time.Point == "TF")
   pvar.u.u.T1F <- phyloseq::distance(pvar.u.u.bac.T1F, method = "wunifrac")
      pvar.u.u.samp.df.T1F <- as(sample_data(pvar.u.u.bac.T1F), "data.frame") #sample df
      pvar.u.u.samp.df.T1F$Code<-paste(pvar.u.u.samp.df.T1F$Clade,pvar.u.u.samp.df.T1F$Treatment)
+          pvar.u.u.samp.df.T1F$Code2<-paste(pvar.u.u.samp.df.T1F$Clade,pvar.u.u.samp.df.T1F$Treatment,pvar.u.u.samp.df.T1F$Time.Point)
+
      set.seed(30)
 adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis test no clade
     set.seed(30)
@@ -1275,8 +1293,12 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
     permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Clade, type = "centroid")) #
    set.seed(30)
     permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Treatment, type = "centroid")) #
+     set.seed(30)
+    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Time.Point, type = "centroid")) #
     set.seed(30)
-    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Code, type = "centroid")) #by clade*treatment
+    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Code, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(pvar.u.u.T1F, pvar.u.u.samp.df.T1F$Code2, type = "centroid"))
     
     
 
@@ -1284,21 +1306,25 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
                 
   pvar.u.u.T1 <- phyloseq::distance(pvar.u.u.bac.T1, method = "wunifrac") 
       pvar.u.u.samp.df.T1 <- as(sample_data(pvar.u.u.bac.T1), "data.frame") 
+      pvar.u.u.samp.df.T1$Code<-paste(pvar.u.u.samp.df.T1$Treatment,pvar.u.u.samp.df.T1$Clade)
    set.seed(30)
    adonis(pvar.u.u.T1 ~ Treatment, data = pvar.u.u.samp.df.T1) 
      set.seed(30)
      adonis(pvar.u.u.T1 ~ Clade*Treatment, data = pvar.u.u.samp.df.T1)  
 # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Treatment, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pvar.u.u.T1, pvar.u.u.samp.df.T1$Code, type = "centroid")) 
     
     
 
 #TF
   pvar.u.u.TF<- phyloseq::distance(pvar.u.u.bac.TF, method = "wunifrac")
      pvar.u.u.samp.df.TF <- as(sample_data(pvar.u.u.bac.TF), "data.frame") 
+      pvar.u.u.samp.df.TF$Code<-paste(pvar.u.u.samp.df.TF$Clade,pvar.u.u.samp.df.TF$Treatment)
       set.seed(30)
       adonis(pvar.u.u.TF ~ Treatment, data = pvar.u.u.samp.df.TF)
         set.seed(30)
@@ -1306,42 +1332,53 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Code, type = "centroid")) 
 
 ####### pacuta ####
 
 #Pacu
 pacu.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pocillopora_acuta")
-#pacu.u.bac.T1F = prune_taxa(taxa_sums(pacu.u.bac.T1F) > 0, pacu.u.bac.T1F) #this removes any OTU with 0s
+pacu.u.bac.T1F = prune_taxa(taxa_sums(pacu.u.bac.T1F) > 0, pacu.u.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
 pacu.u.bac.T1 <- subset_samples(pacu.u.bac.T1F, Time.Point == "T1")
-#  pacu.u.bac.T1 = prune_taxa(taxa_sums(pacu.u.bac.T1) > 0, pacu.u.bac.T1) #this removes any OTU with 0s
+pacu.u.bac.T1 = prune_taxa(taxa_sums(pacu.u.bac.T1) > 0, pacu.u.bac.T1) #this removes any OTU with 0s
 
 pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
- # pacu.u.bac.TF = prune_taxa(taxa_sums(pacu.u.bac.TF) > 0, pacu.u.bac.TF) #this removes any OTU with 0s
+pacu.u.bac.TF = prune_taxa(taxa_sums(pacu.u.bac.TF) > 0, pacu.u.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
   pacu.u.T1F <- phyloseq::distance(pacu.u.bac.T1F, method = "wunifrac")
      pacu.u.samp.df.T1F <- as(sample_data(pacu.u.bac.T1F), "data.frame") #sample df
+     pacu.u.samp.df.T1F$Code<-paste(pacu.u.samp.df.T1F$Treatment,pacu.u.samp.df.T1F$Time.Point)
+          pacu.u.samp.df.T1F$Code2<-paste(pacu.u.samp.df.T1F$Treatment,pacu.u.samp.df.T1F$Time.Point,pacu.u.samp.df.T1F$Clade)
+
      set.seed(30)
      adonis(pacu.u.T1F ~ Treatment*Time.Point, data = pacu.u.samp.df.T1F) #adonis test no clade
      set.seed(30)
      adonis(pacu.u.T1F ~ Clade*Treatment*Time.Point, data = pacu.u.samp.df.T1F)#adonis test with clade
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
-
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Treatment, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Code, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pacu.u.T1F, pacu.u.samp.df.T1F$Code2, type = "centroid")) 
      
      
 #T1
   Pacu.u.T1 <- phyloseq::distance(pacu.u.bac.T1, method = "wunifrac") 
       pacu.u.samp.df.T1 <- as(sample_data(pacu.u.bac.T1), "data.frame") 
+      pacu.u.samp.df.T1$Code<-paste(pacu.u.samp.df.T1$Treatment, pacu.u.samp.df.T1$Time.Point)
+            pacu.u.samp.df.T1$Code2<-paste(pacu.u.samp.df.T1$Treatment, pacu.u.samp.df.T1$Time.Point,pacu.u.samp.df.T1$Clade)
+
            pacu.u.samp.df.T1$Code<-paste(pacu.u.samp.df.T1$Clade,pacu.u.samp.df.T1$Treatment)
 
       set.seed(30)
@@ -1350,11 +1387,11 @@ pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
       adonis(Pacu.u.T1 ~ Clade*Treatment, data = pacu.u.samp.df.T1)  
  # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Treatment, type = "centroid")) 
     set.seed(30)
-    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Code, type = "centroid")) #put in distance matrix
+    permutest(betadisper(Pacu.u.T1, pacu.u.samp.df.T1$Code, type = "centroid")) 
 
      
 
@@ -1363,47 +1400,19 @@ pacu.u.bac.TF <- subset_samples(pacu.u.bac.T1F, Time.Point == "TF")
  
 pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
      pacu.u.samp.df.TF <- as(sample_data(pacu.u.bac.TF), "data.frame") 
+     pacu.u.samp.df.TF$Code<-paste(pacu.u.samp.df.TF$Clade,pacu.u.samp.df.TF$Treatment)
       set.seed(30)
       adonis(pacu.u.TF ~Treatment, data = pacu.u.samp.df.TF)
       set.seed(30)
       adonis(pacu.u.TF ~ Clade*Treatment, data = pacu.u.samp.df.TF)
 # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Code, type = "centroid")) 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-YOU ARE HERE
-# dispersion models for ASVs
-```{r}
-#ok you need to do this univariate, which means at each time point between treatments (for now)
-
-#mcap 
-#T1 mcap.u.bac.mcapT1
- mcap.u.bac.mcapT1 <- phyloseq::distance(mcap.u.bac.T1, method = "wunifrac") 
-      mcap.u.samp.df.T1 <- as(sample_data(mcap.u.bac.T1), "data.frame") 
-mcap.score.disp.T1<-betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = c("centroid"))
-
-disp.score<-scores(mcap.score.disp.T1, display = c("sites", "centroids"))
-
-```
-
-
-
-
-
 #For lmers of each taxa: do on full dataset, rel abund Bac.s.rel
 ```{r} 
 #adonis in vegan - you have the otu table and the taxa df, you need to add in the metadata to do this
@@ -1438,9 +1447,6 @@ for(i in OTU){
 
 #creates df with pval for all effects by taxa, then I pull out ones that are significant (do lines 508 and 509 to pull those out)
 ```
-
-
-
 
 All species by family df phy,FamTest2TEST relA, this is phyloseq
 ```{r}        
@@ -1544,9 +1550,6 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
  
 
 ```
-
-
-
 
 Crap you were working on for above
 ```{r} 
@@ -2336,7 +2339,7 @@ print(DIVrareRel1_Pcomp)
 
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species Bac.s.rel .  relative abundances 
-```{r}             
+```{r}              
 #Bac.s.rel 
 
 Bac.s.rel_stats<- Bac.s.rel #make a copy
@@ -2396,7 +2399,7 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 # Beta Split data by species  bray curtis
 Beta div
 Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
-```{r}          
+```{r}           
 # df Bac_RelA_stats.T1F
 #Mcap
 mcap.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
@@ -2413,7 +2416,10 @@ mcap.g.bac.TF <- subset_samples(mcap.g.bac.T1F, Time.Point == "TF")
 #make bray curtis data matrix -T1 and TF
   bc.mcap.g.T1F <- phyloseq::distance(mcap.g.bac.T1F, method = "bray")
      mcap.g.samp.df.T1F <- as(sample_data(mcap.g.bac.T1F), "data.frame") #sample df
+    
      mcap.g.samp.df.T1F$Code<-paste(mcap.g.samp.df.T1F$Treatment,mcap.g.samp.df.T1F$Time.Point)
+       set.seed(30)
+          mcap.g.samp.df.T1F$Code2<-paste(mcap.g.samp.df.T1F$Treatment,mcap.g.samp.df.T1F$Time.Point,mcap.g.samp.df.T1F$Clade)
        set.seed(30)
     adonis(bc.mcap.g.T1F ~ Treatment*Time.Point, data = mcap.g.samp.df.T1F) #adonis test no clade
      set.seed(30)
@@ -2423,8 +2429,14 @@ mcap.g.bac.TF <- subset_samples(mcap.g.bac.T1F, Time.Point == "TF")
     # Homogeneity of dispersion test  
     set.seed(30)
     permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Code, type = "centroid")) #put in distance matrix
+      set.seed(30)
+    permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Clade, type = "centroid"))
    set.seed(30)
-    permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
+    permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Treatment, type = "centroid"))
+    set.seed(30)
+    permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Time.Point, type = "centroid"))
+     set.seed(30)
+    permutest(betadisper(bc.mcap.g.T1F, mcap.g.samp.df.T1F$Code2, type = "centroid"))
     
 #T1
   bc.mcapT1 <- phyloseq::distance(mcap.g.bac.T1, method = "bray") 
@@ -3086,7 +3098,7 @@ ggsave("Mcap_ITS2_CD_TF.pdf")
 
 Porites - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
-```{r}        
+```{r}         
 # df Bac_RelA_stats.T1F
 #Pcomp
 pcomp.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Porites_compressa")
@@ -3103,17 +3115,31 @@ pcomp.g.bac.TF <- subset_samples(pcomp.g.bac.T1F, Time.Point == "TF")
 #make bray curtis data matrix -T1 and TF
   bc.pcomp.g.T1F <- phyloseq::distance(pcomp.g.bac.T1F, method = "bray")
      pcomp.g.samp.df.T1F <- as(sample_data(pcomp.g.bac.T1F), "data.frame") #sample df
+     pcomp.g.samp.df.T1F$Code<-paste(pcomp.g.samp.df.T1F$Treatment, pcomp.g.samp.df.T1F$Time.Point)
+          pcomp.g.samp.df.T1F$Code2<-paste(pcomp.g.samp.df.T1F$Treatment, pcomp.g.samp.df.T1F$Time.Point,pcomp.g.samp.df.T1F$Clade)
+
           set.seed(30)
 adonis(bc.pcomp.g.T1F ~ Treatment*Time.Point, data = pcomp.g.samp.df.T1F) #adonis test no clade
           set.seed(30)
 adonis(bc.pcomp.g.T1F ~ Clade*Treatment*Time.Point, data = pcomp.g.samp.df.T1F)#adonis test with clade
  #heatmap
     #plot_heatmap(pcomp.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
-    
+    # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(bc.pcomp.g.T1F, pcomp.g.samp.df.T1F$Time.Point, type = "centroid"))
+   set.seed(30)
+    permutest(betadisper(bc.pcomp.g.T1F, pcomp.g.samp.df.T1F$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.pcomp.g.T1F, pcomp.g.samp.df.T1F$Code, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.pcomp.g.T1F, pcomp.g.samp.df.T1F$Code2, type = "centroid")) 
+
+
 #T1
 
   bc.PcompT1 <- phyloseq::distance(pcomp.g.bac.T1, method = "bray") 
       pcomp.g.samp.df.T1 <- as(sample_data(pcomp.g.bac.T1), "data.frame") 
+      pcomp.g.samp.df.T1$Code<-paste(pcomp.g.samp.df.T1$Treatment, pcomp.g.samp.df.T1$Clade)
        set.seed(30)
  adonis(bc.PcompT1 ~ Treatment, data = pcomp.g.samp.df.T1)  
            set.seed(30)
@@ -3123,11 +3149,15 @@ adonis(bc.pcomp.g.T1F ~ Clade*Treatment*Time.Point, data = pcomp.g.samp.df.T1F)#
     permutest(betadisper(bc.PcompT1, pcomp.g.samp.df.T1$Clade, type = "centroid"))
    set.seed(30)
     permutest(betadisper(bc.PcompT1, pcomp.g.samp.df.T1$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.PcompT1, pcomp.g.samp.df.T1$Code, type = "centroid")) 
 
 #TF
 
   bc.pcomp.g.TF <- phyloseq::distance(pcomp.g.bac.TF, method = "bray")
      pcomp.g.samp.df.TF <- as(sample_data(pcomp.g.bac.TF), "data.frame") 
+           pcomp.g.samp.df.TF$Code<-paste(pcomp.g.samp.df.TF$Treatment, pcomp.g.samp.df.TF$Clade)
+
            set.seed(30)
  adonis(bc.pcomp.g.TF ~ Treatment, data = pcomp.g.samp.df.TF)
            set.seed(30)
@@ -3137,6 +3167,8 @@ adonis(bc.pcomp.g.T1F ~ Clade*Treatment*Time.Point, data = pcomp.g.samp.df.T1F)#
     permutest(betadisper(bc.pcomp.g.TF, pcomp.g.samp.df.TF$Clade, type = "centroid"))
    set.seed(30)
     permutest(betadisper(bc.pcomp.g.TF, pcomp.g.samp.df.TF$Treatment, type = "centroid")) 
+     set.seed(30)
+    permutest(betadisper(bc.pcomp.g.TF, pcomp.g.samp.df.TF$Code, type = "centroid"))
 
 
 ######### by phylotype: C15cj vs C15n
@@ -3445,17 +3477,27 @@ Pvar.g.bac.TF <- subset_samples(Pvar.g.bac.T1F, Time.Point == "TF")
 
   bc.Pvar.g.T1F <- phyloseq::distance(Pvar.g.bac.T1F, method = "bray")
      Pvar.g.samp.df.T1F <- as(sample_data(Pvar.g.bac.T1F), "data.frame") #sample df
+     Pvar.g.samp.df.T1F$Code<-paste(Pvar.g.samp.df.T1F$Treatment,Pvar.g.samp.df.T1F$Time.Point)
+          Pvar.g.samp.df.T1F$Code2<-paste(Pvar.g.samp.df.T1F$Treatment,Pvar.g.samp.df.T1F$Time.Point,Pvar.g.samp.df.T1F$Clade)
+
              set.seed(30)
  adonis(bc.Pvar.g.T1F ~ Treatment*Time.Point, data = Pvar.g.samp.df.T1F) #adonis test no clade
              set.seed(30)
  adonis(bc.Pvar.g.T1F ~ Clade*Treatment*Time.Point, data = Pvar.g.samp.df.T1F)#adonis test with clade
- #heatmap
-    #plot_heatmap(Pvar.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+set.seed(30)
+    permutest(betadisper(bc.Pvar.g.T1F, Pvar.g.samp.df.T1F$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.Pvar.g.T1F, Pvar.g.samp.df.T1F$Time.Point, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.Pvar.g.T1F, Pvar.g.samp.df.T1F$Code, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.Pvar.g.T1F, Pvar.g.samp.df.T1F$Code2, type = "centroid")) 
     
 #T1
 
   bc.PvarT1 <- phyloseq::distance(Pvar.g.bac.T1, method = "bray") 
       Pvar.g.samp.df.T1 <- as(sample_data(Pvar.g.bac.T1), "data.frame") 
+      Pvar.g.samp.df.T1$Code2<-paste(Pvar.g.samp.df.T1$Clade,Pvar.g.samp.df.T1$Treatment)
                set.seed(30)
   adonis(bc.PvarT1 ~ Treatment, data = Pvar.g.samp.df.T1)  
   set.seed(30)
@@ -3464,12 +3506,16 @@ Pvar.g.bac.TF <- subset_samples(Pvar.g.bac.T1F, Time.Point == "TF")
     set.seed(30)
     permutest(betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Clade, type = "centroid"))
    set.seed(30)
-    permutest(betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Treatment, type = "centroid")) 
+    permutest(betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Treatment, type = "centroid"))
+    set.seed(30)
+    permutest(betadisper(bc.PvarT1, Pvar.g.samp.df.T1$Code2, type = "centroid"))
 
 #TF
 
   bc.Pvar.g.TF <- phyloseq::distance(Pvar.g.bac.TF, method = "bray")
      Pvar.g.samp.df.TF <- as(sample_data(Pvar.g.bac.TF), "data.frame") 
+           Pvar.g.samp.df.TF$Code2<-paste(Pvar.g.samp.df.TF$Clade,Pvar.g.samp.df.TF$Treatment)
+
       set.seed(30)
 adonis(bc.Pvar.g.TF ~Treatment, data = Pvar.g.samp.df.TF)
                 set.seed(30)
@@ -3479,6 +3525,8 @@ adonis(bc.Pvar.g.TF ~ Clade*Treatment, data = Pvar.g.samp.df.TF)
     permutest(betadisper(bc.Pvar.g.TF, Pvar.g.samp.df.TF$Clade, type = "centroid"))
    set.seed(30)
     permutest(betadisper(bc.Pvar.g.TF, Pvar.g.samp.df.TF$Treatment, type = "centroid")) 
+    set.seed(30)
+    permutest(betadisper(bc.Pvar.g.TF, Pvar.g.samp.df.TF$Code2, type = "centroid")) 
 
 ######### by phylotype: C vs CD
 # C ONLY
@@ -3820,17 +3868,35 @@ Pacu.g.bac.TF <- subset_samples(Pacu.g.bac.T1F, Time.Point == "TF")
 
   bc.Pacu.g.T1F <- phyloseq::distance(Pacu.g.bac.T1F, method = "bray")
      Pacu.g.samp.df.T1F <- as(sample_data(Pacu.g.bac.T1F), "data.frame") #sample df
+     Pacu.g.samp.df.T1F$Code<-paste(Pacu.g.samp.df.T1F$Treatment, Pacu.g.samp.df.T1F$Time.Point)
+          Pacu.g.samp.df.T1F$Code2<-paste(Pacu.g.samp.df.T1F$Treatment, Pacu.g.samp.df.T1F$Time.Point,Pacu.g.samp.df.T1F$Clade)
+
                   set.seed(30)
 adonis(bc.Pacu.g.T1F ~ Treatment*Time.Point, data = Pacu.g.samp.df.T1F) #adonis test no clade
                   set.seed(30)
 adonis(bc.Pacu.g.T1F ~ Clade*Treatment*Time.Point, data = Pacu.g.samp.df.T1F)#adonis test with clade
  #heatmap
     #plot_heatmap(Pacu.g.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+     set.seed(30)
+    permutest(betadisper(bc.Pacu.g.T1F, Pacu.g.samp.df.T1F$Treatment, type = "centroid"))
+ set.seed(30)
+    permutest(betadisper(bc.Pacu.g.T1F, Pacu.g.samp.df.T1F$Time.Point, type = "centroid"))
+     set.seed(30)
+    permutest(betadisper(bc.Pacu.g.T1F, Pacu.g.samp.df.T1F$Code, type = "centroid"))
+       set.seed(30)
+    permutest(betadisper(bc.Pacu.g.T1F, Pacu.g.samp.df.T1F$Code2, type = "centroid"))
     
+    
+
+
+
+
 #T1
 
   bc.PacuT1 <- phyloseq::distance(Pacu.g.bac.T1, method = "bray") 
       Pacu.g.samp.df.T1 <- as(sample_data(Pacu.g.bac.T1), "data.frame") 
+    
+      Pacu.g.samp.df.T1$Code<-paste(Pacu.g.samp.df.T1$Clade, Pacu.g.samp.df.T1$Treatment)
                           set.seed(30)
 adonis(bc.PacuT1 ~ Treatment, data = Pacu.g.samp.df.T1)  
                    set.seed(30)
@@ -3839,12 +3905,16 @@ adonis(bc.PacuT1 ~ Treatment, data = Pacu.g.samp.df.T1)
     set.seed(30)
     permutest(betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Clade, type = "centroid"))
    set.seed(30)
-    permutest(betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Treatment, type = "centroid")) 
+    permutest(betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Treatment, type = "centroid"))
+     set.seed(30)
+    permutest(betadisper(bc.PacuT1, Pacu.g.samp.df.T1$Code, type = "centroid"))
 
 #TF
 
   bc.Pacu.g.TF <- phyloseq::distance(Pacu.g.bac.TF, method = "bray")
      Pacu.g.samp.df.TF <- as(sample_data(Pacu.g.bac.TF), "data.frame")
+           Pacu.g.samp.df.TF$Code<-paste(Pacu.g.samp.df.TF$Clade, Pacu.g.samp.df.TF$Treatment)
+
                        set.seed(30)
   adonis(bc.Pacu.g.TF ~ Treatment, data = Pacu.g.samp.df.TF)
                   set.seed(30)
@@ -3855,6 +3925,8 @@ adonis(bc.PacuT1 ~ Treatment, data = Pacu.g.samp.df.T1)
    set.seed(30)
     permutest(betadisper(bc.Pacu.g.TF, Pacu.g.samp.df.TF$Treatment, type = "centroid")) 
 
+     set.seed(30)
+    permutest(betadisper(bc.Pacu.g.TF, Pacu.g.samp.df.TF$Code, type = "centroid")) 
 ######### by phylotype: CCC vs C42
 # C ONLY
   Pacu.g.bac.T1F.CCC <- subset_samples(Pacu.g.bac.T1F, Clade == "CCC")
@@ -5414,7 +5486,7 @@ hist(erich.tab2.pacu$observed)
 #observed   
  #log it
 
-
+ 
 
 observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2) #adding tank is singularity
 set.seed(30)
@@ -5487,7 +5559,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pairs(emm)
 
   
-####### PCOMP only
+####### PCOMP only ####
    
   #t1TF
   pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
@@ -5538,7 +5610,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   cld(emm)
   pairs(emm)
 
-####### pvar only
+####### pvar only####
    
   #t1TF
   pvar_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
@@ -5590,7 +5662,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pairs(emm)
   
   
-  ####### pacu only
+  ####### pacu only####
 
   #t1TF
   pacu_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
