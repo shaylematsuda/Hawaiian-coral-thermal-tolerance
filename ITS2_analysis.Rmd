@@ -796,8 +796,13 @@ Montipora - T1 and TF together, then independent. PERMANOVA
 #DIV_RelA_stats.T1F
 #mcap
 mcap.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "montipora")
+    mcap.RelRare.T1F = prune_taxa(taxa_sums(mcap.RelRare.T1F) > 0, mcap.RelRare.T1F) 
+
 mcap.RelRare.T1 <- subset_samples(mcap.RelRare.T1F, Time.Point == "T1")
+    mcap.RelRare.T1 = prune_taxa(taxa_sums(mcap.RelRare.T1) > 0, mcap.RelRare.T1) 
+
 mcap.RelRare.TF <- subset_samples(mcap.RelRare.T1F, Time.Point == "TF")
+    mcap.RelRare.TF = prune_taxa(taxa_sums(mcap.RelRare.TF) > 0, mcap.RelRare.TF) 
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -811,7 +816,7 @@ mcap.RelRare.TF <- subset_samples(mcap.RelRare.T1F, Time.Point == "TF")
 set.seed(30)
   adonis(bc.mcap.T1F ~ Clade*Treatment*Time.Point, data = mcap.samp.df.T1F)
   #heatmap
-    plot_heatmap(DIV_RelA_stats.T1F, "NMDS", "bray", "Parent.ID", "DIV")
+    #plot_heatmap(DIV_RelA_stats.T1F, "NMDS", "bray", "Parent.ID", "DIV")
 # Homogeneity of dispersion test  
    set.seed(30)
     permutest(betadisper(bc.mcap.T1F, mcap.samp.df.T1F$Time.Point, type = "centroid"))
@@ -1168,8 +1173,12 @@ Porites - T1 and TF together, then independent. PERMANOVA
 #DIV_RelA_stats.T1F
 #Pcomp
 Pcomp.RelRare.T1F <- subset_samples(DIV_RelA_stats.T1F, host_genus == "porites")
+    Pcomp.RelRare.T1F = prune_taxa(taxa_sums(Pcomp.RelRare.T1F) > 0, Pcomp.RelRare.T1F) 
 Pcomp.RelRare.T1 <- subset_samples(Pcomp.RelRare.T1F, Time.Point == "T1")
+    Pcomp.RelRare.T1 = prune_taxa(taxa_sums(Pcomp.RelRare.T1) > 0, Pcomp.RelRare.T1) 
 Pcomp.RelRare.TF <- subset_samples(Pcomp.RelRare.T1F, Time.Point == "TF")
+    Pcomp.RelRare.TF = prune_taxa(taxa_sums(Pcomp.RelRare.TF) > 0, Pcomp.RelRare.TF) 
+
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -2545,7 +2554,7 @@ set.seed(30)
 
 
 
-################Mcap only
+##Mcap only ####
   hist(erich.tab2.mcap$observed)
 ggqqplot(erich.tab2.mcap$observed)
   
@@ -2580,6 +2589,28 @@ ggqqplot(erich.tab2.mcap$observed)
   emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
+  
+#T1 by clade richness
+ #C
+  erich.tab2.mcap.T1.C<-subset(erich.tab2.mcap.T1, Clade=="C")
+
+  Mcap_alpha_mod<-lmer(observed ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1.C) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  #CD
+  erich.tab2.mcap.T1.CD<-subset(erich.tab2.mcap.T1, Clade=="CD")
+
+  Mcap_alpha_mod<-lmer(observed ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1.CD) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
   
   #tf
   erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
@@ -2752,7 +2783,7 @@ ggqqplot(erich.tab2.mcap$observed)
   emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
-```
+``` 
 alpha Observed Plots, no clade
 ```{r}
 #Means
@@ -3265,7 +3296,7 @@ evenness_pielou_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"
                  max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
 evenness_pielou_mean
-
+ 
 #Mcap 
 Mcap_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Montipora_capitata") #Subset Mcap
 # Pcomp 
@@ -3274,7 +3305,7 @@ Pcomp_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Porites_compr
 Pacu_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pocillopora_acuta") #Subset Pacu
 # Pvar 
 Pvar_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pavona_varians") #Subset Pvar
-
+ 
 #mcap plots
 #plot Mcap
 Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
@@ -3300,6 +3331,80 @@ Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Poi
         theme(aspect.ratio=1)+
   ylab(expression(paste("Alpha Diversity"))) +
   ggtitle("Mcap Evenness")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
+
+
+
+#by clade
+erich.tab2.mcapT1<-subset(erich.tab2.mcap, Time.Point=="T1")
+erich.tab2.mcapT1mean <- ddply(erich.tab2.mcapT1, c("Treatment", "Clade"), summarise, #summarize cell counts
+                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+erich.tab2.mcapT1mean
+
+Mcap_evenness_pielou_plot<-ggplot(data=erich.tab2.mcapT1mean, aes(x=Clade, y=mean, group = Clade, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+ # geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Evenness by clade")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
+
+#by clade
+erich.tab2.mcapTF<-subset(erich.tab2.mcap, Time.Point=="TF")
+erich.tab2.mcapTFmean <- ddply(erich.tab2.mcapTF, c("Treatment", "Clade"), summarise, #summarize cell counts
+                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+erich.tab2.mcapTFmean
+
+Mcap_evenness_pielou_plot<-ggplot(data=erich.tab2.mcapTFmean, aes(x=Clade, y=mean, group = Clade, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+ # geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Alpha Diversity"))) +
+  ggtitle("Mcap Evenness by clade TF")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
 
 
@@ -3671,7 +3776,7 @@ erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
 ```
 
 ### MCAP alpha
-```{r} 
+```{r}  
 #Shannon
 #Run the ANOVA and save it as an object
   aov.shannon.speciesMcap = aov(Shannon ~ Treatment*Time.Point, data=erich.mcap)

@@ -6065,7 +6065,7 @@ hist(erich.tab2.pacu$observed)
 
 ```
 #Observed Richness 
-```{r} 
+```{r}  
 #observed   
  #log it
 
@@ -6137,7 +6137,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
   anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
+  emm<-emmeans(Mcap_alpha_mod,  ~ Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
