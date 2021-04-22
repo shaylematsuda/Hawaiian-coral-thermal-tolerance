@@ -276,13 +276,15 @@ Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 # Bac.s2.sd
 #write.csv(Bac.s2.sd,"16sMetadata.csv")
 
-save(Bac.seq, file = "Data/prune.Bac.seq_phyloseq.RData")
+#save(Bac.seq, file = "Data/prune.Bac.seq_phyloseq.RData")
+save(Bac.seq,data.Bac.s.rel,Bac.seqFam_stats.T1F,erich.tab2, file = "Data/16s_phyloseq4HE.RData")
+
 
 ```
 
 
 Set up, Bac.s rela
-```{r}  
+```{r}   
 #make relativ e abundance df Bac.s2
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
@@ -787,7 +789,7 @@ http://joey711.github.io/phyloseq-demo/
 Weighted UniFrac - which does take into account differences in abundance of taxa between samples, but takes longer to calculate; and
 
 #Unweighted UniFrac FAMILY - which only considers the presence/absence of taxa between sample pairs.
-```{r} 
+```{r}  
 
 #look at your trees
 bac.prot <- subset_taxa(Bac.seqFam_stats.T1F, Phylum=="Proteobacteria")
@@ -2227,7 +2229,7 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 #Pcomp
 ASV
-```{r} 
+```{r}  
 #try glom use raw counts Bac.s2
 Pcomp_Bac.s2<-subset_samples(Bac.s2, Species=="Porites_compressa")
 
@@ -5895,7 +5897,7 @@ pairs(emm)
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances   
 df:Bac.s and
-```{r}       
+```{r}        
 #trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
@@ -6172,7 +6174,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
   anova(pcomp_alpha_mod) 
   qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  emm<-emmeans(pcomp_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -6297,7 +6299,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pairs(emm)
 ```
 alpha Observed Plots, no clade
-```{r}
+```{r} 
 #Means
 observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
@@ -6437,7 +6439,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```  
 
 alpha Observed Plots, clade  
-```{r}
+```{r} 
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
@@ -6581,7 +6583,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```
  
 #evenness_pielou Richness 
-```{r}
+```{r} 
 #evenness_pielou  
 #not transformeds
 
