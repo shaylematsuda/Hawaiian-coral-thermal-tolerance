@@ -299,7 +299,134 @@ pcomp.p <- ggplot(figdf.pcomp, aes(x = x, y = y, color = col_genus)) +
 ggsave("ancom/output/pcomp_ancom.pdf")
 
 
-
+#############
 ##What about contrasts for M cap - C vs CD
+
+#subset to ambient only
+mcap.amb <- subset_samples(mcap, Treatment == "Ambient")
+#Remove any taxa that have 0s across all samples
+mcap.amb <- prune_taxa(taxa_sums(mcap.amb) > 0, mcap.amb)
+OTU.mcap.amb <- t(otu_table(mcap.amb))
+
+##Step 1: set all your parameters
+#I just run through these steps for each of the time points (run two separate ANCOMs)
+#then I combine downstream to make a faceted graph
+
+#M cap Ambient only 
+feature_table <- OTU.mcap.amb
+meta_data <- sample_data(mcap.amb)
+
+levels(meta_data$Clade) #C first, CD Second = CD will be positive 
+meta_data$Sample.ID <- as.character(meta_data$sample_name.1) #make sure your sample id is chr
+sample_var <- "Sample.ID"
+group_var <- NULL
+out_cut <- 0.05  #numerical fraction, below 5% = outlier zeros, above 95% = outlier values
+zero_cut <- 0.90 #numerical fraction, taxa with proportion of zeros above 90% are removed
+lib_cut <- 1000 #number, removes any samples with less than lib_cut reads
+neg_lb <- TRUE
+
+pre_pro <- feature_table_pre_process(feature_table, meta_data, sample_var,
+                                     group_var,out_cut, zero_cut, lib_cut, neg_lb)
+feature_table <- pre_pro$feature_table
+meta_data <- pre_pro$meta_data
+struc_zero <- pre_pro$structure_zeros
+
+#Step 2 run the ANCOM
+
+main_var <- "Clade"
+p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
+alpha <- 0.05 #level of significance
+adj_formula <- "Time.Point"
+rand_formula <- NULL #add in random effect 
+#The random effect is a problem...why?
+
+res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
+             adj_formula, rand_formula)
+
+#Extract your data frame 
+resdf.mcap.amb <- as.data.frame(res$out)
+rownames(resdf.mcap.amb) <- NULL
+
+# compiling results from each contrast for the figure
+figdf.mcap.amb <- as.data.frame(res$fig$data)
+rownames(figdf.mcap.amb) <- NULL
+
+# add taxonomy
+tax<-as(tax_table(mcap.amb),"matrix")
+head(tax)
+tax<-as.data.frame(tax)
+colnames(tax)
+tax$taxa_id <- rownames(tax)
+rownames(tax) <- NULL
+dim(tax)
+head(tax)
+
+#Merge taxonomy with your figure data
+figdf.mcap.amb <- merge(figdf.mcap.amb,tax, by = "taxa_id")
+resdf.mcap.amb <- merge(resdf.mcap.amb, tax, by = "taxa_id")
+
+head(resdf.mcap)
+head(figdf.mcap)
+write.csv(resdf.mcap.amb, "ancom/output/ancom_mcap_ambclad_res.csv")
+
+# Step 3: Volcano Plot
+# Number of taxa except structural zeros
+n_taxa = ifelse(is.null(struc_zero), nrow(feature_table), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
+names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+# Annotation data
+dat_ann = data.frame(x = min(figdf.mcap.amb$x), y = cut_off["detected_0.6"], label = "W[0.6]")
+
+##Specialised Plot
+# order genus
+x = tapply(figdf.mcap.amb$y, figdf.mcap.amb$Genus, function(x) max(x))
+x = sort(x, TRUE)
+figdf.mcap.amb$Genus = factor(as.character(figdf.mcap.amb$Genus), levels=names(x))
+figdf.mcap.amb$col_genus <- figdf.mcap.amb$Genus
+
+#Set everything that is super low to NA so that we can call them "other"
+figdf.mcap.amb$col_genus[figdf.mcap.amb$col_genus != "Endozoicomonas" & 
+                       figdf.mcap.amb$col_genus != "Pseudoalteromonas" &
+                       figdf.mcap.amb$col_genus != "Oxyphotobacteria_unclassified" ] <- NA
+
+
+levels(figdf.mcap.amb$col_genus)
+# add new factor
+figdf.mcap.amb$col_genus <- factor(figdf.mcap.amb$col_genus, levels = c(levels(figdf.mcap.amb$col_genus), "Other"))
+# convert NAs to other
+figdf.mcap.amb$col_genus[is.na(figdf.mcap.amb$col_genus)] = "Other"
+
+mcap.amb.p <- ggplot(figdf.mcap.amb, aes(x = x, y = y, color = col_genus)) +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_point(size = 3) +
+  ylab("W statistic") +
+  xlab("CLR mean difference") +
+  scale_color_manual(name = "Genus", values = kelly_colors) +
+  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") +
+  geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
+            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+  ggtitle("Montipora capitata by clade")
+ggsave("ancom/output/mcap_ambclade_ancom.pdf")
+
+
+##What about a plot of endo? Just because I am curious about the mcap ambient results
+mcap.amb.ra <- transform_sample_counts(mcap.amb, function(x) x/ sum(x))
+endo <- subset_taxa(mcap.amb.ra, Genus == "Endozoicomonas")
+merged.endo <- tax_glom(endo, "Genus", NArm = FALSE)
+endo.melt <- psmelt(merged.endo)
+sum.endo <- ddply(endo.melt, c("Time.Point",  "Clade"), summarise,
+                     N = length(Abundance), 
+                     mean = mean(Abundance),
+                     sd = sd(Abundance), 
+                     se = sd/sqrt(N)
+)
+ggplot(sum.endo, aes(x = Clade, y = mean, fill = Time.Point)) +
+  geom_point(aes(color = Time.Point)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, color = Time.Point), width = 0.1) +
+  facet_wrap(~Time.Point)
+ggsave("ancom/output/mcap_ambclade_endo.pdf")
+
 ##Pavona -  C1 vs. C27 
 ##What about pavona vs acuta 
