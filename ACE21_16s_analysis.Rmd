@@ -91,7 +91,7 @@ treefile<- read.tree("Data/TT17_3000_summer_16S-pipeline_outputs/Results/postpro
 phy_tree(Bac.seq) <- treefile
 Bac.seq
 
-save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
+#save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
 
 
@@ -132,7 +132,7 @@ save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
 ```  
 Look at the data, Bac.seq for 3k
-```{r}    
+```{r}     
 ## check out data
 ntaxa(Bac.seq)  #num taxa
 nsamples(Bac.seq)   #num samples
@@ -157,7 +157,7 @@ sample_names(Bac.seq)[1:300] #samp names
 
 #16S
 Load in your data
-```{r}    
+```{r}     
 # Load data (see data_exploration.Rmd)
 #load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
@@ -211,9 +211,9 @@ Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 
 
 # Subsample to 2K <- only for phylotypes
-# Bac.s2 <- prune_samples(sample_sums(Bac.s)>=1764, Bac.s) #keep things over 2k
+# Bac.s <- prune_samples(sample_sums(Bac.s)>=1764, Bac.s) #keep things over 2k
 #Rarefied to 2000 reads
-# Bac.r <- rarefy_even_depth(Bac.s2, sample.size = 1764, rngseed = 711) 
+# Bac.r <- rarefy_even_depth(Bac.s, sample.size = 1764, rngseed = 711) 
 
 
 #### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
@@ -270,14 +270,14 @@ Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 # 
 # #merg them to the original df:
 # 
-# Bac.s2 = merge_phyloseq(Bac.s,Controldups)
-# Bac.s2
-# Bac.s2.sd <- as(sample_data(Bac.s2), "data.frame") #create sample data frame to view
-# Bac.s2.sd
-#write.csv(Bac.s2.sd,"16sMetadata.csv")
+# Bac.s = merge_phyloseq(Bac.s,Controldups)
+# Bac.s
+# Bac.s.sd <- as(sample_data(Bac.s), "data.frame") #create sample data frame to view
+# Bac.s.sd
+#write.csv(Bac.s.sd,"16sMetadata.csv")
 
 #save(Bac.seq, file = "Data/prune.Bac.seq_phyloseq.RData")
-save(Bac.seq,data.Bac.s.rel,Bac.seqFam_stats.T1F,erich.tab2, file = "Data/16s_phyloseq4HE.RData")
+#save(Bac.seq,data.Bac.s.rel,Bac.seqFam_stats.T1F,erich.tab2, file = "Data/16s_phyloseq4HE.RData")
 
 
 ```
@@ -285,7 +285,7 @@ save(Bac.seq,data.Bac.s.rel,Bac.seqFam_stats.T1F,erich.tab2, file = "Data/16s_ph
 
 Set up, Bac.s rela
 ```{r}   
-#make relativ e abundance df Bac.s2
+#make rel ativ e abundance df Bac.s
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 
@@ -295,8 +295,8 @@ data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 
 
 # # export into table 
-# taxCN  = tax_table(Bac.s2)
-# taxCN = as(tax_table(Bac.s2), "matrix")
+# taxCN  = tax_table(Bac.s)
+# taxCN = as(tax_table(Bac.s), "matrix")
 # taxCN2 = as.data.frame(taxCN)
 # write.csv(taxCN2, "taxCN.csv")
 # 
@@ -305,10 +305,10 @@ data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 # rownames(taxCN3) <- c() #remove row namds
 # 
 # 
-# OTUCN = otu_table(Bac.s2)
+# OTUCN = otu_table(Bac.s)
 # # Extract abundance matrix from the phyloseq object
 # OTU.cn = as(otu_table(OTUCN), "matrix")
-# if(taxa_are_rows(Bac.s2)){OTU.cn <- t(OTU.cn)}
+# if(taxa_are_rows(Bac.s)){OTU.cn <- t(OTU.cn)}
 # OTU.cn2 = as.data.frame(OTU.cn)
 # write.csv(OTU.cn2, "OTU.cn2.csv")
 # 
@@ -454,7 +454,7 @@ theme_set(theme_bw())
 #Let's try this again with vegan: THIS IS THE WAY
 USE THIS FOR STATS HELP:
 https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
-```{r}
+```{r} 
 #from above
 #this works for fam level and relA. now we have 543 families
 phyFamTest2 <- Bac.s %>% 
@@ -861,13 +861,13 @@ Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
 
 #Mcap
 mcap.u.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
-#mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
+mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
 mcap.u.f.bac.T1 <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "T1")
- # mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
+  mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
 mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
- # mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
+  mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -913,7 +913,83 @@ set.seed(30)
    set.seed(30)
     permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
-############ pcomp
+ #try plotting only the top 10 FAMs    mcap.u.f.bac.T1F
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.mcap = sort(tapply(taxa_sums(mcap.u.f.bac.T1F), tax_table(mcap.u.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      mcap.u.f.bac.T1F.top10P = subset_taxa(mcap.u.f.bac.T1F, Family %in% names(top10P.names.mcap))
+      
+      #pull out of phyloseq     
+        mcap.u.f.bac.T1F.top10P.OTU = as(otu_table(mcap.u.f.bac.T1F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(mcap.u.f.bac.T1F.top5P)){OTUfam.v <- t(mcap.u.f.bac.T1F.top5P.OTU)}
+          # Coerce to data.frame
+            mcap.u.f.bac.T1F.top10P.OTU.df = as.data.frame(mcap.u.f.bac.T1F.top10P.OTU) 
+      #rename Fam with taxa
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00104"] <- "Hyphomonadaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00004"] <- "P30B-42"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00058"] <- "Chlorobiaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00015"] <- "Nodosilineaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00062"] <- "Alteromonadaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00226"] <- "Gammaproteobacteria_unclassified"
+            names(mcap.u.f.bac.T1F.top10P.OTU.df)[names(mcap.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+    #Add metadata
+      mcap.u.f.bac.T1F.top10P.sd <- as(sample_data(mcap.u.f.bac.T1F.top10P), "data.frame") #create sample data frame to view
+         mcap.u.f.bac.T1F.top10P.sd<-mcap.u.f.bac.T1F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    mcap.16s.fam.top10<- merge(mcap.u.f.bac.T1F.top10P.OTU.df,mcap.u.f.bac.T1F.top10P.sd, by="row.names") #merge by rownames
+       mcap.16s.fam.top10.m <- melt(mcap.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(mcap.16s.fam.top10.m)[names(mcap.16s.fam.top10.m) == "value"] <- "relabund"
+            names(mcap.16s.fam.top10.m)[names(mcap.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+mcap.16s.fam.top10.m_mean <- ddply(mcap.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+mcap.16s.fam.top10.m_mean
+
+mcap.16s.fam.top10.m_mean$Code<-paste(mcap.16s.fam.top10.m_mean$Treatment, mcap.16s.fam.top10.m_mean$Time.Point,mcap.16s.fam.top10.m_mean$Clade)
+
+#mcap plots
+#plot Mcap
+mcap.16s.fam.top10.m_mean_plot<-ggplot(data=mcap.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Mcap top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));mcap.16s.fam.top10.m_mean_plot
+mcap.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+
+   
+    
+############ pcomp ####
 #Pcomp
 pcomp.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
 #pcomp.f.bac.T1F = prune_taxa(taxa_sums(pcomp.f.bac.T1F) > 0, pcomp.f.bac.T1F) #this removes any OTU with 0s
@@ -965,7 +1041,112 @@ u.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "wunifrac")
    set.seed(30)
     permutest(betadisper(u.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
-#######pvar
+ #try plotting only the top 10 FAMs     ####
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.pcomp = sort(tapply(taxa_sums(pcomp.f.bac.T1F), tax_table(pcomp.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      pcomp.u.f.bac.T1F.top10P = subset_taxa(pcomp.f.bac.T1F, Family %in% names(top10P.names.pcomp))
+      
+      #pull out of phyloseq     
+        pcomp.u.f.bac.T1F.top10P.OTU = as(otu_table(pcomp.u.f.bac.T1F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(pcomp.u.f.bac.T1F.top5P)){OTUfam.v <- t(pcomp.u.f.bac.T1F.top5P.OTU)}
+          # Coerce to data.frame
+            pcomp.u.f.bac.T1F.top10P.OTU.df = as.data.frame(pcomp.u.f.bac.T1F.top10P.OTU) 
+      #rename Fam with taxa
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00068"] <- "Alphaproteobacteria_unclassified"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00274"] <- "Pirellulaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00374"] <- "Phycispharaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00156"] <- "Saprospiraceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00146"] <- "Paraspirulinaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00116"] <- "Francisellaceae"
+            names(pcomp.u.f.bac.T1F.top10P.OTU.df)[names(pcomp.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+    #Add metadata
+      pcomp.u.f.bac.T1F.top10P.sd <- as(sample_data(pcomp.u.f.bac.T1F.top10P), "data.frame") #create sample data frame to view
+         pcomp.u.f.bac.T1F.top10P.sd<-pcomp.u.f.bac.T1F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    pcomp.16s.fam.top10<- merge(pcomp.u.f.bac.T1F.top10P.OTU.df,pcomp.u.f.bac.T1F.top10P.sd, by="row.names") #merge by rownames
+       pcomp.16s.fam.top10.m <- melt(pcomp.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(pcomp.16s.fam.top10.m)[names(pcomp.16s.fam.top10.m) == "value"] <- "relabund"
+            names(pcomp.16s.fam.top10.m)[names(pcomp.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+pcomp.16s.fam.top10.m_mean <- ddply(pcomp.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+pcomp.16s.fam.top10.m_mean
+
+pcomp.16s.fam.top10.m_mean$Code<-paste(pcomp.16s.fam.top10.m_mean$Treatment, pcomp.16s.fam.top10.m_mean$Time.Point,pcomp.16s.fam.top10.m_mean$Clade)
+
+#pcomp plots
+#plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+    
+    #remove endo pcomp.16s.fam.top10.m_mean
+pcomp.16s.fam.top10.m_mean.NoEndo<-subset(pcomp.16s.fam.top10.m_mean, !family=="Endozoicomonadaceae")
+    
+    #plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean.NoEndo, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family No Endo")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+    
+    
+#######pvar ####
     #Pvar
 pvar.f.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pavona_varians")
 #pvar.f.f.bac.T1F = prune_taxa(taxa_sums(pvar.f.f.bac.T1F) > 0, pvar.f.f.bac.T1F) #this removes any OTU with 0s
@@ -1023,18 +1204,106 @@ adonis(u.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adon
    set.seed(30)
     permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
-####### pacuta
+ #try plotting only the top 10 FAMs    
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.Pvar = sort(tapply(taxa_sums(pvar.f.f.bac.T1F), tax_table(pvar.f.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      Pvar.u.f.bac.T1F.top10P = subset_taxa(pvar.f.f.bac.T1F, Family %in% names(top10P.names.Pvar))
+      
+      #pull out of phyloseq     
+        Pvar.u.f.bac.T1F.top10P.OTU = as(otu_table(Pvar.u.f.bac.T1F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(Pvar.u.f.bac.T1F.top5P)){OTUfam.v <- t(Pvar.u.f.bac.T1F.top5P.OTU)}
+          # Coerce to data.frame
+            Pvar.u.f.bac.T1F.top10P.OTU.df = as.data.frame(Pvar.u.f.bac.T1F.top10P.OTU) 
+      #rename Fam with taxa
+            
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00012"] <- "Bacteria_unclassified"
+
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00027"] <- "Pirellulaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00053"] <- "Kiloniellaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00079"] <- "uncultured_Otu00079"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00093"] <- "Nostocaceae"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00079"] <- "uncultured_Otu00079"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00872"] <- "uncultured_Otu00872"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00270"] <- "uncultured_Otu00270"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00533"] <- "uncultured_Otu00533"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00563"] <- "uncultured_Otu00563"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu01647"] <- "uncultured_Otu01647"
+
+
+            
+            
+    #Add metadata
+      Pvar.u.f.bac.T1F.top10P.sd <- as(sample_data(Pvar.u.f.bac.T1F.top10P), "data.frame") #create sample data frame to view
+         Pvar.u.f.bac.T1F.top10P.sd<-Pvar.u.f.bac.T1F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    Pvar.16s.fam.top10<- merge(Pvar.u.f.bac.T1F.top10P.OTU.df,Pvar.u.f.bac.T1F.top10P.sd, by="row.names") #merge by rownames
+       Pvar.16s.fam.top10.m <- melt(Pvar.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(Pvar.16s.fam.top10.m)[names(Pvar.16s.fam.top10.m) == "value"] <- "relabund"
+            names(Pvar.16s.fam.top10.m)[names(Pvar.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+Pvar.16s.fam.top10.m_mean <- ddply(Pvar.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pvar.16s.fam.top10.m_mean
+
+Pvar.16s.fam.top10.m_mean$Code<-paste(Pvar.16s.fam.top10.m_mean$Treatment, Pvar.16s.fam.top10.m_mean$Time.Point,Pvar.16s.fam.top10.m_mean$Clade)
+
+#Pvar plots
+#plot Pvar
+Pvar.16s.fam.top10.m_mean_plot<-ggplot(data=Pvar.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Pvar top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar.16s.fam.top10.m_mean_plot
+Pvar.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+    
+
+    
+####### pacuta  ####
 
 #Pacu
 pacu.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Pocillopora_acuta")
-#pacu.f.bac.T1F = prune_taxa(taxa_sums(pacu.f.bac.T1F) > 0, pacu.f.bac.T1F) #this removes any OTU with 0s
+pacu.f.bac.T1F = prune_taxa(taxa_sums(pacu.f.bac.T1F) > 0, pacu.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
 pacu.f.bac.T1 <- subset_samples(pacu.f.bac.T1F, Time.Point == "T1")
-#  pacu.f.bac.T1 = prune_taxa(taxa_sums(pacu.f.bac.T1) > 0, pacu.f.bac.T1) #this removes any OTU with 0s
+  pacu.f.bac.T1 = prune_taxa(taxa_sums(pacu.f.bac.T1) > 0, pacu.f.bac.T1) #this removes any OTU with 0s
 
 pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
- # pacu.f.bac.TF = prune_taxa(taxa_sums(pacu.f.bac.TF) > 0, pacu.f.bac.TF) #this removes any OTU with 0s
+  pacu.f.bac.TF = prune_taxa(taxa_sums(pacu.f.bac.TF) > 0, pacu.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
@@ -1078,9 +1347,97 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
    set.seed(30)
     permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
+    
+  #try plotting only the top 10 FAMs    
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.Pacu = sort(tapply(taxa_sums(pacu.f.bac.T1F), tax_table(pacu.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      Pacu.u.f.bac.T1F.top10P = subset_taxa(pacu.f.bac.T1F, Family %in% names(top10P.names.Pacu))
+      
+      #pull out of phyloseq     
+        Pacu.u.f.bac.T1F.top10P.OTU = as(otu_table(Pacu.u.f.bac.T1F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(Pacu.u.f.bac.T1F.top5P)){OTUfam.v <- t(Pacu.u.f.bac.T1F.top5P.OTU)}
+          # Coerce to data.frame
+            Pacu.u.f.bac.T1F.top10P.OTU.df = as.data.frame(Pacu.u.f.bac.T1F.top10P.OTU) 
+      #rename Fam with taxa
+            
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00068"] <- "Alphaproteobacteria_unclassified"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00156"] <- "Saprospiraceae"
+
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00055"] <- "Pseudoalteromonadaceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00062"] <- "Alteromonadaceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu000226"] <- "Gammaproteobacteria_unclassified"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00084"] <- "Thalassospiraceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+         
+            
+    #Add metadata
+      Pacu.u.f.bac.T1F.top10P.sd <- as(sample_data(Pacu.u.f.bac.T1F.top10P), "data.frame") #create sample data frame to view
+         Pacu.u.f.bac.T1F.top10P.sd<-Pacu.u.f.bac.T1F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    Pacu.16s.fam.top10<- merge(Pacu.u.f.bac.T1F.top10P.OTU.df,Pacu.u.f.bac.T1F.top10P.sd, by="row.names") #merge by rownames
+       Pacu.16s.fam.top10.m <- melt(Pacu.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(Pacu.16s.fam.top10.m)[names(Pacu.16s.fam.top10.m) == "value"] <- "relabund"
+            names(Pacu.16s.fam.top10.m)[names(Pacu.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+Pacu.16s.fam.top10.m_mean <- ddply(Pacu.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pacu.16s.fam.top10.m_mean
+
+Pacu.16s.fam.top10.m_mean$Code<-paste(Pacu.16s.fam.top10.m_mean$Treatment, Pacu.16s.fam.top10.m_mean$Time.Point,Pacu.16s.fam.top10.m_mean$Clade)
+
+#Pacu plots
+#plot Pacu
+Pacu.16s.fam.top10.m_mean_plot<-ggplot(data=Pacu.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Pacu top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu.16s.fam.top10.m_mean_plot
+Pacu.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+       
+    
+    
+    
+    
+    
+    
+    
+    
+    
 ```
 #Permanova UNIFRAC by ASV (no filter) to compare with above
-```{r}  
+```{r}   
 
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
@@ -1347,7 +1704,7 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
 
 ####### pacuta ####
 
-#Pacu
+#Pacu ####
 pacu.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pocillopora_acuta")
 pacu.u.bac.T1F = prune_taxa(taxa_sums(pacu.u.bac.T1F) > 0, pacu.u.bac.T1F) #this removes any OTU with 0s
 
@@ -1422,7 +1779,74 @@ pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
 ```
 Unifrac NMDS
 ```{r}
-#### mcap #####
+  
+  
+#Ordination NMDS for all species, T1Tf
+unifrac.all <- ordinate(Bac.s.rel.u.T1F, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+stressplot(unifrac.all)
+scores.ord.u_RelA_stats<-as.data.frame(cbind(vegan::scores(unifrac.all, display="sites"))) # these are "points" ask hannah 
+     unifrac.all.sd <- as(sample_data(Bac.s.rel.u.T1F), "data.frame") #sample df
+
+scores.ord.u_RelA_stats$Treatment <- unifrac.all.sd$Treatment
+scores.ord.u_RelA_stats$Species <- unifrac.all.sd$Species
+scores.ord.u_RelA_stats$Clade <- unifrac.all.sd$Clade
+scores.ord.u_RelA_stats$Time.Point <- unifrac.all.sd$Time.Point
+scores.ord.u_RelA_stats$Code <- paste(scores.ord.u_RelA_stats$Clade, scores.ord.u_RelA_stats$Species)
+
+
+
+ggplot(scores.ord.u_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("NMDS 16s bray") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+ggplot(scores.ord.u_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Code, shape=Species), size = 4) +
+  scale_color_manual(values=c("darkblue","orange", "darkred","red","yellow","green","darkgreen","blue"))+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2) +
+  ggtitle("NMDS 16s unifrac") +
+  theme_classic()+
+  facet_wrap(~Species)
+#ggsave("bc_all.pdf")
+
+scores.ord.u_RelA_stats.T1<-subset(scores.ord.u_RelA_stats, Time.Point=="T1")
+
+ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Code, shape=Treatment), size = 4) +
+  scale_color_manual(values=c("darkblue","orange", "darkred","red","yellow","green","darkgreen","blue"))+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2) +
+  ggtitle("NMDS 16s unifrac T1") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+scores.ord.u_RelA_stats.PacuPvar<-subset(scores.ord.u_RelA_stats, Species=="Pavona_varians"|Species=="Pocillopora_acuta")
+# scores.ord.u_RelA_stats.PacuPvar.T1<-subset(scores.ord.u_RelA_stats.PacuPvar, Time.Point=="T1")
+scores.ord.u_RelA_stats.PacuPvar.Amb<-subset(scores.ord.u_RelA_stats.PacuPvar, Treatment=="Ambient")
+
+ggplot(scores.ord.u_RelA_stats.PacuPvar.Amb, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Code, shape=Treatment), size = 4) +
+  scale_color_manual(values=c("darkblue","orange", "green","purple","yellow","green","darkgreen","blue"))+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2) +
+  ggtitle("NMDS 16s unifrac T1") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+
+
+
+
+
+
+
+#### mcap ##### 
 ## create palette for parent.ID and treatments
 mcap.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "#4575B4", "High" = "#D73027",
@@ -1445,7 +1869,7 @@ scores.mcap.u.samp.df$Code2 <- paste(mcap.u.samp.df.T1F$Treatment,mcap.u.samp.df
 scores.mcap.u.samp.df$Code3 <- paste(mcap.u.samp.df.T1F$Treatment,mcap.u.samp.df.T1F$Time.Point,mcap.u.samp.df.T1F$Parent.ID)
 
 ggplot(scores.mcap.u.samp.df, aes(x = NMDS1, y = NMDS2)) +
-  geom_point(aes(shape = Treatment, color = Parent.ID, fill=Treatment), size = 5) + 
+  geom_point(aes(shape = Treatment, color = Treatment, fill=Treatment), size = 5) + 
   #scale_shape_manual(values = c(21, 22,24,25)) + 
     scale_color_manual(values=mcap.u.Parent.colors)+
 stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
@@ -1649,7 +2073,7 @@ ggplot(ord.pcomp.u.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-####Pvar ####
+####Pvar #### 
 pvar.u.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
  "Ambient" = "#4575B4", "High" = "#D73027",                        
  "C1 Ambient"="#DDCC77","C1 High"="#999933", "C27 Ambient"="#44AA99", "C27 High"="#117733", 
@@ -1740,7 +2164,59 @@ ggplot(ord.pvar.u.T1.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle("pvar T1") +
   theme_classic()
 
+  #T1 by clades C1
+  pvar.u.u.bac.T1.C1<-subset_samples(pvar.u.u.bac.T1, Clade=="C1")
+  pvar.u.u.bac.T1.samp.C1.df <- as(sample_data(pvar.u.u.bac.T1.C1), "data.frame") #sample df
 
+  ord.pvar.u.T1.C1 <- ordinate(pvar.u.u.bac.T1.C1, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+  stressplot(ord.pvar.u.T1.C1)
+  
+  ord.pvar.u.T1.C1.df<-as.data.frame(cbind(vegan::scores(ord.pvar.u.T1.C1, display="sites"))) 
+  ord.pvar.u.T1.C1.df$Time.Point <- pvar.u.u.bac.T1.samp.C1.df$Time.Point
+  ord.pvar.u.T1.C1.df$Parent.ID <- pvar.u.u.bac.T1.samp.C1.df$Parent.ID
+  ord.pvar.u.T1.C1.df$Treatment <- pvar.u.u.bac.T1.samp.C1.df$Treatment
+  ord.pvar.u.T1.C1.df$Clade <- pvar.u.u.bac.T1.samp.C1.df$Clade
+  ord.pvar.u.T1.C1.df$Code <- paste(ord.pvar.u.T1.C1.df$Parent.ID,ord.pvar.u.T1.C1.df$Time.Point)
+  ord.pvar.u.T1.C1.df$Code2 <- paste(ord.pvar.u.T1.C1.df$Clade,ord.pvar.u.T1.C1.df$Treatment)
+  ord.pvar.u.T1.C1.df$Code2 <- as.factor(ord.pvar.u.T1.C1.df$Code2)
+
+
+  ggplot(ord.pvar.u.T1.C1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.u.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("pvar T1. C1") +
+  theme_classic()
+  
+#T1 by clades C27
+  pvar.u.u.bac.T1.C27<-subset_samples(pvar.u.u.bac.T1, Clade=="C27")
+  pvar.u.u.bac.T1.samp.C27.df <- as(sample_data(pvar.u.u.bac.T1.C27), "data.frame") #sample df
+
+  ord.pvar.u.T1.C27 <- ordinate(pvar.u.u.bac.T1.C27, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+  stressplot(ord.pvar.u.T1.C27)
+  
+  ord.pvar.u.T1.C27.df<-as.data.frame(cbind(vegan::scores(ord.pvar.u.T1.C27, display="sites"))) 
+  ord.pvar.u.T1.C27.df$Time.Point <- pvar.u.u.bac.T1.samp.C27.df$Time.Point
+  ord.pvar.u.T1.C27.df$Parent.ID <- pvar.u.u.bac.T1.samp.C27.df$Parent.ID
+  ord.pvar.u.T1.C27.df$Treatment <- pvar.u.u.bac.T1.samp.C27.df$Treatment
+  ord.pvar.u.T1.C27.df$Clade <- pvar.u.u.bac.T1.samp.C27.df$Clade
+  ord.pvar.u.T1.C27.df$Code <- paste(ord.pvar.u.T1.C27.df$Parent.ID,ord.pvar.u.T1.C27.df$Time.Point)
+  ord.pvar.u.T1.C27.df$Code2 <- paste(ord.pvar.u.T1.C27.df$Clade,ord.pvar.u.T1.C27.df$Treatment)
+  ord.pvar.u.T1.C27.df$Code2 <- as.factor(ord.pvar.u.T1.C27.df$Code2)
+
+
+  ggplot(ord.pvar.u.T1.C27.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.u.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("pvar T1. C27") +
+  theme_classic()
 
 #TF only
 set.seed(30)
@@ -1776,6 +2252,60 @@ ggplot(ord.pvar.u.TF.df, aes(x = NMDS1, y = NMDS2)) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
   ggtitle("pvar TF") +
+  theme_classic()
+
+ #TF by clades C1
+  pvar.u.u.bac.TF.C1<-subset_samples(pvar.u.u.bac.TF, Clade=="C1")
+  pvar.u.u.bac.TF.samp.C1.df <- as(sample_data(pvar.u.u.bac.TF.C1), "data.frame") #sample df
+
+  ord.pvar.u.TF.C1 <- ordinate(pvar.u.u.bac.TF.C1, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+  stressplot(ord.pvar.u.TF.C1)
+  
+  ord.pvar.u.TF.C1.df<-as.data.frame(cbind(vegan::scores(ord.pvar.u.TF.C1, display="sites"))) 
+  ord.pvar.u.TF.C1.df$Time.Point <- pvar.u.u.bac.TF.samp.C1.df$Time.Point
+  ord.pvar.u.TF.C1.df$Parent.ID <- pvar.u.u.bac.TF.samp.C1.df$Parent.ID
+  ord.pvar.u.TF.C1.df$Treatment <- pvar.u.u.bac.TF.samp.C1.df$Treatment
+  ord.pvar.u.TF.C1.df$Clade <- pvar.u.u.bac.TF.samp.C1.df$Clade
+  ord.pvar.u.TF.C1.df$Code <- paste(ord.pvar.u.TF.C1.df$Parent.ID,ord.pvar.u.TF.C1.df$Time.Point)
+  ord.pvar.u.TF.C1.df$Code2 <- paste(ord.pvar.u.TF.C1.df$Clade,ord.pvar.u.TF.C1.df$Treatment)
+  ord.pvar.u.TF.C1.df$Code2 <- as.factor(ord.pvar.u.TF.C1.df$Code2)
+
+
+  ggplot(ord.pvar.u.TF.C1.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.u.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("pvar TF. C1") +
+  theme_classic()
+  
+#TF by clades C27
+  pvar.u.u.bac.TF.C27<-subset_samples(pvar.u.u.bac.TF, Clade=="C27")
+  pvar.u.u.bac.TF.samp.C27.df <- as(sample_data(pvar.u.u.bac.TF.C27), "data.frame") #sample df
+
+  ord.pvar.u.TF.C27 <- ordinate(pvar.u.u.bac.TF.C27, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+  stressplot(ord.pvar.u.TF.C27)
+  
+  ord.pvar.u.TF.C27.df<-as.data.frame(cbind(vegan::scores(ord.pvar.u.TF.C27, display="sites"))) 
+  ord.pvar.u.TF.C27.df$Time.Point <- pvar.u.u.bac.TF.samp.C27.df$Time.Point
+  ord.pvar.u.TF.C27.df$Parent.ID <- pvar.u.u.bac.TF.samp.C27.df$Parent.ID
+  ord.pvar.u.TF.C27.df$Treatment <- pvar.u.u.bac.TF.samp.C27.df$Treatment
+  ord.pvar.u.TF.C27.df$Clade <- pvar.u.u.bac.TF.samp.C27.df$Clade
+  ord.pvar.u.TF.C27.df$Code <- paste(ord.pvar.u.TF.C27.df$Parent.ID,ord.pvar.u.TF.C27.df$Time.Point)
+  ord.pvar.u.TF.C27.df$Code2 <- paste(ord.pvar.u.TF.C27.df$Clade,ord.pvar.u.TF.C27.df$Treatment)
+  ord.pvar.u.TF.C27.df$Code2 <- as.factor(ord.pvar.u.TF.C27.df$Code2)
+
+
+  ggplot(ord.pvar.u.TF.C27.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pvar.u.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("pvar TF. C27") +
   theme_classic()
 
 
@@ -1841,15 +2371,15 @@ ggplot(ord.pacu.u.T1.df, aes(x = NMDS1, y = NMDS2)) +
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=Pacu.u.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
   ggtitle("pacu T1") +
   theme_classic()
 
 ggplot(ord.pacu.u.T1.df, aes(x = NMDS1, y = NMDS2)) + 
-   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
-    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=pcomp.u.Parent.colors)+
+   geom_point(aes(stroke=3, colour = Clade, shape=Treatment,size = 4) )+
+   # geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  #scale_color_manual(values=Pacu.u.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Time.Point))) +
     scale_linetype_manual(values=c(2,3,2,3))+
@@ -2106,16 +2636,16 @@ Crap you were working on for above
 16 bar plots in ggplot (to make faster than next section)  
 #MCAP bar plots
 PHYLUM
-```{r}       
-#try glom use raw counts Bac.s2
-Mcap_Bac.s2<-subset_samples(Bac.s2, Species=="Montipora_capitata")
+```{r}        
+#try glom use raw counts Bac.s
+Mcap_Bac.s<-subset_samples(Bac.s, Species=="Montipora_capitata")
 
-Mcap_Bac.s2.phy <- Mcap_Bac.s2 %>% 
+Mcap_Bac.s.phy <- Mcap_Bac.s %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Mcap_Bac.s2.melt <- psmelt(Mcap_Bac.s2.phy)
+Mcap_Bac.s.melt <- psmelt(Mcap_Bac.s.phy)
 
-# sum.ra.mcap <- ddply(Mcap_Bac.s2.melt, c("Phylum", "Time.Point", "Treatment","Parent.ID"), summarise,
+# sum.ra.mcap <- ddply(Mcap_Bac.s.melt, c("Phylum", "Time.Point", "Treatment","Parent.ID"), summarise,
 #                 N = length(Abundance),
 #                 mean = mean(Abundance),
 #                 sd = sd(Abundance), 
@@ -2123,19 +2653,20 @@ Mcap_Bac.s2.melt <- psmelt(Mcap_Bac.s2.phy)
 # )
 # sum.ra.mcap
 
-Mcap_Bac.s2.melt$Code<-paste(Mcap_Bac.s2.melt$Treatment, Mcap_Bac.s2.melt$Time.Point)
-Mcap_Bac.s2.melt$Parent.ID <- factor(Mcap_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Mcap_Bac.s.melt$Code<-paste(Mcap_Bac.s.melt$Treatment, Mcap_Bac.s.melt$Time.Point)
+Mcap_Bac.s.melt$Parent.ID <- factor(Mcap_Bac.s.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.s2.melt$Code <- factor(Mcap_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s.melt$Code <- factor(Mcap_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
   xlab("Sample Label") +
+  theme(legend.position = "none")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
@@ -2144,9 +2675,9 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 #by C or CD
 # C ONLY
 
-Mcap_Bac.s2.C<-subset_samples(Mcap_Bac.s2.melt, Clade=="C")
+Mcap_Bac.s.C<-subset_samples(Mcap_Bac.s.melt, Clade=="C")
 
-mcap.p <- ggplot(Mcap_Bac.s2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2156,9 +2687,9 @@ mcap.p <- ggplot(Mcap_Bac.s2.C, aes(x = Parent.ID, y = Abundance, fill = Phylum)
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Mcap_Bac.s2.CD<-subset_samples(Mcap_Bac.s2.melt, Clade=="CD")
+Mcap_Bac.s.CD<-subset_samples(Mcap_Bac.s.melt, Clade=="CD")
 
-mcap.p <- ggplot(Mcap_Bac.s2.CD.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+mcap.p <- ggplot(Mcap_Bac.s.CD.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2173,19 +2704,19 @@ Family
 ```{r}    
 library(tidy)
 
-Mcap_Bac.s2.melt <- psmelt(Mcap_phyFam)
+Mcap_Bac.s.melt <- psmelt(Mcap_phyFam)
 
 #set 
-Mcap_Bac.s2.melt$Code<-paste(Mcap_Bac.s2.melt$Treatment, Mcap_Bac.s2.melt$Time.Point)
-Mcap_Bac.s2.melt$Parent.ID <- factor(Mcap_Bac.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Mcap_Bac.s.melt$Code<-paste(Mcap_Bac.s.melt$Treatment, Mcap_Bac.s.melt$Time.Point)
+Mcap_Bac.s.melt$Parent.ID <- factor(Mcap_Bac.s.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.s2.melt$Code <- factor(Mcap_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s.melt$Code <- factor(Mcap_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 #FAMILY COLORS
 nb.cols <- 252
 mycolors <- colorRampPalette(brewer.pal(11, "BrBG"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2198,9 +2729,9 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Mcap_Bac.s2.melt.C<-subset(Mcap_Bac.s2.melt, Clade=="C")
+Mcap_Bac.s.melt.C<-subset(Mcap_Bac.s.melt, Clade=="C")
 
-mcap.p <- ggplot(Mcap_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2211,10 +2742,10 @@ mcap.p <- ggplot(Mcap_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Fa
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Mcap_Bac.s2.melt.CD<-subset(Mcap_Bac.s2.melt, Clade=="CD")
+Mcap_Bac.s.melt.CD<-subset(Mcap_Bac.s.melt, Clade=="CD")
 
 
-mcap.p <- ggplot(Mcap_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2230,23 +2761,23 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 #Pcomp
 ASV
 ```{r}  
-#try glom use raw counts Bac.s2
-Pcomp_Bac.s2<-subset_samples(Bac.s2, Species=="Porites_compressa")
+#try glom use raw counts Bac.s
+Pcomp_Bac.s<-subset_samples(Bac.s, Species=="Porites_compressa")
 
-Pcomp_Bac.s2.phy <- Pcomp_Bac.s2 %>% 
+Pcomp_Bac.s.phy <- Pcomp_Bac.s %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pcomp_Bac.s2.melt <- psmelt(Pcomp_Bac.s2.phy)
+Pcomp_Bac.s.melt <- psmelt(Pcomp_Bac.s.phy)
 
-Pcomp_Bac.s2.melt$Code<-paste(Pcomp_Bac.s2.melt$Treatment, Pcomp_Bac.s2.melt$Time.Point)
-Pcomp_Bac.s2.melt$Parent.ID <- factor(Pcomp_Bac.s2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+Pcomp_Bac.s.melt$Code<-paste(Pcomp_Bac.s.melt$Treatment, Pcomp_Bac.s.melt$Time.Point)
+Pcomp_Bac.s.melt$Parent.ID <- factor(Pcomp_Bac.s.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
 
-Pcomp_Bac.s2.melt$Code <- factor(Pcomp_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pcomp_Bac.s.melt$Code <- factor(Pcomp_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2261,9 +2792,9 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ### by C15cj or C15n
 # C15cj ONLY
 
-Pcomp_Bac.s2.C15cj<-subset(Pcomp_Bac.s2.melt, Clade=="C15cj")
+Pcomp_Bac.s.C15cj<-subset(Pcomp_Bac.s.melt, Clade=="C15cj")
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2274,9 +2805,9 @@ Pcomp.p <- ggplot(Pcomp_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = P
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 # C15n ONLY
-Pcomp_Bac.s2.C15n<-subset(Pcomp_Bac.s2.melt, Clade=="C15n")
+Pcomp_Bac.s.C15n<-subset(Pcomp_Bac.s.melt, Clade=="C15n")
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.C15n, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.C15n, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2290,18 +2821,18 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 Family
 ```{r}  
 
-Pcomp_Bac.s2.melt <- psmelt(Pcomp_phyFam)
+Pcomp_Bac.s.melt <- psmelt(Pcomp_phyFam)
 
 #set 
-Pcomp_Bac.s2.melt$Code<-paste(Pcomp_Bac.s2.melt$Treatment, Pcomp_Bac.s2.melt$Time.Point)
-Pcomp_Bac.s2.melt$Parent.ID <- factor(Pcomp_Bac.s2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
-Pcomp_Bac.s2.melt$Code <- factor(Pcomp_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pcomp_Bac.s.melt$Code<-paste(Pcomp_Bac.s.melt$Treatment, Pcomp_Bac.s.melt$Time.Point)
+Pcomp_Bac.s.melt$Parent.ID <- factor(Pcomp_Bac.s.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+Pcomp_Bac.s.melt$Code <- factor(Pcomp_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 #FAMILY COLORS
 nb.cols <- 252
 mycolors <- colorRampPalette(brewer.pal(11, "BrBG"))(nb.cols)
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2314,9 +2845,9 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Pcomp_Bac.s2.melt.C<-subset(Pcomp_Bac.s2.melt, Clade=="C")
+Pcomp_Bac.s.melt.C<-subset(Pcomp_Bac.s.melt, Clade=="C")
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2327,10 +2858,10 @@ Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = 
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Pcomp_Bac.s2.melt.CD<-subset(Pcomp_Bac.s2.melt, Clade=="CD")
+Pcomp_Bac.s.melt.CD<-subset(Pcomp_Bac.s.melt, Clade=="CD")
 
 
-Pcomp.p <- ggplot(Pcomp_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pcomp.p <- ggplot(Pcomp_Bac.s.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2346,23 +2877,23 @@ Pcomp.p +  facet_wrap(~ Code, nrow=2)
 #Pvar
 PHYLUM
 ```{r}
-#try glom use raw counts Bac.s2
-Pvar_Bac.s2<-subset_samples(Bac.s2, Species=="Pavona_varians")
+#try glom use raw counts Bac.s
+Pvar_Bac.s<-subset_samples(Bac.s, Species=="Pavona_varians")
 
-Pvar_Bac.s2.phy <- Pvar_Bac.s2 %>% 
+Pvar_Bac.s.phy <- Pvar_Bac.s %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pvar_Bac.s2.melt <- psmelt(Pvar_Bac.s2.phy)
+Pvar_Bac.s.melt <- psmelt(Pvar_Bac.s.phy)
 
-Pvar_Bac.s2.melt$Code<-paste(Pvar_Bac.s2.melt$Treatment, Pvar_Bac.s2.melt$Time.Point)
-Pvar_Bac.s2.melt$Parent.ID <- factor(Pvar_Bac.s2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+Pvar_Bac.s.melt$Code<-paste(Pvar_Bac.s.melt$Treatment, Pvar_Bac.s.melt$Time.Point)
+Pvar_Bac.s.melt$Parent.ID <- factor(Pvar_Bac.s.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
 
-Pvar_Bac.s2.melt$Code <- factor(Pvar_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pvar_Bac.s.melt$Code <- factor(Pvar_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pvar.p <- ggplot(Pvar_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2377,9 +2908,9 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 ### by C1 or C127
 # C15cj ONLY
 
-Pvar_Bac.s2.C15cj<-subset(Pvar_Bac.s2.melt, Clade=="C1")
+Pvar_Bac.s.C15cj<-subset(Pvar_Bac.s.melt, Clade=="C1")
 
-Pvar.p <- ggplot(Pvar_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2390,9 +2921,9 @@ Pvar.p <- ggplot(Pvar_Bac.s2.C15cj, aes(x = Parent.ID, y = Abundance, fill = Phy
 Pvar.p +  facet_wrap(~ Code, nrow=2)
 
 # C15n ONLY
-Pvar_Bac.s2.C27<-subset(Pvar_Bac.s2.melt, Clade=="C27")
+Pvar_Bac.s.C27<-subset(Pvar_Bac.s.melt, Clade=="C27")
 
-Pvar.p <- ggplot(Pvar_Bac.s2.C27, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pvar.p <- ggplot(Pvar_Bac.s.C27, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2406,19 +2937,19 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 Family
 ```{r}  
 
-Pvar_Bac.s2.melt <- psmelt(Pvar_phyFam)
+Pvar_Bac.s.melt <- psmelt(Pvar_phyFam)
 
 #set 
-Pvar_Bac.s2.melt$Code<-paste(Pvar_Bac.s2.melt$Treatment, Pvar_Bac.s2.melt$Time.Point)
-Pvar_Bac.s2.melt$Parent.ID <- factor(Pvar_Bac.s2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+Pvar_Bac.s.melt$Code<-paste(Pvar_Bac.s.melt$Treatment, Pvar_Bac.s.melt$Time.Point)
+Pvar_Bac.s.melt$Parent.ID <- factor(Pvar_Bac.s.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
 
-Pvar_Bac.s2.melt$Code <- factor(Pvar_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pvar_Bac.s.melt$Code <- factor(Pvar_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 #FAMILY COLORS
 nb.cols <- 252
 mycolors <- colorRampPalette(brewer.pal(11, "BrBG"))(nb.cols)
 
-Pvar.p <- ggplot(Pvar_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pvar.p <- ggplot(Pvar_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2431,9 +2962,9 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Pvar_Bac.s2.melt.C<-subset(Pvar_Bac.s2.melt, Clade=="C")
+Pvar_Bac.s.melt.C<-subset(Pvar_Bac.s.melt, Clade=="C")
 
-Pvar.p <- ggplot(Pvar_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pvar.p <- ggplot(Pvar_Bac.s.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2444,10 +2975,10 @@ Pvar.p <- ggplot(Pvar_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Fa
 Pvar.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Pvar_Bac.s2.melt.CD<-subset(Pvar_Bac.s2.melt, Clade=="CD")
+Pvar_Bac.s.melt.CD<-subset(Pvar_Bac.s.melt, Clade=="CD")
 
 
-Pvar.p <- ggplot(Pvar_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pvar.p <- ggplot(Pvar_Bac.s.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2465,23 +2996,23 @@ Pvar.p +  facet_wrap(~ Code, nrow=2)
 #Pacu
 PHYLUM
 ```{r}
-#try glom use raw counts Bac.s2
-Pacu_Bac.s2<-subset_samples(Bac.s2, Species=="Pocillopora_acuta")
+#try glom use raw counts Bac.s
+Pacu_Bac.s<-subset_samples(Bac.s, Species=="Pocillopora_acuta")
 
-Pacu_Bac.s2.phy <- Pacu_Bac.s2 %>% 
+Pacu_Bac.s.phy <- Pacu_Bac.s %>% 
   tax_glom(taxrank = "Phylum", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
-Pacu_Bac.s2.melt <- psmelt(Pacu_Bac.s2.phy)
+Pacu_Bac.s.melt <- psmelt(Pacu_Bac.s.phy)
 
-Pacu_Bac.s2.melt$Code<-paste(Pacu_Bac.s2.melt$Treatment, Pacu_Bac.s2.melt$Time.Point)
-Pacu_Bac.s2.melt$Parent.ID <- factor(Pacu_Bac.s2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+Pacu_Bac.s.melt$Code<-paste(Pacu_Bac.s.melt$Treatment, Pacu_Bac.s.melt$Time.Point)
+Pacu_Bac.s.melt$Parent.ID <- factor(Pacu_Bac.s.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
 
-Pacu_Bac.s2.melt$Code <- factor(Pacu_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pacu_Bac.s.melt$Code <- factor(Pacu_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 nb.cols <- 52
 mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-Pacu.p <- ggplot(Pacu_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2496,9 +3027,9 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 ### by CCC or C42
 # CCC ONLY
 
-Pacu_Bac.s2.CCC<-subset(Pacu_Bac.s2.melt, Clade=="CCC")
+Pacu_Bac.s.CCC<-subset(Pacu_Bac.s.melt, Clade=="CCC")
 
-Pacu.p <- ggplot(Pacu_Bac.s2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2509,9 +3040,9 @@ Pacu.p <- ggplot(Pacu_Bac.s2.CCC, aes(x = Parent.ID, y = Abundance, fill = Phylu
 Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 # C42 ONLY
-Pacu_Bac.s2.C42<-subset(Pacu_Bac.s2.melt, Clade=="C42")
+Pacu_Bac.s.C42<-subset(Pacu_Bac.s.melt, Clade=="C42")
 
-Pacu.p <- ggplot(Pacu_Bac.s2.C42, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
+Pacu.p <- ggplot(Pacu_Bac.s.C42, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2525,18 +3056,18 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 Family
 ```{r}  
 
-Pacu_Bac.s2.melt <- psmelt(Pacu_phyFam)
+Pacu_Bac.s.melt <- psmelt(Pacu_phyFam)
 
 #set 
-Pacu_Bac.s2.melt$Code<-paste(Pacu_Bac.s2.melt$Treatment, Pacu_Bac.s2.melt$Time.Point)
-PPacu_Bac.s2.melt$Parent.ID <- factor(Pacu_Bac.s2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
-Pacu_Bac.s2.melt$Code <- factor(Pacu_Bac.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Pacu_Bac.s.melt$Code<-paste(Pacu_Bac.s.melt$Treatment, Pacu_Bac.s.melt$Time.Point)
+PPacu_Bac.s.melt$Parent.ID <- factor(Pacu_Bac.s.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+Pacu_Bac.s.melt$Code <- factor(Pacu_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 #FAMILY COLORS
 nb.cols <- 252
 mycolors <- colorRampPalette(brewer.pal(11, "BrBG"))(nb.cols)
 
-Pacu.p <- ggplot(Pacu_Bac.s2.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pacu.p <- ggplot(Pacu_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2549,9 +3080,9 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 ### by C or CD
 # C ONLY
 
-Pacu_Bac.s2.melt.C<-subset(Pacu_Bac.s2.melt, Clade=="C")
+Pacu_Bac.s.melt.C<-subset(Pacu_Bac.s.melt, Clade=="C")
 
-Pacu.p <- ggplot(Pacu_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pacu.p <- ggplot(Pacu_Bac.s.melt.C, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2562,10 +3093,10 @@ Pacu.p <- ggplot(Pacu_Bac.s2.melt.C, aes(x = Parent.ID, y = Abundance, fill = Fa
 Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 # CD ONLY
-Pacu_Bac.s2.melt.CD<-subset(Pacu_Bac.s2.melt, Clade=="CD")
+Pacu_Bac.s.melt.CD<-subset(Pacu_Bac.s.melt, Clade=="CD")
 
 
-Pacu.p <- ggplot(Pacu_Bac.s2.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+Pacu.p <- ggplot(Pacu_Bac.s.melt.CD, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -2582,7 +3113,7 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 
 
-#16s - bar plots df Bac.s2RelA YOU Don't need now
+#16s - bar plots df Bac.sRelA YOU Don't need now
 ```{r}     
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
 Bac.s.rel.ord <- ordinate(Bac.s.rel, "NMDS", "bray", set.seed(30))
@@ -2825,7 +3356,7 @@ print(DIVrareRel1_Pcomp)
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species Bac.s.rel .  relative abundances 
 ```{r}              
-#Bac.s.rel 
+#Bac.s.rel  
 
 Bac.s.rel_stats<- Bac.s.rel #make a copy
 otu_table(Bac.s.rel_stats)[1:5, 1:5] #check rela worked
@@ -2845,7 +3376,7 @@ Bac_RelA_stats.T1F<-subset_samples(Bac.s.rel_stats, Time.Point=="T1"|Time.Point=
 
 #make bray curtis data matrix
 
-bc.all <- phyloseq::distance(Bac_RelA_stats.T1F, method = "bray")
+bc.all <- phyloseq::distance(Bac_RelA_stats.T1F, method = "bray",trymax=300)
   samp.df <- as(sample_data(Bac_RelA_stats.T1F), "data.frame") #sample df
 #adonis test
   set.seed(30)
@@ -2882,9 +3413,10 @@ ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 ```
 
 # Beta Split data by species  bray curtis
-Beta div BRAY
+
+Beta div BRAY 
 Montipora - T1 and TF together, separet, and then by phylotype. PERMANOVA
-```{r}           
+```{r}              
 # df Bac_RelA_stats.T1F
 #Mcap 
 mcap.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Montipora_capitata")
@@ -3008,7 +3540,7 @@ mcap.g.bac.TF.CD <- subset_samples(mcap.g.bac.TF, Clade == "CD")
     permutest(beta.mcap.g.TF.CD, pairwise = T) 
 ``` 
 Mcap NMDS
-```{r}     
+```{r}      
 ## create palette for parent.ID and treatments
 mcap.g.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
  "Ambient" = "#4575B4", "High" = "#D73027",                        
@@ -3970,7 +4502,7 @@ ggsave("Pcomp_ITS2.C15n_TF.pdf")
 Pavona - T1 and TF together, separet, and then by phylotype. PERMANOVA
 CHANGE PHYLOTYPES
 
-```{r}        
+```{r}         
 # df Bac_RelA_stats.T1F
 #Pvar
 Pvar.g.bac.T1F <- subset_samples(Bac_RelA_stats.T1F, Species == "Pavona_varians")
@@ -5955,13 +6487,18 @@ al.species <- levels(erich.tab2$Species) # get the variables
   al.species.pairs <- combn(seq_along(al.species), 2, simplify = FALSE, FUN = function(i)al.species[i])
   print(al.species.pairs)
 
+ erich.tab2$Code<-paste(erich.tab2$Species,erich.tab2$Clade)
+  
 #observed
 p1 <- ggviolin(erich.tab2, x = "Species", y = "observed",
    add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
   print(p1)
 
-    
-#Shannon
+    p1 <- ggviolin(erich.tab2, x = "Code", y = "observed",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+
+  #Shannon
 p1 <- ggviolin(erich.tab2, x = "Species", y = "diversity_shannon",
    add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
   print(p1)
@@ -5975,7 +6512,9 @@ p1 <- ggviolin(erich.tab2, x = "Species", y = "evenness_pielou",
 p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
   print(p1)
 
-
+p1 <- ggviolin(erich.tab2, x = "Code", y = "evenness_pielou",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
 
 #by species:
 erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
@@ -6300,7 +6839,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
 ```
 alpha Observed Plots, no clade
 ```{r} 
-#Means
+#Means 
 observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
                  mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -6806,7 +7345,7 @@ evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment+(
   pairs(emm)
 ```
 alpha evenness_pielou Plots, no clade
-```{r}
+```{r} 
 #Means
 evenness_pielou_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
@@ -6877,7 +7416,7 @@ Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean, aes(x=Time.P
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pcomp Richness")+
+  ggtitle("Pcomp Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
 
 #Pvar plots
@@ -6904,7 +7443,7 @@ Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean, aes(x=Time.Poi
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pvar Richness")+
+  ggtitle("Pvar Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
 
 
@@ -6932,7 +7471,7 @@ Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean, aes(x=Time.Poi
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Richness")+
+  ggtitle("Pacu Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
 
 ###### All plots together
