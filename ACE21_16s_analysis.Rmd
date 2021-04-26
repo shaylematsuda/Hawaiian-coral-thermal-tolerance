@@ -451,7 +451,7 @@ theme_set(theme_bw())
   
   
 ```
-#Let's try this again with vegan: THIS IS THE WAY
+#Let's try this again with vegan: THIS IS THE WAY to set up you FAMILY df AND Bray models
 USE THIS FOR STATS HELP:
 https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
 ```{r} 
@@ -842,8 +842,42 @@ geom_point(size=5) )
 wu.mfol <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac")
 adonis(wu.mfol ~ Species*Treatment*Time.Point, strata = Fam.samp.df$Species, data = Fam.samp.df) #not sig
 permutest(betadisper(wu.mfol, Fam.samp.df$Species, type = "centroid")) #sig
+```
+# Family unifrac stats T1TF and plots. 
+```{r}
 
+nb.cols <- 30
+mycolors <- colorRampPalette(brewer.pal(11, "Set1"))(nb.cols)
 
+Fam.bac.colors<-c("Hyphomonadaceae" = "#F3C300", 
+                  "P30B-42" = "#008856",
+                  "Gammaproteobacteria_unclassified" = "#3399FF",
+                  "Nodosilineaceae" = "#FF33CC",
+                  "Chlorobiaceae" = "#33FFCC",
+                  "Cyclobacteriaceae" = "#BE0032",
+                  "Amoebophilaceae" = "#C2B280",
+                  "Flavobacteriaceae" = "#222222",
+                  "Endozoicomonadaceae" = "#99FF00",
+                  "Rhodobacteraceae" = "#E68FAC",
+                  "Pirellulaceae" = "#A3623A",
+                  "Phycispharaceae" = "#F99379",
+                  "Saprospiraceae" = "#604E97",
+                  "Paraspirulinaceae" = "#F6A600",
+                  "Francisellaceae" = "#B3446C",
+                  "Bacteria_unclassified_Otu00012" = "#0067A5",
+                  "Kiloniellaceae" = "#882D17",
+                   "uncultured_Otu00079" = "#8DB600",
+                   "Nostocaceae" = "#654522",
+                   "uncultured_Otu00270" = "#E25822",
+                   "Alteromonadaceae" = "#848482",
+                    "uncultured_Otu00533" = "#2B3D26",
+                   "uncultured_Otu00563" = "#FF1500",
+                  "uncultured_Otu01647" = "#F3C300",
+                  "uncultured_Otu00872" = "#875692",
+                    "Alphaproteobacteria_unclassified" = "#A1CAF1",
+
+                  "Pseudoalteromonadaceae" = "#F38400"
+                  ) 
 ############################### Family unifrac stats
 #make unifrac matrix
 Bac.fam.T1F <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac") #dist matrix
@@ -966,7 +1000,7 @@ mcap.16s.fam.top10.m_mean_plot<-ggplot(data=mcap.16s.fam.top10.m_mean, aes(x=Tim
                 width=0.1, show.legend = F)+
   geom_point(aes(color=family), size=4, show.legend = T)+
   geom_line(aes(color=family), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  scale_color_manual(values=Fam.bac.colors)+
   xlab("") + #Label the X Axis
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
@@ -992,14 +1026,14 @@ mcap.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
 ############ pcomp ####
 #Pcomp
 pcomp.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Porites_compressa")
-#pcomp.f.bac.T1F = prune_taxa(taxa_sums(pcomp.f.bac.T1F) > 0, pcomp.f.bac.T1F) #this removes any OTU with 0s
+pcomp.f.bac.T1F = prune_taxa(taxa_sums(pcomp.f.bac.T1F) > 0, pcomp.f.bac.T1F) #this removes any OTU with 0s
 
 #make dfs you need 
 pcomp.f.bac.T1 <- subset_samples(pcomp.f.bac.T1F, Time.Point == "T1")
- # pcomp.f.bac.T1 = prune_taxa(taxa_sums(pcomp.f.bac.T1) > 0, pcomp.f.bac.T1) #this removes any OTU with 0s
+  pcomp.f.bac.T1 = prune_taxa(taxa_sums(pcomp.f.bac.T1) > 0, pcomp.f.bac.T1) #this removes any OTU with 0s
 
 pcomp.f.bac.TF <- subset_samples(pcomp.f.bac.T1F, Time.Point == "TF")
- # pcomp.f.bac.TF = prune_taxa(taxa_sums(pcomp.f.bac.TF) > 0, pcomp.f.bac.TF) #this removes any OTU with 0s
+ pcomp.f.bac.TF = prune_taxa(taxa_sums(pcomp.f.bac.TF) > 0, pcomp.f.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make wunifrac curtis data matrix -T1 and TF
@@ -1094,7 +1128,7 @@ pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean, aes(x=T
                 width=0.1, show.legend = F)+
   geom_point(aes(color=family), size=4, show.legend = T)+
   geom_line(aes(color=family), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  scale_color_manual(values=Fam.bac.colors)+
   xlab("") + #Label the X Axis
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
@@ -1124,7 +1158,7 @@ pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean.NoEndo, 
                 width=0.1, show.legend = F)+
   geom_point(aes(color=family), size=4, show.legend = T)+
   geom_line(aes(color=family), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  scale_color_manual(values=Fam.bac.colors)+
   xlab("") + #Label the X Axis
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
@@ -1204,7 +1238,7 @@ adonis(u.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adon
    set.seed(30)
     permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
- #try plotting only the top 10 FAMs    
+ #try plotting only the top 10 FAMs  ####   
     #Sort the Phyla by abundance and pick the top 5
     top10P.names.Pvar = sort(tapply(taxa_sums(pvar.f.f.bac.T1F), tax_table(pvar.f.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
       #Cut down the  data to only the top 10 Phyla
@@ -1220,7 +1254,7 @@ adonis(u.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adon
             
             names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
             names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
-            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00012"] <- "Bacteria_unclassified"
+            names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00012"] <- "Bacteria_unclassified_Otu00012"
 
             names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
             names(Pvar.u.f.bac.T1F.top10P.OTU.df)[names(Pvar.u.f.bac.T1F.top10P.OTU.df) == "Otu00027"] <- "Pirellulaceae"
@@ -1269,7 +1303,7 @@ Pvar.16s.fam.top10.m_mean_plot<-ggplot(data=Pvar.16s.fam.top10.m_mean, aes(x=Tim
                 width=0.1, show.legend = F)+
   geom_point(aes(color=family), size=4, show.legend = T)+
   geom_line(aes(color=family), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  scale_color_manual(values=Fam.bac.colors)+
   xlab("") + #Label the X Axis
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
@@ -1348,7 +1382,7 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
     permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
     
-  #try plotting only the top 10 FAMs    
+  #try plotting only the top 10 FAMs   ####  
     #Sort the Phyla by abundance and pick the top 5
     top10P.names.Pacu = sort(tapply(taxa_sums(pacu.f.bac.T1F), tax_table(pacu.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
       #Cut down the  data to only the top 10 Phyla
@@ -1370,8 +1404,8 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
             names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00055"] <- "Pseudoalteromonadaceae"
             names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00062"] <- "Alteromonadaceae"
             names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
-            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu000226"] <- "Gammaproteobacteria_unclassified"
-            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00084"] <- "Thalassospiraceae"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00226"] <- "Gammaproteobacteria_unclassified"
+            names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
             names(Pacu.u.f.bac.T1F.top10P.OTU.df)[names(Pacu.u.f.bac.T1F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
          
             
@@ -1405,7 +1439,7 @@ Pacu.16s.fam.top10.m_mean_plot<-ggplot(data=Pacu.16s.fam.top10.m_mean, aes(x=Tim
                 width=0.1, show.legend = F)+
   geom_point(aes(color=family), size=4, show.legend = T)+
   geom_line(aes(color=family), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  scale_color_manual(values=Fam.bac.colors)+
   xlab("") + #Label the X Axis
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
@@ -1436,6 +1470,874 @@ Pacu.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
     
     
 ```
+# Family unifrac stats and plots with T0 Bac.seqFam_stats
+ So far only top 10 is updated 
+
+First make duplicates of the T0 High and Ambs to all parents get their Ambinet starts
+```{r}
+#### Create a duplicate of T0s for the other A and H treatments for comparision: df coralDIV2_rare
+#not
+control.fam.T0_Amb = subset_samples(Bac.seqFam_stats, Time.Point == "T0"&Treatment == "Ambient")  #copy
+
+#tax table
+tax  = tax_table(control.fam.T0_Amb)
+
+  # sample data
+  sd = sample_data(control.fam.T0_Amb)
+  rownames(sd) <- paste0(rownames(sd), "_dup")
+  # otu_table
+  OTU = otu_table(control.fam.T0_Amb)
+  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+  # Avoid conflict between factor and character
+  # sd$Treatment <- as.character(sd$Treatment)
+  # sd$ID <- as.character(sd$ID)
+  sd$Treatment <- "High"    #rename HIGH
+  sd$ID <- paste0(sd$ID, "_dup")
+  sd$Treatment <- as.factor(sd$Treatment)
+  # sd$ID <- as.factor(sd$ID)
+
+  Amb.fam.2<-phyloseq(OTU, sd, tax)
+#sample.dataAmb2 <- as(sample_data(Amb2), "data.frame") #create sample data frame to view
+
+##High
+  control.fam.T0_High = subset_samples(Bac.seqFam_stats, Time.Point == "T0"&Treatment == "High")  #copy
+
+#tax table
+tax  = tax_table(control.fam.T0_High)
+
+  # sample data
+  sd = sample_data(control.fam.T0_High)
+  rownames(sd) <- paste0(rownames(sd), "_dup")
+# otu_table
+OTU = otu_table(control.fam.T0_High)
+  sample_names(OTU) <- paste0(sample_names(OTU), "_dup")
+  # Avoid conflict between factor and character
+  sd$Treatment <- as.character(sd$Treatment)
+  # sd$ID <- as.character(sd$ID)
+  sd$Treatment <- "Ambient"    #rename HIGH
+  sd$ID <- paste0(sd$ID, "_dup")
+  sd$Treatment <- as.factor(sd$Treatment)
+  sd$ID <- as.factor(sd$ID)
+
+  High.fam.2<-phyloseq(OTU, sd, tax)
+  #sample.dataHigh2 <- as(sample_data(High2), "data.frame") #create sample data frame to view
+
+#Merge control dups H and A
+Controldups = merge_phyloseq(Amb.fam.2,High.fam.2)
+Controldups
+    #sample.dataControldups2 <- as(sample_data(Controldups), "data.frame") #create sample data frame to view
+
+#merg them to the original df:
+
+Bac.seqFam_stats.T01F = merge_phyloseq(Bac.seqFam_stats,Controldups)
+Bac.seqFam_stats.T01F
+Bac.seqFam_stats.T01F.sd <- as(sample_data(Bac.seqFam_stats.T01f), "data.frame") #create sample data frame to view
+Bac.seqFam_stats.T01F.sd
+```
+
+Family top ten
+ http://colorschemedesigner.com/csd-3.5/ THIS IS COOL BUT ONLY 4
+```{r}
+
+
+
+
+############################### Family unifrac stats ####
+#make unifrac matrix
+Bac.fam.T1F <- phyloseq::distance(Bac.seqFam_stats.T1F, method = "wunifrac") #dist matrix
+Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
+  #adonis 
+    set.seed(30)
+      adonis(Bac.fam.T1F ~ Species*Treatment*Time.Point, data = Fam.samp.df)
+    set.seed(30)    
+      adonis(Fam.16s.all ~ Species*Treatment*Time.Point*Clade, data = Fam.samp.df)
+  # Homogeneity of dispersion test  
+    set.seed(30)    
+      permutest(betadisper(Bac.fam.T1F, Fam.samp.df$Clade, type = "centroid")) #put in distance matrix
+
+############# mcap ####not updated
+
+#Mcap
+mcap.u.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
+mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
+
+#make dfs you need 
+mcap.u.f.bac.T1 <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "T1")
+  mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
+mcap.u.f.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
+  mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make bray curtis data matrix -T1 and TF
+  set.seed(30)
+  bc.mcap.u.f.T1F <- phyloseq::distance(mcap.u.f.bac.T1F, method = "wunifrac")
+     mcap.u.f.samp.df.T1F <- as(sample_data(mcap.u.f.bac.T1F), "data.frame") #sample df
+       set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Treatment*Time.Point, data = mcap.u.f.samp.df.T1F) #adonis test no clade
+      set.seed(30)
+    adonis(bc.mcap.u.f.T1F ~ Clade*Treatment*Time.Point, data = mcap.u.f.samp.df.T1F)#adonis test with clade
+ #heatmap
+    #plot_heatmap(mcap.u.f.bac.T1F, "NMDS", "bray", "Parent.ID", "Phylum")
+      # Homogeneity of dispersion test  
+set.seed(30)
+    permutest(betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(bc.mcap.u.f.T1F, mcap.u.f.samp.df.T1F$Treatment, type = "centroid")) #put in distance matrix
+    
+#T1
+    
+  u.mcapT1 <- phyloseq::distance(mcap.u.f.bac.T1, method = "wunifrac") 
+      mcap.u.f.samp.df.T1 <- as(sample_data(mcap.u.f.bac.T1), "data.frame") 
+          set.seed(30)
+    adonis(u.mcapT1 ~ Treatment, data = mcap.u.f.samp.df.T1)  
+     set.seed(30)
+    adonis(u.mcapT1 ~ Clade*Treatment, data = mcap.u.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.mcapT1, mcap.u.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.mcapT1, mcap.u.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+
+#TF
+  u.mcap.u.f.TF <- phyloseq::distance(mcap.u.f.bac.TF, method = "wunifrac")
+     mcap.u.f.samp.df.TF <- as(sample_data(mcap.u.f.bac.TF), "data.frame")
+    set.seed(30)
+    adonis(u.mcap.u.f.TF ~ Treatment, data = mcap.u.f.samp.df.TF)
+    set.seed(30)
+    adonis(u.mcap.u.f.TF ~ Clade*Treatment, data = mcap.u.f.samp.df.TF)
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+    
+    
+# Mcap top 10 T01F ####
+ ##try plotting only the top 10 FAMs    Bac.seqFam_stats has T0 
+    Bac.seqFam_stats.T01F.mcap<-subset_samples(Bac.seqFam_stats.T01F, Species=="Montipora_capitata")
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.mcap.T01f = sort(tapply(taxa_sums(Bac.seqFam_stats.T01F.mcap), tax_table(Bac.seqFam_stats.T01F.mcap)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      mcap.u.f.bac.T01F.top10P = subset_taxa(Bac.seqFam_stats.T01F.mcap, Family %in% names(top10P.names.mcap.T01f))
+      
+      #pull out of phyloseq     
+        mcap.u.f.bac.T01F.top10P.OTU = as(otu_table(mcap.u.f.bac.T01F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(mcap.u.f.bac.T1F.top5P)){OTUfam.v <- t(mcap.u.f.bac.T1F.top5P.OTU)}
+          # Coerce to data.frame
+            mcap.u.f.bac.T01F.top10P.OTU.df = as.data.frame(mcap.u.f.bac.T01F.top10P.OTU) 
+      #rename Fam with taxa
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00104"] <- "Hyphomonadaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00004"] <- "P30B-42"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00058"] <- "Chlorobiaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"#only one diff from non T0 set
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00015"] <- "Nodosilineaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00226"] <- "Gammaproteobacteria_unclassified"
+            names(mcap.u.f.bac.T01F.top10P.OTU.df)[names(mcap.u.f.bac.T01F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+    #Add metadata
+      mcap.u.f.bac.T01F.top10P.sd <- as(sample_data(mcap.u.f.bac.T01F.top10P), "data.frame") #create sample data frame to view
+         mcap.u.f.bac.T01F.top10P.sd<-mcap.u.f.bac.T01F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    mcap.16s.fam.T01f.top10<- merge(mcap.u.f.bac.T01F.top10P.OTU.df,mcap.u.f.bac.T01F.top10P.sd, by="row.names") #merge by rownames
+       mcap.16s.fam.T01f.top10.m <- melt(mcap.16s.fam.T01f.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(mcap.16s.fam.T01f.top10.m)[names(mcap.16s.fam.T01f.top10.m) == "value"] <- "relabund"
+            names(mcap.16s.fam.T01f.top10.m)[names(mcap.16s.fam.T01f.top10.m) == "variable"] <- "family"
+
+#Means
+mcap.16s.fam.T01F.top10.m_mean <- ddply(mcap.16s.fam.T01f.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+mcap.16s.fam.T01F.top10.m_mean
+
+mcap.16s.fam.T01F.top10.m_mean$Code<-paste(mcap.16s.fam.T01F.top10.m_mean$Treatment, mcap.16s.fam.T01F.top10.m_mean$Time.Point,mcap.16s.fam.T01F.top10.m_mean$Clade)
+
+#mcap plots
+#plot Mcap
+mcap.16s.fam.top10.m_mean_plot<-ggplot(data=mcap.16s.fam.T01F.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Mcap top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));mcap.16s.fam.top10.m_mean_plot
+mcap.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+
+#mcap no clade
+mcap.16s.fam.T01F.top10.m_mean.noC <- ddply(mcap.16s.fam.T01f.top10.m, c("Treatment", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+mcap.16s.fam.T01F.top10.m_mean.noC
+
+mcap.16s.fam.T01F.top10.m_mean.noC$Code<-paste(mcap.16s.fam.T01F.top10.m_mean.noC$Treatment, mcap.16s.fam.T01F.top10.m_mean.noC$Time.Point,mcap.16s.fam.T01F.top10.m_mean.noC$Clade)
+
+#mcap plots
+#plot Mcap
+mcap.16s.fam.top10.m_mean_plot<-ggplot(data=mcap.16s.fam.T01F.top10.m_mean.noC, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Mcap top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));mcap.16s.fam.top10.m_mean_plot
+mcap.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
+    
+  ############ pcomp #####
+#Pcomp
+pcomp.f.bac.T01F <- subset_samples(Bac.seqFam_stats.T01F, Species == "Porites_compressa")
+#pcomp.f.bac.T01F = prune_taxa(taxa_sums(pcomp.f.bac.T01F) > 0, pcomp.f.bac.T01F) #this removes any OTU with 0s
+
+#make dfs you need 
+pcomp.f.bac.T1 <- subset_samples(pcomp.f.bac.T01F, Time.Point == "T1")
+ # pcomp.f.bac.T1 = prune_taxa(taxa_sums(pcomp.f.bac.T1) > 0, pcomp.f.bac.T1) #this removes any OTU with 0s
+
+pcomp.f.bac.TF <- subset_samples(pcomp.f.bac.T01F, Time.Point == "TF")
+ # pcomp.f.bac.TF = prune_taxa(taxa_sums(pcomp.f.bac.TF) > 0, pcomp.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  u.pcomp.f.T01F <- phyloseq::distance(pcomp.f.bac.T01F, method = "wunifrac")
+     pcomp.f.samp.df.T01F <- as(sample_data(pcomp.f.bac.T01F), "data.frame") #sample df
+      set.seed(30)
+    adonis(u.pcomp.f.T01F ~ Treatment*Time.Point, data = pcomp.f.samp.df.T01F) #adonis test no clade
+   set.seed(30)
+    adonis(u.pcomp.f.T01F ~ Clade*Treatment*Time.Point, data = pcomp.f.samp.df.T01F)#adonis test with clade
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pcomp.f.T01F, pcomp.f.samp.df.T01F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pcomp.f.T01F, pcomp.f.samp.df.T01F$Treatment, type = "centroid")) #put in distance matrix
+    
+#T1
+  u.PcompT1 <- phyloseq::distance(pcomp.f.bac.T1, method = "wunifrac") 
+      pcomp.f.samp.df.T1 <- as(sample_data(pcomp.f.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(u.PcompT1 ~ Treatment, data = pcomp.f.samp.df.T1)  
+    set.seed(30)
+   adonis(u.PcompT1 ~ Clade*Treatment, data = pcomp.f.samp.df.T1)  
+# Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.PcompT1, pcomp.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PcompT1, pcomp.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+
+#TF
+u.pcomp.f.TF <- phyloseq::distance(pcomp.f.bac.TF, method = "wunifrac")
+     pcomp.f.samp.df.TF <- as(sample_data(pcomp.f.bac.TF), "data.frame") 
+      set.seed(30)
+    adonis(u.pcomp.f.TF ~ Treatment, data = pcomp.f.samp.df.TF)
+     set.seed(30)
+    adonis(u.pcomp.f.TF ~ Clade*Treatment, data = pcomp.f.samp.df.TF)
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pcomp.f.TF, pcomp.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pcomp.f.TF, pcomp.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+
+ #try plotting only the top 10 FAMs     ####
+        pcomp.f.bac.T01F<-subset_samples(Bac.seqFam_stats.T01F, Species=="Porites_compressa")
+
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.pcomp = sort(tapply(taxa_sums(pcomp.f.bac.T01F), tax_table(pcomp.f.bac.T01F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      pcomp.u.f.bac.T01F.top10P = subset_taxa(pcomp.f.bac.T01F, Family %in% names(top10P.names.pcomp))
+      
+      #pull out of phyloseq     
+        pcomp.u.f.bac.T01F.top10P.OTU = as(otu_table(pcomp.u.f.bac.T01F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(pcomp.u.f.bac.T01F.top5P)){OTUfam.v <- t(pcomp.u.f.bac.T01F.top5P.OTU)}
+          # Coerce to data.frame
+            pcomp.u.f.bac.T01F.top10P.OTU.df = as.data.frame(pcomp.u.f.bac.T01F.top10P.OTU) 
+      #rename Fam with taxa, btw all the same as without T0
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00068"] <- "Alphaproteobacteria_unclassified"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00274"] <- "Pirellulaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00374"] <- "Phycispharaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00156"] <- "Saprospiraceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00146"] <- "Paraspirulinaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00116"] <- "Francisellaceae"
+            names(pcomp.u.f.bac.T01F.top10P.OTU.df)[names(pcomp.u.f.bac.T01F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+    #Add metadata
+      pcomp.u.f.bac.T01F.top10P.sd <- as(sample_data(pcomp.u.f.bac.T01F.top10P), "data.frame") #create sample data frame to view
+         pcomp.u.f.bac.T01F.top10P.sd<-pcomp.u.f.bac.T01F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    pcomp.16s.fam.top10<- merge(pcomp.u.f.bac.T01F.top10P.OTU.df,pcomp.u.f.bac.T01F.top10P.sd, by="row.names") #merge by rownames
+       pcomp.16s.fam.top10.m <- melt(pcomp.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(pcomp.16s.fam.top10.m)[names(pcomp.16s.fam.top10.m) == "value"] <- "relabund"
+            names(pcomp.16s.fam.top10.m)[names(pcomp.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+pcomp.16s.fam.top10.m_mean <- ddply(pcomp.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+pcomp.16s.fam.top10.m_mean
+
+pcomp.16s.fam.top10.m_mean$Code<-paste(pcomp.16s.fam.top10.m_mean$Treatment, pcomp.16s.fam.top10.m_mean$Time.Point,pcomp.16s.fam.top10.m_mean$Clade)
+
+#pcomp plots
+#plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+    
+    #remove endo pcomp.16s.fam.top10.m_mean
+pcomp.16s.fam.top10.m_mean.NoEndo<-subset(pcomp.16s.fam.top10.m_mean, !family=="Endozoicomonadaceae")
+    
+    #plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean.NoEndo, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family No Endo")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+
+
+#Means no phylotype
+pcomp.16s.fam.top10.m_mean.NoC <- ddply(pcomp.16s.fam.top10.m, c("Treatment", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+pcomp.16s.fam.top10.m_mean.NoC
+
+pcomp.16s.fam.top10.m_mean.NoC$Code<-paste(pcomp.16s.fam.top10.m_mean.NoC$Treatment, pcomp.16s.fam.top10.m_mean.NoC$Time.Point,pcomp.16s.fam.top10.m_mean.NoC$Clade)
+
+#pcomp plots
+#plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean.NoC, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
+    
+
+    #remove endo 
+pcomp.16s.fam.top10.m_mean.NoC.noEndo<-subset(pcomp.16s.fam.top10.m_mean.NoC, !family=="Endozoicomonadaceae")
+    
+    #plot pcomp
+pcomp.16s.fam.top10.m_mean_plot<-ggplot(data=pcomp.16s.fam.top10.m_mean.NoC.noEndo, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pcomp top 10 family No Endo")+
+  theme(plot.title = element_text(size=20, face = "italic"));pcomp.16s.fam.top10.m_mean_plot
+pcomp.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
+    
+#######pvar ####
+    #Pvar
+pvar.f.f.bac.T01F <- subset_samples(Bac.seqFam_stats.T01F, Species == "Pavona_varians")
+#pvar.f.f.bac.T01F = prune_taxa(taxa_sums(pvar.f.f.bac.T01F) > 0, pvar.f.f.bac.T01F) #this removes any OTU with 0s
+ 
+#make dfs you need 
+pvar.f.f.bac.T1 <- subset_samples(pvar.f.f.bac.T01F, Time.Point == "T1")
+ # pvar.f.f.bac.T1 = prune_taxa(taxa_sums(pvar.f.f.bac.T1) > 0, pvar.f.f.bac.T1) #this removes any OTU with 0s
+
+pvar.f.f.bac.TF <- subset_samples(pvar.f.f.bac.T01F, Time.Point == "TF")
+#  pvar.f.f.bac.TF = prune_taxa(taxa_sums(pvar.f.f.bac.TF) > 0, pvar.f.f.bac.TF) #this removes any OTU with 0s
+ 
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+                set.seed(30)
+
+  u.pvar.f.f.T01F <- phyloseq::distance(pvar.f.f.bac.T01F, method = "wunifrac")
+     pvar.f.f.samp.df.T01F <- as(sample_data(pvar.f.f.bac.T01F), "data.frame") #sample df
+     set.seed(30)
+adonis(u.pvar.f.f.T01F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T01F) #adonis test no clade
+    set.seed(30)
+    adonis(u.pvar.f.f.T01F ~ Clade*Treatment*Time.Point, data = pvar.f.f.samp.df.T01F)#adonis test with clade
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pvar.f.f.T01F, pvar.f.f.samp.df.T01F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pvar.f.f.T01F, pvar.f.f.samp.df.T01F$Treatment, type = "centroid")) #put in distance matrix
+    
+#T1
+                 
+
+  u.PvarT1 <- phyloseq::distance(pvar.f.f.bac.T1, method = "wunifrac") 
+      pvar.f.f.samp.df.T1 <- as(sample_data(pvar.f.f.bac.T1), "data.frame") 
+   set.seed(30)
+   adonis(u.PvarT1 ~ Treatment, data = pvar.f.f.samp.df.T1) 
+     set.seed(30)
+     adonis(u.PvarT1 ~ Clade*Treatment, data = pvar.f.f.samp.df.T1)  
+
+# Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.PvarT1, pvar.f.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PvarT1, pvar.f.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+
+#TF
+  u.pvar.f.f.TF <- phyloseq::distance(pvar.f.f.bac.TF, method = "wunifrac")
+     pvar.f.f.samp.df.TF <- as(sample_data(pvar.f.f.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(u.pvar.f.f.TF ~ Treatment, data = pvar.f.f.samp.df.TF)
+        set.seed(30)
+        adonis(u.pvar.f.f.TF ~ Clade*Treatment, data = pvar.f.f.samp.df.TF)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+
+ #try plotting only the top 10 FAMs  ####   
+            pvar.f.f.bac.T01F<-subset_samples(Bac.seqFam_stats.T01F, Species=="Pavona_varians")
+
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.Pvar = sort(tapply(taxa_sums(pvar.f.f.bac.T01F), tax_table(pvar.f.f.bac.T01F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      Pvar.u.f.bac.T01F.top10P = subset_taxa(pvar.f.f.bac.T01F, Family %in% names(top10P.names.Pvar))
+      
+      #pull out of phyloseq     
+        Pvar.u.f.bac.T01F.top10P.OTU = as(otu_table(Pvar.u.f.bac.T01F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(Pvar.u.f.bac.T01F.top5P)){OTUfam.v <- t(Pvar.u.f.bac.T01F.top5P.OTU)}
+          # Coerce to data.frame
+            Pvar.u.f.bac.T01F.top10P.OTU.df = as.data.frame(Pvar.u.f.bac.T01F.top10P.OTU) 
+      #rename Fam with taxa, all same as T1F
+            
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00012"] <- "Bacteria_unclassified_Otu00012"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00027"] <- "Pirellulaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00053"] <- "Kiloniellaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00079"] <- "uncultured_Otu00079"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00093"] <- "Nostocaceae"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00270"] <- "uncultured_Otu00270"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00533"] <- "uncultured_Otu00533"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00563"] <- "uncultured_Otu00563"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu01647"] <- "uncultured_Otu01647"
+            names(Pvar.u.f.bac.T01F.top10P.OTU.df)[names(Pvar.u.f.bac.T01F.top10P.OTU.df) == "Otu00872"] <- "uncultured_Otu00872"
+
+
+            
+            
+    #Add metadata
+      Pvar.u.f.bac.T01F.top10P.sd <- as(sample_data(Pvar.u.f.bac.T01F.top10P), "data.frame") #create sample data frame to view
+         Pvar.u.f.bac.T01F.top10P.sd<-Pvar.u.f.bac.T01F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    Pvar.16s.fam.top10<- merge(Pvar.u.f.bac.T01F.top10P.OTU.df,Pvar.u.f.bac.T01F.top10P.sd, by="row.names") #merge by rownames
+       Pvar.16s.fam.top10.m <- melt(Pvar.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(Pvar.16s.fam.top10.m)[names(Pvar.16s.fam.top10.m) == "value"] <- "relabund"
+            names(Pvar.16s.fam.top10.m)[names(Pvar.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+Pvar.16s.fam.top10.m_mean <- ddply(Pvar.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pvar.16s.fam.top10.m_mean
+
+Pvar.16s.fam.top10.m_mean$Code<-paste(Pvar.16s.fam.top10.m_mean$Treatment, Pvar.16s.fam.top10.m_mean$Time.Point,Pvar.16s.fam.top10.m_mean$Clade)
+
+
+
+
+#Means no phylotype
+pvar.16s.fam.top10.m_mean.NoC <- ddply(Pvar.16s.fam.top10.m, c("Treatment", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+pvar.16s.fam.top10.m_mean.NoC
+
+pvar.16s.fam.top10.m_mean.NoC$Code<-paste(pvar.16s.fam.top10.m_mean.NoC$Treatment, pvar.16s.fam.top10.m_mean.NoC$Time.Point,pvar.16s.fam.top10.m_mean.NoC$Clade)
+
+#pvar plots
+#plot pvar
+pvar.16s.fam.top10.m_mean_plot<-ggplot(data=pvar.16s.fam.top10.m_mean.NoC, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pvar top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));pvar.16s.fam.top10.m_mean_plot
+pvar.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
+
+#Pvar plots
+#plot Pvar
+Pvar.16s.fam.top10.m_mean_plot<-ggplot(data=Pvar.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Pvar top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar.16s.fam.top10.m_mean_plot
+Pvar.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+    
+
+    
+####### pacuta  ####
+
+#Pacu
+pacu.f.bac.T01F <- subset_samples(Bac.seqFam_stats.T01F, Species == "Pocillopora_acuta")
+pacu.f.bac.T01F = prune_taxa(taxa_sums(pacu.f.bac.T01F) > 0, pacu.f.bac.T01F) #this removes any OTU with 0s
+
+#make dfs you need 
+pacu.f.bac.T1 <- subset_samples(pacu.f.bac.T01F, Time.Point == "T1")
+  pacu.f.bac.T1 = prune_taxa(taxa_sums(pacu.f.bac.T1) > 0, pacu.f.bac.T1) #this removes any OTU with 0s
+
+pacu.f.bac.TF <- subset_samples(pacu.f.bac.T01F, Time.Point == "TF")
+  pacu.f.bac.TF = prune_taxa(taxa_sums(pacu.f.bac.TF) > 0, pacu.f.bac.TF) #this removes any OTU with 0s
+
+#T1TF
+#make wunifrac curtis data matrix -T1 and TF
+  u.pacu.f.T01F <- phyloseq::distance(pacu.f.bac.T01F, method = "wunifrac")
+     pacu.f.samp.df.T01F <- as(sample_data(pacu.f.bac.T01F), "data.frame") #sample df
+     set.seed(30)
+     adonis(u.pacu.f.T01F ~ Treatment*Time.Point, data = pacu.f.samp.df.T01F) #adonis test no clade
+     set.seed(30)
+     adonis(u.pacu.f.T01F ~ Clade*Treatment*Time.Point, data = pacu.f.samp.df.T01F)#adonis test with clade
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pacu.f.T01F, pacu.f.samp.df.T01F$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pacu.f.T01F, pacu.f.samp.df.T01F$Treatment, type = "centroid")) #put in distance matrix
+    
+#T1
+  u.PacuT1 <- phyloseq::distance(pacu.f.bac.T1, method = "wunifrac") 
+      pacu.f.samp.df.T1 <- as(sample_data(pacu.f.bac.T1), "data.frame") 
+      set.seed(30)
+      adonis(u.PacuT1 ~ Treatment, data = pacu.f.samp.df.T1)  
+      set.seed(30)
+      adonis(u.PacuT1 ~ Clade*Treatment, data = pacu.f.samp.df.T1)  
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.PacuT1, pacu.f.samp.df.T1$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.PacuT1, pacu.f.samp.df.T1$Treatment, type = "centroid")) #put in distance matrix
+
+    
+#TF
+ 
+  u.pacu.f.TF <- phyloseq::distance(pacu.f.bac.TF, method = "wunifrac")
+     pacu.f.samp.df.TF <- as(sample_data(pacu.f.bac.TF), "data.frame") 
+      set.seed(30)
+      adonis(u.pacu.f.TF ~Treatment, data = pacu.f.samp.df.TF)
+      set.seed(30)
+      adonis(u.pacu.f.TF ~ Clade*Treatment, data = pacu.f.samp.df.TF)
+ # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
+   set.seed(30)
+    permutest(betadisper(u.pacu.f.TF, pacu.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
+
+    
+  #try plotting only the top 10 FAMs     ####
+                pacu.f.bac.T01F<-subset_samples(Bac.seqFam_stats.T01F, Species=="Pocillopora_acuta")
+
+    #Sort the Phyla by abundance and pick the top 5
+    top10P.names.Pacu = sort(tapply(taxa_sums(pacu.f.bac.T01F), tax_table(pacu.f.bac.T01F)[, "Family"], sum), TRUE)[1:10]
+      #Cut down the  data to only the top 10 Phyla
+      Pacu.u.f.bac.T01F.top10P = subset_taxa(pacu.f.bac.T01F, Family %in% names(top10P.names.Pacu))
+      
+      #pull out of phyloseq     
+        Pacu.u.f.bac.T01F.top10P.OTU = as(otu_table(Pacu.u.f.bac.T01F.top10P), "matrix")
+       # transpose if necessary
+          # if(taxa_are_rows(Pacu.u.f.bac.T01F.top5P)){OTUfam.v <- t(Pacu.u.f.bac.T01F.top5P.OTU)}
+          # Coerce to data.frame
+            Pacu.u.f.bac.T01F.top10P.OTU.df = as.data.frame(Pacu.u.f.bac.T01F.top10P.OTU) 
+      #rename Fam with taxa, all same but no Otu00084, and yes 30
+            
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00068"] <- "Alphaproteobacteria_unclassified"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00011"] <- "Amoebophilaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00206"] <- "Flavobacteriaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00156"] <- "Saprospiraceae"
+
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00055"] <- "Pseudoalteromonadaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00062"] <- "Alteromonadaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00001"] <- "Endozoicomonadaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00226"] <- "Gammaproteobacteria_unclassified"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00030"] <- "Cyclobacteriaceae"
+            names(Pacu.u.f.bac.T01F.top10P.OTU.df)[names(Pacu.u.f.bac.T01F.top10P.OTU.df) == "Otu00025"] <- "Rhodobacteraceae"
+         
+            
+    #Add metadata
+      Pacu.u.f.bac.T01F.top10P.sd <- as(sample_data(Pacu.u.f.bac.T01F.top10P), "data.frame") #create sample data frame to view
+         Pacu.u.f.bac.T01F.top10P.sd<-Pacu.u.f.bac.T01F.top10P.sd[,c("sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade")] # keep cols you want
+    
+    Pacu.16s.fam.top10<- merge(Pacu.u.f.bac.T01F.top10P.OTU.df,Pacu.u.f.bac.T01F.top10P.sd, by="row.names") #merge by rownames
+       Pacu.16s.fam.top10.m <- melt(Pacu.16s.fam.top10, id=c("Row.names","sample_name.1", "Species","Parent.ID",          
+                                                                   "Treatment","Time.Point","Tank.num","Clade"))
+            names(Pacu.16s.fam.top10.m)[names(Pacu.16s.fam.top10.m) == "value"] <- "relabund"
+            names(Pacu.16s.fam.top10.m)[names(Pacu.16s.fam.top10.m) == "variable"] <- "family"
+
+#Means
+Pacu.16s.fam.top10.m_mean <- ddply(Pacu.16s.fam.top10.m, c("Treatment", "Clade", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Pacu.16s.fam.top10.m_mean
+
+Pacu.16s.fam.top10.m_mean$Code<-paste(Pacu.16s.fam.top10.m_mean$Treatment, Pacu.16s.fam.top10.m_mean$Time.Point,Pacu.16s.fam.top10.m_mean$Clade)
+
+#Pacu plots
+#plot Pacu
+Pacu.16s.fam.top10.m_mean_plot<-ggplot(data=Pacu.16s.fam.top10.m_mean, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("Pacu top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu.16s.fam.top10.m_mean_plot
+Pacu.16s.fam.top10.m_mean_plot+facet_wrap(~Clade*Treatment)
+       
+    
+    
+    
+#Means no phylotype
+pacu.16s.fam.top10.m_mean.NoC <- ddply(Pacu.16s.fam.top10.m, c("Treatment", "Time.Point","family"), summarise, #summarize cell counts
+                 N    = length(relabund[!is.na(relabund)]), #calculate the length of the data frame, excluding NA’s
+                 mean = mean(relabund, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(relabund, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(relabund, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+pacu.16s.fam.top10.m_mean.NoC
+
+pacu.16s.fam.top10.m_mean.NoC$Code<-paste(pacu.16s.fam.top10.m_mean.NoC$Treatment, pacu.16s.fam.top10.m_mean.NoC$Time.Point,pacu.16s.fam.top10.m_mean.NoC$Clade)
+
+#pacu plots
+#plot pacu
+pacu.16s.fam.top10.m_mean_plot<-ggplot(data=pacu.16s.fam.top10.m_mean.NoC, aes(x=Time.Point, y=mean, group = family, color=family)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=family), size=4, show.legend = T)+
+  geom_line(aes(color=family), linetype=2, show.legend = T)+
+  scale_color_manual(values=Fam.bac.colors)+
+  xlab("") + #Label the X Axis
+ # ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("relative abundance"))) +
+  ggtitle("pacu top 10 family")+
+  theme(plot.title = element_text(size=20, face = "italic"));pacu.16s.fam.top10.m_mean_plot
+pacu.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
+    
+    
+    
+    
+    
+    
+```
+
+
+
+
+
+
 #Permanova UNIFRAC by ASV (no filter) to compare with above
 ```{r}   
 
