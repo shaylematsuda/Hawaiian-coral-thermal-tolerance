@@ -16,9 +16,7 @@ source("ancom/procedure/ANCOM_functions.R")
 kelly_colors = c('#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032', 
                  '#C2B280',  '#222222','#848482',  '#E68FAC', '#0067A5', 
                  '#F99379', '#604E97', '#F6A600', '#B3446C', '#DCD300', 
-                 '#882D17', '#8DB600', '#654522', '#E25822', '#2B3D26', 
-                 '#222222', '#F3C300', '#875692', '#F38400', '#A1CAF1', '#BE0032', 
-                 '#C2B280', '#848482', '#008856', '#E68FAC', '#0067A5')
+                 '#882D17', '#8DB600', '#654522', '#E25822', '#2B3D26')
 
 ##Pull out montipora Capitata and porites compressa (only two host species that showed sig differences between treatment)
 #Montipora capitata
@@ -39,6 +37,14 @@ pcomp <- prune_taxa(taxa_sums(pcomp) > 0, pcomp)
 pcomp.t1 <- prune_taxa(taxa_sums(pcomp.t1) > 0, pcomp.t1)
 pcomp.tf <- prune_taxa(taxa_sums(pcomp.tf) > 0, pcomp.tf)
 
+#Pavona varians
+pvar <- subset_samples(Bac.seq, Species == "Pavona_varians")
+pvar <- prune_taxa(taxa_sums(pvar) > 0, pvar)
+
+#Pocillopora acuta
+pacu <- subset_samples(Bac.seq, Species == "Pocillopora_acuta")
+pacu <- prune_taxa(taxa_sums(pacu) > 0, pacu)
+
 #Export OTU tables & transpose so taxa are rows
 OTU.mcap <- t(otu_table(mcap))
 OTU.mcap.t1 <- t(otu_table(mcap.t1))
@@ -48,11 +54,18 @@ OTU.pcomp <- t(otu_table(pcomp))
 OTU.pcomp.t1 <- t(otu_table(pcomp.t1))
 OTU.pcomt.tf <- t(otu_table(pcomp.tf))
 
+OTU.pvar <- t(otu_table(pvar))
+OTU.pacu <- t(otu_table(pacu))
 
 ###ANCOM pipeline###
 ##Step 1: set all your parameters
 #I just run through these steps for each of the time points (run two separate ANCOMs)
 #then I combine downstream to make a faceted graph
+
+#M.cap all time points
+feature_table <- OTU.mcap
+meta_data <- sample_data(mcap)
+
 #M cap T1
 feature_table <- OTU.mcap.t1
 meta_data <- sample_data(mcap.t1)
@@ -81,14 +94,19 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- NULL
-rand_formula <- NULL #add in random effect 
+adj_formula <- "Time.Point"
+rand_formula <- "~1|Parent.ID" #add in random effect 
 #The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
 #Extract your data frames 
+resdf.mcap <- as.data.frame(res$out)
+figdf.mcap <- as.data.frame(res$fig$data)
+
+
+#Extract your data frames
 resdf.mcap.t1 <- as.data.frame(res$out)
 resdf.mcap.tf <- as.data.frame(res$out)
 
@@ -143,14 +161,10 @@ figdf.mcap$Genus = factor(as.character(figdf.mcap$Genus), levels=names(x))
 figdf.mcap$col_genus <- figdf.mcap$Genus
 
 #Set everything that is super low to NA so that we can call them "other"
-figdf.mcap$col_genus[figdf.mcap$col_genus != "Alteromonas" & 
-                        figdf.mcap$col_genus != "Pseudoalteromonas" &
-                        figdf.mcap$col_genus != "Ruegeria" &
-                        figdf.mcap$col_genus != "Reichenbachiella" &
+figdf.mcap$col_genus[figdf.mcap$col_genus != "Pseudoalteromonas" & 
+                        figdf.mcap$col_genus != "P3OB-42_ge" &
                         figdf.mcap$col_genus != "Alteromonadales_unclassified" &
-                        figdf.mcap$col_genus != "uncultured" &
-                        figdf.mcap$col_genus != "Prosthecochloris" &
-                        figdf.mcap$col_genus != "JGI_0000069-P22_ge"] <- NA
+                        figdf.mcap$col_genus != "Rhodobacteraceae_unclassified"] <- NA
 
 
 levels(figdf.mcap$col_genus)
@@ -162,7 +176,7 @@ figdf.mcap$col_genus[is.na(figdf.mcap$col_genus)] = "Other"
 mcap.p <- ggplot(figdf.mcap, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
-  facet_grid(~contrast) +
+  #facet_grid(~contrast) +
   ylab("W statistic") +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
@@ -176,18 +190,22 @@ ggsave("ancom/output/mcap_ancom.pdf")
 
 
 
-
 ##All the same steps for Porites compressa! 
 
 ##Step 1: set all your parameters
 #I just run through these steps for each of the time points
 #then I combine downstream to make a faceted graph
-#P comp T1
-feature_table <- OTU.pcomp.t1
-meta_data <- sample_data(pcomp.t1)
-#P comp TF
-feature_table <- OTU.pcomt.tf
-meta_data <- sample_data(pcomp.tf)
+#P comp all
+feature_table <- OTU.pcomp
+meta_data <- sample_data(pcomp)
+
+##If splitting by time point use the following:
+##P comp T1
+#feature_table <- OTU.pcomp.t1
+#meta_data <- sample_data(pcomp.t1)
+##P comp TF
+#feature_table <- OTU.pcomt.tf
+#meta_data <- sample_data(pcomp.tf)
 
 
 levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
@@ -210,31 +228,35 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- NULL
-rand_formula <- NULL #add in random effect 
+adj_formula <- "Time.Point"
+rand_formula <- "~1|Parent.ID" #add in random effect 
 #The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
+#extract data
+resdf.pcomp <- as.data.frame(res$out)
+figdf.pcomp <- as.data.frame(res$fig$data)
+View(resdf.pcomp)
+##if splitting by time point do the following:
+#resdf.pcomp.t1 <- as.data.frame(res$out)
+#resdf.pcomp.tf <- as.data.frame(res$out)
 
-resdf.pcomp.t1 <- as.data.frame(res$out)
-resdf.pcomp.tf <- as.data.frame(res$out)
+##rbind together
+#resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
 
-#rbind together
-resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
+## compiling results from each contrast for the figure
+#figdf.pcomp.t1 <- as.data.frame(res$fig$data)
+#figdf.pcomp.t1$contrast <- "T1"
+#rownames(figdf.pcomp.t1) <- NULL
 
-# compiling results from each contrast for the figure
-figdf.pcomp.t1 <- as.data.frame(res$fig$data)
-figdf.pcomp.t1$contrast <- "T1"
-rownames(figdf.pcomp.t1) <- NULL
+#figdf.pcomp.tf <- as.data.frame(res$fig$data)
+#figdf.pcomp.tf$contrast <- "TF"
+#rownames(figdf.pcomp.tf) <- NULL
 
-figdf.pcomp.tf <- as.data.frame(res$fig$data)
-figdf.pcomp.tf$contrast <- "TF"
-rownames(figdf.pcomp.tf) <- NULL
-
-#rbind your two datasets together
-figdf.pcomp<- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
+##rbind your two datasets together
+#figdf.pcomp<- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
 
 # add taxonomy
 tax<-as(tax_table(pcomp),"matrix")
@@ -272,11 +294,7 @@ figdf.pcomp$Genus = factor(as.character(figdf.pcomp$Genus), levels=names(x))
 figdf.pcomp$col_genus <- figdf.pcomp$Genus
 
 figdf.pcomp$col_genus[figdf.pcomp$col_genus != "Francisellaceae_ge" & 
-                       figdf.pcomp$col_genus != "Francisellaceae_unclassified" &
-                       figdf.pcomp$col_genus != "Endozoicomonas" &
-                       figdf.pcomp$col_genus != "Proteobacteria_unclassified" &
-                       figdf.pcomp$col_genus != "Rhodobacteraceae_unclassified" &
-                       figdf.pcomp$col_genus != "Bythopirellula" ] <- NA
+                       figdf.pcomp$col_genus != "Rhodobacteraceae_unclassified"] <- NA
 
 
 levels(figdf.pcomp$col_genus)
@@ -288,7 +306,7 @@ figdf.pcomp$col_genus[is.na(figdf.pcomp$col_genus)] = "Other"
 pcomp.p <- ggplot(figdf.pcomp, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
-  facet_grid(~contrast) +
+  #facet_grid(~contrast) +
   ylab("W statistic") +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
@@ -299,7 +317,201 @@ pcomp.p <- ggplot(figdf.pcomp, aes(x = x, y = y, color = col_genus)) +
 ggsave("ancom/output/pcomp_ancom.pdf")
 
 
-#############
+
+###Next for Pavona varians
+##Step 1: set all your parameters
+#P comp all
+feature_table <- OTU.pvar
+meta_data <- sample_data(pvar)
+
+levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
+meta_data$Sample.ID <- as.character(meta_data$sample_name.1) #make sure your sample id is chr
+sample_var <- "Sample.ID"
+group_var <- NULL
+out_cut <- 0.05  #numerical fraction, below 5% = outlier zeros, above 95% = outlier values
+zero_cut <- 0.90 #numerical fraction, taxa with proportion of zeros above 90% are removed
+lib_cut <- 1000 #number, removes any samples with less than lib_cut reads
+neg_lb <- TRUE
+
+pre_pro <- feature_table_pre_process(feature_table, meta_data, sample_var,
+                                     group_var,out_cut, zero_cut, lib_cut, neg_lb)
+feature_table <- pre_pro$feature_table
+meta_data <- pre_pro$meta_data
+struc_zero <- pre_pro$structure_zeros
+
+#Step 2 run the ANCOM
+
+main_var <- "Treatment"
+p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
+alpha <- 0.05 #level of significance
+adj_formula <- "Time.Point"
+rand_formula <- "~1|Parent.ID" #add in random effect 
+#The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
+
+res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
+             adj_formula, rand_formula)
+
+#extract data
+resdf.pvar <- as.data.frame(res$out)
+figdf.pvar <- as.data.frame(res$fig$data)
+
+# add taxonomy
+tax<-as(tax_table(pvar),"matrix")
+head(tax)
+tax<-as.data.frame(tax)
+colnames(tax)
+tax$taxa_id <- rownames(tax)
+rownames(tax) <- NULL
+dim(tax)
+head(tax)
+
+#Merge taxonomy with your figure data
+figdf.pvar <- merge(figdf.pvar,tax, by = "taxa_id")
+resdf.pvar <- merge(resdf.pvar, tax, by = "taxa_id")
+
+head(resdf.pvar)
+head(figdf.pvar)
+write.csv(resdf.pvar, "ancom/output/ancom_pvar_res.csv")
+
+# Step 3: Volcano Plot
+# Number of taxa except structural zeros
+n_taxa = ifelse(is.null(struc_zero), nrow(figdf.pvar), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
+names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+# Annotation data
+dat_ann = data.frame(x = min(figdf.pvar$x), y = cut_off["detected_0.6"], label = "W[0.6]")
+
+##Specialised Plot
+# order genus
+x = tapply(figdf.pvar$y, figdf.pvar$Genus, function(x) max(x))
+x = sort(x, TRUE)
+figdf.pvar$Genus = factor(as.character(figdf.pvar$Genus), levels=names(x))
+figdf.pvar$col_genus <- figdf.pvar$Genus
+
+figdf.pvar$col_genus[figdf.pvar$col_genus != "Rubritalea" & 
+                        figdf.pvar$col_genus != "Pseudoalteromonas"] <- NA
+
+
+levels(figdf.pvar$col_genus)
+# add new factor
+figdf.pvar$col_genus <- factor(figdf.pvar$col_genus, levels = c(levels(figdf.pvar$col_genus), "Other"))
+# convert NAs to other
+figdf.pvar$col_genus[is.na(figdf.pvar$col_genus)] = "Other"
+
+pvar.p <- ggplot(figdf.pvar, aes(x = x, y = y, color = col_genus)) +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_point(size = 3) +
+  #facet_grid(~contrast) +
+  ylab("W statistic") +
+  xlab("CLR mean difference") +
+  scale_color_manual(name = "Genus", values = kelly_colors) +
+  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + 
+  geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
+            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+  ggtitle("Pavona varians")
+ggsave("ancom/output/pvar_ancom.pdf")
+
+###Finally Pocillopora acuta!
+##Step 1: set all your parameters
+#P comp all
+feature_table <- OTU.pacu
+meta_data <- sample_data(pacu)
+
+levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
+meta_data$Sample.ID <- as.character(meta_data$sample_name.1) #make sure your sample id is chr
+sample_var <- "Sample.ID"
+group_var <- NULL
+out_cut <- 0.05  #numerical fraction, below 5% = outlier zeros, above 95% = outlier values
+zero_cut <- 0.90 #numerical fraction, taxa with proportion of zeros above 90% are removed
+lib_cut <- 1000 #number, removes any samples with less than lib_cut reads
+neg_lb <- TRUE
+
+pre_pro <- feature_table_pre_process(feature_table, meta_data, sample_var,
+                                     group_var,out_cut, zero_cut, lib_cut, neg_lb)
+feature_table <- pre_pro$feature_table
+meta_data <- pre_pro$meta_data
+struc_zero <- pre_pro$structure_zeros
+
+#Step 2 run the ANCOM
+
+main_var <- "Treatment"
+p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
+alpha <- 0.05 #level of significance
+adj_formula <- "Time.Point"
+rand_formula <- "~1|Parent.ID" #add in random effect 
+#The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
+
+res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
+             adj_formula, rand_formula)
+
+#extract data
+resdf.pacu <- as.data.frame(res$out)
+figdf.pacu <- as.data.frame(res$fig$data)
+
+# add taxonomy
+tax<-as(tax_table(pacu),"matrix")
+head(tax)
+tax<-as.data.frame(tax)
+colnames(tax)
+tax$taxa_id <- rownames(tax)
+rownames(tax) <- NULL
+dim(tax)
+head(tax)
+
+#Merge taxonomy with your figure data
+figdf.pacu <- merge(figdf.pacu,tax, by = "taxa_id")
+resdf.pacu <- merge(resdf.pacu, tax, by = "taxa_id")
+
+head(resdf.pacu)
+head(figdf.pacu)
+write.csv(resdf.pacu, "ancom/output/ancom_pacu_res.csv")
+
+# Step 3: Volcano Plot
+# Number of taxa except structural zeros
+n_taxa = ifelse(is.null(struc_zero), nrow(figdf.pacu), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
+names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+# Annotation data
+dat_ann = data.frame(x = min(figdf.pacu$x), y = cut_off["detected_0.6"], label = "W[0.6]")
+
+##Specialised Plot
+# order genus
+x = tapply(figdf.pacu$y, figdf.pacu$Genus, function(x) max(x))
+x = sort(x, TRUE)
+figdf.pacu$Genus = factor(as.character(figdf.pacu$Genus), levels=names(x))
+figdf.pacu$col_genus <- figdf.pacu$Genus
+
+figdf.pacu$col_genus[figdf.pacu$col_genus != "Pseudoalteromonas" & 
+                       figdf.pacu$col_genus != "Candidatus_Actinomarina" &
+                       figdf.pacu$col_genus != "Rhodobacteraceae_unclassified"] <- NA
+
+
+levels(figdf.pacu$col_genus)
+# add new factor
+figdf.pacu$col_genus <- factor(figdf.pacu$col_genus, levels = c(levels(figdf.pacu$col_genus), "Other"))
+# convert NAs to other
+figdf.pacu$col_genus[is.na(figdf.pacu$col_genus)] = "Other"
+
+pacu.p <- ggplot(figdf.pacu, aes(x = x, y = y, color = col_genus)) +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_point(size = 3) +
+  #facet_grid(~contrast) +
+  ylab("W statistic") +
+  xlab("CLR mean difference") +
+  scale_color_manual(name = "Genus", values = kelly_colors) +
+  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + 
+  geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
+            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+  ggtitle("Pocillopora acuta")
+ggsave("ancom/output/pacu_ancom.pdf")
+
+
+
+############# Algal phylotype??
 ##What about contrasts for M cap - C vs CD
 
 #subset to ambient only
@@ -412,21 +624,72 @@ ggsave("ancom/output/mcap_ambclade_ancom.pdf")
 
 
 ##What about a plot of endo? Just because I am curious about the mcap ambient results
-mcap.amb.ra <- transform_sample_counts(mcap.amb, function(x) x/ sum(x))
-endo <- subset_taxa(mcap.amb.ra, Genus == "Endozoicomonas")
+#subset to only the experimental corals (no field)
+bac.exp <- subset_samples(Bac.seq, Type == "sample")
+##Fix sample data so that all T0 are labelled as "Ambient"
+#Concatenate & make a new data column to combine all data at T0 as "ambient"
+sample_data(bac.exp)['Treat.Time'] <- paste(sample_data(bac.exp)$Treatment, sample_data(bac.exp)$Time.Point)
+View(as(sample_data(bac.exp), "data.frame"))
+#Revalue
+sample_data(bac.exp)$Treat.Time <- as.factor(sample_data(bac.exp)$Treat.Time)
+levels(sample_data(bac.exp)$Treat.Time)
+sample_data(bac.exp)$Treat.Time <- revalue(sample_data(bac.exp)$Treat.Time, c("Ambient T0" = "Ambient", "Ambient T1" = "Ambient", "Ambient TF" = "Ambient", "High T0" = "Ambient", 
+                                                                              "High T1" = "High", "High TF" = "High"))
+levels(sample_data(bac.exp)$Treat.Time)
+
+mcap.exp <- subset_samples(bac.exp, Species == "Montipora_capitata")
+mcap.exp.ra <- transform_sample_counts(mcap.exp, function(x) x/ sum(x))
+bac.exp.ra <- transform_sample_counts(bac.exp, function(x) x/ sum(x))
+endo <- subset_taxa(bac.exp.ra, Genus == "Endozoicomonas")
 merged.endo <- tax_glom(endo, "Genus", NArm = FALSE)
 endo.melt <- psmelt(merged.endo)
-sum.endo <- ddply(endo.melt, c("Time.Point",  "Clade"), summarise,
+sum.endo <- ddply(endo.melt, c("Species", "Time.Point", "Treat.Time", "Clade"), summarise,
                      N = length(Abundance), 
                      mean = mean(Abundance),
                      sd = sd(Abundance), 
                      se = sd/sqrt(N)
 )
-ggplot(sum.endo, aes(x = Clade, y = mean, fill = Time.Point)) +
-  geom_point(aes(color = Time.Point)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, color = Time.Point), width = 0.1) +
-  facet_wrap(~Time.Point)
-ggsave("ancom/output/mcap_ambclade_endo.pdf")
+sum.endo <- ddply(endo.melt, c("Species", "Time.Point", "Treat.Time"), summarise,
+                 N = length(Abundance), 
+                 mean = mean(Abundance),
+                 sd = sd(Abundance), 
+                 se = sd/sqrt(N)
+)
+ggplot(sum.endo, aes(x = Time.Point, y = mean, fill = Treat.Time)) +
+  geom_point(aes(color = Treat.Time), size = 3) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, color = Treat.Time), width = 0.1) +
+  scale_color_manual(name = "Treat.Time", values = c("#0842E2", "#DE0505")) +
+  facet_grid(cols = vars(Species)) +
+  theme_bw()
+ggsave("ancom/output/allspecies_treat_endo.pdf")
+
+bac.exp.ra <- transform_sample_counts(bac.exp, function(x) x/ sum(x))
+pseudo <- subset_taxa(bac.exp.ra, Genus == "Pseudoalteromonas")
+merged.pseudo <- tax_glom(pseudo, "Genus", NArm = FALSE)
+pseudo.melt <- psmelt(merged.pseudo)
+sum.pseudo <- ddply(pseudo.melt, c("Species", "Time.Point", "Treat.Time", "Clade"), summarise,
+                  N = length(Abundance), 
+                  mean = mean(Abundance),
+                  sd = sd(Abundance), 
+                  se = sd/sqrt(N)
+)
+sum.pseudo <- ddply(pseudo.melt, c("Species", "Time.Point", "Treat.Time"), summarise,
+                  N = length(Abundance), 
+                  mean = mean(Abundance),
+                  sd = sd(Abundance), 
+                  se = sd/sqrt(N)
+)
+ggplot(sum.pseudo, aes(x = Time.Point, y = mean, fill = Treat.Time)) +
+  geom_point(aes(color = Treat.Time), size = 3) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, color = Treat.Time), width = 0.1) +
+  scale_color_manual(name = "Treat.Time", values = c("#0842E2", "#DE0505")) +
+  facet_grid(cols = vars(Species)) +
+  ggtitle("Pseudoalteromonas") +
+  theme_bw()
+ggsave("ancom/output/allspecies_treat_endo.pdf")
+
 
 ##Pavona -  C1 vs. C27 
 ##What about pavona vs acuta 
+
+
