@@ -516,7 +516,7 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
 
 ```
 PLOTS
-```{r}   
+```{r}    
 
 #t0 only####
 biomass_T0<-subset(biomass2, Time.Point=="T0") #Subset Pvar
@@ -557,11 +557,72 @@ All_biomass_plot<-ggplot(data=biomass_T0_mean, aes(x=Species, y=mean, group = Sp
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
 
+#TFH only#### 
+biomass_TFH<-subset(biomass2, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+biomass_TFH_mean <- ddply(biomass_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(AFDWmg.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+biomass_TFH_mean
+
+
+#means
+biomass_means <- ddply(biomass2, c( "Species","Treatment","Time.Point"), summarise, #summarize cell counts
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(AFDWmg.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+biomass_means
+
+
+
+#all at t1
+biomass_mean.T1<-subset(biomass_means, Time.Point=="T1")
+# Notched box plot
+T1.Biomass.plot<-ggplot(biomass_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
+  scale_color_manual(values=c("blue", "red"))+
+     # coord_cartesian(ylim = c(0, 10))+
+   theme_classic()+
+ theme(legend.position="none") +# Remove legend
+  geom_boxplot(notch=TRUE);T1.Biomass.plot
+
+#### all species#
+#plot all
+All_biomass_plot<-ggplot(data=biomass_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
 
 
 
 
-#plot Mcap ####
+
+#plot Mcap #### 
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
@@ -586,6 +647,9 @@ Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, grou
   ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
   ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
+
+
+
 
 # Pcomp  ####
 
@@ -961,14 +1025,38 @@ emm<-emmeans(FC_T0_model,  ~ Species, adjust="Tukey")
 cld(emm)
 pairs(emm)
 
+# models
+
+hist(FC_Data$zoox.cm2) 
+FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
+hist(FC_Data$zoox.cm2_log) #normal (use)
+
 
 
 FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
-hist(FC_stats_T1TF$zoox.cm2) 
-FC_stats_T1TF$zoox.cm2_log<-log10(FC_stats_T1TF$zoox.cm2+1)
-hist(FC_stats_T1TF$zoox.cm2_log) #normal (use)
 
+#test adding traits
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Montipora_capitata"] <- "thick"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Porites_compressa"] <- "thick"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona_varians"] <- "thin"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pocillopora_acuta"] <- "thin"  
+FC_stats_T1TF$tissue<-as.factor(FC_stats_T1TF$tissue)
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Montipora_capitata"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Porites_compressa"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona_varians"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora_acuta"] <- "nonporous"  
+ FC_stats_T1TF$skeleton<-as.factor(FC_stats_T1TF$skeleton)
+
+
+
+CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species*skeleton+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
+anova(CellCount_model) 
+qqPlot(residuals(CellCount_model)) 
+
+
+
+## T1TF mods
 CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
 anova(CellCount_model) 
 qqPlot(residuals(CellCount_model)) 
@@ -1161,7 +1249,7 @@ FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num)
     pairs(emm)  
 
 #Pacu ####
-#lmer
+#lmer 
     FC_Pacu_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
   anova(FC_Pacu_model)
   emm<-emmeans(FC_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -1197,7 +1285,7 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
   FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pacu.TF)
   anova(FC_Pacu_model.TF) 
   qqPlot(residuals(FC_Pacu_model.TF)) 
-  emm<-emmeans(FC_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(FC_Pacu_model.TF,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -1222,7 +1310,7 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 ```
 
 Line plots 
-```{r}
+```{r} 
 #just T0 ####
 FC_T0_mean <- ddply(FC_stats_T0, c( "Species"), summarise, #summarize cell counts
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -1265,9 +1353,71 @@ FC_T0_mean_plot<-ggplot(data=FC_T0_mean, aes(x=Species, y=mean, group = Species,
 
 
 
+#TFH only####
+FC_TFH<-subset(FC_Data, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+FC_TFH_mean <- ddply(FC_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+FC_TFH_mean
 
 
 
+#means
+FC_mean <- ddply(FC_Data, c( "Species","Treatment","Time.Point"), summarise, #summarize cell counts
+                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+FC_mean
+
+
+#all at t1
+FC_mean.T1<-subset(FC_mean, Time.Point=="T1")
+# Notched box plot
+T1.Biomass.plot<-ggplot(FC_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
+  scale_color_manual(values=c("blue", "red"))+
+     # coord_cartesian(ylim = c(0, 10))+
+   theme_classic()+
+  ggtitle("Algal Cell Density T1")+
+ theme(legend.position="none") +# Remove legend
+  geom_boxplot(notch=TRUE);T1.Biomass.plot
+
+
+
+
+
+#### all species#
+#plot all####
+All_FC_plot<-ggplot(data=FC_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Cell counts"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));All_FC_plot
 
 
 # Mcap   ####
@@ -1529,7 +1679,7 @@ grid.arrange(Mcap_FC_lineplot.c, Pcomp_FC_lineplot.c, Pvar_FC_lineplot.c,pacu_FC
 
 LIne plots by standardizing to biomass  for Ford
 FC.biomass_Sum
-```{r}
+```{r} 
  
 FC_SumCladeSpT0<-subset(FC_SumCladeSp.bioFC_SumCladeSp.bio, Time.Point=="T0")
 #plot all
@@ -2047,7 +2197,7 @@ FC_Pacu_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num),
 #Buoyant Weight/Calcification
 
 calibration (not sure what this does)
-```{r}       
+```{r}        
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
 #Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
  
@@ -2075,7 +2225,7 @@ StandardFreshModel$coef
 
 ```
 Analysis 
-```{r}   
+```{r}    
  
 #load coral weight data
 BW.data <-read.csv('Data/BWdata_Final.csv') # this is a file I compiled with all dates
@@ -2189,7 +2339,7 @@ G_Mcap<-rbind(G_McapA, G_McapH)
 G_Mcap$newtime = ifelse(G_Mcap$Time == "Time1", "Post-Stress", "Post-Recovery")
 G_Mcap <- within(G_Mcap, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
  
-
+ 
 
 Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
@@ -2216,6 +2366,14 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
   ylab(expression(paste("% Change Dry.Weigh.g"))) +
   ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot
+
+
+
+
+
+
+
+
 
 #by clade
 
@@ -2268,7 +2426,7 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
 
 ```
 Porites compressa
-```{r} 
+```{r}  
    
 ################################     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
@@ -2781,10 +2939,44 @@ Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
 Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
+
+
+
+G_Mcap$Species<-"Montipora_capitata"
+G_Pcomp$Species<-"Porites_compressa"
+G_Pvar$Species<-"Pavona_varians"
+G_Pacu$Species<-"Pocillopora_acuta"
+
+T1Growth<-rbind(G_Mcap, G_Pcomp,G_Pvar,G_Pacu)
+
+
+
+#all at t1
+Growth_mean.T1<-subset(T1Growth, Time=="Time1")
+# Notched box plot
+T1.Growth.plot<-ggplot(Growth_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
+  scale_color_manual(values=c("blue", "red"))+
+     # coord_cartesian(ylim = c(0, 10))+
+   theme_classic()+
+  ggtitle("Calcification T1")+
+ theme(legend.position="none") +# Remove legend
+  geom_boxplot(notch=TRUE);T1.Growth.plot
+
+
+#all at tF
+Growth_mean.TF<-subset(T1Growth, Time=="Time2")
+# Notched box plot
+TF.Growth.plot<-ggplot(Growth_mean.TF, aes(x=Species, y=mean, color=Treatment)) + 
+  scale_color_manual(values=c("blue", "red"))+
+     # coord_cartesian(ylim = c(0, 10))+
+   theme_classic()+
+  ggtitle("Calcification TF")+
+ theme(legend.position="none") +# Remove legend
+  geom_boxplot(notch=TRUE);TF.Growth.plot
 ``` 
  
 stats
-```{r}     
+```{r}      
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth")
 Growth <- Growth[GrowthKeep]
@@ -3116,8 +3308,9 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 #Chl-a  
 dfs: Slurry=airbrush, SA=wax dip, 
-```{r}     
-
+SHOULD YOU STANDARDIZE TO CELLS INSTEAD
+```{r}      
+ 
  # Plate 1
 
 Chla_plate1<- read.csv("Data/Chla_plate1.csv")
@@ -3272,7 +3465,7 @@ chlatest<-merge(meta, Chla, all = T)
 ```
 
 means for plots 
-```{r}   
+```{r}    
   
 chlatest<-merge(meta, Chla, all.x = T)
 
@@ -3364,6 +3557,47 @@ Chla_T0_mean_plot<-ggplot(data=Chla_T0_mean, aes(x=Species, y=mean, group = Spec
 
 
 
+
+
+
+#TFH only####
+Chla_TFH<-subset(Chla, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+Chla_TFH_mean <- ddply(Chla_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(ChlaSA[!is.na(ChlaSA)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(ChlaSA, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(ChlaSA, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(ChlaSA, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Chla_TFH_mean
+
+
+#### all species#
+#plot all
+All_Chla_plot<-ggplot(data=Chla_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Chl-a"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));All_Chla_plot
 
 
 #Mcap plot ####
@@ -3645,8 +3879,12 @@ pairs(emm)
 
 
 
-
-
+#Chla transform
+hist (Chla$ChlaSA) 
+# Chla$ChlaSA_log<-log10(Chla$ChlaSA+1)
+# hist(Chla$ChlaSA_log)
+Chla$ChlaSA_quart<-Chla$ChlaSA^(1/4)
+hist(Chla$ChlaSA_quart) #best
 
 Chla_stats_T1TF<-subset(Chla, Time.Point=="T1"|Time.Point=="TF")
 
@@ -3660,8 +3898,6 @@ hist(Chla_stats_T1TF$ChlaSA_log) #pos skew this ok?
 # hist(Chla_stats_T1TF$ChlaSA_cube) #better but no
 # shapiro.test(Chla_stats_T1TF$ChlaSA_cube)
 
-Chla_stats_T1TF$ChlaSA_quart<-Chla_stats_T1TF$ChlaSA^(1/4)
-hist(Chla_stats_T1TF$ChlaSA_quart) #best
 
 Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF)
 anova(Chla_model) 
@@ -4006,7 +4242,7 @@ PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 
 ```
 Stats  
-```{r}        
+```{r}         
 #remove notes 
 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
@@ -4357,7 +4593,7 @@ PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 
 ```
 Plots
-```{r}    
+```{r}     
 PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
                    N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -4443,7 +4679,7 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment,
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-      ylim(0, 1)+
+     # ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4753,8 +4989,8 @@ hist(Protein$mg.mm2_sqrt) #better
  
 ```
 Stats
-```{r}   
-
+```{r}    
+ 
 #t0
 Prot_stats_T0<-subset(Protein, Time.Point=="T0")
 hist (Prot_stats_T0$mg.mm2_sqrt) 
@@ -5032,8 +5268,20 @@ Protein_T0_mean <- ddply(Prot_stats_T0, c( "Species"), summarise, #summarize cel
 ) 
 Protein_T0_mean
 
+
+#TFH only####
+Protein_TFH<-subset(Protein, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+Protein_TFH_mean <- ddply(Protein_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(mg.mm2[!is.na(mg.mm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(mg.mm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(mg.mm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(mg.mm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Protein_TFH_mean
+
 #plot all
-Protein_T0_mean_plot<-ggplot(data=Protein_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+Protein_TFH_plot<-ggplot(data=Protein_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Species), size=4, show.legend = T)+
@@ -5055,9 +5303,44 @@ Protein_T0_mean_plot<-ggplot(data=Protein_T0_mean, aes(x=Species, y=mean, group 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Protein"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));Protein_T0_mean_plot
+  ylab(expression(paste("mg.mm2"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));Protein_TFH_plot
+
+
+
+
+
+#### all species#
+#plot all
+All_Chla_plot<-ggplot(data=Chla_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Chl-a"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));All_Chla_plot
+
+
+
+
 
 
 
@@ -5392,7 +5675,7 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
 ```
 Plots
 Photosynthesis
-```{r}    
+```{r}     
 Photo_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -5409,7 +5692,7 @@ Photo_meanCLADE <- ddply(PR.df_BPR.df_B.T0, c("Treatment", "Species", "Time.Poin
                    se   = sd / sqrt(N), #calculate standard error
                    max = max(Photo, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
-Photo_meanCLADE
+Photo_meanCLADE 
 
 #just T0 ####
 PR.df_BPR.df_B.T0<-subset(PR.df_B, Time.Point=="T0")
@@ -5423,7 +5706,7 @@ PR.df_BPR.df_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, #su
 )
 PR.df_BPR.df_B.T0_mean 
 
-
+ 
 #plot all
 Protein_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -5452,6 +5735,45 @@ Protein_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean,
   theme(plot.title = element_text(size=20, face = "italic"));Protein_T0_mean_plot
 
 
+ 
+
+#TFH only####
+Photo_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+Photo_TFH_mean <- ddply(Photo_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(Photo[!is.na(Photo)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(Photo, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(Photo, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(Photo, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Photo_TFH_mean
+
+#plot all
+Photo_TFH_plot<-ggplot(data=Photo_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("mg.mm2") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Photo"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));Photo_TFH_plot
 
 
 
@@ -6211,8 +6533,57 @@ Resp_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, gr
   theme(plot.title = element_text(size=20, face = "italic"));Resp_T0_mean_plot
 
 
+#TFH only####
+Resp_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+Resp_TFH_mean <- ddply(Resp_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(Resp, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(Resp, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Resp_TFH_mean
 
-#Mcap ####
+#plot all
+Resp_TFH_plot<-ggplot(data=Resp_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("mg.mm2") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Resp"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));Resp_TFH_plot
+
+
+ Resp_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(Resp, na.rm=TRUE), #calculate standard deviation
+                   se   = sd / sqrt(N), #calculate standard error
+                   max = max(Resp, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+Resp_mean#display table
+
+
+
+
 Resp_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
                    N    = length(Resp[!is.na(Resp)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Resp, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -6257,7 +6628,7 @@ Mcap_Resp_plot.Clade<-ggplot(data=Mcap_Resp_mean.Clade, aes(x=Time.Point, y=mean
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("umol/sec/cm2"))) +
 theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
+        panel.grid.minor = element_blank(), 
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
   ggtitle("Mcap Respiration")+
@@ -6618,7 +6989,7 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
 ```
 
 P:R
-```{r}  
+```{r}   
 
 #t0 only
 PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, #summarize cell counts
@@ -6659,7 +7030,47 @@ PR_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = 
   theme(plot.title = element_text(size=20, face = "italic"));PR_T0_mean_plot
 
 
+#TFH only####
+PR_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
+PR_TFH_mean <- ddply(PR_TFH, c( "Species"), summarise, #summarize cell counts
+                 N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(PR, na.rm=TRUE), #calculate mean of PRonse variable, removing NA's
+                 sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(PR, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PR_TFH_mean
 
+#plot all
+PR_TFH_plot<-ggplot(data=PR_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+
+  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("mg.mm2") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("PR"))) +
+  ggtitle("Time F, High only")+
+  theme(plot.title = element_text(size=20, face = "italic"));PR_TFH_plot
+
+
+
+### by speices ###
 PR_mean <-  ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                     N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -7248,7 +7659,14 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 
 #COMBINE all physio dfs
 Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
-```{r}    
+```{r}     
+#prep metadata for by Parent.ID df for ordinations
+metaPhysio<-subset(meta, select= -X)#remove X from df
+metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
+metaPhysio<-subset(metaPhysio, select= -Frag.ID)#remove tank from df
+metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID, metaPhysio$Time.Point)
+
+
 #biomass: keep Frag.ID and AFDW.cm2_log
 Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","AFDWmg.cm2")] # keep only columns you need
   
@@ -7271,7 +7689,7 @@ duplicated(Biomass_psy) #check
 Biomass_psy<-unique(Biomass_psy) # remove dups
 
 #cell counts:FC_Data df and keep  Frag.ID and zoox.cm2_log
-CellCounts_psy<- FC_stats_T1TF[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","zoox.cm2_log")] # keep only columns you need
+CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.num","Time.Point","zoox.cm2_log")] # keep only columns you need
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
 #   CellCounts_psyT0<-CellCounts_psy #copy
@@ -7294,7 +7712,7 @@ CellCounts_psy<- FC_stats_T1TF[,c("Frag.ID","Parent.ID" ,"Species","Treatment","
 
 
 #Chla Chla df ChlaSA_quart
-Chla_psy<- Chla_stats_T1TF[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
+Chla_psy<- Chla[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
 names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
@@ -7316,7 +7734,7 @@ duplicated(Chla_psy)
 
 
 #Protein Protein$mg.mm2_sqrt
-Protein_psy<- Prot_stats_T1TF[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
+Protein_psy<- Protein[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
 names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
@@ -7335,15 +7753,15 @@ names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
 Protein_psy<- Protein_psy[,c("Code","Protein_mg.mm2_sqrt")] # keep only columns you need
 duplicated(Protein_psy)
 
-#Repeate measures
-#Calcification, Growth and percent.change_log do for each time point
+#Repeate measures ####
+#Calcification, Growth and percent.change_log do for each time point ####
 
 Calcification_psy<- Growth3 #copy df
 Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point)
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time1.growth"] <- "T1" #change 
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time2.growth"] <- "TF" #change 
 Calcification_psy$Time.point<-as.factor(Calcification_psy$Time.point)
-# names(Calcification_psy)[names(Calcification_psy) == "Time.point"] <- "Time.Point" #change name
+ names(Calcification_psy)[names(Calcification_psy) == "Time.point"] <- "Time.Point" #change name
 
 Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment,Calcification_psy$Parent.ID,Calcification_psy$Time.Point) #make code
 
@@ -7358,7 +7776,7 @@ Calcification_psy$calc.percentchange[is.na(Calcification_psy$calc.percentchange)
 Calcification_psy<- Calcification_psy[,c("Code","calc.percentchange")] # keep only columns you need
 
 
-#PAM df PAMdata_stats make for T0, T1, TF
+#PAM df PAMdata_stats make for T0, T1, TF ####
 PAM_psy<- PAMdata2_stats
 
 PAM_psy$Days<-as.character(PAM_psy$Days)
@@ -7387,7 +7805,7 @@ PAM_psy<- PAM_psy[,c("Code","PAM.Yield_cu")] # keep only columns you need
 
 
 
-# Photosynthesis PR.df_B
+# Photosynthesis PR.df_B ####
 
 PR_psy<-PR.df_B
     PR_psy$Code<-paste(PR_psy$Species,PR_psy$Treatment,PR_psy$Parent.ID, PR_psy$Time.Point)
@@ -7418,14 +7836,10 @@ PR_psy<-PR.df_B
  
 ```
 #merging full physio 
-```{r} 
+```{r}  
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
  
-#prep metadata for by Parent.ID df for ordinations
-metaPhysio<-subset(meta, select= -X)#remove X from df
-metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
-metaPhysio<-subset(metaPhysio, select= -Frag.ID)#remove tank from df
-metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent.ID, metaPhysio$Time.Point)
+
 # #create duplicate T0 for H or A that isn't there for each parent. id
 # MetaT0<-metaPhysio #copy
 # MetaT0<-subset(MetaT0, Time.Point=="T0")
@@ -7440,9 +7854,11 @@ metaPhysio$Code<-paste(metaPhysio$Species,metaPhysio$Treatment,metaPhysio$Parent
 # 
 
 #MERGE
-PhysioData<-merge(metaPhysio,Biomass_psy, all.x=T)
+
+PhysioData<-merge(metaPhysio,Calcification_psy , all.x=T)
+PhysioData<-merge(PhysioData,Biomass_psy,all.x=T)
+
 PhysioData<-merge(PhysioData,CellCounts_psy,all.x=T)
-PhysioData<-merge(PhysioData,Calcification_psy,all.x=T)
 PhysioData<-merge(PhysioData,Chla_psy,all.x=T)
 PhysioData<-merge(PhysioData,Protein_psy,all.x=T)
 PhysioData<-merge(PhysioData,PAM_psy,all.x=T)
@@ -7455,35 +7871,44 @@ duplicated(PhysioData$Code)
 PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 
-#Remove Time 0
-pData.T1TF<-subset(PhysioData, Time.Point=="T1"|Time.Point=="TF")
+# PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
 
-pData.T1TF<-na.omit(pData.T1TF) #this removes 9 samples (partent/time/species)
-
-#deal with negatives by adding a constant (only P, R and P:R)
-pData.T1TF$Photosynthesis<-pData.T1TF$Photosynthesis+1
-pData.T1TF$Respiration<-pData.T1TF$Respiration+1
-pData.T1TF$P_R<-pData.T1TF$P_R+1
 
 
 
 ```
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data
-```{r}   
-Phy_nmds<-pData.T1TF
+```{r}    
+
+
+#Remove Time 0
+pData<-PhysioData
+
+pData<-na.omit(pData) #this removes 9 samples (partent/time/species)
+
+#deal with negatives by adding a constant (only P, R and P:R)
+pData$Photosynthesis<-pData$Photosynthesis+1
+pData$Respiration<-pData$Respiration+1
+pData$P_R<-pData$P_R+1
+
+Phy_nmds<-pData
+
+#make just for T1 and TF
+pData.T1TF<-subset(Phy_nmds, Time.Point=="T1"|Time.Point=="TF")
+
+pData.T0<-subset(Phy_nmds, Time.Point=="T0")
+
+
+
+
 #bray curtis presence-absense and abundance
-
-
-
-
-
 
 
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
-Phy_nmds.MDS<-metaMDS(Phy_nmds[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds.MDS<-metaMDS(Phy_nmds[,11:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS)
 Phy_nmds.MDS
 Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS)) #make the nMDS scores into a dataframe
@@ -7515,7 +7940,7 @@ ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("bc_all.pdf")
 
 
-#################### Subset PLOTS (do not rerun nmds) for T1 and TF visualizations
+#################### Subset PLOTS (do not rerun nmds) for T1 and TF visualizations ####
 
 
 Phy_nmds.MDS.scores_T1<-subset(Phy_nmds.MDS.scores, Time.Point=="T1")
@@ -7529,7 +7954,7 @@ ggplot(Phy_nmds.MDS.scores_T1, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()
 #ggsave("bc_all.pdf")
 
-#################### Subset PLOTS (do not rerun nmds) for TF visualizations
+#################### Subset PLOTS (do not rerun nmds) for TF visualizations####
 
 
 Phy_nmds.MDS.scores_TF<-subset(Phy_nmds.MDS.scores, Time.Point=="TF")
@@ -7543,7 +7968,7 @@ ggplot(Phy_nmds.MDS.scores_TF, aes(x = NMDS1, y = NMDS2)) +
   ggtitle("NMDS its2 Bray Curtis") +
   theme_classic()
 
-######### ok now do it by rerun
+######### ok now do it by rerun T1 #### 
 Phy_nmds.T1<-subset(Phy_nmds, Time.Point=="T1")
   set.seed(30)
 
@@ -7564,13 +7989,72 @@ Phy_nmds.MDS.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
 Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
 Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
 
+#make loading vectors
+vec.sp<-envfit(Phy_nmds.MDS.T1, Phy_nmds.T1[,8:16], perm=1000)
+vec.sp.df<-as.data.frame(vec.sp$vectors$arrows*sqrt(vec.sp$vectors$r))
+vec.sp.df$Code<-rownames(vec.sp.df)
+
+
+
 ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
   scale_color_manual(values=Sp.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+    geom_segment(data=vec.sp.df,aes(x=0,xend=NMDS1,y=0,yend=NMDS2),
+      arrow = arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE) + 
+    geom_text(data=vec.sp.df,aes(x=NMDS1,y=NMDS2,label=Code),size=5)+
   ggtitle("NMDS Physio T1") +
   theme_classic()
+
+
+######### ok now Rerun by T0 ####
+#keep time 0
+
+
+  set.seed(30)
+
+Phy_nmds.MDS.T0<-metaMDS(pData.T0[,(9:16)], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS"))
+stressplot(Phy_nmds.MDS.T0)
+Phy_nmds.MDS.T0.scores <- as.data.frame(scores(Phy_nmds.MDS.T0)) #make the nMDS scores into a dataframe
+Phy_nmds.MDS.T0 #get summary info, stress .19
+
+##Add variables that you want to test to your scores data sheet
+Phy_nmds.MDS.T0.scores$Parent.ID <- pData.T0$Parent.ID
+Phy_nmds.MDS.T0.scores$Treatment <- pData.T0$Treatment
+Phy_nmds.MDS.T0.scores$Species <- pData.T0$Species
+Phy_nmds.MDS.T0.scores$Time.Point <- pData.T0$Time.Point
+Phy_nmds.MDS.T0.scores$Code <- pData.T0$Code # move the code 
+Phy_nmds.MDS.T0.scores$Code2 <- paste(Phy_nmds.MDS.T0.scores$Species,Phy_nmds.MDS.T0.scores$Treatment) # create new code species, time point treatment 
+Phy_nmds.MDS.T0.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
+
+Phy_nmds.MDS.T0.scores$Code3 <- paste(Phy_nmds.MDS.T0.scores$Species,Phy_nmds.MDS.T0.scores$Treatment) # create new code species, time point treatment 
+Phy_nmds.MDS.T0.scores$Code3<-as.factor(Phy_nmds.MDS.T0.scores$Code3)
+
+#make loading vectors
+vec.spT0<-envfit(Phy_nmds.MDS.T0, pData.T0[,9:16], perm=1000)
+vec.sp.dfT0<-as.data.frame(vec.spT0$vectors$arrows*sqrt(vec.spT0$vectors$r))
+vec.sp.dfT0$traits<-rownames(vec.sp.dfT0)
+
+mult <- .25
+
+ggplot(Phy_nmds.MDS.T0.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+    # geom_segment(data=vec.sp.df,aes(x=0,xend=NMDS1,y=0,yend=NMDS2),
+    #   arrow = arrow(length = unit(0.25, "cm")),colour="grey",inherit_aes=FALSE) + 
+    # geom_text(data=vec.sp.dfT0,aes(x=NMDS1,y=NMDS2,label=traits),size=4)+
+  geom_segment(data = vec.sp.dfT0,
+                    aes(x = 0, xend = mult*NMDS1, y = 0, yend = mult*NMDS2),
+                    arrow = arrow(length = unit(0.25, "cm")), colour = "black") + #arrows for envfit.  doubled the length for similarity to the plot() function. NB check ?envfit regarding arrow length if not familiar with lengths
+       geom_text(data = vec.sp.dfT0, aes(x = mult*NMDS1, y = mult*NMDS2, label=traits),size = 3)+#labels the environmental variable arrows * "mult" as for the arrows
+  ggtitle("NMDS Physio T0") +
+  
+  theme_classic()
+
+plot(Phy_nmds.MDS.T0)
 
 ```
 #### By SPECIES. Make a NEW ordination for each species. 
