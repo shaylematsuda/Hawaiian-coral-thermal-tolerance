@@ -12,19 +12,20 @@ load("16s_phyloseq4HE.RData")
 ##Split data by treatment
 
 bac.exp <- subset_samples(Bac.seq, Type == "sample")
-##Fix sample data so that all T0 are labelled as "Ambient"
-#Concatenate & make a new data column to combine all data at T0 as "ambient"
+
+#The next steps are kinda useless unless we want to test t0 as ambient
+#Concatenate & make a new data column to combine all data at T0 as "Ambient" 
 sample_data(bac.exp)['Treat.Time'] <- paste(sample_data(bac.exp)$Treatment, sample_data(bac.exp)$Time.Point)
 View(as(sample_data(bac.exp), "data.frame"))
 #Revalue
 sample_data(bac.exp)$Treat.Time <- as.factor(sample_data(bac.exp)$Treat.Time)
 levels(sample_data(bac.exp)$Treat.Time)
-sample_data(bac.exp)$Treat.Time <- revalue(sample_data(bac.exp)$Treat.Time, c("Ambient T0" = "T0", "Ambient T1" = "T0", "Ambient TF" = "Ambient", "High T0" = "Ambient", 
+sample_data(bac.exp)$Treat.Time <- revalue(sample_data(bac.exp)$Treat.Time, c("Ambient T0" = "Ambient", "Ambient T1" = "Ambient", "Ambient TF" = "Ambient", "High T0" = "Ambient", 
                                                                               "High T1" = "High", "High TF" = "High"))
 levels(sample_data(bac.exp)$Treat.Time)
 
 ##Let's try it on just the T0 dataset between species
-t0 <- subset_samples(bac.exp, Treat.Time == "T0")
+t0 <- subset_samples(bac.exp, Treatment == "T0")
 t0 <- prune_taxa(taxa_sums(t0) > 0, t0)
 t0.otu <- as(otu_table(t0), "matrix")
 if(taxa_are_rows(t0)) {t0.otu <- t(t0.otu)}
