@@ -9,7 +9,8 @@ library(plyr)
 #source the ANCOM functions R script
 setwd("~/Documents/OSUDocs/Projects/ACE21/Hawaiian-coral-thermal-tolerance/Data/16s_analysis/")
 load("16s_phyloseq4HE.RData")
-source("ancom/procedure/ANCOM_functions.R")
+source("ancom/procedure/ANCOM_v2.1.R")
+source("ancom/procedure/ANCOM_v2.1_lme4.R")
 
 ##Set a colour scheme for the whole script
 #I kinda like these kelly colours from Becca Maher/Grace Klinges
@@ -17,6 +18,7 @@ kelly_colors = c('#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032
                  '#C2B280',  '#222222','#848482',  '#E68FAC', '#0067A5', 
                  '#F99379', '#604E97', '#F6A600', '#B3446C', '#DCD300', 
                  '#882D17', '#8DB600', '#654522', '#E25822', '#2B3D26')
+
 
 ##Pull out montipora Capitata and porites compressa (only two host species that showed sig differences between treatment)
 #Montipora capitata
@@ -39,11 +41,19 @@ pcomp.tf <- prune_taxa(taxa_sums(pcomp.tf) > 0, pcomp.tf)
 
 #Pavona varians
 pvar <- subset_samples(Bac.seq, Species == "Pavona_varians")
+pvar.t1 <- subset_samples(pvar, Time.Point == "T1")
+pvar.tf <- subset_samples(pvar, Time.Point == "TF")
 pvar <- prune_taxa(taxa_sums(pvar) > 0, pvar)
+pvar.t1 <- prune_taxa(taxa_sums(pvar.t1) > 0, pvar.t1)
+pvar.tf <- prune_taxa(taxa_sums(pvar.tf) > 0, pvar.tf)
 
 #Pocillopora acuta
 pacu <- subset_samples(Bac.seq, Species == "Pocillopora_acuta")
+pacu.t1 <- subset_samples(pacu, Time.Point == "T1")
+pacu.tf <- subset_samples(pacu, Time.Point == "TF")
 pacu <- prune_taxa(taxa_sums(pacu) > 0, pacu)
+pacu.t1 <- prune_taxa(taxa_sums(pacu.t1) > 0, pacu.t1)
+pacu.tf <- prune_taxa(taxa_sums(pacu.tf) > 0, pacu.tf)
 
 #Export OTU tables & transpose so taxa are rows
 OTU.mcap <- t(otu_table(mcap))
@@ -52,10 +62,15 @@ OTU.mcap.tf <- t(otu_table(mcap.tf))
 
 OTU.pcomp <- t(otu_table(pcomp))
 OTU.pcomp.t1 <- t(otu_table(pcomp.t1))
-OTU.pcomt.tf <- t(otu_table(pcomp.tf))
+OTU.pcomp.tf <- t(otu_table(pcomp.tf))
 
 OTU.pvar <- t(otu_table(pvar))
+OTU.pvar.t1 <- t(otu_table(pvar.t1))
+OTU.pvar.tf <- t(otu_table(pvar.tf))
+
 OTU.pacu <- t(otu_table(pacu))
+OTU.pacu.t1 <- t(otu_table(pacu.t1))
+OTU.pacu.tf <- t(otu_table(pacu.tf))
 
 ###ANCOM pipeline###
 ##Step 1: set all your parameters
@@ -94,18 +109,20 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- "Time.Point"
-rand_formula <- "~1|Parent.ID" #add in random effect 
-#The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
+adj_formula <- NULL
+rand_formula <- NULL #add in random effect 
+#The random effect is a problem when split up by time point because of singularities. 
+##Trialling changing source code to account for lmer from package lme4
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
 #Extract your data frames 
+#For all time points together
 resdf.mcap <- as.data.frame(res$out)
 figdf.mcap <- as.data.frame(res$fig$data)
 
-
+#Separate time points
 #Extract your data frames
 resdf.mcap.t1 <- as.data.frame(res$out)
 resdf.mcap.tf <- as.data.frame(res$out)
@@ -142,6 +159,15 @@ resdf.mcap <- merge(resdf.mcap, tax, by = "taxa_id")
 head(resdf.mcap)
 head(figdf.mcap)
 write.csv(resdf.mcap, "ancom/output/ancom_mcap_res.csv")
+
+#Extract the data for use in bubble plots
+mcap.true <- filter(resdf.mcap, detected_0.6 == "TRUE")
+mcap.otus <- (mcap.true$taxa_id)
+mcap.ra <- transform_sample_counts(mcap, function(x) x/ sum(x))
+mcap.ancom <- prune_taxa(mcap.otus,mcap.ra)
+mcap.ancom.melt <- psmelt(mcap.ancom)
+mcap.ancom.melt$top.group <- "differential"
+write.csv(mcap.ancom.melt, "ancom/output/mcap_ancom.csv")
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
@@ -201,11 +227,11 @@ meta_data <- sample_data(pcomp)
 
 ##If splitting by time point use the following:
 ##P comp T1
-#feature_table <- OTU.pcomp.t1
-#meta_data <- sample_data(pcomp.t1)
+feature_table <- OTU.pcomp.t1
+meta_data <- sample_data(pcomp.t1)
 ##P comp TF
-#feature_table <- OTU.pcomt.tf
-#meta_data <- sample_data(pcomp.tf)
+feature_table <- OTU.pcomp.tf
+meta_data <- sample_data(pcomp.tf)
 
 
 levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
@@ -228,8 +254,8 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- "Time.Point"
-rand_formula <- "~1|Parent.ID" #add in random effect 
+adj_formula <- NULL
+rand_formula <- NULL #add in random effect 
 #The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
@@ -239,24 +265,25 @@ res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha
 resdf.pcomp <- as.data.frame(res$out)
 figdf.pcomp <- as.data.frame(res$fig$data)
 View(resdf.pcomp)
+
 ##if splitting by time point do the following:
-#resdf.pcomp.t1 <- as.data.frame(res$out)
-#resdf.pcomp.tf <- as.data.frame(res$out)
+resdf.pcomp.t1 <- as.data.frame(res$out)
+resdf.pcomp.tf <- as.data.frame(res$out)
 
 ##rbind together
-#resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
+resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
 
 ## compiling results from each contrast for the figure
-#figdf.pcomp.t1 <- as.data.frame(res$fig$data)
-#figdf.pcomp.t1$contrast <- "T1"
-#rownames(figdf.pcomp.t1) <- NULL
+figdf.pcomp.t1 <- as.data.frame(res$fig$data)
+figdf.pcomp.t1$contrast <- "T1"
+rownames(figdf.pcomp.t1) <- NULL
 
-#figdf.pcomp.tf <- as.data.frame(res$fig$data)
-#figdf.pcomp.tf$contrast <- "TF"
-#rownames(figdf.pcomp.tf) <- NULL
+figdf.pcomp.tf <- as.data.frame(res$fig$data)
+figdf.pcomp.tf$contrast <- "TF"
+rownames(figdf.pcomp.tf) <- NULL
 
 ##rbind your two datasets together
-#figdf.pcomp<- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
+figdf.pcomp<- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
 
 # add taxonomy
 tax<-as(tax_table(pcomp),"matrix")
@@ -275,6 +302,15 @@ resdf.pcomp <- merge(resdf.pcomp, tax, by = "taxa_id")
 head(resdf.pcomp)
 head(figdf.pcomp)
 write.csv(resdf.pcomp, "ancom/output/ancom_pcomp_res.csv")
+
+##Extract the data to use in bubble plots
+pcomp.true <- filter(resdf.pcomp, detected_0.6 == "TRUE")
+pcomp.otus <- (pcomp.true$taxa_id)
+pcomp.ra <- transform_sample_counts(pcomp, function(x) x/ sum(x))
+pcomp.ancom <- prune_taxa(pcomp.otus,pcomp.ra)
+pcomp.ancom.melt <- psmelt(pcomp.ancom)
+pcomp.ancom.melt$top.group <- "differential"
+write.csv(pcomp.ancom.melt, "ancom/output/pcomp_ancom.csv")
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
@@ -320,9 +356,16 @@ ggsave("ancom/output/pcomp_ancom.pdf")
 
 ###Next for Pavona varians
 ##Step 1: set all your parameters
-#P comp all
+#P var all
 feature_table <- OTU.pvar
 meta_data <- sample_data(pvar)
+
+#Pvar T1
+feature_table <- OTU.pvar.t1
+meta_data <- sample_data(pvar.t1)
+#Pvar TF
+feature_table <- OTU.pvar.tf
+meta_data <- sample_data(pvar.tf)
 
 levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
 meta_data$Sample.ID <- as.character(meta_data$sample_name.1) #make sure your sample id is chr
@@ -344,16 +387,21 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- "Time.Point"
-rand_formula <- "~1|Parent.ID" #add in random effect 
+adj_formula <- NULL
+rand_formula <- NULL #add in random effect 
 #The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
 #extract data
-resdf.pvar <- as.data.frame(res$out)
-figdf.pvar <- as.data.frame(res$fig$data)
+resdf.pvar.t1 <- as.data.frame(res$out)
+resdf.pvar.tf <- as.data.frame(res$out)
+
+figdf.pvar.t1 <- as.data.frame(res$fig$data)
+figdf.pvar.tf <- as.data.frame(res$fig$data)
+#rbind together the data from both time points
+resdf.pvar <- rbind(resdf.pvar.t1, resdf.pvar.tf)
 
 # add taxonomy
 tax<-as(tax_table(pvar),"matrix")
@@ -372,6 +420,16 @@ resdf.pvar <- merge(resdf.pvar, tax, by = "taxa_id")
 head(resdf.pvar)
 head(figdf.pvar)
 write.csv(resdf.pvar, "ancom/output/ancom_pvar_res.csv")
+
+
+##Extract the data for use in bubble plots
+pvar.true <- filter(resdf.pvar, detected_0.6 == "TRUE")  #Hmm there are no "TRUE" taxa 
+pvar.otus <- (pvar.true$taxa_id)
+pvar.ra <- transform_sample_counts(pvar, function(x) x/ sum(x))
+pvar.ancom <- prune_taxa(pvar.otus, pvar.ra)
+pvar.ancom.melt <- psmelt(pvar.ancom)
+pvar.ancom.melt$top.group <- "differential"
+write.csv(pvar.ancom.melt, "ancom/output/pcomp_ancom.csv")
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
@@ -415,9 +473,16 @@ ggsave("ancom/output/pvar_ancom.pdf")
 
 ###Finally Pocillopora acuta!
 ##Step 1: set all your parameters
-#P comp all
+#P acu all
 feature_table <- OTU.pacu
 meta_data <- sample_data(pacu)
+
+#P acu T1
+feature_table <- OTU.pacu.t1
+meta_data <- sample_data(pacu.t1)
+#P acu TF
+feature_table <- OTU.pacu.tf
+meta_data <- sample_data(pacu.tf)
 
 levels(meta_data$Treatment) #Ambient first, High Second = High will be positive 
 meta_data$Sample.ID <- as.character(meta_data$sample_name.1) #make sure your sample id is chr
@@ -439,16 +504,20 @@ struc_zero <- pre_pro$structure_zeros
 main_var <- "Treatment"
 p_adj_method <- "BH" #default: Benjamini-Hochberg procedure
 alpha <- 0.05 #level of significance
-adj_formula <- "Time.Point"
-rand_formula <- "~1|Parent.ID" #add in random effect 
+adj_formula <- NULL
+rand_formula <- NULL #add in random effect 
 #The random effect is a problem when split up by time point. Is there a way to split after the ANCOM? 
 
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
 #extract data
-resdf.pacu <- as.data.frame(res$out)
+resdf.pacu.t1 <- as.data.frame(res$out)
+resdf.pacu.tf <- as.data.frame(res$out)
 figdf.pacu <- as.data.frame(res$fig$data)
+
+#rbind them together
+resdf.pacu <- rbind(resdf.pacu.t1, resdf.pacu.tf)
 
 # add taxonomy
 tax<-as(tax_table(pacu),"matrix")
@@ -467,6 +536,18 @@ resdf.pacu <- merge(resdf.pacu, tax, by = "taxa_id")
 head(resdf.pacu)
 head(figdf.pacu)
 write.csv(resdf.pacu, "ancom/output/ancom_pacu_res.csv")
+
+
+##Extract the data for use in bubble plots
+pacu.true <- filter(resdf.pacu, detected_0.6 == "TRUE")  #Hmm there are no "TRUE" taxa 
+pacu.otus <- (pacu.true$taxa_id)
+pacu.ra <- transform_sample_counts(pacu, function(x) x/ sum(x))
+pacu.ancom <- prune_taxa(pacu.otus, pacu.ra)
+pacu.ancom.melt <- psmelt(pacu.ancom)
+pacu.ancom.melt$top.group <- "differential"
+levels(pacu.ancom.melt$Time.Point)[levels(pacu.ancom.melt$Time.Point)=="F1"] <- "T1"
+write.csv(pacu.ancom.melt, "ancom/output/pcomp_ancom.csv")
+
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
