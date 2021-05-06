@@ -2726,7 +2726,7 @@ Endo.only_plot+facet_wrap(~Treatment)
 
 
 #Permanova UNIFRAC by ASV (no filter) to compare with above
-```{r}   
+```{r}    
  
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
