@@ -10,10 +10,10 @@ library(tidyr)
 setwd("~/Documents/OSUDocs/Projects/ACE21/Hawaiian-coral-thermal-tolerance/Data/16s_analysis/")
 
 #bring in data from ANCOM
-mcap.ancom.melt <- read.csv("ancom/output/mcap_ancom.csv")
-pcomp.ancom.melt <- read.csv("ancom/output/pcomp_ancom.csv")
+mcap.ancom.melt <- read.csv("ancom/output/by_treatment/mcap_ancom.csv")
+pcomp.ancom.melt <- read.csv("ancom/output/by_treatment/pcomp_ancom.csv")
 pvar.ancom.melt <- read.csv("") #So there are no significantly differentially abundant taxa for p var by treatment
-pacu.ancom.melt <- read.csv("ancom/output/pacu_ancom.csv")
+pacu.ancom.melt <- read.csv("ancom/output/by_treatment/pacu_ancom.csv")
 
 #bring in data from CORE
 mcap.core.melt <- read.csv("core_microbiome/output/mcap_core.csv")

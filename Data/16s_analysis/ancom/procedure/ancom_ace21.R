@@ -295,7 +295,7 @@ pcomp.ra <- transform_sample_counts(pcomp, function(x) x/ sum(x))
 pcomp.ancom <- prune_taxa(pcomp.otus,pcomp.ra)
 pcomp.ancom.melt <- psmelt(pcomp.ancom)
 pcomp.ancom.melt$top.group <- "differential"
-write.csv(pcomp.ancom.melt, "ancom/output/pcomp_ancom.csv")
+write.csv(pcomp.ancom.melt, "ancom/output/by_treatment/pcomp_ancom.csv")
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
@@ -413,7 +413,7 @@ pvar.ra <- transform_sample_counts(pvar, function(x) x/ sum(x))
 pvar.ancom <- prune_taxa(pvar.otus, pvar.ra)
 pvar.ancom.melt <- psmelt(pvar.ancom)
 pvar.ancom.melt$top.group <- "differential"
-write.csv(pvar.ancom.melt, "ancom/output/pcomp_ancom.csv")
+write.csv(pvar.ancom.melt, "ancom/output/by_treatment/pvar_ancom.csv")
 
 # Step 3: Volcano Plot
 # Number of taxa except structural zeros
@@ -525,7 +525,7 @@ pacu.ra <- transform_sample_counts(pacu, function(x) x/ sum(x))
 pacu.ancom <- prune_taxa(pacu.otus, pacu.ra)
 pacu.ancom.melt <- psmelt(pacu.ancom)
 pacu.ancom.melt$top.group <- "differential"
-write.csv(pacu.ancom.melt, "ancom/output/pcomp_ancom.csv")
+write.csv(pacu.ancom.melt, "ancom/output/by_treatment/pacu_ancom.csv")
 
 
 # Step 3: Volcano Plot
