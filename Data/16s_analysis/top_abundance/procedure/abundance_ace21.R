@@ -47,6 +47,7 @@ write.csv(pvar.abund.melt, "top_abundance/output/pvar_abund.csv")
 
 ##4. Pocillopora acuta
 pacu <- subset_samples(Bac.seq, Species == "Pocillopora_acuta")
+levels(sample_data(pacu)$Time.Point)[levels(sample_data(pacu)$Time.Point)=="F1"] <- "T1"
 pacu.ra <- transform_sample_counts(pacu, function(x) x/ sum(x))
 
 # Selecting top 10 OTUs
@@ -54,7 +55,6 @@ TopNOTUs = names(sort(taxa_sums(pacu.ra), TRUE)[1:10])
 pacu.abund = prune_taxa(TopNOTUs, pacu.ra)
 pacu.abund.melt <- psmelt(pacu.abund)
 pacu.abund.melt$top.group <- "abund"
-levels(pacu.abund.melt$Time.Point)[levels(pacu.abund.melt$Time.Point)=="F1"] <- "T1"
 write.csv(pacu.abund.melt, "top_abundance/output/pacu_abund.csv")
 
 
