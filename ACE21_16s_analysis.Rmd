@@ -321,7 +321,7 @@ Bac.seq.all<-Bac.seq
 
 ```
 # look at field samples. after you did this you now imported the field amples normaly
-```{r}
+```{r} 
 MetaDataFIELD<-read.csv("Data/sample.data_FIELD.csv") #run in physio script first
 MetaDataFIELD$Parent.ID<-as.factor(as.character(MetaDataFIELD$Parent.ID))
 MetaDataFIELD$Tank.num<-as.factor(as.character(MetaDataFIELD$Tank.num))
@@ -480,14 +480,29 @@ ggplot(scores.ord.u.field_RelA_stats.pacu, aes(x = NMDS1, y = NMDS2)) +
 ```
 
 
-Set up, Bac.s rela
-```{r}   
+#Set up, Bac.s rela
+```{r}     
 #make rel ativ e abundance df Bac.s
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
 Bac.seq.all<- transform_sample_counts(Bac.seq.all, function(x) x / sum(x) )  
 #heatmap
   #plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
+
+
+#t0
+Bac.s.rel.u.T0
+#make rel ativ e abundance df Bac.s
+Bac.s.rel.u.T0.rel <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #look at samp data
+Bac.seq.all.T0<- transform_sample_counts(Bac.s.rel.u.T0, function(x) x / sum(x) )  
+#heatmap
+  plot_heatmap(Bac.seq.all.T0, method = "NMDS", distance = "bray",sample.label="Species")# way too much data
+
+
+
+
+
+
 
 
 
@@ -516,7 +531,7 @@ Bac.seq.all<- transform_sample_counts(Bac.seq.all, function(x) x / sum(x) )
 ``` 
 For plotting only, subset the data: ok you can't figure this out jump to next chunk
 - Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample. https://bioconductor.riken.jp/packages/3.0/bioc/vignettes/phyloseq/inst/doc/phyloseq-basics.html
-```{r}    
+```{r}      
 library(genefilter)
 #df use counts not Rel A
 #tax glom should let you glom at Family
@@ -651,7 +666,7 @@ theme_set(theme_bw())
 #Let's try this again with vegan: THIS IS THE WAY to set up you FAMILY df AND Bray models
 USE THIS FOR STATS HELP:
 https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
-```{r} 
+```{r}  
 #from above
 #this works for fam level and relA. now we have 543 families
 phyFamTest2 <- Bac.s %>% 
@@ -982,11 +997,11 @@ pacu.f.bac.TF <- subset_samples(pacu.f.bac.T1F, Time.Point == "TF")
 http://bioconductor.riken.jp/packages/3.5/bioc/vignettes/phyloseq/inst/doc/phyloseq-analysis.html
 http://joey711.github.io/phyloseq-demo/unifrac.html
 http://joey711.github.io/phyloseq-demo/
-
+ 
 Weighted UniFrac - which does take into account differences in abundance of taxa between samples, but takes longer to calculate; and
 
 #Unweighted UniFrac FAMILY - which only considers the presence/absence of taxa between sample pairs.
-```{r}  
+```{r}   
 
 #look at your trees
 bac.prot <- subset_taxa(Bac.seqFam_stats.T1F, Phylum=="Proteobacteria")
@@ -1092,7 +1107,7 @@ Fam.samp.df <- as(sample_data(Bac.seqFam_stats.T1F), "data.frame") #sample df
     set.seed(30)    
       permutest(betadisper(Bac.fam.T1F, Fam.samp.df$Clade, type = "centroid")) #put in distance matrix
 
-############# mcap
+############# mcap ####
 
 #Mcap
 mcap.u.f.bac.T1F <- subset_samples(Bac.seqFam_stats.T1F, Species == "Montipora_capitata")
@@ -1147,10 +1162,10 @@ set.seed(30)
     permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Clade, type = "centroid")) #put in distance matrix
    set.seed(30)
     permutest(betadisper(u.mcap.u.f.TF, mcap.u.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
-
+ 
  # plotting only the top 10 FAMs    mcap.u.f.bac.T1F
     #Sort the Phyla by abundance and pick the top 5
-    top10P.names.mcap = sort(tapply(taxa_sums(mcap.u.f.bac.T1F), tax_table(mcap.u.f.bac.T1F)[, "Family"], sum), TRUE)[1:10]
+    top10P.names.mcap = sort(tapply(taxa_sums(mcap.u.f.bac.T1F), tax_table(mcap.u.f.bac.T1F)[, "Family"], mean), TRUE)[1:10]
       #Cut down the  data to only the top 10 Phyla
       mcap.u.f.bac.T1F.top10P = subset_taxa(mcap.u.f.bac.T1F, Family %in% names(top10P.names.mcap))
       
@@ -1440,7 +1455,7 @@ adonis(u.pvar.f.f.T1F ~ Treatment*Time.Point, data = pvar.f.f.samp.df.T1F) #adon
     permutest(betadisper(u.pvar.f.f.TF, pvar.f.f.samp.df.TF$Treatment, type = "centroid")) #put in distance matrix
 
  #try plotting only the top 10 FAMs  ####   
-    #Sort the Phyla by abundance and pick the top 5
+     #Sort the Phyla by abundance and pick the top 5
     top10P.names.Pvar = sort(tapply(taxa_sums(pvar.f.f.bac.T1F), tax_table(pvar.f.f.bac.T1F)[, "Family"], sum), TRUE)[1:11]
       #Cut down the  data to only the top 10 Phyla
       Pvar.u.f.bac.T1F.top10P = subset_taxa(pvar.f.f.bac.T1F, Family %in% names(top10P.names.Pvar))
@@ -2727,9 +2742,63 @@ Endo.only_plot+facet_wrap(~Treatment)
 
 #Permanova UNIFRAC by ASV (no filter) to compare with above
 ```{r}    
- 
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
+
+ #T0 only ####
+Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
+    Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.T0)
+#make unifrac matrix
+Bac.s.u.T0 <- phyloseq::distance(Bac.s.rel.u.T0, method = "wunifrac")
+s.u.samp.df <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #sample df
+  #adonis test
+set.seed(30)
+adonis(Bac.s.u.T0 ~ Species, data = s.u.samp.df)
+set.seed(30)    
+adonis(Bac.s.u.T0 ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
+
+     # Homogeneity of dispersion test  
+    set.seed(30)
+    t<-permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Treatment, type = "centroid")) 
+    
+  ball<-  betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")
+  TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
+
+ #AMBINET only ####
+Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u, Treatment=="Ambient")
+    Bac.s.rel.u.Amb = prune_taxa(taxa_sums(Bac.s.rel.u.Amb) > 0, Bac.s.rel.u.Amb) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.Amb)
+#make unifrac matrix
+Bac.s.u.Amb <- phyloseq::distance(Bac.s.rel.u.Amb, method = "wunifrac")
+s.u.samp.df <- as(sample_data(Bac.s.rel.u.Amb), "data.frame") #sample df
+  #adonis test
+set.seed(30)
+adonis(Bac.s.u.Amb ~ Species*Time.Point, data = s.u.samp.df)
+set.seed(30)    
+adonis(Bac.s.u.Amb ~ Species*Clade, data = s.u.samp.df)
+
+     # Homogeneity of dispersion test  
+    set.seed(30)
+    t<-permutest(betadisper(Bac.s.u.Amb, s.u.samp.df$Species, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(Bac.s.u.Amb, s.u.samp.df$Treatment, type = "centroid")) 
+    
+  ball<-  betadisper(Bac.s.u.Amb, s.u.samp.df$Species, type = "centroid")
+  TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
+
+
+
+
+
+
+
+
+
+
+#T1TF ####
 Bac.s.rel.u.T1F<-subset_samples(Bac.s.rel.u, Time.Point=="T1"|Time.Point=="TF")
     Bac.s.rel.u.T1F = prune_taxa(taxa_sums(Bac.s.rel.u.T1F) > 0, Bac.s.rel.u.T1F) #this removes any OTU with 0s
       sample_sums(Bac.s.rel.u.T1F)
@@ -2780,7 +2849,7 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
     
     
     
-############# mcap ####
+############# mcap #### 
 
 #Mcap
 mcap.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
@@ -2855,7 +2924,60 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
     set.seed(30)
     permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Code, type = "centroid")) 
     
+    
+#mcap ambient only all three times
+    mcap.u.bac.AmbT01F <- subset_samples(Bac.s.rel.u, Species == "Montipora_capitata")
+        mcap.u.bac.AmbT01F <- subset_samples(mcap.u.bac.AmbT01F, Treatment == "Ambient")
+  sample_sums(mcap.u.bac.AmbT01F)
+
+mcap.u.f.bac.AmbT01F = prune_taxa(taxa_sums(mcap.u.bac.AmbT01F) > 0, mcap.u.bac.AmbT01F) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.AmbT01F)
+    
+  mcap.u.AmbT01F <- phyloseq::distance(mcap.u.f.bac.AmbT01F, method = "wunifrac")
+     mcap.u.samp.df.AmbT01F <- as(sample_data(mcap.u.bac.AmbT01F), "data.frame")
+     mcap.u.samp.df.AmbT01F$Code<-paste(mcap.u.samp.df.AmbT01F$Treatment,mcap.u.samp.df.AmbT01F$Clade)
+    set.seed(30)
+    adonis(mcap.u.AmbT01F ~ Time.Point, data = mcap.u.samp.df.AmbT01F)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(mcap.u.AmbT01F, mcap.u.samp.df.AmbT01F$Time.Point, type = "centroid")) 
+  
+# Mcap Bac.s.rel.u.T0   only
+    mcap.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.T0)
+
+mcap.u.f.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.T0)
+    
+  mcap.u.T0 <- phyloseq::distance(mcap.u.f.bac.T0, method = "wunifrac")
+     mcap.u.samp.df.T0 <- as(sample_data(mcap.u.bac.T0), "data.frame")
+     mcap.u.samp.df.T0$Code<-paste(mcap.u.samp.df.T0$Treatment,mcap.u.samp.df.T0$Clade)
+    set.seed(30)
+    adonis(mcap.u.T0 ~ Clade, data = mcap.u.samp.df.T0)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(mcap.u.T0, mcap.u.samp.df.T0$Clade, type = "centroid")) 
+  
+  
+  
+  
+  
+  
+  
 ############ pcomp ####
+  #what endos are in here?
+  Bac.s.rel.u.Endo<-subset_samples(Bac.s.rel.u, Species=="Porites_compressa")
+Bac.s.rel.u.Endo.2 = subset_taxa(Bac.s.rel.u.Endo, Family=="Endozoicomonadaceae")
+OTUendo1 = as(otu_table(Bac.s.rel.u.Endo.2), "matrix")
+# transpose if necessary
+if(taxa_are_rows(Bac.s.rel.u.Endo.2)){OTUendo1 <- t(OTUendo1)}
+# Coerce to data.frame
+OTUendodf = as.data.frame(OTUendo1)  
+write.csv(OTUendodf,"OTUendodf.csv")   
+    
+    
 #Pcomp
 pcomp.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Porites_compressa")
 pcomp.u.bac.T1F = prune_taxa(taxa_sums(pcomp.u.bac.T1F) > 0, pcomp.u.bac.T1F) #this removes any OTU with 0s
@@ -2896,11 +3018,20 @@ pcomp.u.bac.TF <- subset_samples(pcomp.u.bac.T1F, Time.Point == "TF")
     set.seed(30)
    adonis(pcomp.u.T1 ~ Clade*Treatment, data = pcomp.u.samp.df.T1)  
  # Homogeneity of dispersion test  
+   pcomp.u.samp.df.T1$Code<-paste(pcomp.u.samp.df.T1$Treatment,pcomp.u.samp.df.T1$Clade)
     set.seed(30)
     permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
     permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Treatment, type = "centroid")) 
-     set.seed(30)
+       set.seed(30)
+    permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Code, type = "centroid")) 
+    
+     ## Tukey's Honest Significant Differences
+  mod<-  (betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Code, type = "centroid"))
+  mod.HSD <- TukeyHSD(mod)
+  plot(mod.HSD)
+    
+    set.seed(30)
     permutest(betadisper(pcomp.u.T1, pcomp.u.samp.df.T1$Code, type = "centroid")) 
 
 #TF
@@ -2912,14 +3043,73 @@ pcomp.u.TF <- phyloseq::distance(pcomp.u.bac.TF, method = "wunifrac")
      set.seed(30)
     adonis(pcomp.u.TF ~ Clade*Treatment, data = pcomp.u.samp.df.TF)
   # Homogeneity of dispersion test  
+       pcomp.u.samp.df.TF$Code<-paste(pcomp.u.samp.df.TF$Treatment,pcomp.u.samp.df.TF$Clade)
+
     set.seed(30)
     permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Clade, type = "centroid")) 
    set.seed(30)
     permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Treatment, type = "centroid")) 
-    set.seed(30)
+     set.seed(30)
     permutest(betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Code, type = "centroid")) 
+mod<-  (betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Code, type = "centroid"))
+  mod.HSD <- TukeyHSD(mod)
+  plot(mod.HSD)
     
+
+
+# Pcmp Bac.s.rel.u.T0   only
+    pcomp.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.T0)
+
+pcomp.u.f.bac.T0 = prune_taxa(taxa_sums(pcomp.u.bac.T0) > 0, pcomp.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.T0)
     
+  pcomp.u.T0 <- phyloseq::distance(pcomp.u.f.bac.T0, method = "wunifrac")
+     pcomp.u.samp.df.T0 <- as(sample_data(pcomp.u.bac.T0), "data.frame")
+     pcomp.u.samp.df.T0$Code<-paste(pcomp.u.samp.df.T0$Treatment,pcomp.u.samp.df.T0$Clade)
+    set.seed(30)
+    adonis(pcomp.u.T0 ~ Clade, data = pcomp.u.samp.df.T0)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pcomp.u.T0, pcomp.u.samp.df.T0$Clade, type = "centroid")) 
+  
+
+#Ambient only !!!
+    pcomp.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Porites_compressa") #all pcomp
+      
+    # pull out otu and tax
+    tax  = tax_table(pcomp.u.bac.AllTime)
+    OTU = otu_table(pcomp.u.bac.AllTime)
+    tree=phy_tree(pcomp.u.bac.AllTime)
+  # sample data
+  sd = sample_data(pcomp.u.bac.AllTime)
+  sd$Treatment<-as.character(sd$Treatment)
+  
+  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
+  sd$Treatment<-as.factor(sd$Treatment)
+
+  pcomp.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
+  pcomp.u.bac.Alltime2.sd <- as(sample_data(pcomp.u.bac.Alltime2), "data.frame") #create sample data frame to view
+
+  pcomp.u.bac.Amb <- subset_samples(pcomp.u.bac.Alltime2, Treatment == "Ambient")
+
+  sample_sums(pcomp.u.bac.Amb)
+
+pcomp.u.f.bac.Amb = prune_taxa(taxa_sums(pcomp.u.bac.Amb) > 0, pcomp.u.bac.Amb) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.Amb)
+    
+  pcomp.u.Amb <- phyloseq::distance(pcomp.u.f.bac.Amb, method = "wunifrac")
+     pcomp.u.samp.df.Amb <- as(sample_data(pcomp.u.f.bac.Amb), "data.frame")
+     pcomp.u.samp.df.Amb$Code<-paste(pcomp.u.samp.df.Amb$Treatment,pcomp.u.samp.df.Amb$Clade)
+    
+     set.seed(30)
+    adonis(pcomp.u.Amb ~ Clade, data = pcomp.u.samp.df.Amb)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pcomp.u.Amb, pcomp.u.samp.df.Amb$Clade, type = "centroid")) 
+  
     
 ######### pvar ####
 pvar.u.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pavona_varians")
@@ -2995,6 +3185,67 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
     set.seed(30)
     permutest(betadisper(pvar.u.u.TF, pvar.u.u.samp.df.TF$Code, type = "centroid")) 
 
+    
+
+# Pvar Bac.s.rel.u.T0   only ####
+    pvar.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.T0)
+
+pvar.u.f.bac.T0 = prune_taxa(taxa_sums(pvar.u.bac.T0) > 0, pvar.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.T0)
+    
+  pvar.u.T0 <- phyloseq::distance(pvar.u.f.bac.T0, method = "wunifrac")
+     pvar.u.samp.df.T0 <- as(sample_data(pvar.u.bac.T0), "data.frame")
+     pvar.u.samp.df.T0$Code<-paste(pvar.u.samp.df.T0$Treatment,pvar.u.samp.df.T0$Clade)
+    set.seed(30)
+    adonis(pvar.u.T0 ~ Clade, data = pvar.u.samp.df.T0)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pvar.u.T0, pvar.u.samp.df.T0$Clade, type = "centroid")) 
+      
+#Ambient only !!! ####
+    pvar.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Pavona_varians") #all pvar
+      
+    # pull out otu and tax
+    tax  = tax_table(pvar.u.bac.AllTime)
+    OTU = otu_table(pvar.u.bac.AllTime)
+    tree=phy_tree(pvar.u.bac.AllTime)
+  # sample data
+  sd = sample_data(pvar.u.bac.AllTime)
+  sd$Treatment<-as.character(sd$Treatment)
+  
+  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
+  sd$Treatment<-as.factor(sd$Treatment)
+
+  pvar.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
+  pvar.u.bac.Alltime2.sd <- as(sample_data(pvar.u.bac.Alltime2), "data.frame") #create sample data frame to view
+
+  pvar.u.bac.Amb <- subset_samples(pvar.u.bac.Alltime2, Treatment == "Ambient")
+
+  sample_sums(pvar.u.bac.Amb)
+
+pvar.u.f.bac.Amb = prune_taxa(taxa_sums(pvar.u.bac.Amb) > 0, pvar.u.bac.Amb) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.Amb)
+    
+  pvar.u.Amb <- phyloseq::distance(pvar.u.f.bac.Amb, method = "wunifrac")
+     pvar.u.samp.df.Amb <- as(sample_data(pvar.u.f.bac.Amb), "data.frame")
+     pvar.u.samp.df.Amb$Code<-paste(pvar.u.samp.df.Amb$Treatment,pvar.u.samp.df.Amb$Clade)
+    
+     set.seed(30)
+    adonis(pvar.u.Amb ~ Clade, data = pvar.u.samp.df.Amb)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pvar.u.Amb, pvar.u.samp.df.Amb$Clade, type = "centroid")) 
+      
+    
+    
+    
+    
+    
+    
+    
 ####### pacuta ####
 
 #Pacu ####
@@ -3069,11 +3320,142 @@ pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
     permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Treatment, type = "centroid")) 
      set.seed(30)
     permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Code, type = "centroid")) 
+    
+    
+ # pacu Bac.s.rel.u.T0   only ####
+    pacu.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
+  sample_sums(pacu.u.bac.T0)
+
+pacu.u.f.bac.T0 = prune_taxa(taxa_sums(pacu.u.bac.T0) > 0, pacu.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.T0)
+    
+  pacu.u.T0 <- phyloseq::distance(pacu.u.f.bac.T0, method = "wunifrac")
+     pacu.u.samp.df.T0 <- as(sample_data(pacu.u.bac.T0), "data.frame")
+     pacu.u.samp.df.T0$Code<-paste(pacu.u.samp.df.T0$Treatment,pacu.u.samp.df.T0$Clade)
+    set.seed(30)
+    adonis(pacu.u.T0 ~ Clade, data = pacu.u.samp.df.T0)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pacu.u.T0, pacu.u.samp.df.T0$Clade, type = "centroid"))    
+    
+#Ambient only !!!
+    pacu.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Pocillopora_acuta") #all pacu
+      
+    # pull out otu and tax
+    tax  = tax_table(pacu.u.bac.AllTime)
+    OTU = otu_table(pacu.u.bac.AllTime)
+    tree=phy_tree(pacu.u.bac.AllTime)
+  # sample data
+  sd = sample_data(pacu.u.bac.AllTime)
+  sd$Treatment<-as.character(sd$Treatment)
+  
+  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
+  sd$Treatment<-as.factor(sd$Treatment)
+
+  pacu.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
+  pacu.u.bac.Alltime2.sd <- as(sample_data(pacu.u.bac.Alltime2), "data.frame") #create sample data frame to view
+
+  pacu.u.bac.Amb <- subset_samples(pacu.u.bac.Alltime2, Treatment == "Ambient")
+
+  sample_sums(pacu.u.bac.Amb)
+
+pacu.u.f.bac.Amb = prune_taxa(taxa_sums(pacu.u.bac.Amb) > 0, pacu.u.bac.Amb) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.Amb)
+    
+  pacu.u.Amb <- phyloseq::distance(pacu.u.f.bac.Amb, method = "wunifrac")
+     pacu.u.samp.df.Amb <- as(sample_data(pacu.u.f.bac.Amb), "data.frame")
+     pacu.u.samp.df.Amb$Code<-paste(pacu.u.samp.df.Amb$Treatment,pacu.u.samp.df.Amb$Clade)
+    
+     set.seed(30)
+    adonis(pacu.u.Amb ~ Clade, data = pacu.u.samp.df.Amb)
+
+  # Homogeneity of dispersion test  
+    set.seed(30)
+    permutest(betadisper(pacu.u.Amb, pacu.u.samp.df.Amb$Clade, type = "centroid")) 
+      
+        
+    
+    
+    
+    
+    
+    
 ```
 Unifrac NMDS
-```{r}
- 
+```{r} 
+ Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
+#T0 only 
+Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
+    Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
+
+unifrac.all.T0 <- ordinate(Bac.s.rel.u.T0, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+stressplot(unifrac.all.T0)
+scores.ord.u_RelA_stats.T0<-as.data.frame(cbind(vegan::scores(unifrac.all.T0, display="sites"))) # these are "points" ask hannah 
+     unifrac.all.sd.T0 <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #sample df
+
+scores.ord.u_RelA_stats.T0$Treatment <- unifrac.all.sd.T0$Treatment
+scores.ord.u_RelA_stats.T0$Species <- unifrac.all.sd.T0$Species
+scores.ord.u_RelA_stats.T0$Clade <- unifrac.all.sd.T0$Clade
+scores.ord.u_RelA_stats.T0$Code <- paste(scores.ord.u_RelA_stats.T0$Clade, scores.ord.u_RelA_stats.T0$Species)
+
+
+
+ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS 16s bray T0") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+ # stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
+  ggtitle("NMDS 16s unifrac T0") +
+  theme_classic()+
+  facet_wrap(~Species)
+
+
+#AMBIENT only 
+Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u, Treatment=="Ambient")
+    Bac.s.rel.u.Amb = prune_taxa(taxa_sums(Bac.s.rel.u.Amb) > 0, Bac.s.rel.u.Amb) #this removes any OTU with 0s
+
+unifrac.all.Amb <- ordinate(Bac.s.rel.u.Amb, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+stressplot(unifrac.all.Amb)
+scores.ord.u_RelA_stats.Amb<-as.data.frame(cbind(vegan::scores(unifrac.all.Amb, display="sites"))) # these are "points" ask hannah 
+     unifrac.all.sd.Amb <- as(sample_data(Bac.s.rel.u.Amb), "data.frame") #sample df
+
+scores.ord.u_RelA_stats.Amb$Treatment <- unifrac.all.sd.Amb$Treatment
+scores.ord.u_RelA_stats.Amb$Species <- unifrac.all.sd.Amb$Species
+scores.ord.u_RelA_stats.Amb$Clade <- unifrac.all.sd.Amb$Clade
+scores.ord.u_RelA_stats.Amb$Code <- paste(scores.ord.u_RelA_stats.Amb$Clade, scores.ord.u_RelA_stats.Amb$Species)
+
+
+
+ggplot(scores.ord.u_RelA_stats.Amb, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+  ggtitle("NMDS 16s bray Ambient only") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+ggplot(scores.ord.u_RelA_stats.Amb, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+ # stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
+  ggtitle("NMDS 16s unifrac T0") +
+  theme_classic()+
+  facet_wrap(~Species)
 
 #Ordination NMDS for all species, T1Tf ####
 unifrac.all <- ordinate(Bac.s.rel.u.T1F, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
@@ -3140,7 +3522,7 @@ ggplot(scores.ord.u_RelA_stats.PacuPvar.Amb, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-#### mcap ##### 
+#### mcap #####  
 ## create palette for parent.ID and treatments
 mcap.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "#4575B4", "High" = "#D73027",
@@ -3249,7 +3631,36 @@ ggplot(ord.mcap.u.TF.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle("M. capitata TF") +
   theme_classic()
 
+
+
+
+#Ambient only mcap.u.bac.AmbT01F
+
+set.seed(30)
+ord.u.mcap.AmbT01F <- ordinate(mcap.u.bac.AmbT01F, "NMDS",  "unifrac",weighted=TRUE,set.seed(30)) 
+stressplot(ord.u.mcap.AmbT01F)
+ord.mcap.u.AmbT01F.df<-as.data.frame(cbind(vegan::scores(ord.u.mcap.AmbT01F, display="sites"))) # these are "points" ask hannah 
+ord.mcap.u.AmbT01F.df$Treatment <- mcap.u.samp.df.AmbT01F$Treatment
+ord.mcap.u.AmbT01F.df$Parent.ID <- mcap.u.samp.df.AmbT01F$Parent.ID
+ord.mcap.u.AmbT01F.df$Time.Point <- mcap.u.samp.df.AmbT01F$Time.Point
+ord.mcap.u.AmbT01F.df$CladeTreat <- as.factor(paste(mcap.u.samp.df.AmbT01F$Clade,mcap.u.samp.df.AmbT01F$Treatment))
+ord.mcap.u.AmbT01F.df$Code <- as.factor(paste(mcap.u.samp.df.AmbT01F$Parent.ID,mcap.u.samp.df.AmbT01F$Treatment))
+ord.mcap.u.AmbT01F.df$Code2 <- paste(mcap.u.samp.df.AmbT01F$Clade,mcap.u.samp.df.AmbT01F$Treatment)
+ord.mcap.u.AmbT01F.df$Code2 <- as.factor(ord.mcap.u.AmbT01F.df$Code2)
+
+ggplot(ord.mcap.u.AmbT01F.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Time.Point, shape=Time.Point,size = 4) )+
+  #scale_color_manual(values=mcap.u.Parent.colors)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Time.Point, lty=factor(Time.Point))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("M. capitata amb only ") +
+  theme_classic()
+
+
+
 ####Pcomp ####
+
 pcomp.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue",                         "Ambient" = "#4575B4", "High" = "#D73027","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
 
@@ -3841,7 +4252,7 @@ ggplot(ord.pcomp.u.TF.df, aes(x = NMDS1, y = NMDS2)) +
 ```
 Unifrac with field samps
 ```{r}
- # Overhead view including field ####
+ # Overhead view including field #### 
 unifrac.all.field <- ordinate(Bac.seq.all, method="NMDS", "unifrac",weighted=TRUE, set.seed(40)) 
 stressplot(unifrac.all.field)
 scores.ord.u_ALLfield_stats<-as.data.frame(cbind(vegan::scores(unifrac.all.field, display="sites"))) 
@@ -3865,7 +4276,7 @@ pf<-ggplot(scores.ord.u_ALLfield_stats, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("bc_all.pdf")
 pf+facet_wrap(~Species)
 
-```
+``` 
 
 
 
@@ -4203,7 +4614,7 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 #Pcomp
 ASV
-```{r}  
+```{r}   
 #try glom use raw counts Bac.s
 Pcomp_Bac.s<-subset_samples(Bac.s, Species=="Porites_compressa")
 
@@ -7872,13 +8283,13 @@ pairs(emm)
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances   
 df:Bac.s and
-```{r}        
+```{r}         
 #trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
 Bac.al.alpha<-Bac.s #make a copy of df, use COUNTS
 
-Bac.al.alpha<-subset_samples(Bac.al.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
+#Bac.al.alpha<-subset_samples(Bac.al.alpha, Time.Point=="T1" |Time.Point=="TF")  # ONLY KEEP T1 and TF!
 Bac.al.alpha2 <- prune_taxa(taxa_sums(Bac.al.alpha) > 0, Bac.al.alpha) #prune taxa 0s
 Bac.al.alpha2.sd <- as(sample_data(Bac.al.alpha2), "data.frame") #create sample data frame to view
 
@@ -7903,6 +8314,9 @@ erich.tab2<-erich.tab[-c(2:4,6:8,10:22)] #keep the cols you need
 
 
 #all species - to show significance and to subset
+  erich.tab2T0 <- subset(erich.tab2, Time.Point=="T0")#make T0 to use below
+
+erich.tab2 <- subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
 
 #ANOVA
 #shannon
@@ -8049,21 +8463,42 @@ hist(erich.tab2.pacu$observed)
 
 ```
 #Observed Richness 
-```{r}  
+```{r}   
 #observed   
  #log it
+#T0
+hist(erich.tab2T0$observed)
+ggqqplot(erich.tab2T0$observed)
+erich.tab2T0$observed_log<-log10(erich.tab2T0$observed)
+ hist(erich.tab2T0$observed_log)
 
- 
-
-observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2) #adding tank is singularity
+observed_alpha_modT0<-lmer(observed_log ~ Species*+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
 set.seed(30)
-  anova(observed_alpha_mod) 
-  qqPlot(residuals(observed_alpha_mod)) 
-  emm<-emmeans(observed_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
+  anova(observed_alpha_modT0) 
+  qqPlot(residuals(observed_alpha_modT0)) 
+  emm<-emmeans(observed_alpha_modT0,  ~ Species, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
-  observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2) #adding tank is singularity
+
+
+
+ 
+ 
+ 
+ 
+ erich.tab2.T1F<-subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
+ 
+ #T1TF
+observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.T1F) #adding tank is singularity
+set.seed(30)
+  anova(observed_alpha_mod) 
+  qqPlot(residuals(observed_alpha_mod)) 
+  emm<-emmeans(observed_alpha_mod,  ~ Species*Time.Point*Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.T1F) #adding tank is singularity
   anova(observed_alpha_mod) 
   qqPlot(residuals(observed_alpha_mod)) 
   emm<-emmeans(observed_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -8077,14 +8512,15 @@ set.seed(30)
 ggqqplot(erich.tab2.mcap$observed_log)
   
  #t1TF
-  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
+  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1F) #adding tank is singularity
   anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
   emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
-  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
+  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1F) #adding tank is singularity
   anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
   emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
@@ -8092,7 +8528,7 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pairs(emm)
   
  #t1
-  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcap.T1F, Time.Point=="T1")
 
   Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
   anova(Mcap_alpha_mod) 
@@ -8104,12 +8540,12 @@ ggqqplot(erich.tab2.mcap$observed_log)
   Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
   anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
   #tf
-  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcap.T1F, Time.Point=="TF")
 
    Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
   anova(Mcap_alpha_mod) 
@@ -8125,18 +8561,21 @@ ggqqplot(erich.tab2.mcap$observed_log)
   cld(emm)
   pairs(emm)
 
+
+  
   
 ####### PCOMP only ####
-   
+   erich.tab2.pcomp.T1F<-subset(erich.tab2.pcomp, Time.Point=="T1"|Time.Point=="TF")
+
   #t1TF
-  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.T1F) 
   anova(pcomp_alpha_mod) 
   qqPlot(residuals(pcomp_alpha_mod)) 
   emm<-emmeans(pcomp_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
-  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
+  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.T1F) 
   anova(pcomp_alpha_mod) 
   qqPlot(residuals(pcomp_alpha_mod)) 
   emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
@@ -8281,8 +8720,8 @@ ggqqplot(erich.tab2.mcap$observed_log)
   pairs(emm)
 ```
 alpha Observed Plots, no clade
-```{r} 
-#Means 
+```{r}  
+#Means  
 observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
                  mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -8583,7 +9022,19 @@ evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment+(
   cld(emm)
   pairs(emm)
 
+#T0
+hist(erich.tab2T0$evenness_pielou)
+ggqqplot(erich.tab2T0$evenness_pielou)
 
+
+observed_alpha_modT0<-lmer(evenness_pielou ~ Species*+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
+set.seed(30)
+  anova(observed_alpha_modT0) 
+  qqPlot(residuals(observed_alpha_modT0)) 
+  emm<-emmeans(observed_alpha_modT0,  ~ Species, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 
 ################Mcap only
  #t1TF
