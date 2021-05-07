@@ -312,7 +312,7 @@ dat_ann = data.frame(x = min(figdf.pcomp$x), y = cut_off["detected_0.6"], label 
 x = tapply(figdf.pcomp$y, figdf.pcomp$Genus, function(x) max(x))
 x = sort(x, TRUE)
 cut_off #View cutoff value
-x #View CLR ratios and pick the ones above cut-off to add below
+x #View W values and pick the ones above cut-off to add below
 figdf.pcomp$Genus = factor(as.character(figdf.pcomp$Genus), levels=names(x))
 figdf.pcomp$col_genus <- figdf.pcomp$Genus
 

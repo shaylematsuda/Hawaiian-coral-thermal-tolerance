@@ -38,6 +38,7 @@ mcap.list <- as.list(mcap.toget$Sample)
 #merge all data
 mcap.top <- rbind(mcap.ancom.melt, mcap.core.melt, mcap.abund.melt)
 mcap.top <- mcap.top %>% unite(OTU, Genus, col='otu_genus',sep='-')
+write.csv(mcap.top, "bac_figures/output/mcap_top_taxa.csv")
 
 p.mcap <- ggplot(mcap.top, aes(x = Sample, y = otu_genus, size = Abundance, color = Time.Point, shape = Treatment)) +
   geom_point() +
@@ -62,9 +63,9 @@ pcomp.toget <- filter(pcomp.toget, OTU == "Otu00002")
 pcomp.list <- as.list(pcomp.toget$Sample)
 
 #merge all data
-pcomp.top <- rbind(pcomp.ancom.melt, pcomp.core.melt[,2:22], pcomp.abund.melt)
+pcomp.top <- rbind(pcomp.ancom.melt, pcomp.core.melt, pcomp.abund.melt)
 pcomp.top <- pcomp.top %>% unite(OTU, Genus, col='otu_genus',sep='-')
-
+write.csv(pcomp.top, "bac_figures/output/pcomp_top_taxa.csv")
 
 p.pcomp <- ggplot(pcomp.top, aes(x = Sample, y = otu_genus, size = Abundance, color = Time.Point, shape = Treatment)) +
   geom_point() +
@@ -91,6 +92,7 @@ pvar.list <- as.list(pvar.toget$Sample)
 #merge all data
 pvar.top <- rbind(pvar.core.melt, pvar.abund.melt)
 pvar.top <- pvar.top %>% unite(OTU, Genus, col='otu_genus',sep='-')
+write.csv(pvar.top, "bac_figures/output/pvar_top_taxa.csv")
 
 p.pvar<- ggplot(pvar.top, aes(x = Sample, y = otu_genus, size = Abundance, color = Time.Point, shape = Treatment)) +
   geom_point() +
@@ -118,11 +120,16 @@ pacu.list <- as.list(pacu.toget$Sample)
 #merge all data
 pacu.ancom.melt$X <- rownames(pacu.ancom.melt) #apparently ancom doesn't have an "X" variable (but it's a dummy variable so it's fine to add or remove)
 pacu.abund.melt$X <- rownames(pacu.abund.melt)
+pacu.ancom.melt$X <- NULL
+pacu.ancom.melt$X.1 <- NULL
+pacu.abund.melt$X <- NULL
+pacu.core.melt$X <- NULL
 pacu.top <- rbind(pacu.ancom.melt, pacu.core.melt, pacu.abund.melt)
 ##NA generated..but I can't find it in the dataframe???
 
 #Add a column to label by OTU and by genus so we can have taxonomic annotation
 pacu.top <- pacu.top %>% unite(OTU, Genus, col='otu_genus',sep='-')
+write.csv(pacu.top, "bac_figures/output/pacu_top_taxa.csv")
 
 p.pacu <- ggplot(pacu.top, aes(x = Sample, y = otu_genus, size = Abundance, color = Time.Point, shape = Treatment)) +
   geom_point() +
