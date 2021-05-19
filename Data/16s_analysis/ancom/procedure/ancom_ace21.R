@@ -122,31 +122,62 @@ res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha
              adj_formula, rand_formula)
 
 #Extract your data frames 
+
 #For all time points together
 #resdf.mcap <- as.data.frame(res$out)
 #figdf.mcap <- as.data.frame(res$fig$data)
 
-#Separate time points
-#Extract your data frames
+##T1
+#Extract your dataframes
 resdf.mcap.t1 <- as.data.frame(res$out)
-resdf.mcap.tf <- as.data.frame(res$out)
-
-#rbind together
-resdf.mcap <- rbind(resdf.mcap.t1, resdf.mcap.tf)
-
-# compiling results from each contrast for the figure
 figdf.mcap.t1 <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_t1 = ifelse(is.null(struc_zero), nrow(figdf.mcap.t1), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_t1 = c(0.9 * (n_taxa_t1 -1), 0.8 * (n_taxa_t1 -1), 0.7 * (n_taxa_t1 -1), 0.6 * (n_taxa_t1 -1))
+names(cut_off_t1) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.mcap.t1$contrast <- "T1"
+figdf.mcap.t1$detected_0.6 <- "240.6"
 rownames(figdf.mcap.t1) <- NULL
 
+##Do the same for TF
+resdf.mcap.tf <- as.data.frame(res$out)
 figdf.mcap.tf <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_tf = ifelse(is.null(struc_zero), nrow(figdf.mcap.tf), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_tf = c(0.9 * (n_taxa_tf -1), 0.8 * (n_taxa_tf -1), 0.7 * (n_taxa_tf -1), 0.6 * (n_taxa_tf -1))
+names(cut_off_tf) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.mcap.tf$contrast <- "TF"
+figdf.mcap.tf$detected_0.6 <- "89.4"
 rownames(figdf.mcap.tf) <- NULL
 
-#rbind your two datasets together
+#Combine your two time points into one dataframe
+resdf.mcap <- rbind(resdf.mcap.t1, resdf.mcap.tf)
 figdf.mcap <- rbind(figdf.mcap.t1, figdf.mcap.tf)
 
-##Add taxonomy
+##Export the data as a data frame
+write.csv(resdf.mcap, "ancom/output/ancom_mcap_res.csv")
+write.csv(figdf.mcap, "ancom/output/ancom_mcap_figdata.csv")
+
+##Extract the data for use in bubble plots (see figures_ace21.R script)
+mcap.true <- filter(resdf.mcap, detected_0.6 == "TRUE")
+mcap.otus <- (mcap.true$taxa_id)
+mcap.ra <- transform_sample_counts(mcap, function(x) x/ sum(x))
+mcap.ancom <- prune_taxa(mcap.otus,mcap.ra)
+mcap.ancom.melt <- psmelt(mcap.ancom)
+mcap.ancom.melt$top.group <- "differential"
+write.csv(mcap.ancom.melt, "ancom/output/mcap_ancom.csv")
+
+##Step 3. Volcano Plot
+
+#Add taxonomic names
 tax<-as(tax_table(mcap),"matrix")
 #head(tax)
 tax<-as.data.frame(tax)
@@ -160,31 +191,12 @@ dim(tax)
 figdf.mcap <- merge(figdf.mcap,tax, by = "taxa_id")
 resdf.mcap <- merge(resdf.mcap, tax, by = "taxa_id")
 
-##Export the data as a data frame
-write.csv(resdf.mcap, "ancom/output/ancom_mcap_res.csv")
-write.csv(figdf.mcap, "ancom/output/ancom_mcap_figdata.csv")
+#Make sure your detected_0.6 level is a numerical vector
+figdf.mcap$detected_0.6 <- as.numeric(figdf.mcap$detected_0.6)
+#Create annotation data for figure
+dat_ann = data.frame(x = min(figdf.mcap$x), y = figdf.mcap$detected_0.6, label = "W[0.6]")
 
-##Extract the data for use in bubble plots
-mcap.true <- filter(resdf.mcap, detected_0.6 == "TRUE")
-mcap.otus <- (mcap.true$taxa_id)
-mcap.ra <- transform_sample_counts(mcap, function(x) x/ sum(x))
-mcap.ancom <- prune_taxa(mcap.otus,mcap.ra)
-mcap.ancom.melt <- psmelt(mcap.ancom)
-mcap.ancom.melt$top.group <- "differential"
-write.csv(mcap.ancom.melt, "ancom/output/mcap_ancom.csv")
-
-## Step 3: Volcano Plot
-# Number of taxa except structural zeros
-n_taxa = ifelse(is.null(struc_zero), nrow(figdf.mcap), sum(apply(struc_zero, 1, sum) == 0))
-# Cutoff values for declaring differentially abundant taxa
-cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
-names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
-
-# Annotation data
-dat_ann = data.frame(x = min(figdf.mcap$x), y = cut_off["detected_0.6"], label = "W[0.6]")
-
-##Specialised Plot
-# order genus
+#Order the genera and name only significant genera (all else as OTHER)
 x = tapply(figdf.mcap$y, figdf.mcap$Genus, function(x) max(x))
 x = sort(x, TRUE)
 cut_off #check your cutoff for your intended level - here 0.6
@@ -196,7 +208,12 @@ figdf.mcap$col_genus <- figdf.mcap$Genus
 figdf.mcap$col_genus[figdf.mcap$col_genus != "Alteromonas" & 
                        figdf.mcap$col_genus != "Pseudoalteromonas" &
                        figdf.mcap$col_genus != "Ruegeria" &
-                       figdf.mcap$col_genus != "Alteromonadales_unclassified"] <- NA
+                       figdf.mcap$col_genus != "Alteromonadales_unclassified" &
+                       figdf.mcap$col_genus != "Reichenbachiella" &
+                       figdf.mcap$col_genus != "Rhodobacteraceae_unclassified" &
+                       figdf.mcap$col_genus != "uncultured" &
+                       figdf.mcap$col_genus != "Prosthecochloris" &
+                       figdf.mcap$col_genus != "JGI_0000069-P22_ge"] <- NA
 
 
 levels(figdf.mcap$col_genus)
@@ -205,6 +222,8 @@ figdf.mcap$col_genus <- factor(figdf.mcap$col_genus, levels = c(levels(figdf.mca
 # convert NAs to other
 figdf.mcap$col_genus[is.na(figdf.mcap$col_genus)] = "Other"
 
+#Make your figure! Realise here that it will plot the two 0.6 level cut-off line
+#I remove the second line in illustrator because ggplot is giving me a headache. 
 mcap.p <- ggplot(figdf.mcap, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
@@ -213,9 +232,9 @@ mcap.p <- ggplot(figdf.mcap, aes(x = x, y = y, color = col_genus)) +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
   #geom_hline(yintercept = c(18, linetype = "dashed") + 
-  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + #at 330.6
+  geom_hline(yintercept = figdf.mcap$detected_0.6, linetype = "dashed") +
   geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
-            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+            size = 4, vjust = -0.5, hjust = 0.4, color = "orange", parse = TRUE) +
   ggtitle("Montipora capitata")
 ggsave("ancom/output/mcap_ancom.pdf")
 
@@ -247,80 +266,91 @@ struc_zero <- pre_pro$structure_zeros
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
-#extract data
-#resdf.pcomp <- as.data.frame(res$out)
-#figdf.pcomp <- as.data.frame(res$fig$data)
-
-##if splitting by time point do the following:
+##T1
+#Extract your dataframes
 resdf.pcomp.t1 <- as.data.frame(res$out)
-resdf.pcomp.tf <- as.data.frame(res$out)
-##rbind together
-resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
-
-## compiling results from each contrast for the figure
 figdf.pcomp.t1 <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_t1 = ifelse(is.null(struc_zero), nrow(figdf.pcomp.t1), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_t1 = c(0.9 * (n_taxa_t1 -1), 0.8 * (n_taxa_t1 -1), 0.7 * (n_taxa_t1 -1), 0.6 * (n_taxa_t1 -1))
+names(cut_off_t1) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pcomp.t1$contrast <- "T1"
+figdf.pcomp.t1$detected_0.6 <- "35.4"
 rownames(figdf.pcomp.t1) <- NULL
 
+##Do the same for TF
+resdf.pcomp.tf <- as.data.frame(res$out)
 figdf.pcomp.tf <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_tf = ifelse(is.null(struc_zero), nrow(figdf.pcomp.tf), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_tf = c(0.9 * (n_taxa_tf -1), 0.8 * (n_taxa_tf -1), 0.7 * (n_taxa_tf -1), 0.6 * (n_taxa_tf -1))
+names(cut_off_tf) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pcomp.tf$contrast <- "TF"
+figdf.pcomp.tf$detected_0.6 <- "23.4"
 rownames(figdf.pcomp.tf) <- NULL
 
-##rbind your two datasets together
-figdf.pcomp<- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
+#Combine your two time points into one dataframe
+resdf.pcomp <- rbind(resdf.pcomp.t1, resdf.pcomp.tf)
+figdf.pcomp <- rbind(figdf.pcomp.t1, figdf.pcomp.tf)
 
-# add taxonomy
-tax<-as(tax_table(pcomp),"matrix")
-head(tax)
-tax<-as.data.frame(tax)
-colnames(tax)
-tax$taxa_id <- rownames(tax)
-rownames(tax) <- NULL
-dim(tax)
-head(tax)
-
-#Merge taxonomy with your figure data
-figdf.pcomp <- merge(figdf.pcomp,tax, by = "taxa_id")
-resdf.pcomp <- merge(resdf.pcomp, tax, by = "taxa_id")
-
-head(resdf.pcomp)
-head(figdf.pcomp)
+##Export the data as a data frame
 write.csv(resdf.pcomp, "ancom/output/ancom_pcomp_res.csv")
 write.csv(figdf.pcomp, "ancom/output/ancom_pcomp_figdata.csv")
 
-##Extract the data to use in bubble plots
+##Extract the data for use in bubble plots (see figures_ace21.R script)
 pcomp.true <- filter(resdf.pcomp, detected_0.6 == "TRUE")
 pcomp.otus <- (pcomp.true$taxa_id)
 pcomp.ra <- transform_sample_counts(pcomp, function(x) x/ sum(x))
 pcomp.ancom <- prune_taxa(pcomp.otus,pcomp.ra)
 pcomp.ancom.melt <- psmelt(pcomp.ancom)
 pcomp.ancom.melt$top.group <- "differential"
-write.csv(pcomp.ancom.melt, "ancom/output/by_treatment/pcomp_ancom.csv")
+write.csv(pcomp.ancom.melt, "ancom/output/pcomp_ancom.csv")
 
-# Step 3: Volcano Plot
-# Number of taxa except structural zeros
-n_taxa = ifelse(is.null(struc_zero), nrow(figdf.pcomp), sum(apply(struc_zero, 1, sum) == 0))
-# Cutoff values for declaring differentially abundant taxa
-cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
-names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+##Step 3. Volcano Plot
 
-# Annotation data
-dat_ann = data.frame(x = min(figdf.pcomp$x), y = cut_off["detected_0.6"], label = "W[0.6]")
+#Add taxonomic names
+tax<-as(tax_table(pcomp),"matrix")
+#head(tax)
+tax<-as.data.frame(tax)
+colnames(tax)
+tax$taxa_id <- rownames(tax)
+rownames(tax) <- NULL
+dim(tax)
+#head(tax)
 
-##Specialised Plot
-# order genus
+##Merge taxonomy with your figure data
+figdf.pcomp <- merge(figdf.pcomp,tax, by = "taxa_id")
+resdf.pcomp <- merge(resdf.pcomp, tax, by = "taxa_id")
+
+#Make sure your detected_0.6 level is a numerical vector
+figdf.pcomp$detected_0.6 <- as.numeric(figdf.pcomp$detected_0.6)
+#Create annotation data for figure
+dat_ann = data.frame(x = min(figdf.pcomp$x), y = figdf.pcomp$detected_0.6, label = "W[0.6]")
+
+#Order the genera and name only significant genera (all else as OTHER)
 x = tapply(figdf.pcomp$y, figdf.pcomp$Genus, function(x) max(x))
 x = sort(x, TRUE)
-cut_off #View cutoff value
-x #View W values and pick the ones above cut-off to add below
+cut_off #check your cutoff for your intended level - here 0.6
+x #look at which taxa are above your cutoff & add to the below code for setting NAs
 figdf.pcomp$Genus = factor(as.character(figdf.pcomp$Genus), levels=names(x))
 figdf.pcomp$col_genus <- figdf.pcomp$Genus
 
+#Set everything that is super low to NA so that we can call them "other"
 figdf.pcomp$col_genus[figdf.pcomp$col_genus != "Francisellaceae_ge" & 
-                        figdf.pcomp$col_genus != "Francisellaceae_unclassified" & 
-                        figdf.pcomp$col_genus != "Endozoicomonas" & 
-                        figdf.pcomp$col_genus != "Proteobacteria_unclassified" & 
-                       figdf.pcomp$col_genus != "Rhodobacteraceae_unclassified"] <- NA
+                        figdf.pcomp$col_genus != "Francisellaceae_unclassified" &
+                        figdf.pcomp$col_genus != "Endozoicomonas" &
+                        figdf.pcomp$col_genus != "Proteobacteria_unclassified" &
+                        figdf.pcomp$col_genus != "Rhodobacteraceae_unclassified" &
+                        figdf.pcomp$col_genus != "Bythopirellula" &
+                        figdf.pcomp$col_genus != "Sva0996_marine_group"] <- NA
 
 
 levels(figdf.pcomp$col_genus)
@@ -329,6 +359,8 @@ figdf.pcomp$col_genus <- factor(figdf.pcomp$col_genus, levels = c(levels(figdf.p
 # convert NAs to other
 figdf.pcomp$col_genus[is.na(figdf.pcomp$col_genus)] = "Other"
 
+#Make your figure! Realise here that it will plot the two 0.6 level cut-off line
+#I remove the second line in illustrator because ggplot is giving me a headache. 
 pcomp.p <- ggplot(figdf.pcomp, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
@@ -336,12 +368,12 @@ pcomp.p <- ggplot(figdf.pcomp, aes(x = x, y = y, color = col_genus)) +
   ylab("W statistic") +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
-  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + 
+  #geom_hline(yintercept = c(18, linetype = "dashed") + 
+  geom_hline(yintercept = figdf.pcomp$detected_0.6, linetype = "dashed") +
   geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
-            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+            size = 4, vjust = -0.5, hjust = 0.4, color = "orange", parse = TRUE) +
   ggtitle("Porites compressa")
 ggsave("ancom/output/pcomp_ancom.pdf")
-
 
 
 ###Next for Pavona varians
@@ -370,70 +402,84 @@ struc_zero <- pre_pro$structure_zeros
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
-#extract data
+##T1
+#Extract your dataframes
 resdf.pvar.t1 <- as.data.frame(res$out)
-resdf.pvar.tf <- as.data.frame(res$out)
-
 figdf.pvar.t1 <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_t1 = ifelse(is.null(struc_zero), nrow(figdf.pvar.t1), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_t1 = c(0.9 * (n_taxa_t1 -1), 0.8 * (n_taxa_t1 -1), 0.7 * (n_taxa_t1 -1), 0.6 * (n_taxa_t1 -1))
+names(cut_off_t1) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pvar.t1$contrast <- "T1"
+figdf.pvar.t1$detected_0.6 <- "128.4"
 rownames(figdf.pvar.t1) <- NULL
 
+##Do the same for TF
+resdf.pvar.tf <- as.data.frame(res$out)
 figdf.pvar.tf <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_tf = ifelse(is.null(struc_zero), nrow(figdf.pvar.tf), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_tf = c(0.9 * (n_taxa_tf -1), 0.8 * (n_taxa_tf -1), 0.7 * (n_taxa_tf -1), 0.6 * (n_taxa_tf -1))
+names(cut_off_tf) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pvar.tf$contrast <- "TF"
+figdf.pvar.tf$detected_0.6 <- "93.6"
 rownames(figdf.pvar.tf) <- NULL
 
-#rbind together the data from both time points
+#Combine your two time points into one dataframe
 resdf.pvar <- rbind(resdf.pvar.t1, resdf.pvar.tf)
 figdf.pvar <- rbind(figdf.pvar.t1, figdf.pvar.tf)
 
-# add taxonomy
+##Export the data as a data frame
+write.csv(resdf.pvar, "ancom/output/ancom_pvar_res.csv")
+write.csv(figdf.pvar, "ancom/output/ancom_pvar_figdata.csv")
+
+##Extract the data for use in bubble plots (see figures_ace21.R script)
+pvar.true <- filter(resdf.pvar, detected_0.6 == "TRUE")
+pvar.otus <- (pvar.true$taxa_id)
+pvar.ra <- transform_sample_counts(pvar, function(x) x/ sum(x))
+pvar.ancom <- prune_taxa(pvar.otus,pvar.ra)
+pvar.ancom.melt <- psmelt(pvar.ancom)
+pvar.ancom.melt$top.group <- "differential"
+write.csv(pvar.ancom.melt, "ancom/output/pvar_ancom.csv")
+
+##Step 3. Volcano Plot
+
+#Add taxonomic names
 tax<-as(tax_table(pvar),"matrix")
-head(tax)
+#head(tax)
 tax<-as.data.frame(tax)
 colnames(tax)
 tax$taxa_id <- rownames(tax)
 rownames(tax) <- NULL
 dim(tax)
-head(tax)
+#head(tax)
 
-#Merge taxonomy with your figure data
+##Merge taxonomy with your figure data
 figdf.pvar <- merge(figdf.pvar,tax, by = "taxa_id")
 resdf.pvar <- merge(resdf.pvar, tax, by = "taxa_id")
 
-head(resdf.pvar)
-head(figdf.pvar)
-write.csv(resdf.pvar, "ancom/output/ancom_pvar_res.csv")
-write.csv(figdf.pvar, "ancom/output/ancom_pvar_figdata.csv")
+#Make sure your detected_0.6 level is a numerical vector
+figdf.pvar$detected_0.6 <- as.numeric(figdf.pvar$detected_0.6)
+#Create annotation data for figure
+dat_ann = data.frame(x = min(figdf.pvar$x), y = figdf.pvar$detected_0.6, label = "W[0.6]")
 
-
-##Extract the data for use in bubble plots
-pvar.true <- filter(resdf.pvar, detected_0.6 == "TRUE")  #Hmm there are no "TRUE" taxa 
-pvar.otus <- (pvar.true$taxa_id)
-pvar.ra <- transform_sample_counts(pvar, function(x) x/ sum(x))
-pvar.ancom <- prune_taxa(pvar.otus, pvar.ra)
-pvar.ancom.melt <- psmelt(pvar.ancom)
-pvar.ancom.melt$top.group <- "differential"
-write.csv(pvar.ancom.melt, "ancom/output/by_treatment/pvar_ancom.csv")
-
-# Step 3: Volcano Plot
-# Number of taxa except structural zeros
-n_taxa = ifelse(is.null(struc_zero), nrow(figdf.pvar), sum(apply(struc_zero, 1, sum) == 0))
-# Cutoff values for declaring differentially abundant taxa
-cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
-names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
-
-# Annotation data
-dat_ann = data.frame(x = min(figdf.pvar$x), y = cut_off["detected_0.6"], label = "W[0.6]")
-
-##Specialised Plot
-# order genus
+#Order the genera and name only significant genera (all else as OTHER)
 x = tapply(figdf.pvar$y, figdf.pvar$Genus, function(x) max(x))
 x = sort(x, TRUE)
-cut_off
-x
+cut_off #check your cutoff for your intended level - here 0.6
+x #look at which taxa are above your cutoff & add to the below code for setting NAs
 figdf.pvar$Genus = factor(as.character(figdf.pvar$Genus), levels=names(x))
 figdf.pvar$col_genus <- figdf.pvar$Genus
 
+#Set everything that is super low to NA so that we can call them "other"
 figdf.pvar$col_genus[figdf.pvar$col_genus != "Bacteria_unclassified"] <- NA
 
 
@@ -443,6 +489,8 @@ figdf.pvar$col_genus <- factor(figdf.pvar$col_genus, levels = c(levels(figdf.pva
 # convert NAs to other
 figdf.pvar$col_genus[is.na(figdf.pvar$col_genus)] = "Other"
 
+#Make your figure! Realise here that it will plot the two 0.6 level cut-off line
+#I remove the second line in illustrator because ggplot is giving me a headache. 
 pvar.p <- ggplot(figdf.pvar, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
@@ -450,9 +498,10 @@ pvar.p <- ggplot(figdf.pvar, aes(x = x, y = y, color = col_genus)) +
   ylab("W statistic") +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
-  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + 
+  #geom_hline(yintercept = c(18, linetype = "dashed") + 
+  geom_hline(yintercept = figdf.pvar$detected_0.6, linetype = "dashed") +
   geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
-            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+            size = 4, vjust = -0.5, hjust = 0.4, color = "orange", parse = TRUE) +
   ggtitle("Pavona varians")
 ggsave("ancom/output/pvar_ancom.pdf")
 
@@ -482,74 +531,87 @@ struc_zero <- pre_pro$structure_zeros
 res <- ANCOM(feature_table, meta_data, struc_zero, main_var, p_adj_method, alpha,
              adj_formula, rand_formula)
 
-#extract data
+##T1
+#Extract your dataframes
 resdf.pacu.t1 <- as.data.frame(res$out)
-resdf.pacu.tf <- as.data.frame(res$out)
-
 figdf.pacu.t1 <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_t1 = ifelse(is.null(struc_zero), nrow(figdf.pacu.t1), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_t1 = c(0.9 * (n_taxa_t1 -1), 0.8 * (n_taxa_t1 -1), 0.7 * (n_taxa_t1 -1), 0.6 * (n_taxa_t1 -1))
+names(cut_off_t1) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pacu.t1$contrast <- "T1"
+figdf.pacu.t1$detected_0.6 <- "202.2"
 rownames(figdf.pacu.t1) <- NULL
 
+##Do the same for TF
+resdf.pacu.tf <- as.data.frame(res$out)
 figdf.pacu.tf <- as.data.frame(res$fig$data)
+
+# Number of taxa except structural zeros
+n_taxa_tf = ifelse(is.null(struc_zero), nrow(figdf.pacu.tf), sum(apply(struc_zero, 1, sum) == 0))
+# Cutoff values for declaring differentially abundant taxa
+cut_off_tf = c(0.9 * (n_taxa_tf -1), 0.8 * (n_taxa_tf -1), 0.7 * (n_taxa_tf -1), 0.6 * (n_taxa_tf -1))
+names(cut_off_tf) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
+
+#Add this info into your figure dataframe for plotting below
 figdf.pacu.tf$contrast <- "TF"
+figdf.pacu.tf$detected_0.6 <- "225.6"
 rownames(figdf.pacu.tf) <- NULL
 
-#rbind them together
+#Combine your two time points into one dataframe
 resdf.pacu <- rbind(resdf.pacu.t1, resdf.pacu.tf)
-figdf.pac <- rbind(figdf.pacu.t1, figdf.pacu.tf)
+figdf.pacu <- rbind(figdf.pacu.t1, figdf.pacu.tf)
 
-# add taxonomy
+##Export the data as a data frame
+write.csv(resdf.pacu, "ancom/output/ancom_pacu_res.csv")
+write.csv(figdf.pacu, "ancom/output/ancom_pacu_figdata.csv")
+
+##Extract the data for use in bubble plots (see figures_ace21.R script)
+pacu.true <- filter(resdf.pacu, detected_0.6 == "TRUE")
+pacu.otus <- (pacu.true$taxa_id)
+pacu.ra <- transform_sample_counts(pacu, function(x) x/ sum(x))
+pacu.ancom <- prune_taxa(pacu.otus,pacu.ra)
+pacu.ancom.melt <- psmelt(pacu.ancom)
+pacu.ancom.melt$top.group <- "differential"
+write.csv(pacu.ancom.melt, "ancom/output/pacu_ancom.csv")
+
+##Step 3. Volcano Plot
+
+#Add taxonomic names
 tax<-as(tax_table(pacu),"matrix")
-head(tax)
+#head(tax)
 tax<-as.data.frame(tax)
 colnames(tax)
 tax$taxa_id <- rownames(tax)
 rownames(tax) <- NULL
 dim(tax)
-head(tax)
+#head(tax)
 
-#Merge taxonomy with your figure data
+##Merge taxonomy with your figure data
 figdf.pacu <- merge(figdf.pacu,tax, by = "taxa_id")
 resdf.pacu <- merge(resdf.pacu, tax, by = "taxa_id")
 
-head(resdf.pacu)
-head(figdf.pacu)
-write.csv(resdf.pacu, "ancom/output/ancom_pacu_res.csv")
-write.csv(figdf.pacu, "ancom/output/ancom_pacu_figdata.csv")
+#Make sure your detected_0.6 level is a numerical vector
+figdf.pacu$detected_0.6 <- as.numeric(figdf.pacu$detected_0.6)
+#Create annotation data for figure
+dat_ann = data.frame(x = min(figdf.pacu$x), y = figdf.pacu$detected_0.6, label = "W[0.6]")
 
-
-##Extract the data for use in bubble plots
-pacu.true <- filter(resdf.pacu, detected_0.6 == "TRUE") 
-pacu.otus <- (pacu.true$taxa_id)
-pacu.ra <- transform_sample_counts(pacu, function(x) x/ sum(x))
-pacu.ancom <- prune_taxa(pacu.otus, pacu.ra)
-pacu.ancom.melt <- psmelt(pacu.ancom)
-pacu.ancom.melt$top.group <- "differential"
-write.csv(pacu.ancom.melt, "ancom/output/by_treatment/pacu_ancom.csv")
-
-
-# Step 3: Volcano Plot
-# Number of taxa except structural zeros
-n_taxa = ifelse(is.null(struc_zero), nrow(figdf.pacu), sum(apply(struc_zero, 1, sum) == 0))
-# Cutoff values for declaring differentially abundant taxa
-cut_off = c(0.9 * (n_taxa -1), 0.8 * (n_taxa -1), 0.7 * (n_taxa -1), 0.6 * (n_taxa -1))
-names(cut_off) = c("detected_0.9", "detected_0.8", "detected_0.7", "detected_0.6")
-
-# Annotation data
-dat_ann = data.frame(x = min(figdf.pacu$x), y = cut_off["detected_0.6"], label = "W[0.6]")
-
-##Specialised Plot
-# order genus
+#Order the genera and name only significant genera (all else as OTHER)
 x = tapply(figdf.pacu$y, figdf.pacu$Genus, function(x) max(x))
 x = sort(x, TRUE)
-cut_off
-x
+cut_off #check your cutoff for your intended level - here 0.6
+x #look at which taxa are above your cutoff & add to the below code for setting NAs
 figdf.pacu$Genus = factor(as.character(figdf.pacu$Genus), levels=names(x))
 figdf.pacu$col_genus <- figdf.pacu$Genus
 
-figdf.pacu$col_genus[figdf.pacu$col_genus != "Pseudoalteromonas" & 
-                       figdf.pacu$col_genus != "Synechococcus_CC9902" &
-                       figdf.pacu$col_genus != "Filomicrobium"] <- NA
+#Set everything that is super low to NA so that we can call them "other"
+figdf.pacu$col_genus[figdf.pacu$col_genus != "Pseudoalteromonas" &
+                       figdf.pacu$col_genus != "Synechococcus_CC9902" & 
+                       figdf.pacu$col_genus != " Filomicrobium"] <- NA
 
 
 levels(figdf.pacu$col_genus)
@@ -558,6 +620,8 @@ figdf.pacu$col_genus <- factor(figdf.pacu$col_genus, levels = c(levels(figdf.pac
 # convert NAs to other
 figdf.pacu$col_genus[is.na(figdf.pacu$col_genus)] = "Other"
 
+#Make your figure! Realise here that it will plot the two 0.6 level cut-off line
+#I remove the second line in illustrator because ggplot is giving me a headache. 
 pacu.p <- ggplot(figdf.pacu, aes(x = x, y = y, color = col_genus)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_point(size = 3) +
@@ -565,13 +629,12 @@ pacu.p <- ggplot(figdf.pacu, aes(x = x, y = y, color = col_genus)) +
   ylab("W statistic") +
   xlab("CLR mean difference") +
   scale_color_manual(name = "Genus", values = kelly_colors) +
-  geom_hline(yintercept = cut_off["detected_0.6"], linetype = "dashed") + 
+  #geom_hline(yintercept = c(18, linetype = "dashed") + 
+  geom_hline(yintercept = figdf.pacu$detected_0.6, linetype = "dashed") +
   geom_text(data = dat_ann, aes(x = x, y = y, label = label), 
-            size = 4, vjust = -0.5, hjust = 1, color = "orange", parse = TRUE) +
+            size = 4, vjust = -0.5, hjust = 0.4, color = "orange", parse = TRUE) +
   ggtitle("Pocillopora acuta")
 ggsave("ancom/output/pacu_ancom.pdf")
-
-
 
 ############# Algal phylotype??
 ##What about contrasts for M cap - C vs CD
