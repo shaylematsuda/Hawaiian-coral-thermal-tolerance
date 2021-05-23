@@ -19,7 +19,7 @@ Last updated: 8 apr 2021
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 
-library(plyr)
+library(plyr) 
 library(dplyr)
 library(ggplot2)
 library(ggpubr)
@@ -47,8 +47,8 @@ library(vegan)
 
 
 #Load in data and get into phyloseq
-```{r}      
-
+```{r}       
+ 
 #load in 3000 rare instead
 #read in sample data
 MetaData16<-read.csv("Data/Meta16s_3k.csv") #run in physio script first
@@ -129,10 +129,10 @@ Bac.seq
 # Bac.seqAll
 # 
 # save(Bac.seqAll, file = "Data/Bac.seqAll_phyloseq.RData")
-
+ 
 ```  
 Look at the data, Bac.seq for 3k
-```{r}     
+```{r}      
 ## check out data
 ntaxa(Bac.seq)  #num taxa
 nsamples(Bac.seq)   #num samples
@@ -157,7 +157,7 @@ sample_names(Bac.seq)[1:300] #samp names
 
 #16S
 Load in your data
-```{r}     
+```{r}      
 # Load data (see data_exploration.Rmd)
 #load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
@@ -211,6 +211,7 @@ Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S1240" )
 Bac.seq <- subset_samples(Bac.seq, Type != "extra" )
 Bac.seq <- subset_samples(Bac.seq, Type != " " )
 
+Bac.seq.df <- as(sample_data(Bac.seq), "data.frame") #create sample data frame to view
 
 
 Bac.s = subset_samples(Bac.seq, Type== "sample" )
@@ -218,9 +219,12 @@ Bac.field = subset_samples(Bac.seq, Type== "field" )
 Bac.seq.all<-Bac.seq
 
 
+#pull out for CN
+Bac.seq.all
 
-
-
+c.sd = sample_data(Bac.seq.all)
+#   # otu_table
+#   OTU = otu_table(controlT0_Amb)
 
 
 
@@ -321,7 +325,7 @@ Bac.seq.all<-Bac.seq
 
 ```
 # look at field samples. after you did this you now imported the field amples normaly
-```{r} 
+```{r}  
 MetaDataFIELD<-read.csv("Data/sample.data_FIELD.csv") #run in physio script first
 MetaDataFIELD$Parent.ID<-as.factor(as.character(MetaDataFIELD$Parent.ID))
 MetaDataFIELD$Tank.num<-as.factor(as.character(MetaDataFIELD$Tank.num))
@@ -481,7 +485,7 @@ ggplot(scores.ord.u.field_RelA_stats.pacu, aes(x = NMDS1, y = NMDS2)) +
 
 
 #Set up, Bac.s rela
-```{r}     
+```{r}      
 #make rel ativ e abundance df Bac.s
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
@@ -505,33 +509,76 @@ Bac.seq.all.T0<- transform_sample_counts(Bac.s.rel.u.T0, function(x) x / sum(x) 
 
 
 
+Bac.s.rel.p = prune_taxa(taxa_sums(Bac.s.rel) > 0, Bac.s.rel) #this removes any OTU with 0s
 
-# # export into table 
-# taxCN  = tax_table(Bac.s)
-# taxCN = as(tax_table(Bac.s), "matrix")
-# taxCN2 = as.data.frame(taxCN)
-# write.csv(taxCN2, "taxCN.csv")
-# 
+#are there ASVs in all samples NOT WORKING
+Bac.s.share<- prune_taxa(taxa_sums(Bac.s) > 0, Bac.s) #this removes any OTU with 0s
+share<-phyloseq_extract_shared_otus(Bac.s.share, samp_names = sample_names(Bac.s.share))
+
+# remove all OTUs not found at least once in both samples NOT WORKING
+phylo2 = filter_taxa(Bac.s.share, function(x) sum(Bac.s.share >= 1) == (192), TRUE)
+
+# display the OTU table
+otu_table(phylo2)
+
+
+#number of ASVs by species
+Bac.s.share_Mcap<-subset_samples(Bac.s.share, Species=="Montipora_capitata")
+    Bac.s.share_Mcap.p = prune_taxa(taxa_sums(Bac.s.share_Mcap) > 0, Bac.s.share_Mcap) #this removes any OTU with 0s
+
+  Bac.s.share_Pcomp<-subset_samples(Bac.s.share, Species=="Porites_compressa")
+    Bac.s.share_Pcomp.p = prune_taxa(taxa_sums(Bac.s.share_Pcomp) > 0, Bac.s.share_Pcomp) #this removes any OTU with 0s
+
+Bac.s.share_Pvar<-subset_samples(Bac.s.share, Species=="Pavona_varians")
+    Bac.s.share_Pvar.p = prune_taxa(taxa_sums(Bac.s.share_Pvar) > 0, Bac.s.share_Pvar) #this removes any OTU with 0s
+  #by clade for Pvar
+  Bac.s.share_Pvar.C1<-subset_samples(Bac.s.share_Pvar.p, Clade=="C1")
+    Bac.s.share_Pvar.C1.p = prune_taxa(taxa_sums(Bac.s.share_Pvar.C1) > 0, Bac.s.share_Pvar.C1)
+  Bac.s.share_Pvar.C27<-subset_samples(Bac.s.share_Pvar.p, Clade=="C27")
+    Bac.s.share_Pvar.C27.p = prune_taxa(taxa_sums(Bac.s.share_Pvar.C27) > 0, Bac.s.share_Pvar.C27)
+    
+Bac.s.share_Pacu<-subset_samples(Bac.s.share, Species=="Pocillopora_acuta")
+    Bac.s.share_Pacu.p = prune_taxa(taxa_sums(Bac.s.share_Pacu) > 0, Bac.s.share_Pacu) #this removes any OTU with 0s
+
+#anything shared between species:
+  Bac.s.share_McapPcomp<-subset_samples(Bac.s.share, Species=="Montipora_capitata" | Species=="Porites_compressa")
+    Bac.s.share_McapPcomp.p = prune_taxa(taxa_sums(Bac.s.share_McapPcomp) > 0, Bac.s.share_McapPcomp) #this removes any OTU with 0s
+  
+
+
+
+
+# export into table
+taxCN  = tax_table(Bac.s.rel.p)
+taxCN = as(tax_table(Bac.s.rel.p), "matrix")
+taxCN2 = as.data.frame(taxCN)
+#write.csv(taxCN2, "taxCN_may18.csv")
+
 # taxCN2$OTU <- rownames(taxCN2) #make row names a col
 # taxCN3<-taxCN2[,c("OTU","Family")] # keep only columns you need
 # rownames(taxCN3) <- c() #remove row namds
-# 
-# 
-# OTUCN = otu_table(Bac.s)
-# # Extract abundance matrix from the phyloseq object
-# OTU.cn = as(otu_table(OTUCN), "matrix")
-# if(taxa_are_rows(Bac.s)){OTU.cn <- t(OTU.cn)}
-# OTU.cn2 = as.data.frame(OTU.cn)
-# write.csv(OTU.cn2, "OTU.cn2.csv")
-# 
-# #OK can we fucking merge
-# CNtab<-merge(OTU.cn2,taxCN3)
 
 
+OTUCN = otu_table(Bac.s.rel.p)
+# Extract abundance matrix from the phyloseq object
+OTU.cn = as(otu_table(OTUCN), "matrix")
+if(taxa_are_rows(Bac.s.rel.p)){OTU.cn <- t(OTU.cn)}
+OTU.cn2 = as.data.frame(OTU.cn)
+#write.csv(OTU.cn2, "OTU.cn2_may18.csv")
+
+OTU.cn2 <- tibble::rownames_to_column(OTU.cn2, "sample_name")
+
+MetaData16Keep<- MetaData16[,c("sample_name", "Species","Parent.ID", "Treatment","Time.Point","Tank.num","Clade")] # keep only columns you need
+
+#OK merge
+    cn.16s.samples<-merge(MetaData16Keep,OTU.cn2, by="sample_name") #merge on the metadata
+write.csv(cn.16s.samples, "cn.16s.samplesMay18.csv")
+
+cn.16s.samples[1:20,1:20]
 ``` 
 For plotting only, subset the data: ok you can't figure this out jump to next chunk
 - Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample. https://bioconductor.riken.jp/packages/3.0/bioc/vignettes/phyloseq/inst/doc/phyloseq-basics.html
-```{r}      
+```{r}       
 library(genefilter)
 #df use counts not Rel A
 #tax glom should let you glom at Family
@@ -592,7 +639,7 @@ OTUfam = as(otu_table(phyFamTest2.fb), "matrix")
 if(taxa_are_rows(phyFamTest2.fb)){OTUfam <- t(OTUfam)}
 # Coerce to data.frame
 OTUfam.df = as.data.frame(OTUfam)
-write.csv(OTUfam.df,"OTUfam.df.csv")
+#write.csv(OTUfam.df,"OTUfam.df.csv")
 
 
 
@@ -667,7 +714,7 @@ theme_set(theme_bw())
 USE THIS FOR STATS HELP:
 https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
 ```{r}  
-#from above
+#from above 
 #this works for fam level and relA. now we have 543 families
 phyFamTest2 <- Bac.s %>% 
   tax_glom(taxrank = "Family", NArm=FALSE) %>% #glom to family and remove anything not classified at family level
@@ -2741,7 +2788,7 @@ Endo.only_plot+facet_wrap(~Treatment)
 
 
 #Permanova UNIFRAC by ASV (no filter) to compare with above
-```{r}    
+```{r}      
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
 
@@ -2752,21 +2799,26 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
 #make unifrac matrix
 Bac.s.u.T0 <- phyloseq::distance(Bac.s.rel.u.T0, method = "wunifrac")
 s.u.samp.df <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #sample df
+s.u.samp.df$Code<-paste(s.u.samp.df$Species,s.u.samp.df$Clade)
   #adonis test
 set.seed(30)
 adonis(Bac.s.u.T0 ~ Species, data = s.u.samp.df)
 set.seed(30)    
-adonis(Bac.s.u.T0 ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
+adonis(Bac.s.u.T0 ~ Species*Treatment*Clade, data = s.u.samp.df)
 
-     # Homogeneity of dispersion test  
+# Homogeneity of dispersion test  
     set.seed(30)
     t<-permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Treatment, type = "centroid")) 
+    permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Code, type = "centroid")) 
     
   ball<-  betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")
   TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
 
+  
+  
+  
+  
  #AMBINET only ####
 Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u, Treatment=="Ambient")
     Bac.s.rel.u.Amb = prune_taxa(taxa_sums(Bac.s.rel.u.Amb) > 0, Bac.s.rel.u.Amb) #this removes any OTU with 0s
@@ -2774,6 +2826,8 @@ Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u, Treatment=="Ambient")
 #make unifrac matrix
 Bac.s.u.Amb <- phyloseq::distance(Bac.s.rel.u.Amb, method = "wunifrac")
 s.u.samp.df <- as(sample_data(Bac.s.rel.u.Amb), "data.frame") #sample df
+s.u.samp.df$Code<-paste(s.u.samp.df$Species,s.u.samp.df$Clade)
+
   #adonis test
 set.seed(30)
 adonis(Bac.s.u.Amb ~ Species*Time.Point, data = s.u.samp.df)
@@ -2786,9 +2840,9 @@ adonis(Bac.s.u.Amb ~ Species*Clade, data = s.u.samp.df)
    set.seed(30)
     permutest(betadisper(Bac.s.u.Amb, s.u.samp.df$Treatment, type = "centroid")) 
     
-  ball<-  betadisper(Bac.s.u.Amb, s.u.samp.df$Species, type = "centroid")
+  ball<-  betadisper(Bac.s.u.Amb, s.u.samp.df$Code, type = "centroid")
   TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
-
+ 
 
 
 
@@ -2804,47 +2858,26 @@ Bac.s.rel.u.T1F<-subset_samples(Bac.s.rel.u, Time.Point=="T1"|Time.Point=="TF")
       sample_sums(Bac.s.rel.u.T1F)
 #make unifrac matrix
 Bac.s.u.T1F <- phyloseq::distance(Bac.s.rel.u.T1F, method = "wunifrac")
-s.u.samp.df <- as(sample_data(Bac.s.rel.u.T1F), "data.frame") #sample df
+s.u.samp.df.T1F <- as(sample_data(Bac.s.rel.u.T1F), "data.frame") #sample df
   #adonis test
 set.seed(30)
-adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point, data = s.u.samp.df)
+adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point, data = s.u.samp.df.T1F)
 set.seed(30)    
-adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df)
+adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df.T1F)
 
      # Homogeneity of dispersion test  
     set.seed(30)
-    t<-permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")) 
+    t<-permutest(betadisper(Bac.s.u.T1F, s.u.samp.df.T1F$Code, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df$Treatment, type = "centroid")) 
+    permutest(betadisper(Bac.s.u.T1F, s.u.samp.df.T1F$Treatment, type = "centroid")) 
     
-  ball<-  betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")
+  ball<-  betadisper(Bac.s.u.T1F, s.u.samp.df.T1F$Species, type = "centroid")
   TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
-    
-    
-# #dipersion lmer  <-- only if necessary!
-#     wu.all<-betadisper(Bac.s.u.T1F, s.u.samp.df$Species, type = "centroid")
-# wu.disp<-as.data.frame(wu.all$distances) #extract distances
-# names(wu.disp)[names(wu.disp) == "wu.all$distances"] <- "wu.distances" #rename
-# wu.disp.Species<-cbind(wu.disp, s.u.samp.df) #bind dist to sd
-# hist(wu.disp$wu.distances) #none of these are great
-# # hist(log10(wu.disp$wu.distances))
-# # hist(sqrt(wu.disp$wu.distances))
-# # hist((wu.disp$wu.distances)^1/3)
-# # hist(1/wu.disp$wu.distances)
-# 
-# wu.disp<-lmer(wu.distances~Species*Treatment*Time.Point+(1|Parent.ID)+(1|Tank.num), data=wu.disp.Species)
-# anova(wu.disp)
-#   qqPlot(residuals(wu.disp)) 
-#     emm<-emmeans(wu.disp,  ~ Species, adjust="Tukey")
-#       cld(emm)
-#       pairs(emm) 
-#     
-    
-    
-    
-    
-    
-    
+
+  
+  
+      
+
     
     
     
@@ -2966,7 +2999,7 @@ mcap.u.f.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this 
   
   
   
-############ pcomp ####
+############ pcomp #### 
   #what endos are in here?
   Bac.s.rel.u.Endo<-subset_samples(Bac.s.rel.u, Species=="Porites_compressa")
 Bac.s.rel.u.Endo.2 = subset_taxa(Bac.s.rel.u.Endo, Family=="Endozoicomonadaceae")
@@ -3057,7 +3090,7 @@ mod<-  (betadisper(pcomp.u.TF, pcomp.u.samp.df.TF$Code, type = "centroid"))
     
 
 
-# Pcmp Bac.s.rel.u.T0   only
+# Pcomp Bac.s.rel.u.T0   only
     pcomp.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Porites_compressa")
   sample_sums(pcomp.u.bac.T0)
 
@@ -3075,7 +3108,7 @@ pcomp.u.f.bac.T0 = prune_taxa(taxa_sums(pcomp.u.bac.T0) > 0, pcomp.u.bac.T0) #th
     permutest(betadisper(pcomp.u.T0, pcomp.u.samp.df.T0$Clade, type = "centroid")) 
   
 
-#Ambient only !!!
+#Ambient only !!! ####
     pcomp.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Porites_compressa") #all pcomp
       
     # pull out otu and tax
@@ -3109,7 +3142,62 @@ pcomp.u.f.bac.Amb = prune_taxa(taxa_sums(pcomp.u.bac.Amb) > 0, pcomp.u.bac.Amb) 
   # Homogeneity of dispersion test  
     set.seed(30)
     permutest(betadisper(pcomp.u.Amb, pcomp.u.samp.df.Amb$Clade, type = "centroid")) 
-  
+
+# Pcomp remove the two outliers  T1 ####
+  pcomp.u.bac.T1.removed <- subset_samples(pcomp.u.bac.T1, sample_name.1 != "SN134" )
+    
+#T1
+  pcomp.u.T1.removed <- phyloseq::distance(pcomp.u.bac.T1.removed, method = "wunifrac") 
+      pcomp.u.samp.df.T1.removed <- as(sample_data(pcomp.u.bac.T1.removed), "data.frame")
+      pcomp.u.samp.df.T1.removed$Code<-paste(pcomp.u.samp.df.T1.removed$Treatment, pcomp.u.samp.df.T1.removed$Clade)
+   set.seed(30)
+   adonis(pcomp.u.T1.removed ~ Treatment, data = pcomp.u.samp.df.T1.removed)  
+    set.seed(30)
+   adonis(pcomp.u.T1.removed ~ Clade*Treatment, data = pcomp.u.samp.df.T1.removed)  
+ # Homogeneity of dispersion test  
+   pcomp.u.samp.df.T1.removed$Code<-paste(pcomp.u.samp.df.T1.removed$Treatment,pcomp.u.samp.df.T1.removed$Clade)
+    set.seed(30)
+    permutest(betadisper(pcomp.u.T1.removed, pcomp.u.samp.df.T1.removed$Clade, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(pcomp.u.T1.removed, pcomp.u.samp.df.T1.removed$Treatment, type = "centroid")) 
+       set.seed(30)
+    permutest(betadisper(pcomp.u.T1.removed, pcomp.u.samp.df.T1.removed$Code, type = "centroid")) 
+    
+     ## Tukey's Honest Significant Differences
+  mod<-  (betadisper(pcomp.u.T1.removed, pcomp.u.samp.df.T1.removed$Code, type = "centroid"))
+  mod.HSD <- TukeyHSD(mod)
+  plot(mod.HSD)
+    
+    set.seed(30)
+    permutest(betadisper(pcomp.u.T1.removed, pcomp.u.samp.df.T1.removed$Code, type = "centroid")) 
+    
+    # Pcomp remove the two outliers  TF ####
+  pcomp.u.bac.TF.removed <- subset_samples(pcomp.u.bac.TF, sample_name.1 != "N98" )
+    
+#TF
+  pcomp.u.TF.removed <- phyloseq::distance(pcomp.u.bac.TF.removed, method = "wunifrac") 
+      pcomp.u.samp.df.TF.removed <- as(sample_data(pcomp.u.bac.TF.removed), "data.frame")
+      pcomp.u.samp.df.TF.removed$Code<-paste(pcomp.u.samp.df.TF.removed$Treatment, pcomp.u.samp.df.TF.removed$Clade)
+   set.seed(30)
+   adonis(pcomp.u.TF.removed ~ Treatment, data = pcomp.u.samp.df.TF.removed)  
+    set.seed(30)
+   adonis(pcomp.u.TF.removed ~ Clade*Treatment, data = pcomp.u.samp.df.TF.removed)  
+ # Homogeneity of dispersion test  
+   pcomp.u.samp.df.TF.removed$Code<-paste(pcomp.u.samp.df.TF.removed$Treatment,pcomp.u.samp.df.TF.removed$Clade)
+    set.seed(30)
+    permutest(betadisper(pcomp.u.TF.removed, pcomp.u.samp.df.TF.removed$Clade, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(pcomp.u.TF.removed, pcomp.u.samp.df.TF.removed$Treatment, type = "centroid")) 
+       set.seed(30)
+    permutest(betadisper(pcomp.u.TF.removed, pcomp.u.samp.df.TF.removed$Code, type = "centroid")) 
+    
+     ## Tukey's Honest Significant Differences
+  mod<-  (betadisper(pcomp.u.TF.removed, pcomp.u.samp.df.TF.removed$Code, type = "centroid"))
+  mod.HSD <- TukeyHSD(mod)
+  plot(mod.HSD)
+    
+    set.seed(30)
+    permutest(betadisper(pcomp.u.TF.removed, pcomp.u.samp.df.TF.removed$Code, type = "centroid")) 
     
 ######### pvar ####
 pvar.u.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Pavona_varians")
@@ -3382,6 +3470,233 @@ pacu.u.f.bac.Amb = prune_taxa(taxa_sums(pacu.u.bac.Amb) > 0, pacu.u.bac.Amb) #th
     
     
 ```
+Dispersion
+```{r}
+
+# #dipersion lmer  Bac.s.rel.u
+  s.u.samp.df.T01F <- as(sample_data(Bac.s.rel.u), "data.frame") #sample df
+  s.u.samp.df.T01F$Code<-paste(s.u.samp.df.T01F$Species,s.u.samp.df.T01F$Clade,s.u.samp.df.T01F$Treatment,s.u.samp.df.T01F$Time.Point)
+
+  Bac.s.u.T01F <- phyloseq::distance(Bac.s.rel.u, method = "wunifrac")
+
+wu.all<-betadisper(Bac.s.u.T01F, s.u.samp.df.T01F$Code, type = "centroid")
+ wu.disp<-as.data.frame(wu.all$distances) #extract distances
+ names(wu.disp)[names(wu.disp) == "wu.all$distances"] <- "wu.distances" #rename
+ Awu.disp.Species<-cbind(wu.disp, s.u.samp.df.T01F) #bind dist to sd
+       hist(wu.disp.Species$wu.distances) #none of these are great, do by species
+         hist(log10(wu.disp.Species$wu.distances))
+        hist(sqrt(wu.disp.Species$wu.distances))
+        hist((wu.disp.Species$wu.distances)^1/3)
+        hist(1/wu.disp.Species$wu.distances)
+#
+# wu.disp<-lmer(wu.distances~Species*Treatment*Time.Point+(1|Parent.ID)+(1|Tank.num), data=wu.disp.Species)
+# anova(wu.disp)
+#   qqPlot(residuals(wu.disp))
+#     emm<-emmeans(wu.disp,  ~ Species, adjust="Tukey")
+#       cld(emm)
+#       pairs(emm)
+#
+ #T0 make all ambient   
+        Awu.disp.Species$Treatment[Awu.disp.Species$Time.Point=="T0"]  <- "Ambient" 
+
+   disp_mean <- ddply(Awu.disp.Species, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                   N    = length(wu.distances[!is.na(wu.distances)]), 
+                   mean = mean(wu.distances, na.rm=TRUE), 
+                   sd   = sd(wu.distances, na.rm=TRUE), 
+                   se   = sd / sqrt(N), 
+                   max = max(wu.distances, na.rm=TRUE) 
+)
+disp_mean #dis 
+  disp_mean$Code<-paste(disp_mean$Species,disp_mean$Clade,disp_mean$Treatment,disp_mean$Time.Point)
+  disp_mean$Code2<-paste(disp_mean$Species,disp_mean$Clade,disp_mean$Treatment)
+
+   #plot all
+disp_mean_plot<-ggplot(data=disp_mean, aes(x=Code, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Species*Clade)
+
+    
+#plot by species
+#mcap
+    disp_mean.mcap<-subset(disp_mean, Species=="Montipora_capitata")
+
+    disp_mean_plot<-ggplot(data=disp_mean.mcap, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Mcap Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Clade)
+    
+ #pcomp
+    disp_mean.pcomp<-subset(disp_mean, Species=="Porites_compressa")
+
+    disp_mean_plot<-ggplot(data=disp_mean.pcomp, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pcomp Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Clade)
+    
+    
+#pvar
+    disp_mean.pvar<-subset(disp_mean, Species=="Pavona_varians")
+
+    disp_mean_plot<-ggplot(data=disp_mean.pvar, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pvar Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Clade)    
+    
+    
+    
+#pacu
+    disp_mean.pacu<-subset(disp_mean, Species=="Pocillopora_acuta")
+
+    disp_mean_plot<-ggplot(data=disp_mean.pacu, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pacu Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Clade)
+    
+    
+#T0
+    disp_mean.T0<-subset(disp_mean, Time.Point=="T0")
+
+    disp_mean_plot<-ggplot(data=disp_mean.T0, aes(x=Time.Point, y=mean, group = Code2, color=Clade)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Clade), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("T0 Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Species)    
+    
+```
+
+
 Unifrac NMDS
 ```{r} 
  Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
@@ -3430,7 +3745,7 @@ unifrac.all.Amb <- ordinate(Bac.s.rel.u.Amb, method="NMDS", "unifrac",weighted=T
 stressplot(unifrac.all.Amb)
 scores.ord.u_RelA_stats.Amb<-as.data.frame(cbind(vegan::scores(unifrac.all.Amb, display="sites"))) # these are "points" ask hannah 
      unifrac.all.sd.Amb <- as(sample_data(Bac.s.rel.u.Amb), "data.frame") #sample df
-
+scores.ord.u_RelA_stats.Amb$sample_name.1 <- unifrac.all.sd.Amb$sample_name.1
 scores.ord.u_RelA_stats.Amb$Treatment <- unifrac.all.sd.Amb$Treatment
 scores.ord.u_RelA_stats.Amb$Species <- unifrac.all.sd.Amb$Species
 scores.ord.u_RelA_stats.Amb$Clade <- unifrac.all.sd.Amb$Clade
@@ -3441,6 +3756,7 @@ scores.ord.u_RelA_stats.Amb$Code <- paste(scores.ord.u_RelA_stats.Amb$Clade, sco
 ggplot(scores.ord.u_RelA_stats.Amb, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
   scale_color_manual(values=Sp.colors)+
+    geom_text(aes(label=sample_name.1),hjust=-.5, vjust=-.5)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
   ggtitle("NMDS 16s bray Ambient only") +
@@ -3659,7 +3975,7 @@ ggplot(ord.mcap.u.AmbT01F.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-####Pcomp ####
+####Pcomp #### 
 
 pcomp.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue",                         "Ambient" = "#4575B4", "High" = "#D73027","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
@@ -3703,11 +4019,29 @@ ggplot(scores.pcomp.u.samp.df, aes(x = NMDS1, y = NMDS2)) +
    geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=pcomp.u.Parent.colors)+
+      geom_text(aes(label=Parent.ID),hjust=-.5, vjust=-.5)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Code2))) +
     scale_linetype_manual(values=c(2,2,3,3))+
   ggtitle("Pcomp T1TF") +
   theme_classic()
+
+#pcomp with 2 problem samples remvoed, 319 T1H and 317 TFA
+#scores.pcomp.u.samp.df<-scores.pcomp.u.samp.df[!(scores.pcomp.u.samp.df$Code3=="High T1 319"),]
+scores.pcomp.u.samp.df<-scores.pcomp.u.samp.df[!(scores.pcomp.u.samp.df$Code3=="Ambient TF 317"),]
+
+ggplot(scores.pcomp.u.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
+    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+  scale_color_manual(values=pcomp.u.Parent.colors)+
+      geom_text(aes(label=Parent.ID),hjust=-.5, vjust=-.5)+
+   # geom_line(aes(group = Parent.ID), color = "black") + 
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Code2))) +
+    scale_linetype_manual(values=c(2,2,3,3))+
+  ggtitle("Pcomp T1TF") +
+  theme_classic()
+
+
 
 #T1
 ord.pcomp.u.T1 <- ordinate(pcomp.u.bac.T1, method="NMDS",  "unifrac",weighted=TRUE, set.seed(30)) 
@@ -4968,7 +5302,7 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 
 #16s - bar plots df Bac.sRelA YOU Don't need now
-```{r}     
+```{r}      
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
 Bac.s.rel.ord <- ordinate(Bac.s.rel, "NMDS", "bray", set.seed(30))
 Bac.RelA.ord_plot = plot_ordination(Bac.s.rel, Bac.s.rel.ord, type="samples", shape="Treatment",color="Species", title="species")
@@ -4982,7 +5316,10 @@ Pcomp_16s_RA <- subset_samples(Bac.s.rel, Species=="Porites_compressa")
 Pvar_16s_RA <- subset_samples(Bac.s.rel, Species=="Pavona_varians")
 Pacu_16s_RA <- subset_samples(Bac.s.rel, Species=="Pocillopora_acuta")
 
-#top 50 DIVs across by species 
+
+
+
+#top 50 ASVs across by species 
 
 #Mcap
  TopNOTUsMcap = names(sort(taxa_sums(Mcap_16s_RA), TRUE)[1:300])

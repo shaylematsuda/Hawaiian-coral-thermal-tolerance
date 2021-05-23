@@ -272,7 +272,7 @@ Pvar_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pavona_varians") #S
 
 ```
 Stats - T0 is n=6, not n=12. T1 and TF
-```{r}     
+```{r}      
 Biomass_stats<-biomass2
 
 biomass_stats_T1TF<-biomass2
@@ -7312,7 +7312,7 @@ grid.arrange(Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot, nro
 
 ```
 Resp stats
-```{r} 
+```{r}  
 #df PR.df_B 
  
 hist(PR.df_B$Resp) #normal

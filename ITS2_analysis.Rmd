@@ -857,6 +857,232 @@ ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
 
 
 ```
+Dispersion
+```{r}
+
+# #dipersion lmer  Bac.s.rel.u
+  DIVsamp.df.T01F <- as(sample_data(DIV_RelA_stats), "data.frame") #sample df
+  DIVsamp.df.T01F$Code<-paste(DIVsamp.df.T01F$Species,DIVsamp.df.T01F$Clade,DIVsamp.df.T01F$Treatment,DIVsamp.df.T01F$Time.Point)
+
+  ITS.DIVT01F <- phyloseq::distance(DIV_RelA_stats, method = "bray")
+
+wu.all.its<-betadisper(ITS.DIVT01F, DIVsamp.df.T01F$Code, type = "centroid")
+ wu.disp.its<-as.data.frame(wu.all.its$distances) #extract distances
+ names(wu.disp.its)[names(wu.disp.its) == "wu.all.its$distances"] <- "wu.distances" #rename
+ Awu.disp.Species.its<-cbind(wu.disp.its, DIVsamp.df.T01F) #bind dist to sd
+       hist(Awu.disp.Species.its$wu.distances) #
+         hist(log10(Awu.disp.Species.its$wu.distances)) #good
+        hist(sqrt(Awu.disp.Species.its$wu.distances))#bette
+     
+#
+# wu.disp<-lmer(wu.distances~Species*Treatment*Time.Point+(1|Parent.ID)+(1|Tank.num), data=wu.disp.Species)
+# anova(wu.disp)
+#   qqPlot(residuals(wu.disp))
+#     emm<-emmeans(wu.disp,  ~ Species, adjust="Tukey")
+#       cld(emm)
+#       pairs(emm)
+#
+ #T0 make all ambient   
+        Awu.disp.Species.its$Treatment[Awu.disp.Species.its$Time.Point=="T0"]  <- "Ambient" 
+
+   disp_mean.its <- ddply(Awu.disp.Species.its, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+                   N    = length(wu.distances[!is.na(wu.distances)]), 
+                   mean = mean(wu.distances, na.rm=TRUE), 
+                   sd   = sd(wu.distances, na.rm=TRUE), 
+                   se   = sd / sqrt(N), 
+                   max = max(wu.distances, na.rm=TRUE) 
+)
+disp_mean.its #dis 
+  disp_mean.its$Code<-paste(disp_mean.its$Species,disp_mean.its$Clade,disp_mean.its$Treatment,disp_mean.its$Time.Point)
+  disp_mean.its$Code2<-paste(disp_mean.its$Species,disp_mean.its$Clade,disp_mean.its$Treatment)
+
+   #plot all
+disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Dispersion ITSs")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot.its 
+    disp_mean_plot.its+facet_wrap(~Species*Clade)
+
+    
+#plot by species
+#mcap
+    disp_mean.its.mcap<-subset(disp_mean.its, Species=="Montipora_capitata")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.mcap, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Mcap Dispersion its")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    disp_mean.its_plot+facet_wrap(~Clade)
+    
+ #pcomp
+    disp_mean.its.pcomp<-subset(disp_mean.its, Species=="Porites_compressa")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pcomp, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pcomp Dispersion its")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    disp_mean.its_plot+facet_wrap(~Clade)
+    
+    
+#pvar
+    disp_mean.its.pvar<-subset(disp_mean.its, Species=="Pavona_varians")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pvar, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pvar Dispersion its")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    disp_mean.its_plot+facet_wrap(~Clade)    
+    
+    
+    
+#pacu
+    disp_mean.its.pacu<-subset(disp_mean.its, Species=="Pocillopora_acuta")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pacu, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pacu Dispersion Its")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    disp_mean.its_plot+facet_wrap(~Clade)
+    
+    
+#T0
+    disp_mean.its.T0<-subset(disp_mean.its, Time.Point=="T0")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.T0, aes(x=Time.Point, y=mean, group = Code2, color=Clade)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Clade), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("T0 Dispersion ITS")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    disp_mean.its_plot+facet_wrap(~Species)    
+    
+```
+
+
 
 #Beta by species 
 Beta
