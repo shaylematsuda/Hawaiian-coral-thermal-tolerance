@@ -615,8 +615,8 @@ biomass_T0_mean
 All_biomass_plot<-ggplot(data=biomass_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   ylim(0, 11) + #set Y limits
@@ -633,7 +633,7 @@ All_biomass_plot<-ggplot(data=biomass_T0_mean, aes(x=Species, y=mean, group = Sp
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  ylab(expression(paste("mg cm"^"-2"))) +
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
 
@@ -910,7 +910,7 @@ grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_
 ```
 
 # Flow cytometry  cell counts
-```{r}     
+```{r}      
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
 
@@ -1133,7 +1133,7 @@ Pacu_FC_Sum #display table
 
 ```
 Stats
-```{r}    
+```{r}     
  FC.biomass_SumT0<-subset(FC.biomass_Sum, Time.Point=="T0")
 
 #T0 only
@@ -1201,7 +1201,7 @@ pairs(emm)
 
 
 # models T1Tf####
-
+ 
 hist(FC_Data$zoox.cm2) 
 FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
 hist(FC_Data$zoox.cm2_log) #normal (use)
@@ -1485,8 +1485,8 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 ```
 
 Line plots 
-```{r} 
-#just T0 #### 
+```{r}  
+#just T0 ####  
 FC_T0_mean <- ddply(FC_stats_T0, c( "Species"), summarise, #summarize cell counts
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                  mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -1502,8 +1502,8 @@ FC_T0_mean
 FC_T0_mean_plot<-ggplot(data=FC_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   #ylim(0, 11) + #set Y limits
@@ -1521,7 +1521,7 @@ FC_T0_mean_plot<-ggplot(data=FC_T0_mean, aes(x=Species, y=mean, group = Species,
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Algal Cell Counts"))) +
+  ylab(expression(paste("cells cm"^"-2"))) +
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));FC_T0_mean_plot
 
@@ -1566,7 +1566,7 @@ FC_T0_mean_plot.c<-ggplot(data=FC_T0_mean.clade, aes(x=Species, y=mean, group = 
 
 
 
-#TFH only####
+#TFH only#### 
 FC_TFH<-subset(FC_Data, Time.Point=="TF"&Treatment=="High") #Subset Pvar
 FC_TFH_mean <- ddply(FC_TFH, c( "Species"), summarise, #summarize cell counts
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -1633,7 +1633,7 @@ All_FC_plot<-ggplot(data=FC_TFH_mean, aes(x=Species, y=mean, group = Species, co
   theme(plot.title = element_text(size=20, face = "italic"));All_FC_plot
 
 
-# Mcap   ####
+# Mcap   #### 
 
 Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -1690,6 +1690,42 @@ FC_SumClade.mcap$Code<-paste(FC_SumClade.mcap$Treatment,FC_SumClade.mcap$Clade)
         theme(aspect.ratio=1)+
   ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot.c
+ 
+ FC_SumClade.mcap_T1TF<-subset(FC_SumClade.mcap, Time.Point=="T1"|Time.Point=="TF")
+ 
+   #by clade FC_SumClade.mcap
+ Mcap_FC_lineplot.c2<-ggplot(data=FC_SumClade.mcap_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
+   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       #scale_y_log10()+
+   #   ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot.c2
+ 
+ Mcap_FC_lineplot.c2+facet_wrap(~Clade)
+
+ 
+
+ 
 
 FC_Data.mcap<-subset(FC_Data, Species=="Montipora_capitata")
 FC_Data.mcap<-subset(FC_Data.mcap, Time.Point=="T1"|Time.Point=="TF")
@@ -1784,6 +1820,78 @@ Pcomp_FC_lineplot.c<-ggplot(data=Pcomp_FC_SumClade, aes(x=Time.Point, y=mean, gr
         theme(aspect.ratio=1)+
   ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot.c
+
+
+
+Pcomp_FC_SumClade_T1TF<-subset(Pcomp_FC_SumClade, Time.Point=="T1"|Time.Point=="TF")
+ 
+   #by clade FC_SumClade.mcap
+ pcmp_FC_lineplot.c2<-ggplot(data=Pcomp_FC_SumClade_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
+   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       #scale_y_log10()+
+   #   ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+   # theme(panel.grid.major = element_blank(), 
+   #      panel.grid.minor = element_blank(),
+   #      panel.background = element_rect(colour = "black", size=1))+
+   #      theme(aspect.ratio=1)+
+  ggtitle("pcomp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pcmp_FC_lineplot.c2
+ 
+
+
+
+
+
+
+
+FC_SumClade.pcomp_T1TF<-subset(Pcomp_FC_SumClade, Time.Point=="T1"|Time.Point=="TF")
+ 
+   #by clade FC_SumClade.mcap
+ pcomp_FC_lineplot.c2<-ggplot(data=FC_SumClade.pcomp_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
+   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+       #scale_y_log10()+
+   #   ylim(0, 4000000)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("cells"))) +
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("Pcomp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pcomp_FC_lineplot.c2
+
+
+
 
 
 FC_Data.pcomp<-subset(FC_Data, Species=="Porites_compressa")
@@ -1991,6 +2099,100 @@ pacu_FC_lineplot.c<-pacu_FC_lineplot.c+ theme(legend.position = "none") #remove 
 
 grid.arrange(Mcap_FC_lineplot.c, Pcomp_FC_lineplot.c, Pvar_FC_lineplot.c,pacu_FC_lineplot.c, nrow = 1)
 ```
+# boxplot
+```{r}
+
+FC_meanlog <- ddply(FC_Data, c( "Species","Treatment","Time.Point"), summarise, #summarize cell counts
+                 N    = length(zoox.cm2_log[!is.na(zoox.cm2_log)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(zoox.cm2_log, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(zoox.cm2_log, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(zoox.cm2_log, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+FC_meanlog
+
+
+FC_mean_box<-subset(FC_meanlog, Time.Point=="T1"|Time.Point=="TF")
+FC_mean_box_mcap<-subset(FC_mean_box, Species=="Montipora_capitata")
+FC_mean_box_pcomp<-subset(FC_mean_box, Species=="Porites_compressa")
+FC_mean_box_pvar<-subset(FC_mean_box, Species=="Pavona_varians")
+FC_mean_box_pacu<-subset(FC_mean_box, Species=="Pocillopora_acuta")
+
+plot1<-ggplot(data=FC_mean_box_mcap, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
+  geom_boxplot(position=position_dodge(0.9), lwd=1)+
+  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+
+    xlab("Time Point")+
+  ylab(paste("log cells cm2")) +
+  theme_classic() +
+  theme(text = element_text(size = 18, color="black"),
+        axis.text = element_text(size = 18, color="black"), 
+        legend.position = "top",
+        axis.title = element_text(size = 18, color="black", face="bold"), 
+        legend.title=element_blank(), 
+        legend.text = element_text(size=18), 
+        plot.margin=unit(c(1,1,1,1), "cm"), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
+        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
+
+plot1<-ggplot(data=FC_mean_box_pcomp, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
+  geom_boxplot(position=position_dodge(0.9), lwd=1)+
+  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+
+    xlab("Time Point")+
+  ylab(paste("log cells cm2")) +
+  theme_classic() +
+  theme(text = element_text(size = 18, color="black"),
+        axis.text = element_text(size = 18, color="black"), 
+        legend.position = "top",
+        axis.title = element_text(size = 18, color="black", face="bold"), 
+        legend.title=element_blank(), 
+        legend.text = element_text(size=18), 
+        plot.margin=unit(c(1,1,1,1), "cm"), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
+        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
+
+plot1<-ggplot(data=FC_mean_box_pvar, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
+  geom_boxplot(position=position_dodge(0.9), lwd=1)+
+  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+
+    xlab("Time Point")+
+  ylab(paste("log cells cm2")) +
+  theme_classic() +
+  theme(text = element_text(size = 18, color="black"),
+        axis.text = element_text(size = 18, color="black"), 
+        legend.position = "top",
+        axis.title = element_text(size = 18, color="black", face="bold"), 
+        legend.title=element_blank(), 
+        legend.text = element_text(size=18), 
+        plot.margin=unit(c(1,1,1,1), "cm"), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
+        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
+
+plot1<-ggplot(data=FC_mean_box_pacu, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
+  geom_boxplot(position=position_dodge(0.9), lwd=.5)+
+  geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+
+    xlab("Time Point")+
+  ylab(paste("log cells cm2")) +
+  theme_classic() +
+  theme(text = element_text(size = 18, color="black"),
+        axis.text = element_text(size = 18, color="black"), 
+        legend.position = "top",
+        axis.title = element_text(size = 18, color="black", face="bold"), 
+        legend.title=element_blank(), 
+        legend.text = element_text(size=18), 
+        plot.margin=unit(c(1,1,1,1), "cm"), 
+        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
+        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
+
+```
+
+
 
 LIne plots by standardizing to biomass  for Ford
 FC.biomass_Sum
@@ -2540,7 +2742,7 @@ StandardFreshModel$coef
 
 ```
 Analysis 
-```{r}    
+```{r}     
  
 #load coral weight data
 BW.data <-read.csv('Data/BWdata_Final.csv') # this is a file I compiled with all dates
@@ -2568,7 +2770,7 @@ Temp_Pacu <- Pacu_BW$Temp.C
  
 ```
 Montipora capitata
-```{r}  
+```{r}   
 BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -2908,7 +3110,7 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
   ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pcomp_BW_plot.c
 
-```
+``` 
 Pavona varians
 ```{r}  
 BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
@@ -3079,7 +3281,7 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
 
 ```
 P acuta
-```{r}  
+```{r}   
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -3288,10 +3490,42 @@ TF.Growth.plot<-ggplot(Growth_mean.TF, aes(x=Species, y=mean, color=Treatment)) 
   ggtitle("Calcification TF")+
  theme(legend.position="none") +# Remove legend
   geom_boxplot(notch=TRUE);TF.Growth.plot
+
+#T0 (T0-T1 abm)
+T0Growth<-rbind(G_Mcap, G_Pcomp, G_Pvar, G_Pacu)
+T0Growth<-subset(T0Growth,Time=="Time1")
+T0Growth<-subset(T0Growth,Treatment=="Ambient")
+
+grow_T0_mean_plot<-ggplot(data=T0Growth, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("% change"))) +
+  ggtitle("Time 0")+
+  theme(plot.title = element_text(size=20, face = "italic"));grow_T0_mean_plot
+
 ``` 
  
 stats
-```{r}        
+```{r}         
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth")
 Growth <- Growth[GrowthKeep]
@@ -3659,8 +3893,8 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 #Chl-a  
 dfs: Slurry=airbrush, SA=wax dip, 
-SHOULD YOU STANDARDIZE TO CELLS INSTEAD
-```{r}      
+SHOULD YOU STANDARDIZE TO CELLS INSTEAD?
+```{r}       
  
  # Plate 1
 
@@ -3817,7 +4051,7 @@ chlatest<-merge(meta, Chla, all = T)
 
 means for plots 
 ```{r}     
-  
+   
 chlatest<-merge(meta, Chla, all.x = T)
 
 duplicated(Chla) #look for duplicate entries
@@ -3882,8 +4116,8 @@ Chla_T0_mean
 Chla_T0_mean_plot<-ggplot(data=Chla_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   #ylim(0, 11) + #set Y limits
@@ -3901,7 +4135,7 @@ Chla_T0_mean_plot<-ggplot(data=Chla_T0_mean, aes(x=Species, y=mean, group = Spec
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Chl-a"))) +
+  ylab(expression(paste("mg cm"^"-2"))) +
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));Chla_T0_mean_plot
 
@@ -4240,7 +4474,7 @@ grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nro
 ```
  
 stats  
-```{r}   
+```{r}    
  
 #t0
 Chla_stats_T0<-Chla
@@ -4582,7 +4816,7 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
 
 
 #PAM 
-```{r}      
+```{r}       
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -5058,7 +5292,7 @@ PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 
 ```
 Plots
-```{r}      
+```{r}       
 PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, #summarize cell counts
                    N    = length(Yield[!is.na(Yield)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(Yield, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -5106,8 +5340,8 @@ PAM_T0_mean
 PAM_T0_mean_plot<-ggplot(data=PAM_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
   #ylim(0, 11) + #set Y limits
@@ -5125,7 +5359,7 @@ PAM_T0_mean_plot<-ggplot(data=PAM_T0_mean, aes(x=Species, y=mean, group = Specie
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("fv/fm"))) +
+  ylab(expression(paste("Fv/Fm"))) +
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));PAM_T0_mean_plot
 
@@ -5206,10 +5440,10 @@ Mcap_PAM_mean.clade$Code<-paste(Mcap_PAM_mean.clade$Clade, Mcap_PAM_mean.clade$T
 Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_point(aes(color=Code, shape=Clade), size=6, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+   geom_point(shape = 1,size = 6,colour = "black")+
   xlab("Time Point") + #Label the X Axis
    #   ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
@@ -5223,10 +5457,10 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean.clade, aes(x=Days, y=mean, group = Code
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
+   # theme(panel.grid.major = element_blank(), 
+   #      panel.grid.minor = element_blank(),
+   #      panel.background = element_rect(colour = "black", size=1))+
+   #      theme(aspect.ratio=1)+
   ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PAM_plot
 
@@ -5272,7 +5506,7 @@ Pcomp_PAM_mean.clade$Code<-paste(Pcomp_PAM_mean.clade$Clade, Pcomp_PAM_mean.clad
 Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_point(aes(color=Code, shape=Clade), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
@@ -5296,7 +5530,33 @@ Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Co
   ggtitle("P comp")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
 
-
+#for defense
+Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Code, shape=Clade), size=6, show.legend = T)+  
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+   geom_point(shape = 1,size = 6,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+   #   ylim(0, 1)+
+   scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("fv/fm"))) +
+   theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ggtitle("P comp")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
 
 
 
@@ -5437,7 +5697,7 @@ grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 
 ```
 
 #Protein
-```{r}     
+```{r}      
 Protein <- read.csv("Data/Protein_TT17_20190214.csv")
 prottest<-merge(meta, Protein, all=T)
 keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
@@ -5489,7 +5749,7 @@ hist(Protein$mg.mm2_sqrt) #better
  
 ```
 Stats
-```{r}    
+```{r}     
  
 #t0
 Prot_stats_T0<-subset(Protein, Time.Point=="T0")
@@ -5596,6 +5856,7 @@ Prot_Mcap_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
   pairs(emm)
   
  #T1 only
+  aProt_stats_Mcap.T1<-Prot_stats_Mcap.T1
   Prot_stats_Mcap.T1<-subset(Prot_stats_T1TF_Mcap, Time.Point=="T1")
   Prot_Mcap_model.T1<-lmer(mg.mm2_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_Mcap.T1)
   anova(Prot_Mcap_model.T1) 
@@ -5799,7 +6060,7 @@ Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
 plots
 ```{r}  
 
-#just T0 ####
+#just T0 #### 
 Protein_T0_mean <- ddply(Prot_stats_T0, c( "Species"), summarise, #summarize cell counts
                  N    = length(mg.mm2[!is.na(mg.mm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                  mean = mean(mg.mm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -5809,8 +6070,44 @@ Protein_T0_mean <- ddply(Prot_stats_T0, c( "Species"), summarise, #summarize cel
 ) 
 Protein_T0_mean
 
+prot_T0_mean_plot<-ggplot(data=Protein_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("mg cm"^"-2"))) +
+  ggtitle("Time 0")+
+  theme(plot.title = element_text(size=20, face = "italic"));prot_T0_mean_plot
 
-#TFH only####
+
+
+
+
+
+
+
+
+
+
+
+#TFH only#### 
 Protein_TFH<-subset(Protein, Time.Point=="TF"&Treatment=="High") #Subset Pvar
 Protein_TFH_mean <- ddply(Protein_TFH, c( "Species"), summarise, #summarize cell counts
                  N    = length(mg.mm2[!is.na(mg.mm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -6231,7 +6528,7 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
 ```
 Plots
 Photosynthesis
-```{r}     
+```{r}      
 GrossP_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(GrossP[!is.na(GrossP)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(GrossP, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -6267,8 +6564,8 @@ PR.df_BPR.df_B.T0_mean
 Photo_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("mg.mm2") + #Label the X Axis
   #ylim(0, 11) + #set Y limits
@@ -6286,7 +6583,7 @@ Photo_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, g
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("nanomol m- cm-2"))) +
+  ylab(expression(paste("nmol cm"^"-2 min"^"-"))) +
   ggtitle("Gross Photosynthesis T0")+
   theme(plot.title = element_text(size=20, face = "italic"));Photo_T0_mean_plot
 
@@ -6505,7 +6802,7 @@ library(gridExtra)
 
 ```
 Plots by Clades 
-```{r} 
+```{r}  
 #Mcap 
 GrossP_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
                    N    = length(GrossP[!is.na(GrossP)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -6554,7 +6851,7 @@ theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap Photosynthesis")+
+  ggtitle("Mcap P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_GrossP_plot.Clade
 
 
@@ -6583,7 +6880,7 @@ theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp Photosynthesis")+
+  ggtitle("Pcomp P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot.Clade
 
 #Pvar by clade
@@ -6611,7 +6908,7 @@ theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar Photosynthesis")+
+  ggtitle("Pvar P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_GrossP_plot.Clade
 
 #Pacu by clade
@@ -6639,7 +6936,7 @@ theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu Photosynthesis")+
+  ggtitle("Pacu P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot.Clade
 
 Mcap_GrossP_plot.Clade<-Mcap_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
@@ -6654,7 +6951,7 @@ grid.arrange(Mcap_GrossP_plot.Clade, Pcomp_GrossP_plot.Clade, Pvar_GrossP_plot.C
 ```
 
 GrossPsynthesis stats 
-```{r}      
+```{r}        
 #df PR.df_B, use all time points bc repeated measures 
 
 hist(PR.df_B$GrossP) #so normal
@@ -6714,7 +7011,7 @@ cld(emm)
 pairs(emm)
 
 
-#T1TF####
+#T1TF#### 
 #lmer
 GrossP_stats_model<-lmer(GrossP~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B)
 anova(GrossP_stats_model) 
@@ -6966,9 +7263,58 @@ GrossP_Pacu_model<-lmer(GrossP~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+
     
     
 ```
-Respiration
+Respiration plots
 ```{r}     
 #Respiration (absolute)
+
+#T0
+
+#t0 only
+PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, #summarize cell counts
+                 N    = length(RespPos[!is.na(RespPos)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(RespPos, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(RespPos, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(RespPos, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+PR.df_PR_B.T0_mean 
+
+
+#plot all
+R_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  #xlab("mg.mm2") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("nmol cm"^"-2 min"^"-"))) +
+  ggtitle("R T0")+
+  theme(plot.title = element_text(size=20, face = "italic"));R_T0_mean_plot
+
+
+
+
+
+
+
+
+
 
 
 RespPos_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
@@ -6995,6 +7341,7 @@ Mcap_RespPos_plot<-ggplot(data=Mcap_RespPos_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
+  ylim(0,12)+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7024,6 +7371,7 @@ Pcomp_RespPos_plot<-ggplot(data=Pcomp_RespPos_mean, aes(x=Time.Point, y=mean, gr
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
+    ylim(0,12)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7049,6 +7397,7 @@ Pvar_RespPos_plot<-ggplot(data=Pvar_RespPos_mean, aes(x=Time.Point, y=mean, grou
   geom_point(aes(color=Treatment), size=4, show.legend = T)+  
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
+    ylim(0,12)+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
@@ -7078,6 +7427,7 @@ Pacu_RespPos_plot<-ggplot(data=Pacu_RespPos_mean, aes(x=Time.Point, y=mean, grou
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
+    ylim(0,12)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7631,8 +7981,8 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num)
     
 ```
 
-P:R
-```{r}    
+P:R plots
+```{r}     
 
 #t0 only
 PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, #summarize cell counts
@@ -7649,8 +7999,8 @@ PR.df_PR_B.T0_mean
 PR_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = F)+
+  geom_line(aes(color=Species), linetype=2, show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkred"))+
   #xlab("mg.mm2") + #Label the X Axis
   #ylim(0, 11) + #set Y limits
@@ -7668,7 +8018,7 @@ PR_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("PR"))) +
+  ylab(expression(paste("nmol O2 cm"^"-2 min"^"- "))) +
   ggtitle("PR T0")+
   theme(plot.title = element_text(size=20, face = "italic"));PR_T0_mean_plot
 
@@ -7805,6 +8155,7 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
+    ylim(0, 4)+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7819,24 +8170,9 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol cm-2 m-"))) +
+#  ylab(expression(paste("nmol cm-2 m-"))) +
   ggtitle("Mcap PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -7853,6 +8189,7 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
+    ylim(0, 4)+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7863,7 +8200,7 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+ # ylab(expression(paste("umol/sec/cm2"))) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -7880,6 +8217,7 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
+    ylim(0, 4)+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7890,7 +8228,7 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+#  ylab(expression(paste("nmol cm-2 m-"))) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -7907,6 +8245,7 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
+  ylim(0, 4)+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7917,7 +8256,7 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+  #ylab(expression(paste("nmol cm-2 min-"))) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -7939,13 +8278,13 @@ grid.arrange(Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 1)
 ```
 Plots by Clades
 ```{r} 
-#Mcap
+#Mcap 
 PR_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
-                   N    = length(PR[!is.na(PR)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                   mean = mean(PR, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                   sd   = sd(PR, na.rm=TRUE), #calculate standard deviation
+                   N    = length(PR_real[!is.na(PR_real)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                   mean = mean(PR_real, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                   sd   = sd(PR_real, na.rm=TRUE), #calculate standard deviation
                    se   = sd / sqrt(N), #calculate standard error
-                   max = max(PR, na.rm=TRUE) #calculate max, could also calculate min () if desired
+                   max = max(PR_real, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
 PR_mean.Clade #display table
 
@@ -7984,7 +8323,7 @@ Mcap_PR_plot.Clade<-ggplot(data=Mcap_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+  #ylab(expression(paste("nmol cm-2 m-"))) +
 theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -8012,7 +8351,7 @@ Pcomp_PR_plot.Clade<-ggplot(data=Pcomp_PR_mean.Clade, aes(x=Time.Point, y=mean, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+  #ylab(expression(paste("umol/sec/cm2"))) +
 theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -8041,7 +8380,7 @@ Pvar_PR_plot.Clade<-ggplot(data=Pvar_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+ # ylab(expression(paste("umol/sec/cm2"))) +
 theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -8069,7 +8408,7 @@ Pacu_PR_plot.Clade<-ggplot(data=Pacu_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("umol/sec/cm2"))) +
+ # ylab(expression(paste("umol/sec/cm2"))) +
 theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_rect(colour = "black", size=2))+
@@ -8078,11 +8417,11 @@ theme(panel.grid.major = element_blank(),
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot.Clade
 
 
-
-Mcap_PR_plot.Clade<-Mcap_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-Pcomp_PR_plot.Clade<-Pcomp_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-Pvar_PR_plot.Clade<-Pvar_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-Pacu_PR_plot.Clade<-Pacu_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+# 
+# Mcap_PR_plot.Clade<-Mcap_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+# Pcomp_PR_plot.Clade<-Pcomp_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+# Pvar_PR_plot.Clade<-Pvar_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+# Pacu_PR_plot.Clade<-Pacu_PR_plot.Clade+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 1)
 
@@ -8429,10 +8768,10 @@ PR_Pacu_model<-lmer(PR_real~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|
     cld(emm)
     pairs(emm)
     
-    
+     
 ```
 All P, R, PR plots
-```{r}
+```{r} 
 grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 3)
 
  
@@ -8457,12 +8796,39 @@ grid.arrange(
              Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,
              Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,
              Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 9)
+
+
+grid.arrange(
+            Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot,
+            Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot,
+          Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot,
+            Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot,
+           nrow = 4)
+
+#T0 all
+
+
+
+grid.arrange(
+  All_biomass_plot,
+FC_T0_mean_plot,
+grow_T0_mean_plot,
+Chla_T0_mean_plot,
+PAM_T0_mean_plot,
+prot_T0_mean_plot,
+R_T0_mean_plot,
+Photo_T0_mean_plot,
+PR_T0_mean_plot,
+
+           nrow = 3)
+
+
 ```
 
 
 #COMBINE all physio dfs
 Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
-```{r}     
+```{r}       
 #prep metadata for by Parent.ID df for ordinations
 metaPhysio<-subset(meta, select= -X)#remove X from df
 metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
@@ -8487,7 +8853,7 @@ Biomass_psy<- Biomass_stats[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tan
 # duplicated(Biomass_psy)
   Biomass_psy$Code<-paste(Biomass_psy$Species,Biomass_psy$Treatment,Biomass_psy$Parent.ID, Biomass_psy$Time.Point)
 
-  Biomass_psy<- Biomass_psy[,c("Code" ,"AFDWmg.cm2")] # keep only columns you need
+  Biomass_psy<- Biomass_psy[,c("Code" ,"Biomass")] # keep only columns you need
 duplicated(Biomass_psy) #check
 Biomass_psy<-unique(Biomass_psy) # remove dups
 
@@ -8509,14 +8875,14 @@ CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.n
   CellCounts_psy$Code<-paste(CellCounts_psy$Species,CellCounts_psy$Treatment,CellCounts_psy$Parent.ID, CellCounts_psy$Time.Point)
 
   CellCounts_psy<- CellCounts_psy[,c("Code" ,"zoox.cm2_log")] # keep only columns you need
-
+names(Chla_psy)[names(Chla_psy) == "zoox.cm2_log"] <- "Zoox Density"
   duplicated(CellCounts_psy)
   CellCounts_psy<-unique(CellCounts_psy) #keep uniques
 
 
 #Chla Chla df ChlaSA_quart
 Chla_psy<- Chla[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
-names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chla_ug.chla.cm2"
+names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chl a"
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
 #   Chla_psyT0<-Chla_psy #copy
@@ -8538,7 +8904,7 @@ duplicated(Chla_psy)
 
 #Protein Protein$mg.mm2_sqrt
 Protein_psy<- Protein[,c("Parent.ID" ,"Species","Treatment","Time.Point","mg.mm2_sqrt")] # keep only columns you need
-names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein_mg.mm2_sqrt"
+names(Protein_psy)[names(Protein_psy) == "mg.mm2_sqrt"] <- "Protein"
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
 #   Protein_psyT0<-Protein_psy #copy
@@ -8582,12 +8948,12 @@ Calcification_psy<- Calcification_psy[,c("Code","percent.change_sqrt","Parent.ID
 
 
 Calcification_psy<-merge(metaPhysio, Calcification_psy, all.x = T)
-Calcification_psy$calc.percentchange[is.na(Calcification_psy$calc.percentchange)] <- 0 #change T0 growth to 0s
-Calcification_psy<- Calcification_psy[,c("Code","calc.percentchange")] # keep only columns you need
+Calcification_psy$calc.percentchange[is.na(Calcification_psy$Calcification)] <- 0 #change T0 growth to 0s
+Calcification_psy<- Calcification_psy[,c("Code","Calcification")] # keep only columns you need
 
  
 #PAM df PAMdata_stats make for T0, T1, TF ####
-PAM_psy<- PAMdata2_stats
+PAM_psy<- PAMdata2_stats 
 
 PAM_psy$Days<-as.character(PAM_psy$Days)
 PAM_psy$Days[PAM_psy$Days == "0"] <- "T0" #change 
@@ -8603,6 +8969,8 @@ PAM_psy<-PAM_psy[!(PAM_psy$Days=="52"),] #remove other days by name
 #now you need to figure out the sample 'day' for each parent.id, and subset out only those. 
 names(PAM_psy)[names(PAM_psy) == "Days"] <- "Time.Point" #change name
 
+PAM_psyDF<-PAM_psy #make copy for dissertation plot
+
 PAM_psy$Code<-paste(PAM_psy$Species,PAM_psy$Treatment,PAM_psy$Parent.ID,PAM_psy$Time.Point) #make code
 PAM_psy$Code<-as.factor(PAM_psy$Code)
 
@@ -8615,24 +8983,24 @@ PAM_psy<- PAM_psy[,c("Code","Yield_cu")] # keep only columns you need
 PAM_psy<-aggregate(x = PAM_psy$Yield_cu,                # Specify data column
           by = list(PAM_psy$Code),              # Specify group indicator
           FUN = mean)        
-        names(PAM_psy)[names(PAM_psy) == "x"] <- "PAM" #change name
+        names(PAM_psy)[names(PAM_psy) == "x"] <- "Fv/Fm" #change name
         names(PAM_psy)[names(PAM_psy) == "Group.1"] <- "Code" #change name
 
 
 
 # Photosynthesis PR.df_B ####
-
+ 
 PR_psy<-PR.df_B
     PR_psy$Code<-paste(PR_psy$Species,PR_psy$Treatment,PR_psy$Parent.ID, PR_psy$Time.Point)
  
   #photo  code stopped working. 
-  Photo_psy<- PR_psy[,c("Photo","Code")] 
+  Photo_psy<- PR_psy[,c("GrossP","Code")] 
     # Photo_psy<-Photo_psy %>% group_by(Code) %>% mutate(mean=mean(Photo)) # mean by code, this STOPPED WORKING use below
     # names(Photo_psy)[names(Photo_psy) == "mean"] <- "Photosynthesis" #change name
     # Photo_psy<-Photo_psy[,c("Code","Photosynthesis")] #remove col with uniq
     # Photo_psy<-unique(Photo_psy) #remove duplicates, now you have 
     
-  Photo_psy<-aggregate(x = Photo_psy$Photo,                # Specify data column
+  Photo_psy<-aggregate(x = Photo_psy$GrossP,                # Specify data column
           by = list(Photo_psy$Code),              # Specify group indicator
           FUN = mean)        
         names(Photo_psy)[names(Photo_psy) == "x"] <- "Photosynthesis" #change name
@@ -8653,13 +9021,13 @@ PR_psy<-PR.df_B
 
   
    #PR
-  P_R_psy<- PR_psy[,c("PR","Code")] 
+  P_R_psy<- PR_psy[,c("PR_real","Code")] 
     # P_R_psy2<-P_R_psy %>% group_by(Code) %>% mutate(mean=mean(PR)) # mean by code, this worked
     # names(P_R_psy2)[names(P_R_psy2) == "mean"] <- "P_R" #change name
     # P_R_psy2<-P_R_psy2[,c("Code","P_R")] #remove col
     # P_R_psy2<-unique(P_R_psy2) #remove duplicates, now you have 
     # 
-    P_R_psy<-aggregate(x = P_R_psy$PR,                # Specify data column
+    P_R_psy<-aggregate(x = P_R_psy$PR_real,                # Specify data column
           by = list(P_R_psy$Code),              # Specify group indicator
           FUN = mean)        
         names(P_R_psy)[names(P_R_psy) == "x"] <- "PR" #change name
@@ -8673,7 +9041,7 @@ PR_psy<-PR.df_B
  
 ```
 #merging full physio 
-```{r}   
+```{r}    
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
  
 
@@ -8717,7 +9085,7 @@ PhysioData<-unique(PhysioData) #this is the df.
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data
 ```{r}     
-
+  
 
 #make a copy
 pData<-PhysioData
@@ -9483,25 +9851,133 @@ phy_Pacu.div #view, all is significant
 ####ITS2
 ## ITS2
 
-# Physio PCA
-```{r}  
-PhysioData4.pr <- prcomp(PhysioData4[c(8:11)], center = TRUE, scale = TRUE)
-summary(PhysioData.pr)
+# Physio PCA THIS IS THE WAY df= PhysioData
+```{r}   
+library(ggbiplot)
+
+apData<-PhysioData
+
+apData<-subset(apData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
+apData<-na.omit(apData)
+apData2 <- prcomp(apData[c(14:22)], center = TRUE, scale = TRUE)
+summary(apData2)
  
-library(VIM)
-library(FactoMineR)
-library(missMDA) #lets you do with incomplete dataset
-library(naniar)
-gg_miss_var(PhysioData)
-res<-summary(aggr(PhysioData, sortVar=TRUE))$combinations
+str(apData2)
+
+ggbiplot(apData2) #quick look at plot
+
+#exract scores for gg
+Miss_scores <- as.data.frame(apData2$x)
+Miss_scores$frag.id <- apData$Frag.ID
+Miss_scores$parent.id <- apData$Parent.ID
+Miss_scores$treatment <- apData$Treatment
+Miss_scores$species <- apData$Species
+Miss_scores$time.point <- apData$Time.Point
 
 
-nb <- estim_ncpPCA(PhysioData,method.cv = "Kfold", verbose = FALSE) # estimate the number of components from incomplete data
-#(available methods include GCV to approximate CV)
-nb$ncp #2
+#Plot
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
 
-res <- cor(PhysioData)
-round(res, 2)
+#plot by time and species
+Miss_scores$treatSpecies<-paste0(Miss_scores$species, Miss_scores$treatment )
+Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
+
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
+  theme_classic()
+
+
+
+
+
+
+#subset by T0#### 
+
+apDataT0<-PhysioData #copy
+apDataT0<-subset(apDataT0, Time.Point=="T0") #
+#remove calcification
+apDataT0<-subset(apDataT0, select=-c(Calcification))
+apDataT0<-na.omit(apDataT0)
+apDataT02 <- prcomp(apDataT0[c(14:21)], center = TRUE, scale = TRUE)
+summary(apDataT02)
+ 
+str(apDataT02)
+
+ggbiplot(apDataT02) #quick look at plot
+ggbiplot(apDataT02, color=Species, ellipes=T )
+
+#exract scores for gg
+Miss_scores_T0 <- as.data.frame(apDataT02$x)
+Miss_scores_T0$frag.id <- apDataT0$Frag.ID
+Miss_scores_T0$parent.id <- apDataT0$Parent.ID
+Miss_scores_T0$treatment <- apDataT0$Treatment
+Miss_scores_T0$species <- apDataT0$Species
+Miss_scores_T0$time.point <- apDataT0$Time.Point
+Miss_scores_T0$treatSpecies<-paste0(Miss_scores_T0$species, Miss_scores_T0$treatment )
+
+Miss_scores_T0_plot<-ggplot(Miss_scores_T0, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2, level=0.75) +
+  theme_classic();Miss_scores_T0_plot
+
+#PCA T0 for defense
+Miss_scores_T0_plot<-ggplot(Miss_scores_T0, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species, geom="polygon",fill=species, alpha=.2), linetype = 2, level=0.75) ;Miss_scores_T0_plot
+
+ggplot(Miss_scores_T0, aes(PC1,PC2, color = species)) +
+  geom_point(alpha=0.2) +
+  stat_ellipse(aes(fill = species), geom="polygon",level=0.9,alpha=0.2) +
+    theme_classic()
+
+ggbiplot(pcobj = apDataT02,
+         choices=c(1,2),
+         ellipse=TRUE, groups=Miss_scores_T0$species, geom="polygon", ellipse_fill=T, alpha=0.2)+
+  theme_classic()
+
+
+#subset by T1
+Miss_scores_T1<-subset(Miss_scores, time.point=="T1")
+
+Miss_scores_T1_plot<-ggplot(Miss_scores_T1, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+geom_point(aes(colour = species, shape=treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  # stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=.75) +
+  stat_ellipse(aes(x = PC1, y = PC2, color=species, group=treatSpecies,lty = treatSpecies)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  theme_classic();Miss_scores_T1_plot
+
+
+
+
+
+#subset by TF
+Miss_scores_TF<-subset(Miss_scores, time.point=="TF")
+
+Miss_scores_TF_plot<-ggplot(Miss_scores_TF, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = treatment), size = 4) +
+geom_point(aes(colour = species, shape=treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  # stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2, level=.75) +
+  stat_ellipse(aes(x = PC1, y = PC2, color=species, group=treatSpecies,lty = treatSpecies)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  theme_classic();Miss_scores_TF_plot
+
+###### OLD BELOW, DELETE when you figure it out ####
+
+# library(VIM)
+# library(FactoMineR)
+# library(missMDA) #lets you do with incomplete dataset
+# library(naniar)
+# gg_miss_var(PhysioData)
+# res<-summary(aggr(PhysioData, sortVar=TRUE))$combinations
+
+
+# nb <- estim_ncpPCA(PhysioData,method.cv = "Kfold", verbose = FALSE) # estimate the number of components from incomplete data
+# #(available methods include GCV to approximate CV)
+# nb$ncp #2
+# 
+# res <- cor(PhysioData)
+# round(res, 2)
 
 
 library("PerformanceAnalytics")
@@ -9601,7 +10077,7 @@ corrplot.mixed(cor.res, tl.cex = 0.7, tl.col = "black", addCoefasPercent = TRUE)
 
 
 PCA hannah use physio data
-```{r}
+```{r} 
 ##PCA with imputation using PPCA (Probabilistic PCA, can handle ~15% missing data)
 
 ##Use the pcaMethods package for imputing
@@ -9821,6 +10297,1053 @@ Testing <- cbind(
   
 
 
+
+
+```
+
+
+
+
+# % change plots for defense
+```{r}
+
+#cell counts ####  
+#data=zoox.cm2_log, df=FC_stats_T1TF
+FC_pc<-FC_stats_T1TF #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","Clade","zoox.cm2")
+FC_pc.k<-FC_pc[keep]
+
+#cast
+# FC_pc.2<-cast(FC_pc.k )
+# FC_pc.2<-dcast(FC_pc.k, Parent.ID+Species+Time.Point~Treatment) #cast
+# FC_pc.2<-na.omit(FC_pc.2) #remove NA
+# 
+# FC_pc.2$PercentChange<- ((FC_pc.2$High-FC_pc.2$Ambient)/FC_pc.2$Ambient)*100 #percent change equation
+
+
+FC.2_mean <- ddply(FC_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(zoox.cm2[!is.na(zoox.cm2)]),
+                 mean = mean((zoox.cm2), na.rm=TRUE), 
+                 sd   = sd((zoox.cm2), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((zoox.cm2), na.rm=TRUE) 
+)
+FC.2_mean #display table 
+
+FC.2_mean<-dcast(FC.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+FC.2_mean$PercentChange<- ((FC.2_mean$High-FC.2_mean$Ambient)/FC.2_mean$Ambient)*100 #percent change equation
+FC.2_mean$Trait<-"CellCounts"
+
+FC.2_mean.2_mean_T1<-subset(FC.2_mean, Time.Point=="T1") #subset
+
+
+
+#plot 
+FC_T1_plot<-ggplot(data=FC.2_mean.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("Flow")+
+  theme(plot.title = element_text(size=20, face = "italic"));FC_T1_plot
+
+
+#biomass #### 
+#data=AFDWmg.cm2, df=biomass2
+biomass_pc<-biomass2 #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","AFDWmg.cm2")
+biomass_pc.k<-biomass_pc[keep]
+
+# #cast
+# biomass_pc.2<-dcast(biomass_pc.k, Parent.ID+Species+Time.Point~Treatment) #cast
+# biomass_pc.2<-na.omit(biomass_pc.2) #remove NA
+# 
+# biomass_pc.2$PercentChange<- ((biomass_pc.2$High-biomass_pc.2$Ambient)/biomass_pc.2$Ambient)*100 #percent change equation
+
+
+biomass_pc.2_mean <- ddply(biomass_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]),
+                 mean = mean((AFDWmg.cm2), na.rm=TRUE), 
+                 sd   = sd((AFDWmg.cm2), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((AFDWmg.cm2), na.rm=TRUE) 
+)
+biomass_pc.2_mean #display table 
+
+biomass_pc.2_mean<-dcast(biomass_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+biomass_pc.2_mean$PercentChange<- ((biomass_pc.2_mean$High-biomass_pc.2_mean$Ambient)/biomass_pc.2_mean$Ambient)*100 #percent change equation
+biomass_pc.2_mean$Trait<-"Biomass"
+
+
+
+
+biomass_pc.2_mean_T1<-subset(biomass_pc.2_mean, Time.Point=="T1") #subset
+
+#plot 
+biomass_T1_plot<-ggplot(data=biomass_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=4, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("biomass")+
+  theme(plot.title = element_text(size=20, face = "italic"));biomass_T1_plot
+
+
+#calcification ####  
+#data=percent.change, df=Growth3
+calcification_pc<-Growth3 #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.point","percent.change")
+calcification_pc.k<-calcification_pc[keep]
+
+# #cast
+# calcification_pc.2<-dcast(calcification_pc.k, Species+Parent.ID+Time.point~Treatment,mean, value.var = "percent.change") #cast use mean due to repeated 
+# calcification_pc.2<-na.omit(calcification_pc.2) #remove NA
+# 
+# calcification_pc.2$Ambient<-calcification_pc.2$Ambient+1 #add 1 to high and ambient to deal with zeros and negatives
+# calcification_pc.2$High<-calcification_pc.2$High+1
+
+
+# calcification_pc.2$PercentChange<- ((calcification_pc.2$High-calcification_pc.2$Ambient)/calcification_pc.2$Ambient)*100 #percent change equation
+# 
+
+calcification_pc.2_mean <- ddply(calcification_pc.k, c( "Time.point","Species","Treatment"), summarise, #mean
+                 N    = length(percent.change[!is.na(percent.change)]),
+                 mean = mean((percent.change), na.rm=TRUE), 
+                 sd   = sd((percent.change), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((percent.change), na.rm=TRUE) 
+)
+calcification_pc.2_mean #display table 
+
+calcification_pc.2_mean<-dcast(calcification_pc.2_mean, Species+Time.point~Treatment, value.var = "mean") #cast
+
+calcification_pc.2_mean$PercentChange<- ((calcification_pc.2_mean$High-calcification_pc.2_mean$Ambient)/calcification_pc.2_mean$Ambient)*100 #percent change equation
+calcification_pc.2_mean$Trait<-"Calcification"
+
+
+
+
+calcification_pc.2_mean_T1<-subset(calcification_pc.2_mean, Time.point=="time1.growth") #subset
+
+#plot 
+calcification_T1_plot<-ggplot(data=calcification_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("calcification")+
+  theme(plot.title = element_text(size=20, face = "italic"));calcification_T1_plot
+
+
+
+
+
+
+#Chla #### 
+#data=ChlaSA, df=Chla
+Chla_pc<-Chla #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","ChlaSA")
+Chla_pc.k<-Chla_pc[keep]
+
+# #cast
+# Chla_pc.2<-dcast(Chla_pc.k, Parent.ID+Species+Time.Point~Treatment) #cast
+# Chla_pc.2<-na.omit(Chla_pc.2) #remove NA
+# 
+# Chla_pc.2$PercentChange<- ((Chla_pc.2$High-Chla_pc.2$Ambient)/Chla_pc.2$Ambient)*100 #percent change equation
+
+
+Chla_pc.2_mean <- ddply(Chla_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(ChlaSA[!is.na(ChlaSA)]),
+                 mean = mean((ChlaSA), na.rm=TRUE), 
+                 sd   = sd((ChlaSA), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((ChlaSA), na.rm=TRUE) 
+)
+Chla_pc.2_mean #display table 
+
+
+Chla_pc.2_mean<-dcast(Chla_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+Chla_pc.2_mean$PercentChange<- ((Chla_pc.2_mean$High-Chla_pc.2_mean$Ambient)/Chla_pc.2_mean$Ambient)*100 #percent change equation
+
+Chla_pc.2_mean$Trait<-"Chl a"
+
+
+
+
+Chla_pc.2_mean_T1<-subset(Chla_pc.2_mean, Time.Point=="T1") #subset
+
+
+
+
+
+#plot 
+Chla_T1_plot<-ggplot(data=Chla_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("Chla")+
+  theme(plot.title = element_text(size=20, face = "italic"));Chla_T1_plot
+
+
+
+
+
+#Protein #### 
+#data=mg.mm2, df=Protein
+Protein_pc<-Protein #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","mg.mm2")
+Protein_pc.k<-Protein_pc[keep]
+
+#remove T1 372 for QC N49
+Protein_pc.k <- Protein_pc.k[!(Protein_pc.k$Parent.ID == "372" & Protein_pc.k$Time.Point == "T1"),] 
+# #cast
+# Protein_pc.2<-dcast(Protein_pc.k, Parent.ID+Species+Time.Point~Treatment) #cast
+# Protein_pc.2<-na.omit(Protein_pc.2) #remove NA
+# 
+# Protein_pc.2$PercentChange<- (Protein_pc.2$High-Protein_pc.2$Ambient)/Protein_pc.2$Ambient #percent change equation
+
+Protein_pc.2_mean <- ddply(Protein_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(mg.mm2[!is.na(mg.mm2)]),
+                 mean = mean((mg.mm2), na.rm=TRUE), 
+                 sd   = sd((mg.mm2), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((mg.mm2), na.rm=TRUE) 
+)
+Protein_pc.2_mean #display table 
+Protein_pc.2_mean<-dcast(Protein_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+Protein_pc.2_mean$PercentChange<- ((Protein_pc.2_mean$High-Protein_pc.2_mean$Ambient)/Protein_pc.2_mean$Ambient)*100 #percent change equation
+Protein_pc.2_mean$Trait<-"Protein"
+
+
+
+
+Protein_pc.2_mean_T1<-subset(Protein_pc.2_mean, Time.Point=="T1") #subset
+
+#plot 
+Protein_T1_plot<-ggplot(data=Protein_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("Protein")+
+  theme(plot.title = element_text(size=20, face = "italic"));Protein_T1_plot
+
+
+
+
+# 
+#PAM #### 
+#data=Yeild, df=PAMdata2_stats
+PAM_pc<-PAM_psyDF #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","Yield")
+PAM_pc.k<-PAM_pc[keep]
+
+# #cast
+# PAM_pc.2<-dcast(PAM_pc.k, Species+Parent.ID+Time.Point~Treatment,mean, value.var = "Yield") #cast use mean due to repeated 
+# PAM_pc.2<-na.omit(PAM_pc.2) #remove NA
+# 
+# 
+# PAM_pc.2$PercentChange<- (PAM_pc.2$High-PAM_pc.2$Ambient)/PAM_pc.2$Ambient #percent change equation
+
+
+PAM_pc.2_mean <- ddply(PAM_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(Yield[!is.na(Yield)]),
+                 mean = mean((Yield), na.rm=TRUE), 
+                 sd   = sd((Yield), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((Yield), na.rm=TRUE) 
+)
+PAM_pc.2_mean #display table 
+
+
+PAM_pc.2_mean<-dcast(PAM_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+PAM_pc.2_mean$PercentChange<- ((PAM_pc.2_mean$High-PAM_pc.2_mean$Ambient)/PAM_pc.2_mean$Ambient)*100 #percent change equation
+PAM_pc.2_mean$Trait<-"Fv/Fm"
+
+
+
+
+PAM_pc.2_mean_T1<-subset(PAM_pc.2_mean, Time.Point=="T1") #subset
+
+#plot 
+PAM_T1_plot<-ggplot(data=PAM_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("PAM")+
+  theme(plot.title = element_text(size=20, face = "italic"));PAM_T1_plot
+
+
+
+
+
+#Photo #### 
+#data=GrossP, df=PR.df_B
+Photo_pc<-PR.df_B #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","GrossP")
+Photo_pc.k<-Photo_pc[keep]
+
+# #cast
+# Photo_pc.2<-dcast(Photo_pc.k, Species+Parent.ID+Time.Point~Treatment,mean, value.var = "GrossP") #cast use mean due to repeated 
+# Photo_pc.2<-na.omit(Photo_pc.2) #remove NA
+# 
+# 
+# Photo_pc.2$PercentChange<- (Photo_pc.2$High-Photo_pc.2$Ambient)/Photo_pc.2$Ambient #percent change equation
+
+
+Photo_pc.2_mean <- ddply(Photo_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(GrossP[!is.na(GrossP)]),
+                 mean = mean((GrossP), na.rm=TRUE), 
+                 sd   = sd((GrossP), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((GrossP), na.rm=TRUE) 
+)
+Photo_pc.2_mean #display table 
+
+
+Photo_pc.2_mean<-dcast(Photo_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+Photo_pc.2_mean$PercentChange<- ((Photo_pc.2_mean$High-Photo_pc.2_mean$Ambient)/Photo_pc.2_mean$Ambient)*100 #percent change equation
+Photo_pc.2_mean$Trait<-"Gross Photosynthesis"
+
+
+
+Photo_pc.2_mean_T1<-subset(Photo_pc.2_mean, Time.Point=="T1") #subset
+
+#plot 
+Photo_T1_plot<-ggplot(data=Photo_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("Photo")+
+  theme(plot.title = element_text(size=20, face = "italic"));Photo_T1_plot
+
+
+
+#RespPos #### 
+#data=RespPos, df=PR.df_B
+RespPos_pc<-PR.df_B #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","RespPos")
+RespPos_pc.k<-RespPos_pc[keep]
+
+# #cast
+# RespPos_pc.2<-dcast(RespPos_pc.k, Species+Parent.ID+Time.Point~Treatment,mean, value.var = "RespPos") #cast use mean due to repeated 
+# RespPos_pc.2<-na.omit(RespPos_pc.2) #remove NA
+# 
+# 
+# RespPos_pc.2$PercentChange<- (RespPos_pc.2$High-RespPos_pc.2$Ambient)/RespPos_pc.2$Ambient #percent change equation
+
+
+RespPos_pc.2_mean <- ddply(RespPos_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(RespPos[!is.na(RespPos)]),
+                 mean = mean((RespPos), na.rm=TRUE), 
+                 sd   = sd((RespPos), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((RespPos), na.rm=TRUE) 
+)
+RespPos_pc.2_mean #display table 
+
+
+RespPos_pc.2_mean<-dcast(RespPos_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+RespPos_pc.2_mean$PercentChange<- ((RespPos_pc.2_mean$High-RespPos_pc.2_mean$Ambient)/RespPos_pc.2_mean$Ambient)*100 #percent change equation
+
+RespPos_pc.2_mean$Trait<-"Respiration"
+
+
+
+RespPos_pc.2_mean_T1<-subset(RespPos_pc.2_mean, Time.Point=="T1") #subset
+
+
+
+#plot 
+RespPos_T1_plot<-ggplot(data=RespPos_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("RespPos")+
+  theme(plot.title = element_text(size=20, face = "italic"));RespPos_T1_plot
+
+
+
+
+
+
+#PR #### 
+#data=GrossP, df=PR.df_B 
+PR_pc<-PR.df_B #make a copy of df
+
+#keep cols you need 
+keep<-c("Species","Parent.ID","Treatment","Time.Point","PR_real")
+PR_pc.k<-PR_pc[keep]
+
+# #cast
+# PR_pc.2<-dcast(PR_pc.k, Species+Parent.ID+Time.Point~Treatment,mean, value.var = "PR_real") #cast use mean due to repeated 
+# PR_pc.2<-na.omit(PR_pc.2) #remove NA
+# 
+# 
+# PR_pc.2$PercentChange<- (PR_pc.2$High-PR_pc.2$Ambient)/PR_pc.2$Ambient #percent change equation
+
+
+PR_pc.2_mean <- ddply(PR_pc.k, c( "Time.Point","Species","Treatment"), summarise, #mean
+                 N    = length(PR_real[!is.na(PR_real)]),
+                 mean = mean((PR_real), na.rm=TRUE), 
+                 sd   = sd((PR_real), na.rm=TRUE),  
+                 se   = sd / sqrt(N), 
+                 max = max((PR_real), na.rm=TRUE) 
+)
+PR_pc.2_mean #display table 
+
+PR_pc.2_mean<-dcast(PR_pc.2_mean, Species+Time.Point~Treatment, value.var = "mean") #cast
+
+PR_pc.2_mean$PercentChange<- ((PR_pc.2_mean$High-PR_pc.2_mean$Ambient)/PR_pc.2_mean$Ambient)*100 #percent change equation
+
+PR_pc.2_mean$Trait<-"P:R"
+
+
+
+
+PR_pc.2_mean_T1<-subset(PR_pc.2_mean, Time.Point=="T1") #subset
+
+#plot 
+PR_T1_plot<-ggplot(data=PR_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Species), size=8, show.legend = T)+ 
+  geom_line(aes(color=Species))+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  geom_hline(yintercept=0, linetype="dotted", size=1) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("T1 Percent Change"))) +
+  ggtitle("PR")+
+  theme(plot.title = element_text(size=20, face = "italic"));PR_T1_plot
+
+
+
+
+# combine and then split by species #### 
+names(calcification_pc.2_mean)[names(calcification_pc.2_mean) == "Time.point"] <- "Time.Point" #rename
+names(calcification_pc.2_mean)[names(calcification_pc.2_mean) == "Time.point"] <- "Time.Point" #rename
+
+calcification_pc.2_mean$Time.Point <- as.character(calcification_pc.2_mean$Time.Point)
+calcification_pc.2_mean[calcification_pc.2_mean == "time1.growth"] <- "T1"
+calcification_pc.2_mean[calcification_pc.2_mean == "time2.growth"] <- "TF"
+
+PchangeDF<-rbind(biomass_pc.2_mean,FC.2_mean, calcification_pc.2_mean,PAM_pc.2_mean, Chla_pc.2_mean,
+Protein_pc.2_mean,
+Photo_pc.2_mean,
+RespPos_pc.2_mean ,
+PR_pc.2_mean)
+
+PchangeDF_T1TF<-subset(PchangeDF, Time.Point=="T1"|Time.Point=="TF")
+PchangeDF_T1TF$Trait<-as.factor(PchangeDF_T1TF$Trait)
+
+PchangeDF_T1TF$Trait <- ordered(c("P:R","Respiration","Gross Photosynthesis","Protein", "Biomass", "Chl a", "Fv/Fm", "CellCounts"))
+
+PchangeDF_T1TF$Trait <- factor(PchangeDF_T1TF$Trait, levels = c("P:R","Respiration","Gross Photosynthesis","Protein", "Biomass", "Chl a", "Fv/Fm", "Calcification","CellCounts"))
+
+#mcap
+PchangeDF_T1TF_mcap<-subset(PchangeDF_T1TF, Species=="Montipora_capitata")
+PchangeDF_T1_mcap<-subset(PchangeDF_T1TF_mcap, Time.Point=="T1")
+PchangeDF_TF_mcap<-subset(PchangeDF_T1TF_mcap, Time.Point=="TF")
+
+#pcomp
+PchangeDF_T1TF_pcomp<-subset(PchangeDF_T1TF, Species=="Porites_compressa")
+PchangeDF_T1_pcomp<-subset(PchangeDF_T1TF_pcomp, Time.Point=="T1")
+PchangeDF_TF_pcomp<-subset(PchangeDF_T1TF_pcomp, Time.Point=="TF")
+
+#pvar
+PchangeDF_T1TF_pvar<-subset(PchangeDF_T1TF, Species=="Pavona_varians")
+PchangeDF_T1_pvar<-subset(PchangeDF_T1TF_pvar, Time.Point=="T1")
+PchangeDF_TF_pvar<-subset(PchangeDF_T1TF_pvar, Time.Point=="TF")
+
+#pacu
+PchangeDF_T1TF_pacu<-subset(PchangeDF_T1TF, Species=="Pocillopora_acuta")
+PchangeDF_T1_pacu<-subset(PchangeDF_T1TF_pacu, Time.Point=="T1")
+PchangeDF_TF_pacu<-subset(PchangeDF_T1TF_pacu, Time.Point=="TF")
+
+#T1####
+
+#Mcap
+#T1
+Mcap_T1_plot<-ggplot(data=PchangeDF_T1_mcap, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("Mcap T1")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_T1_plot
+
+Mcapt1<-Mcap_T1_plot + coord_flip() 
+ggsave("Mcapt1.pdf",Mcapt1, height = 11, width = 7)
+
+
+
+#PcompT1
+Pcomp_T1_plot<-ggplot(data=PchangeDF_T1_pcomp, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("Pcomp T1")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_T1_plot
+
+Pcomp_T1_plot<-Pcomp_T1_plot + coord_flip() 
+ggsave("Pcompt1.pdf",Pcomp_T1_plot, height = 11, width = 7)
+
+#pvar
+#T1
+pvar_T1_plot<-ggplot(data=PchangeDF_T1_pvar, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("pvar T1")+
+  theme(plot.title = element_text(size=20, face = "italic"));pvar_T1_plot
+
+pvar_T1_plot<-pvar_T1_plot + coord_flip() 
+ggsave("Pvart1.pdf",pvar_T1_plot, height = 11, width = 7)
+
+#pacu
+#T1
+pacu_T1_plot<-ggplot(data=PchangeDF_T1_pacu, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-85,85)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("pacu T1")+
+  theme(plot.title = element_text(size=20, face = "italic"));pacu_T1_plot
+
+pacu_T1_plot<-pacu_T1_plot + coord_flip() 
+ggsave("Pacut1aga.pdf",pacu_T1_plot, height = 11, width = 7)
+
+
+
+grid.arrange(mcap_T1_plot, Pcomp_T1_plot, pvar_T1_plot,pacu_T1_plot, nrow = 1)
+
+
+
+#TF#### 
+
+
+#TF
+mcap_TF_plot<-ggplot(data=PchangeDF_TF_mcap, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), shape=1,stroke=2,size=10,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("TF mcap")+
+  theme(plot.title = element_text(size=20, face = "italic"));mcap_TF_plot
+
+mcap_TF_plot<-mcap_TF_plot + coord_flip() 
+ggsave("mcap_TF_plot.pdf",mcap_TF_plot, height = 11, width = 7)
+
+
+#PcompTF
+Pcomp_TF_plot<-ggplot(data=PchangeDF_TF_pcomp, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), shape=1,size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("Pcomp TF")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_TF_plot
+
+Pcomp_TF_plot<-Pcomp_TF_plot + coord_flip() 
+ggsave("Pcomp_TF_plot.pdf",Pcomp_TF_plot, height = 11, width = 7)
+
+#pvar
+#TF
+pvar_TF_plot<-ggplot(data=PchangeDF_TF_pvar, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), shape=1,size=10,stroke=2,show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-80,80)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("pvar TF")+
+  theme(plot.title = element_text(size=20, face = "italic"));pvar_TF_plot
+
+pvar_TF_plot<-pvar_TF_plot + coord_flip() 
+ggsave("pvar_TF_plot.pdf",pvar_TF_plot, height = 11, width = 7)
+
+#pacu
+#TF
+pacu_TF_plot<-ggplot(data=PchangeDF_TF_pacu, aes(x=Trait, y=PercentChange, color=Trait)) +
+  # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+  #               width=0.1, show.legend = T)+
+  geom_point(aes(color=Trait), shape=1,size=10,stroke=2, show.legend = F)+ 
+  geom_line(aes(color=Trait), show.legend = F)+
+  #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
+  xlab("mean") + #Label the X Axis
+  ylim(-85,85)+
+  geom_hline(yintercept=0, linetype="dashed", size=.5) +
+  #ylim(0,2000) + #set Y limits
+   #scale_y_log10()+
+       #scale_y_log10(breaks = c(0,1,100,1000, 10000), limits=c(1,5000))+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ylab(expression(paste("Percent Change"))) +
+  ggtitle("pacu TF")+
+  theme(plot.title = element_text(size=20, face = "italic"));pacu_TF_plot
+
+pacu_TF_plot<-pacu_TF_plot + coord_flip() 
+ggsave("pacu_TF_plot.pdf",pacu_TF_plot, height = 11, width = 7)
+
+
+
+grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
+```
+
+
+
+
+
+
+
+
+#Plot mean ordi
+```{r}
+
+## load packages
+library(lmerTest)
+library(naniar)
+library(multcomp)
+library(lmtest)
+library(lme4)
+library(car)
+library(effects)
+library(gplots)
+library(plotrix)
+library(psych)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(scales)
+library(MASS)
+library(lsmeans)
+library(pbkrtest)
+library(cowplot)
+library(devtools)
+library(dplyr)
+library(vegclust)
+library(smacof) #not loading
+library(devtools)
+library(zoo)
+library(lubridate)
+
+#install_github("vqv/ggbiplot")
+library(ggbiplot)
+require(graphics)
+library(tidyr)
+library(vegan)
+
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#install.packages("BiocManager")
+#BiocManager::install("mixOmics")
+#library("mixOmics")
+library(RVAideMemoire)
+```
+
+```{r}
+AA_PhysioData<-PhysioData #copy df
+AA_PhysioData$Respiration<-AA_PhysioData$Respiration*-1
+AA_PhysioData<-AA_PhysioData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
+
+
+fullNMDS<-subset(AA_PhysioData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
+fullNMDS<-na.omit(fullNMDS)
+
+#CW code
+# cleaned data for full dataframe NMDS (Site, Period, dom)
+
+fullNMDS$SpTrTi<-interaction(fullNMDS$Species, fullNMDS$Treatment, fullNMDS$Time.Point)
+
+ fac.fullNMDS<-fullNMDS[,c("Treatment","Species", "Time.Point", "SpTrTi")] #  sans responses
+
+resp.fullNMDS<-fullNMDS[, 5:13] # just responses
+
+resp.fullNMDS <- scale(resp.fullNMDS, center = TRUE, scale = TRUE) 
+
+##  Run MANOVA 
+all.Manova<-adonis2(resp.fullNMDS~Species*Treatment*Time.Point, data=fullNMDS, permutations=1000,  method="euclidian")
+all.Manova
+
+
+allNMDS<-metaMDS(resp.fullNMDS, distance='euclidean', k=2, trymax=100) 
+
+stressplot(allNMDS)
+
+##### next  ####
+
+allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2], 
+                            Species=as.factor(fac.AA_PhysioData2[,2]),
+                            Treatment=as.factor(fac.AA_PhysioData2[,1]),
+                            Time.Point=as.factor(fac.AA_PhysioData2[,3]),
+                            SpTrTi=as.factor(fac.AA_PhysioData2[,4]))
+
+colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
+
+#centroid means
+NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$SpTrTi), mean) # mean by species*treatment*time
+
+
+############### All groups NMDS
+fullNMDS$SpTrTi<-droplevels(fullNMDS$SpTrTi)
+groups<-fullNMDS$SpTrTi
+groups2<-c("Montipora_capitata.Ambient.T1", "Montipora_capitata.Ambient.TF", "Montipora_capitata.High.T1","Montipora_capitata.High.TF", "Porites_compressa.Ambient.T1", "Porites_compressa.Ambient.TF", "Porites_compressa.High.T1","Porites_compressa.High.TF","Pavona_varians.Ambient.T1", "Pavona_varians.Ambient.TF", "Pavona_varians.High.T1","Pavona_varians.High.TF","Pocillopora_acuta.Ambient.T1", "Pocillopora_acuta.Ambient.TF", "Pocillopora_acutaa.High.T1","Pocillopora_acuta.High.TF")
+colors=c(
+  "#F8766D", #Mcap 
+  "#C77CFF", #Porites
+  "#7CAE00", # Pvar
+  "#00BFC4" # Pacu
+   ) 
+plot<-ordiplot(allNMDS, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
+axis(side = 1, labels = FALSE)
+abline(h = 0, lty = "dotted")
+abline(v = 0, lty = "dotted")
+ordihull(plot, groups=paste(fullNMDS$Species,fullNMDS$Treatment), draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
+
+# points for start and end
+with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], bg="white", col=colors[1], pch=21, cex=4, lwd=1)) #mcap T1 H
+with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3], col=colors[1], pch=16, cex=4, lwd=1)) # Mcap A T1
+with(plot, points(NMDS.mean[13,2], NMDS.mean[13,3], bg="white",col=colors[1], pch=24, cex=4, lwd=1)) #mcap TF H
+with(plot, points(NMDS.mean[9,2], NMDS.mean[9,3], col=colors[1], pch=17, cex=4, lwd=1)) # Mcap A TF
+
+with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], bg="white", col=colors[2], pch=21, cex=4, lwd=1)) # Pcomp H T1
+with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=4, lwd=1)) # Pcomp  A T1
+with(plot, points(NMDS.mean[16,2], NMDS.mean[16,3], bg="white", col=colors[2], pch=24, cex=4, lwd=1)) # Pcomp H TF
+with(plot, points(NMDS.mean[12,2], NMDS.mean[12,3], col=colors[2], pch=17, cex=4, lwd=1)) # PcompA TF
+
+with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], bg="white", col=colors[3], pch=21, cex=4, lwd=1)) # Pvar H T1
+with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=4, lwd=1)) # Pvar A T1
+with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], bg="white", col=colors[3], pch=24, cex=4, lwd=1)) # Pvar H TF
+with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=17, cex=4, lwd=1)) # Pvar A TF
+
+with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], bg="white", col=colors[4], pch=21, cex=4, lwd=1)) # Pacu H T1
+with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=4, lwd=1)) # Pac A Ta
+with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], bg="white", col=colors[4], pch=24, cex=4, lwd=1)) # Pacu H TF
+with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[4], pch=17, cex=4, lwd=1)) # Pac A TF
+
+
+
+# # points for others (if want)
+# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+
+# lines for start and end
+with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
+with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
+with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
+with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
+with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
+with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
+with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
+with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
+
+# add labels
+text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
+text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
+text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
+text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
+
+text(-6, -4.5, "2D Stress = 0.14", cex=0.8, col="black")
+legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
+
+dev.copy(pdf, "PhysioNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
+dev.off() 
 
 
 ```

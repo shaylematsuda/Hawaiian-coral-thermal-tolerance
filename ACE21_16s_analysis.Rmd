@@ -10,7 +10,7 @@ chunk_output_type: console
 editor_options: 
   chunk_output_type: console
 ---
-Last updated: 8 apr 2021
+Last updated: 27 may 2021
 
 
 16s data analysis
@@ -132,7 +132,7 @@ Bac.seq
  
 ```  
 Look at the data, Bac.seq for 3k
-```{r}      
+```{r}       
 ## check out data
 ntaxa(Bac.seq)  #num taxa
 nsamples(Bac.seq)   #num samples
@@ -300,7 +300,7 @@ c.sd = sample_data(Bac.seq.all)
 
 #save(Bac.seq, file = "Data/prune.Bac.seq_phyloseq.RData")
 save(Bac.seq,data.Bac.s.rel,erich.tab2, file = "Data/16s_phyloseq4HE.RData")
-
+ 
 # bacseqOTU = otu_table(Bac.seq)
 # 
 # #write.csv(bacseqOTU,"bacseqOTU.csv")
@@ -325,7 +325,7 @@ save(Bac.seq,data.Bac.s.rel,erich.tab2, file = "Data/16s_phyloseq4HE.RData")
 
 ```
 # look at field samples. after you did this you now imported the field amples normaly
-```{r}   
+```{r}    
 MetaDataFIELD<-read.csv("Data/sample.data_FIELD.csv") #run in physio script first
 MetaDataFIELD$Parent.ID<-as.factor(as.character(MetaDataFIELD$Parent.ID))
 MetaDataFIELD$Tank.num<-as.factor(as.character(MetaDataFIELD$Tank.num))
@@ -391,7 +391,7 @@ ggplot(scores.ord.u.field_RelA_stats, aes(x = NMDS1, y = NMDS2)) +
   ggtitle("NMDS 16s bray") +
   theme_classic()
 #ggsave("bc_all.pdf")
-
+ 
 #by speices ####
 #mcap
 Bac.seq.field.rel.mcap<-subset_samples(Bac.seq.field.rel, Species=="Montipora_capitata")
@@ -485,10 +485,11 @@ ggplot(scores.ord.u.field_RelA_stats.pacu, aes(x = NMDS1, y = NMDS2)) +
 
 
 #Set up, Bac.s rela
-```{r}      
+```{r}       
 #make rel ativ e abundance df Bac.s
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )  #save as RELA DIVs
 data.Bac.s.rel <- as(sample_data(Bac.s.rel), "data.frame") #look at samp data
+
 Bac.seq.all<- transform_sample_counts(Bac.seq.all, function(x) x / sum(x) )  
 #heatmap
   #plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
@@ -501,6 +502,9 @@ Bac.s.rel.u.T0.rel <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #look at sam
 Bac.seq.all.T0<- transform_sample_counts(Bac.s.rel.u.T0, function(x) x / sum(x) )  
 #heatmap
   plot_heatmap(Bac.seq.all.T0, method = "NMDS", distance = "bray",sample.label="Species")# way too much data
+
+
+Bac.s.rel = prune_taxa(taxa_sums(Bac.s.rel) > 0, Bac.s.rel) #this removes any OTU with 0s
 
 
 
@@ -578,7 +582,7 @@ cn.16s.samples[1:20,1:20]
 ``` 
 For plotting only, subset the data: ok you can't figure this out jump to next chunk
 - Families with >0.5% in one or more samples, AND nonzero in 3 or more samples. somehow relax the latter criteria if they are greater than 1% in any one sample. https://bioconductor.riken.jp/packages/3.0/bioc/vignettes/phyloseq/inst/doc/phyloseq-basics.html
-```{r}       
+```{r}        
 library(genefilter)
 #df use counts not Rel A
 #tax glom should let you glom at Family
@@ -713,10 +717,10 @@ theme_set(theme_bw())
 #Let's try this again with vegan: THIS IS THE WAY to set up you FAMILY df AND Bray models
 USE THIS FOR STATS HELP:
 https://www.datanovia.com/en/lessons/compute-summary-statistics-in-r/
-```{r}  
+```{r}   
 #from above 
 #this works for fam level and relA. now we have 543 families
-phyFamTest2 <- Bac.s %>% 
+phyFamTest2 <- Bac.s.rel %>% 
   tax_glom(taxrank = "Family", NArm=FALSE) %>% #glom to family and remove anything not classified at family level
   transform_sample_counts(function(x) {x/sum(x)} ) #then turn to REl A
     sum(is.na(otu_table(phyFamTest2))) #check if there are any NA
@@ -1048,7 +1052,7 @@ http://joey711.github.io/phyloseq-demo/
 Weighted UniFrac - which does take into account differences in abundance of taxa between samples, but takes longer to calculate; and
 
 #Unweighted UniFrac FAMILY - which only considers the presence/absence of taxa between sample pairs.
-```{r}   
+```{r}     
 
 #look at your trees
 bac.prot <- subset_taxa(Bac.seqFam_stats.T1F, Phylum=="Proteobacteria")
@@ -1104,7 +1108,7 @@ permutest(betadisper(wu.mfol, Fam.samp.df$Species, type = "centroid")) #sig
 ```
 # Family unifrac stats T1TF and plots. 
 ```{r} 
-
+ 
 nb.cols <- 30
 mycolors <- colorRampPalette(brewer.pal(11, "Set1"))(nb.cols)
 
@@ -1865,7 +1869,7 @@ Bac.seqFam_stats.T01F.sd
 #Family top ten
  http://colorschemedesigner.com/csd-3.5/ THIS IS COOL BUT ONLY 4
 ```{r} 
-
+ 
 
 
 
@@ -2659,7 +2663,7 @@ pacu.16s.fam.top10.m_mean_plot+facet_wrap(~Treatment)
     
 ```
 Plot top 10 families per species all together by taxa
-```{r} 
+```{r}  
 #by clade
 Top10fam<-rbind(mcap.16s.fam.T01F.top10.m_mean,pcomp.16s.fam.top10.m_mean,Pvar.16s.fam.top10.m_mean,Pacu.16s.fam.top10.m_mean)
 Top10fam$Code<-paste(Top10fam$Species,Top10fam$Clade)
@@ -3029,11 +3033,11 @@ write.csv(ARC.16s.samples, "Arc.16s.samples.csv")
 ```
 
 #Permanova UNIFRAC by ASV (no filter) to compare with above
-```{r}      
+```{r}         
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
 
- #T0 only ####
+ #T0 only #### 
 Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
     Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
       sample_sums(Bac.s.rel.u.T0)
@@ -3045,7 +3049,7 @@ s.u.samp.df$Code<-paste(s.u.samp.df$Species,s.u.samp.df$Clade)
 set.seed(30)
 adonis(Bac.s.u.T0 ~ Species, data = s.u.samp.df)
 set.seed(30)    
-adonis(Bac.s.u.T0 ~ Species*Treatment*Clade, data = s.u.samp.df)
+adonis(Bac.s.u.T0 ~ Species*Clade, data = s.u.samp.df)
 
 # Homogeneity of dispersion test  
     set.seed(30)
@@ -3056,10 +3060,78 @@ adonis(Bac.s.u.T0 ~ Species*Treatment*Clade, data = s.u.samp.df)
   ball<-  betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")
   TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
 
+#T0 by speices
+#Mcap  
+  #t0 only Bac.s.rel.u.T0
+  mcap.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Montipora_capitata")
+  mcap.u.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(mcap.u.bac.T0)
   
+  #make bray curtis data matrix -T1 and TF
+  u.mcap.u.T0 <- phyloseq::distance(mcap.u.bac.T0, method = "wunifrac")
+     mcap.u.samp.df.T0 <- as(sample_data(mcap.u.bac.T0), "data.frame") #sample df
+        mcap.u.samp.df.T0$Code<-paste(mcap.u.samp.df.T0$Treatment, mcap.u.samp.df.T0$Time.Point)
+        mcap.u.samp.df.T0$Code2<-paste(mcap.u.samp.df.T0$Treatment, mcap.u.samp.df.T0$Time.Point,mcap.u.samp.df.T0$Clade)
+set.seed(30)
+    adonis(u.mcap.u.T0 ~ Clade, data = mcap.u.samp.df.T0) #adonis test no clade
+set.seed(30)
+    permutest(betadisper(u.mcap.u.T0, mcap.u.samp.df.T0$Clade, type = "centroid")) 
+
+#Pcomp  
+  Pcomp.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Porites_compressa")
+  Pcomp.u.bac.T0 = prune_taxa(taxa_sums(Pcomp.u.bac.T0) > 0, Pcomp.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(Pcomp.u.bac.T0)
   
+  #make bray curtis data matrix -T1 and TF
+  u.Pcomp.u.T0 <- phyloseq::distance(Pcomp.u.bac.T0, method = "wunifrac")
+     Pcomp.u.samp.df.T0 <- as(sample_data(Pcomp.u.bac.T0), "data.frame") #sample df
+        Pcomp.u.samp.df.T0$Code<-paste(Pcomp.u.samp.df.T0$Treatment, Pcomp.u.samp.df.T0$Time.Point)
+        Pcomp.u.samp.df.T0$Code2<-paste(Pcomp.u.samp.df.T0$Treatment, Pcomp.u.samp.df.T0$Time.Point,Pcomp.u.samp.df.T0$Clade)
+set.seed(30)
+    adonis(u.Pcomp.u.T0 ~ Clade, data = Pcomp.u.samp.df.T0) #adonis test no clade
+set.seed(30)
+    permutest(betadisper(u.Pcomp.u.T0, Pcomp.u.samp.df.T0$Clade, type = "centroid")) 
   
+#Pvar  
+  #t0 only Bac.s.rel.u.T0
+  Pvar.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
+  Pvar.u.bac.T0 = prune_taxa(taxa_sums(Pvar.u.bac.T0) > 0, Pvar.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(Pvar.u.bac.T0)
   
+  #make bray curtis data matrix -T1 and TF
+  u.Pvar.u.T0 <- phyloseq::distance(Pvar.u.bac.T0, method = "wunifrac")
+     Pvar.u.samp.df.T0 <- as(sample_data(Pvar.u.bac.T0), "data.frame") #sample df
+        Pvar.u.samp.df.T0$Code<-paste(Pvar.u.samp.df.T0$Treatment, Pvar.u.samp.df.T0$Time.Point)
+        Pvar.u.samp.df.T0$Code2<-paste(Pvar.u.samp.df.T0$Treatment, Pvar.u.samp.df.T0$Time.Point,Pvar.u.samp.df.T0$Clade)
+set.seed(30)
+    adonis(u.Pvar.u.T0 ~ Clade, data = Pvar.u.samp.df.T0) #adonis test no clade
+set.seed(30)
+    permutest(betadisper(u.Pvar.u.T0, Pvar.u.samp.df.T0$Clade, type = "centroid"))     
+
+    
+#Pacu  
+  #t0 only Bac.s.rel.u.T0
+  Pacu.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pocillopora_acuta")
+  Pacu.u.bac.T0 = prune_taxa(taxa_sums(Pacu.u.bac.T0) > 0, Pacu.u.bac.T0) #this removes any OTU with 0s
+  sample_sums(Pacu.u.bac.T0)
+  
+  #make bray curtis data matrix -T1 and TF
+  u.Pacu.u.T0 <- phyloseq::distance(Pacu.u.bac.T0, method = "wunifrac")
+     Pacu.u.samp.df.T0 <- as(sample_data(Pacu.u.bac.T0), "data.frame") #sample df
+        Pacu.u.samp.df.T0$Code<-paste(Pacu.u.samp.df.T0$Treatment, Pacu.u.samp.df.T0$Time.Point)
+        Pacu.u.samp.df.T0$Code2<-paste(Pacu.u.samp.df.T0$Treatment, Pacu.u.samp.df.T0$Time.Point,Pacu.u.samp.df.T0$Clade)
+set.seed(30)
+    adonis(u.Pacu.u.T0 ~ Clade, data = Pacu.u.samp.df.T0) #adonis test no clade
+set.seed(30)
+    permutest(betadisper(u.Pacu.u.T0, Pacu.u.samp.df.T0$Clade, type = "centroid")) 
+  
+    
+    
+    
+    
+    
+    
+    
  #AMBINET only ####
 Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u, Treatment=="Ambient")
     Bac.s.rel.u.Amb = prune_taxa(taxa_sums(Bac.s.rel.u.Amb) > 0, Bac.s.rel.u.Amb) #this removes any OTU with 0s
@@ -3124,7 +3196,13 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df.T1F)
     
     
 ############# mcap #### 
-
+ 
+   
+  
+  
+  
+  
+  
 #Mcap
 mcap.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
   sample_sums(mcap.u.bac.T1F)
@@ -3520,7 +3598,7 @@ adonis(pvar.u.u.T1F ~ Treatment*Time.Point, data = pvar.u.u.samp.df.T1F) #adonis
 
     
 
-# Pvar Bac.s.rel.u.T0   only ####
+# Pvar Bac.s.rel.u.T0   only #### 
     pvar.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
   sample_sums(pvar.u.bac.T0)
 
@@ -3655,8 +3733,8 @@ pacu.u.TF <- phyloseq::distance(pacu.u.bac.TF, method = "wunifrac")
     permutest(betadisper(pacu.u.TF, pacu.u.samp.df.TF$Code, type = "centroid")) 
     
     
- # pacu Bac.s.rel.u.T0   only ####
-    pacu.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
+ # pacu Bac.s.rel.u.T0   only #### 
+    pacu.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pocillopora_acuta")
   sample_sums(pacu.u.bac.T0)
 
 pacu.u.f.bac.T0 = prune_taxa(taxa_sums(pacu.u.bac.T0) > 0, pacu.u.bac.T0) #this removes any OTU with 0s
@@ -3714,7 +3792,7 @@ pacu.u.f.bac.Amb = prune_taxa(taxa_sums(pacu.u.bac.Amb) > 0, pacu.u.bac.Amb) #th
     
     
     
-```
+``` 
 #Endo found in what samples and speices
 ```{r}
  #what endos are in here? all speices
@@ -3783,7 +3861,7 @@ write.csv(OTUendodf2Pacu,"OTUendodf2PacuMay23.csv")
 
 Dispersion
 ```{r}
-
+ 
 # #dipersion lmer  Bac.s.rel.u
   s.u.samp.df.T01F <- as(sample_data(Bac.s.rel.u), "data.frame") #sample df
   s.u.samp.df.T01F$Code<-paste(s.u.samp.df.T01F$Species,s.u.samp.df.T01F$Clade,s.u.samp.df.T01F$Treatment,s.u.samp.df.T01F$Time.Point)
@@ -4005,11 +4083,174 @@ disp_mean_plot<-ggplot(data=disp_mean, aes(x=Code, y=mean, group = Code, color=C
   theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
     disp_mean_plot+facet_wrap(~Species)    
     
+    
+### Dispersion by treatment only
+    
+    disp_mean <- ddply(Awu.disp.Species, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(wu.distances[!is.na(wu.distances)]), 
+                   mean = mean(wu.distances, na.rm=TRUE), 
+                   sd   = sd(wu.distances, na.rm=TRUE), 
+                   se   = sd / sqrt(N), 
+                   max = max(wu.distances, na.rm=TRUE) 
+)
+disp_mean #dis 
+
+   #plot all
+disp_mean_plot<-ggplot(data=disp_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean_plot 
+    disp_mean_plot+facet_wrap(~Species)
+
+    
+#plot by species
+#mcap
+    disp_mean.mcap<-subset(disp_mean, Species=="Montipora_capitata")
+
+  ggplot(data=disp_mean.mcap, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = T)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Mcap Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"))
+    
+ #pcomp
+    disp_mean.pcomp<-subset(disp_mean, Species=="Porites_compressa")
+
+ggplot(data=disp_mean.pcomp, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pcomp Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"))
+    
+    
+#pvar
+    disp_mean.pvar<-subset(disp_mean, Species=="Pavona_varians")
+
+ggplot(data=disp_mean.pvar, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pvar Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"))
+    
+    
+    
+#pacu
+    disp_mean.pacu<-subset(disp_mean, Species=="Pocillopora_acuta")
+
+ ggplot(data=disp_mean.pacu, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("pacu Dispersion 16S")+
+  theme(plot.title = element_text(size=20, face = "italic"))
+    
+    
+    
 ```
 
 
-Unifrac NMDS
-```{r} 
+#Unifrac NMDS
+```{r}     
  Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
 #T0 only 
@@ -4046,6 +4287,149 @@ ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
   ggtitle("NMDS 16s unifrac T0") +
   theme_classic()+
   facet_wrap(~Species)
+
+#T1 only 
+Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
+    Bac.s.rel.u.T1 = prune_taxa(taxa_sums(Bac.s.rel.u.T1) > 0, Bac.s.rel.u.T1) #this removes any OTU with 0s
+
+unifrac.all.T1 <- ordinate(Bac.s.rel.u.T1, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+stressplot(unifrac.all.T1)
+scores.ord.u_RelA_stats.T1<-as.data.frame(cbind(vegan::scores(unifrac.all.T1, display="sites"))) # these are "points" ask hannah 
+     unifrac.all.sd.T1 <- as(sample_data(Bac.s.rel.u.T1), "data.frame") #sample df
+
+scores.ord.u_RelA_stats.T1$Treatment <- unifrac.all.sd.T1$Treatment
+scores.ord.u_RelA_stats.T1$Species <- unifrac.all.sd.T1$Species
+scores.ord.u_RelA_stats.T1$Clade <- unifrac.all.sd.T1$Clade
+scores.ord.u_RelA_stats.T1$Code <- paste(scores.ord.u_RelA_stats.T1$Clade, scores.ord.u_RelA_stats.T1$Species)
+scores.ord.u_RelA_stats.T1$Code3 <- paste(scores.ord.u_RelA_stats.T1$Species, scores.ord.u_RelA_stats.T1$Treatment)
+
+
+
+p<-ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+stat_ellipse(aes(x = NMDS1, y = NMDS2, color=Treatment, group=Code3,lty = Code3)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS 16s bray T1") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+p+facet_wrap(~Species)
+
+ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+ # stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
+  ggtitle("NMDS 16s unifrac T1") +
+  theme_classic()+
+  facet_wrap(~Species)
+
+
+#for defense
+
+p<-ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2, color=Species,linetype=Treatment)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code3), 
+               alpha = 0.25)+
+  ggtitle("NMDS 16s  T1") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+p+facet_wrap(~Species)
+
+scores.ord.u_RelA_stats.T1_Pcomp<-subset(scores.ord.u_RelA_stats.T1, Species=="Porites_compressa")
+p<-ggplot(scores.ord.u_RelA_stats.T1_Pcomp, aes(x = NMDS1, y = NMDS2, color=Treatment,linetype=Treatment)) + 
+  geom_point(aes(colour = Treatment, shape=Treatment), size = 8) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code3), 
+               alpha = 0.25)+
+  ggtitle("NMDS 16s  T1 pcomp only") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+p+facet_wrap(~Species)
+
+
+
+
+
+
+
+scores.ord.u_RelA_stats.T1$Code4<-paste(scores.ord.u_RelA_stats.T1$Species,scores.ord.u_RelA_stats.T1$Clade,scores.ord.u_RelA_stats.T1$Treatment)
+
+ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2,color=Clade,linetype=Treatment)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+ # stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code4), 
+               alpha = 0.25)+
+  ggtitle("NMDS 16s unifrac T1") +
+  theme_classic()+
+  facet_wrap(~Species)
+
+
+
+
+
+
+#TF only 
+Bac.s.rel.u.TF<-subset_samples(Bac.s.rel.u, Time.Point=="TF")
+    Bac.s.rel.u.TF = prune_taxa(taxa_sums(Bac.s.rel.u.TF) > 0, Bac.s.rel.u.TF) #this removes any OTU with 0s
+
+unifrac.all.TF <- ordinate(Bac.s.rel.u.TF, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
+stressplot(unifrac.all.TF)
+scores.ord.u_RelA_stats.TF<-as.data.frame(cbind(vegan::scores(unifrac.all.TF, display="sites"))) # these are "points" ask hannah 
+     unifrac.all.sd.TF <- as(sample_data(Bac.s.rel.u.TF), "data.frame") #sample df
+
+scores.ord.u_RelA_stats.TF$Treatment <- unifrac.all.sd.TF$Treatment
+scores.ord.u_RelA_stats.TF$Species <- unifrac.all.sd.TF$Species
+scores.ord.u_RelA_stats.TF$Clade <- unifrac.all.sd.TF$Clade
+scores.ord.u_RelA_stats.TF$Code <- paste(scores.ord.u_RelA_stats.TF$Clade, scores.ord.u_RelA_stats.TF$Species)
+scores.ord.u_RelA_stats.TF$Code3 <- paste(scores.ord.u_RelA_stats.TF$Species, scores.ord.u_RelA_stats.TF$Treatment)
+
+
+
+ggplot(scores.ord.u_RelA_stats.TF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+stat_ellipse(aes(x = NMDS1, y = NMDS2, color=Species, group=Code3,lty = Code3)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS 16s bray TF") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+ggplot(scores.ord.u_RelA_stats.TF, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+ stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
+  ggtitle("NMDS 16s unifrac TF") +
+  theme_classic()+
+  facet_wrap(~Species)
+
+
+
+#for defense
+scores.ord.u_RelA_stats.TF$Code3<-paste(scores.ord.u_RelA_stats.TF$Species, scores.ord.u_RelA_stats.TF$Clade, scores.ord.u_RelA_stats.TF$Clade)
+p<-ggplot(scores.ord.u_RelA_stats.TF, aes(x = NMDS1, y = NMDS2, color=Species,linetype=Treatment)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code3), 
+               alpha = 0.25)+
+  ggtitle("NMDS 16s  TF") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+p+facet_wrap(~Species)
 
 
 #AMBIENT only 
@@ -4084,7 +4468,7 @@ ggplot(scores.ord.u_RelA_stats.Amb, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()+
   facet_wrap(~Species)
 
-#Ordination NMDS for all species, T1Tf ####
+#Ordination NMDS for all species, T1Tf #### 
 unifrac.all <- ordinate(Bac.s.rel.u.T1F, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
 stressplot(unifrac.all)
 scores.ord.u_RelA_stats<-as.data.frame(cbind(vegan::scores(unifrac.all, display="sites"))) # these are "points" ask hannah 
@@ -4149,7 +4533,7 @@ ggplot(scores.ord.u_RelA_stats.PacuPvar.Amb, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-#### mcap #####  
+#### mcap #####   
 ## create palette for parent.ID and treatments
 mcap.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", 
                         "Ambient" = "#4575B4", "High" = "#D73027",
@@ -4158,7 +4542,7 @@ mcap.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deepp
 
 
 
-#T1 and TF
+#T1 and TF 
 ord.mcap2 <- ordinate(mcap.u.f.bac.T1F, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
 stressplot(ord.mcap2)
 
@@ -4287,7 +4671,7 @@ ggplot(ord.mcap.u.AmbT01F.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 ####Pcomp #### 
-
+  
 pcomp.u.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue",                         "Ambient" = "#4575B4", "High" = "#D73027","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred", "Ambient T1"="darkred", "Ambient TF"="darkblue", "High T1"="pink","High TF"="darkred") 
 
 
@@ -4369,12 +4753,12 @@ ord.pcomp.u.T1.df$Code2 <- as.factor(ord.pcomp.u.T1.df$Code2)
 
 
 ggplot(ord.pcomp.u.T1.df, aes(x = NMDS1, y = NMDS2)) + 
-   geom_point(aes(stroke=3, colour = Code2, shape=Treatment,size = 4) )+
+   geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=pcomp.u.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Code2))) +
-    scale_linetype_manual(values=c(2,2,3,3))+
+    # scale_linetype_manual(values=c(2,2,3,3))+
   ggtitle("Pcomp T1") +
   theme_classic()
 
@@ -4430,7 +4814,7 @@ pvar.u.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deepp
                         "Ambient T1"="darkblue", "Ambient TF"="skyblue", "High T1"="darkred","High TF"="hotpink") 
 
 
-
+ 
 
 
 
@@ -4506,7 +4890,7 @@ ord.pvar.u.T1.df$Code2 <- as.factor(ord.pvar.u.T1.df$Code2)
 
 ggplot(ord.pvar.u.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Treatment, shape=Treatment,size = 4) )+
-    geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
+    geom_point(aes(colour =  Treatment, size = 4, shape=Treatment)) +
   scale_color_manual(values=pvar.u.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Code2))) +
@@ -4896,7 +5280,7 @@ ggplot(ord.pcomp.u.TF.df, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()
 ```
 Unifrac with field samps
-```{r}
+```{r} 
  # Overhead view including field #### 
 unifrac.all.field <- ordinate(Bac.seq.all, method="NMDS", "unifrac",weighted=TRUE, set.seed(40)) 
 stressplot(unifrac.all.field)
@@ -4907,19 +5291,54 @@ scores.ord.u_ALLfield_stats$Treatment <- unifrac.samp.field.sd$Treatment
 scores.ord.u_ALLfield_stats$Species <- unifrac.samp.field.sd$Species
 scores.ord.u_ALLfield_stats$Type <- unifrac.samp.field.sd$Type
 scores.ord.u_ALLfield_stats$Time.Point <- unifrac.samp.field.sd$Time.Point
-scores.ord.u_ALLfield_stats$Code <- paste(scores.ord.u_ALLfield_stats$Clade, scores.ord.u_ALLfield_stats$Species)
+scores.ord.u_ALLfield_stats$Code <- paste(scores.ord.u_ALLfield_stats$Species, scores.ord.u_ALLfield_stats$Type)
 
+
+scores.ord.u_ALLfield_stats$Time.Point[scores.ord.u_ALLfield_stats$Time.Point == "F1"] <- "T1"          # Replace b by XXX
+scores.ord.u_ALLfield_stats$Time.Point[scores.ord.u_ALLfield_stats$Time.Point == "TC"] <- "T0"          # Replace b by XXX
 
 
 pf<-ggplot(scores.ord.u_ALLfield_stats, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Type, shape=Type), size = 4) +
+  geom_point(aes(colour = Species, shape=Type), size = 4) +
   #scale_color_manual(values=Mcap.Parent.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2) +
   ggtitle("NMDS 16s bray") +
   theme_classic()
 #ggsave("bc_all.pdf")
-pf+facet_wrap(~Species)
+pf+facet_wrap(~Time.Point*Species)
+
+
+
+#PERMANOVA
+
+#make unifrac matrix
+s.u.samp.df.all <- as(sample_data(Bac.seq.all), "data.frame") #sample df
+s.u.samp.df.all$Code<-paste(s.u.samp.df.all$Species,s.u.samp.df.all$Clade)
+
+s.u.samp.df.all$Time.Point[s.u.samp.df.all$Time.Point == "F1"] <- "T1"          # Replace b by XXX
+s.u.samp.df.all$Time.Point[s.u.samp.df.all$Time.Point == "TC"] <- "T0"          # Replace b by XXX
+
+
+
+ FieldSamps <- phyloseq::distance(Bac.seq.all, method = "wunifrac")
+     FieldSamps.df <- as(sample_data(Bac.seq.all), "data.frame")
+     FieldSamps.df$Code<-paste(FieldSamps.df$Treatment,FieldSamps.df$Clade)
+    set.seed(30)
+    adonis(FieldSamps ~ Species*Type, data = FieldSamps.df)
+    FieldSamps.df$Code<-paste(FieldSamps.df$Species, FieldSamps.df$Type)
+    ball<-  betadisper(FieldSamps, FieldSamps.df$Code, type = "centroid")
+    TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
+    
+# Homogeneity of dispersion test  
+    set.seed(30)
+    t<-permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(Bac.s.u.T0, s.u.samp.df$Code, type = "centroid")) 
+    
+  ball<-  betadisper(Bac.s.u.T0, s.u.samp.df$Species, type = "centroid")
+  TukeyHSD(ball,  ordered = FALSE,conf.level = 0.95)  
+
 
 ``` 
 
@@ -5135,7 +5554,7 @@ Crap you were working on for above
 16 bar plots in ggplot (to make faster than next section)  
 #MCAP bar plots
 PHYLUM
-```{r}        
+```{r}          
 #try glom use raw counts Bac.s
 Mcap_Bac.s<-subset_samples(Bac.s, Species=="Montipora_capitata")
 
@@ -5200,24 +5619,31 @@ mcap.p +  facet_wrap(~ Code, nrow=2)
 ```
 
 Family
-```{r}    
-library(tidy)
+```{r}     
+library(tidyr)
 
-Mcap_Bac.s.melt <- psmelt(Mcap_phyFam)
+Bac.s.Mcap<-subset_samples(Bac.s.rel, Species=="Montipora_capitata") #subset mcap
+Bac.s.Mcap <- prune_taxa(taxa_sums(Bac.s.Mcap) > 0, Bac.s.Mcap) #prune taxa 0s
+
+Mcap_Bac.s.fam <- Bac.s.Mcap %>% 
+  tax_glom(taxrank = "Family", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_Bac.s.fam.melt <- psmelt(Mcap_Bac.s.fam)
+
 
 #set 
-Mcap_Bac.s.melt$Code<-paste(Mcap_Bac.s.melt$Treatment, Mcap_Bac.s.melt$Time.Point)
-Mcap_Bac.s.melt$Parent.ID <- factor(Mcap_Bac.s.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
+Mcap_Bac.s.fam.melt$Code<-paste(Mcap_Bac.s.fam.melt$Treatment, Mcap_Bac.s.fam.melt$Time.Point)
+Mcap_Bac.s.fam.melt$Parent.ID <- factor(Mcap_Bac.s.fam.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365",
                                                                     "366","368",  "369","374"))
-Mcap_Bac.s.melt$Code <- factor(Mcap_Bac.s.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+Mcap_Bac.s.fam.melt$Code <- factor(Mcap_Bac.s.fam.melt$Code, levels = c("Ambient T0",  "Ambient T1",
                                                                     "Ambient TF","High T0",  "High T1","High TF"))
 #FAMILY COLORS
 nb.cols <- 252
 mycolors <- colorRampPalette(brewer.pal(11, "BrBG"))(nb.cols)
 
-mcap.p <- ggplot(Mcap_Bac.s.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
+mcap.p <- ggplot(Mcap_Bac.s.fam.melt, aes(x = Parent.ID, y = Abundance, fill = Family)) +
   geom_bar(stat = "identity") +
-  scale_fill_manual(values=mycolors) +
+  #scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
   xlab("Sample Label") +
   #theme(legend.position = "none")+
@@ -5613,7 +6039,7 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 
 #16s - bar plots df Bac.sRelA YOU Don't need now
-```{r}      
+```{r}       
 #ordination time - CUT WHEN YOU HAVE OTHER 4 SPECIES ORDINATION SORTED 
 Bac.s.rel.ord <- ordinate(Bac.s.rel, "NMDS", "bray", set.seed(30))
 Bac.RelA.ord_plot = plot_ordination(Bac.s.rel, Bac.s.rel.ord, type="samples", shape="Treatment",color="Species", title="species")
@@ -5748,7 +6174,7 @@ PacuBarPlot<-plot_bar(Pacu_16s_RA, x="Parent.ID", fill="Phylum", facet_grid = "T
 
 #Ordination DIV_RelA <- you might not need this section, code below for each species  
 try vegan nmds - its the same, delete when CN says cool, Bac.s.rel
-```{r}    
+```{r}     
   ##this isn't working, not converging. 
 # convert the sample_data() within a phyloseq object to a vegan compatible data object
 df16s2veg <- function(Bac.s.rel) {  
@@ -5795,7 +6221,7 @@ orditorp(df16s.spp_NMS, "sites")   # Gives points labels
 
 ```
 Heatmap and first crack at ordination, delete when solid
-```{r }           
+```{r }            
 # CUT?? OrdiSpecies<-plot_ordination(DIV_RelA, ordinate(DIV_RelA, "NMDS"), color = "Species", label="ID") + geom_point(size = 5) 
 # #ggsave("OrdiSpecies.pdf", OrdiSpecies, dpi=300, width=8)
 
@@ -5856,8 +6282,8 @@ print(DIVrareRel1_Pcomp)
 ```
 
 #Beta Diversity: df rarefied and relative abudnaces  
-All Species Bac.s.rel .  relative abundances 
-```{r}              
+All Species Bac.s.rel .  relative abundances  BRAY
+```{r}                
 #Bac.s.rel  
 
 Bac.s.rel_stats<- Bac.s.rel #make a copy
@@ -5895,6 +6321,29 @@ set.seed(30)
 #Ordination NMDS for all species, T1Tf
 set.seed(50)
 ord.Bac_RelA_stats <- ordinate(Bac_RelA_stats.T1F, "NMDS", "bray", trymax = 500) 
+stressplot(ord.Bac_RelA_stats)
+scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
+
+scores.ord.Bac_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.Bac_RelA_stats$Species <- samp.df$Species
+
+
+ggplot(scores.ord.Bac_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+#Ordination NMDS for all species, T1
+Bac_RelA_stats.T1<-subset_samples(Bac.s.rel_stats, Time.Point=="T1")
+Bac_RelA_stats.T1 = prune_taxa(taxa_sums(Bac_RelA_stats.T1) > 0, Bac_RelA_stats.T1)
+
+set.seed(30)
+ord.Bac_RelA_stats <- ordinate(Bac_RelA_stats.T1, "NMDS", "bray", trymax = 500) 
 stressplot(ord.Bac_RelA_stats)
 scores.ord.Bac_RelA_stats<-as.data.frame(cbind(vegan::scores(ord.Bac_RelA_stats, display="sites"))) # these are "points" ask hannah 
 
@@ -8931,7 +9380,7 @@ pairs(emm)
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
 Use rarefied data, not relative abunances   
 df:Bac.s and
-```{r}         
+```{r}          
 #trying to install microbiome on old R version: https://microbiome.github.io/tutorials/Installation.html https://bioconductor.org/install/
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
@@ -9111,8 +9560,8 @@ hist(erich.tab2.pacu$observed)
 
 ```
 #Observed Richness 
-```{r}   
-#observed   
+```{r}     
+#observed    
  #log it
 #T0
 hist(erich.tab2T0$observed)
@@ -9120,7 +9569,7 @@ ggqqplot(erich.tab2T0$observed)
 erich.tab2T0$observed_log<-log10(erich.tab2T0$observed)
  hist(erich.tab2T0$observed_log)
 
-observed_alpha_modT0<-lmer(observed_log ~ Species*+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
+observed_alpha_modT0<-lmer(observed_log ~ Species+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
 set.seed(30)
   anova(observed_alpha_modT0) 
   qqPlot(residuals(observed_alpha_modT0)) 
@@ -9128,8 +9577,24 @@ set.seed(30)
   cld(emm)
   pairs(emm)
   
-
-
+  observed_alpha_modT0<-lmer(observed_log ~ Species*Clade+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
+set.seed(30)
+  anova(observed_alpha_modT0) 
+  qqPlot(residuals(observed_alpha_modT0)) 
+  emm<-emmeans(observed_alpha_modT0,  ~ Species*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
+  
+#Richness
+p1 <- ggviolin(erich.tab2T0, x = "Species", y = "observed",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+#Evenness
+p1 <- ggviolin(erich.tab2T0, x = "Species", y = "evenness_pielou",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
 
  
  
@@ -9209,6 +9674,15 @@ erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
   cld(emm)
   pairs(emm)
 
+ #t0
+  erich.tab2.mcap.T0<-subset(erich.tab2T0, Species=="Montipora_capitata")
+
+  Mcap_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.mcap.T0) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
 
   
   
@@ -9264,6 +9738,16 @@ erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
   cld(emm)
   pairs(emm)
 
+ #t0
+  erich.tab2.pcomp.T0<-subset(erich.tab2T0, Species=="Porites_compressa")
+
+  pcomp_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 ####### pvar only####
    
   #t1TF
@@ -9315,6 +9799,15 @@ erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
   cld(emm)
   pairs(emm)
   
+  #t0
+  erich.tab2.pvar.T0<-subset(erich.tab2T0, Species=="Pavona_varians")
+
+  pvar_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
   
   ####### pacu only####
 
@@ -9366,10 +9859,23 @@ erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
   emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
+  
+  #t0
+  erich.tab2.pacu.T0<-subset(erich.tab2T0, Species=="Pocilopora_acuta")
+
+  pacu_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pacu.T0) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  
+  
 ```
 alpha Observed Plots, no clade
 ```{r}  
-#Means  
+#Means   
 observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
                  mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -9508,7 +10014,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```  
 
 alpha Observed Plots, clade  
-```{r} 
+```{r}   
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
@@ -9559,6 +10065,39 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C, aes(x=Time.Point, y=mean, 
   ylab(expression(paste("Alpha Diversity"))) +
   ggtitle("Mcap Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
+
+#boxplot
+
+Rich16.plot<-ggplot(erich.tab2.mcap.T1, aes(x=Treatment, y=mean, color=Treatment)) + 
+  scale_color_manual(values=c("blue", "red"))+
+     # coord_cartesian(ylim = c(0, 10))+
+   theme_classic()+
+ theme(legend.position="none") +# Remove legend
+  geom_boxplot(notch=F);Rich16.plot
+
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+
+erich.tab2.mcap.T1$code2<-paste(erich.tab2.mcap.T1$Code, erich.tab2.mcap.T1$Treatment)
+
+
+erich.tab2.mcap.T1 %>%
+  ggplot( aes(x=code2, y=observed, fill=Treatment)) +
+    geom_boxplot() +
+    scale_color_manual(values=c("red", "blue"))+
+    # scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
+    # theme_ipsum() +
+    theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+    ggtitle("Mcap Rich T1 ") +
+    xlab("")
 
 #Pcomp plots
 #plot Pcomp
@@ -9652,7 +10191,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```
  
 #evenness_pielou Richness 
-```{r} 
+```{r}  
 #evenness_pielou  
 #not transformeds
 
@@ -9675,11 +10214,20 @@ hist(erich.tab2T0$evenness_pielou)
 ggqqplot(erich.tab2T0$evenness_pielou)
 
 
-observed_alpha_modT0<-lmer(evenness_pielou ~ Species*+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
+observed_alpha_modT0<-lmer(evenness_pielou ~ Species+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
 set.seed(30)
   anova(observed_alpha_modT0) 
   qqPlot(residuals(observed_alpha_modT0)) 
   emm<-emmeans(observed_alpha_modT0,  ~ Species, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #this is nesting so not sure you can do this this way. 
+  observed_alpha_modT0<-lmer(evenness_pielou ~ Species*Clade+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
+set.seed(30)
+  anova(observed_alpha_modT0) 
+  qqPlot(residuals(observed_alpha_modT0)) 
+  emm<-emmeans(observed_alpha_modT0,  ~ Species*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -9734,6 +10282,16 @@ set.seed(30)
   cld(emm)
   pairs(emm)
 
+#T0
+  #t1
+  erich.tab2.mcap.T0<-subset(erich.tab2.mcap, Time.Point=="T0")
+hist(erich.tab2.mcap.T0$evenness_pielou)
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.mcap.T0) #adding tank is singularity
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
   
 ####### PCOMP only
   #t1TF
@@ -9785,6 +10343,17 @@ set.seed(30)
   cld(emm)
   pairs(emm)
 
+#t0
+  #t1
+  erich.tab2.pcomp.T0<-subset(erich.tab2.pcomp, Time.Point=="T0")
+hist(erich.tab2.pcomp.T0$evenness_pielou)
+  pcomp_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) #adding tank is singularity
+  anova(pcomp_alpha_mod) 
+  qqPlot(residuals(pcomp_alpha_mod)) 
+  emm<-emmeans(pcomp_alpha_mod,  ~ Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
 ####### pvar only
   #t1TF
   pvar_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
@@ -9834,7 +10403,19 @@ set.seed(30)
   emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
+ 
   
+    #t0
+  erich.tab2.pvar.T0<-subset(erich.tab2.pvar, Time.Point=="T0")
+hist(erich.tab2.pvar.T0$evenness_pielou)
+   pvar_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
+  anova(pvar_alpha_mod) 
+  qqPlot(residuals(pvar_alpha_mod)) 
+  emm<-emmeans(pvar_alpha_mod,  ~ Clade, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+ 
   
   ####### pacu only
   #t1TF
@@ -9883,6 +10464,16 @@ set.seed(30)
   anova(pacu_alpha_mod) 
   qqPlot(residuals(pacu_alpha_mod)) 
   emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
+  cld(emm)
+  pairs(emm)
+  
+  #t0
+  erich.tab2.pacu.T0<-subset(erich.tab2.pacu, Time.Point=="T0")
+hist(erich.tab2.pacu.T0$evenness_pielou)#medium
+   pacu_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pacu.T0) #adding tank is singularity
+  anova(pacu_alpha_mod) 
+  qqPlot(residuals(pacu_alpha_mod)) 
+  emm<-emmeans(pacu_alpha_mod,  ~ Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
 ```
