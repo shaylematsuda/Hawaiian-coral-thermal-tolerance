@@ -4742,7 +4742,7 @@ Chla_Pvar_model.TF<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla
   pairs(emm)  
   
 #Pvar-C only
-  Chla_Pvar_model.C1<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C1)
+  Chla_Pvar_model.C1<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C1)
   anova(Chla_Pvar_model.C1) 
   qqPlot(residuals(Chla_Pvar_model.C1)) 
     emm<-emmeans(Chla_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -4750,10 +4750,10 @@ Chla_Pvar_model.TF<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla
     pairs(emm)
 
 #Pvar-C27 only
-  Chla_Pvar_model.C27<-lmer(ChlaSA_quart~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C27)
+  Chla_Pvar_model.C27<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C27)
   anova(Chla_Pvar_model.C27) 
   qqPlot(residuals(Chla_Pvar_model.C27)) 
-    emm<-emmeans(Chla_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
+    emm<-emmeans(Chla_Pvar_model.C27,  ~ Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)  
 
@@ -9041,7 +9041,7 @@ PR_psy<-PR.df_B
  
 ```
 #merging full physio 
-```{r}    
+```{r}     
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
  
 
@@ -9075,7 +9075,6 @@ PhysioData<-merge(PhysioData,PRPR_psy,all.x=T)
 duplicated(PhysioData$Code)
 PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
-
 # PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
 
 
@@ -9083,8 +9082,8 @@ PhysioData<-unique(PhysioData) #this is the df.
 
 ```
 
-#nMDS of physio, PhysioData df, by Parent.ID, all data
-```{r}     
+#nMDS of physio, PhysioData df, by Parent.ID, all data <- no reason to do nmds for physio. 
+```{r}      
   
 
 #make a copy
@@ -9770,7 +9769,7 @@ ggplot(ord.pacu.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 #PERMANOVA on physio only
 
-```{r}        
+```{r}         
   
 #ALL THE DATA T1TF
 
@@ -9852,14 +9851,16 @@ phy_Pacu.div #view, all is significant
 ## ITS2
 
 # Physio PCA THIS IS THE WAY df= PhysioData
-```{r}   
+```{r}    
 library(ggbiplot)
 
-apData<-PhysioData
-
+apData<-PhysioData #make a copy
+apData$Respiration<-apData$Respiration*-1 #make respiration all positive
 apData<-subset(apData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
-apData<-na.omit(apData)
-apData2 <- prcomp(apData[c(14:22)], center = TRUE, scale = TRUE)
+apData<-na.omit(apData) #remove NAs
+apData<-apData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] #put cols in correct order
+
+apData2 <- prcomp(apData[c(5:13)], center = TRUE, scale = TRUE) #center and scale
 summary(apData2)
  
 str(apData2)
@@ -9887,6 +9888,26 @@ Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
 ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
   theme_classic()
+
+
+
+#stats THIS WORKS 10/18/21
+#first center and scale
+apData3 <- as.data.frame(scale(apData[c(5:13)], center = TRUE, scale = TRUE)) #this removes metadata, add it back in
+apData4<-merge(apData[1:4], apData3, by="row.names") #this should merge them
+apData5<-subset(apData4, select = -c(1) ) #remove rownames
+
+#trying to recode correct stats, scaled/centered and euclidian 10/18/21
+phy.dist.test <- vegdist(apData2[c(5:13)],  method="euclidian") #make dist matrix
+phy.divTest <- adonis2(apData5[c(5:13)] ~ Species*Treatment*Time.Point, data = apData5 [1:4], permutations = 999, method="euclidian")
+phy.divTest #view, 
+
+##Check for homogeneity of dispersions - this runs for the above
+phy.dist.disptest <- betadisper(phy.dist.test, apData$Species, type = "centroid")
+#par(pty = 's')
+boxplot(phy.dist.disp) #visualise your dispersion
+permutest(phy.dist.disp) #this is your PERMDISP test
+
 
 
 
@@ -10306,7 +10327,7 @@ Testing <- cbind(
 
 # % change plots for defense
 ```{r}
-
+ 
 #cell counts ####  
 #data=zoox.cm2_log, df=FC_stats_T1TF
 FC_pc<-FC_stats_T1TF #make a copy of df
@@ -11189,8 +11210,8 @@ grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 
 
 #Plot mean ordi
-```{r}
-
+```{r} 
+ 
 ## load packages
 library(lmerTest)
 library(naniar)
@@ -11230,8 +11251,9 @@ library(vegan)
 #library("mixOmics")
 library(RVAideMemoire)
 ```
+why did you do nmds for physio. not right. but euclidian is right
 
-```{r}
+```{r} 
 AA_PhysioData<-PhysioData #copy df
 AA_PhysioData$Respiration<-AA_PhysioData$Respiration*-1
 AA_PhysioData<-AA_PhysioData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
@@ -11260,7 +11282,7 @@ allNMDS<-metaMDS(resp.fullNMDS, distance='euclidean', k=2, trymax=100)
 
 stressplot(allNMDS)
 
-##### next  ####
+##### next  #### 
 
 allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2], 
                             Species=as.factor(fac.AA_PhysioData2[,2]),
@@ -11346,5 +11368,106 @@ dev.copy(pdf, "PhysioNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
 dev.off() 
 
 
+```
+
+Try T0 apDataT0
+
+```{r}
+
+AA_PhysioT0<-apDataT0 #copy df
+AA_PhysioT0$Respiration<-AA_PhysioT0$Respiration*-1
+AA_PhysioT0<-AA_PhysioT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
+
+
+
+# T0NMDS<-subset(AA_PhysioData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
+T0NMDS<-na.omit(AA_PhysioT0)
+#CW code
+# cleaned data for T0 dataframe NMDS (Site, Period, dom)
+
+T0NMDS$SpTrTi<-interaction(T0NMDS$Species, T0NMDS$Treatment, T0NMDS$Time.Point)
+
+ fac.T0NMDS<-T0NMDS[,c("Treatment","Species", "Time.Point", "SpTrTi")] #  sans responses
+
+resp.T0NMDS<-T0NMDS[, 5:12] # just responses
+
+resp.T0NMDS <- scale(resp.T0NMDS, center = TRUE, scale = TRUE) 
+
+##  Run MANOVA 
+all.Manova<-adonis2(resp.T0NMDS~Species, data=T0NMDS, permutations=1000,  method="euclidian")
+all.Manova
+
+
+allNMDS<-metaMDS(resp.T0NMDS, distance='euclidean', k=2, trymax=100) 
+
+stressplot(allNMDS)
+
+##### next  #### 
+
+allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2], 
+                            Species=as.factor(fac.T0NMDS[,2]))
+
+colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
+
+#centroid means
+NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$Species), mean) # mean by species*treatment*time
+
+############### All groups NMDS
+T0NMDS$Species<-droplevels(T0NMDS$Species)
+groups<-T0NMDS$Species
+groups2<-c("Montipora_capitata", "Porites_compressa","Pavona_varians","Pocillopora_acuta")
+colors=c(
+  "#F8766D", #Mcap 
+  "#C77CFF", #Porites
+  "#7CAE00", # Pvar
+  "#00BFC4" # Pacu
+   ) 
+plot<-ordiplot(allNMDS, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
+axis(side = 1, labels = FALSE)
+abline(h = 0, lty = "dotted")
+abline(v = 0, lty = "dotted")
+ordihull(plot, groups=paste(T0NMDS$Species), draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
+
+# points for start and end
+with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3],  col=colors[1], pch=16, cex=4, lwd=1)) #mcap 
+with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=4, lwd=1)) # Pav
+with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=4, lwd=1)) #poc
+with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=4, lwd=1)) # por
+
+
+
+
+
+# # points for others (if want)
+# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+
+# lines for start and end
+with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
+with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
+with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
+with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
+with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
+with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
+with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
+with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
+
+# add labels
+text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
+text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
+text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
+text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
+
+text(-6, -4.5, "2D Stress = 0.14", cex=0.8, col="black")
+legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
+
+dev.copy(pdf, "PhysioNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
+dev.off() 
 ```
 
