@@ -10,7 +10,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}  
+```{r}   
 # rm(list=ls())
 
 library(tidyverse)
@@ -702,8 +702,8 @@ Pcomp.p <- ggplot(Pcomp_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = D
   scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
   xlab("Sample Label") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))#+
- # theme(legend.position = "none")
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
 Pcomp.p +  facet_wrap(~ Code, nrow=2)
 
 #try glom use raw counts its2.s2
@@ -858,7 +858,7 @@ print(DIVrareRel1_Pcomp)
 ```
 #Beta Diversity: df rarefied and relative abudnaces  
 All Species
-```{r}            
+```{r}              
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 #DIV_RelA is coralDIV2_rare2 with RELA
 
@@ -920,7 +920,7 @@ ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
 
 
 # T0 T1 and TF for defense ####
-  DIV_RelA_statsD = prune_taxa(taxa_sums(DIV_RelA_stats) > 0, DIV_RelA_stats) #this removes any OTU with 0s
+   DIV_RelA_statsD = prune_taxa(taxa_sums(DIV_RelA_stats) > 0, DIV_RelA_stats) #this removes any OTU with 0s
 
 #bray curtis presence-absense and abundance
 
@@ -1004,6 +1004,7 @@ scores.ord.DIV_RelA_stats$Treatment <- samp.df$Treatment
 scores.ord.DIV_RelA_stats$Species <- samp.df$Species
 scores.ord.DIV_RelA_stats$Clade <- samp.df$Clade
 scores.ord.DIV_RelA_stats$Time.Point <- samp.df$Time.Point
+scores.ord.DIV_RelA_stats$Code<-paste(samp.df$Species,samp.df$Treatment, samp.df$Time.Point)
 
 ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
@@ -1057,6 +1058,8 @@ scores.ord.DIV_RelA_statsT1$Treatment <- samp.df$Treatment
 scores.ord.DIV_RelA_statsT1$Species <- samp.df$Species
 scores.ord.DIV_RelA_statsT1$Clade <- samp.df$Clade
 scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
+scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
+
 
 ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species, shape=Treatment), size = 4) +
@@ -1084,6 +1087,18 @@ ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2, color = Species, l
                aes(fill = Code3), 
                alpha = 0.25)+
     theme_classic()
+
+ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Treatment), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(color=Clade, fill=4, alpha=0.25)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+
+
+
 
 scores.ord.DIV_RelA_statsT1$Code4<-paste(scores.ord.DIV_RelA_statsT1$Species, scores.ord.DIV_RelA_statsT1$Clade, scores.ord.DIV_RelA_statsT1$Treatment)
 
@@ -1160,7 +1175,7 @@ p+facet_wrap(~Species)
 
 ```
 #Dispersion line plots
-```{r}  
+```{r}   
 
 # #dipersion lmer  Bac.s.rel.u
   DIVsamp.df.T01F <- as(sample_data(DIV_RelA_stats), "data.frame") #sample df
@@ -1187,7 +1202,7 @@ wu.all.its<-betadisper(ITS.DIVT01F, DIVsamp.df.T01F$Code, type = "centroid")
  #T0 make all ambient   
         Awu.disp.Species.its$Treatment[Awu.disp.Species.its$Time.Point=="T0"]  <- "Ambient" 
 
-   disp_mean.its <- ddply(Awu.disp.Species.its, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+   disp_mean.its <- ddply(Awu.disp.Species.itsT0, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
                    N    = length(wu.distances[!is.na(wu.distances)]), 
                    mean = mean(wu.distances, na.rm=TRUE), 
                    sd   = sd(wu.distances, na.rm=TRUE), 
@@ -1227,8 +1242,36 @@ disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code,
     disp_mean_plot.its+facet_wrap(~Species*Clade)
 
     
+   #byspecies 
+    
+    Awu.disp.Species.itsT0<-subset(Awu.disp.Species.its, Time.Point=="T0")
+    
+
+disp_mean.its #dis   HERE FIGURE OUT HOW TO MAKE THIS A DF TO DO BELOW
+  #boxplot T0
+      boxplot(mean ~ Species, data=Awu.disp.Species.its, ylab="distance to centroid") 
+
+      
+      
+     # try create a list of pairwise comaprisons
+Awu.disp.Species.itsT0 <- subset(Awu.disp.Species.its, Time.Point=="T0") # get the variables
+
+  #dist to centroid violin plot
+p1t0 <- ggviolin(Awu.disp.Species.itsT0, x = "Species", y = "wu.distances",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1t0)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 #plot by species
-#mcap
+#mcap code
     disp_mean.its.mcap<-subset(disp_mean.its, Species=="Montipora_capitata")
 
     disp_mean.its_plot<-ggplot(data=disp_mean.its.mcap, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
@@ -1258,10 +1301,47 @@ disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code,
   theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
     disp_mean.its_plot+facet_wrap(~Clade)
     
- #pcomp
-    disp_mean.its.pcomp<-subset(disp_mean.its, Species=="Porites_compressa")
+    #mcap treat
+     disp_mean.itsTreat <- ddply(Awu.disp.Species.its, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
+                   N    = length(wu.distances[!is.na(wu.distances)]), 
+                   mean = mean(wu.distances, na.rm=TRUE), 
+                   sd   = sd(wu.distances, na.rm=TRUE), 
+                   se   = sd / sqrt(N), 
+                   max = max(wu.distances, na.rm=TRUE) 
+)
 
-    disp_mean.its_plot<-ggplot(data=disp_mean.its.pcomp, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+ disp_mean.its.mcapTreat<-subset(disp_mean.itsTreat, Species=="Montipora_capitata")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.mcapTreat, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+  xlab("") + #Label the X Axis
+  #ylim(0, 11) + #set Y limits
+  #scale_y_log10()+
+  theme_bw() + #Set the ITSkground color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot ITSkground
+        legend.key = element_blank()) + #Set plot legend key
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Dist to centroid"))) +
+  ggtitle("Mcap Dispersion its")+
+  theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
+    
+ #pcomp
+    disp_mean.its.pcomptreat<-subset(disp_mean.itsTreat, Species=="Porites_compressa")
+
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pcomptreat, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Treatment), size=4, show.legend = T)+
@@ -1290,9 +1370,9 @@ disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code,
     
     
 #pvar
-    disp_mean.its.pvar<-subset(disp_mean.its, Species=="Pavona_varians")
+    disp_mean.its.pvar<-subset(disp_mean.itsTreat, Species=="Pavona_varians")
 
-    disp_mean.its_plot<-ggplot(data=disp_mean.its.pvar, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pvar, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Treatment), size=4, show.legend = T)+
@@ -1317,7 +1397,9 @@ disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code,
   ylab(expression(paste("Dist to centroid"))) +
   ggtitle("pvar Dispersion its")+
   theme(plot.title = element_text(size=20, face = "italic"));disp_mean.its_plot 
-    disp_mean.its_plot+facet_wrap(~Clade)    
+    disp_mean.its_plot+facet_wrap(~Clade) 
+    
+    
     
 #for defense
     disp_mean.its.pvar_T1TF<-subset(disp_mean.its.pvar, Time.Point=="T1"|Time.Point=="TF")
@@ -1351,9 +1433,9 @@ disp_mean_plot.its<-ggplot(data=disp_mean.its, aes(x=Code, y=mean, group = Code,
     
     
 #pacu
-    disp_mean.its.pacu<-subset(disp_mean.its, Species=="Pocillopora_acuta")
+    disp_mean.its.pacu<-subset(disp_mean.itsTreat, Species=="Pocillopora_acuta")
 
-    disp_mean.its_plot<-ggplot(data=disp_mean.its.pacu, aes(x=Time.Point, y=mean, group = Code2, color=Treatment)) +
+    disp_mean.its_plot<-ggplot(data=disp_mean.its.pacu, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Treatment), size=4, show.legend = T)+
@@ -1551,7 +1633,7 @@ ggplot(data=disp_mean.its.pacu, aes(x=Time.Point, y=mean, group = Treatment, col
 ```
 
 #T0 beta and dispersion
-```{r}
+```{r} 
 #T0 only DIV_RelA_stats.T0
 
 #Mcap
@@ -1623,7 +1705,7 @@ bc.Pacu.T0 <- phyloseq::distance(Pacu.RelRare.T0, method = "bray")
 Beta
 Montipora - T1 and TF together, then independent. PERMANOVA
 ```{r}       
-
+ 
 
     
 #DIV_RelA_stats.T1F ####
@@ -3388,7 +3470,7 @@ geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment, size = 4) )+
 #Alpha diversit: observed richness, Shannon (+evenness) - microbiome packages  
 Use rarefied data, not relative abunances   
 df:coralDIV2_rare2  
-```{r}        
+```{r}         
 
 Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
@@ -3581,7 +3663,7 @@ hist(erich.tab2its.pacu$observed)
 
 ```
 #Observed Richness not transformed
-```{r}    
+```{r}     
 #observed   
 
 observed_alpha_mod<-lmer(observed ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2its) #adding tank is singularity
@@ -3617,6 +3699,16 @@ set.seed(30)
   emm<-emmeans(observed_alpha_mod,  ~ Species*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm) 
+  
+  #Richness
+p1 <- ggviolin(erich.tab2its.T0, x = "Species", y = "observed",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+#Evenness
+p1 <- ggviolin(erich.tab2its.T0, x = "Species", y = "evenness_pielou",
+   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
+  print(p1)
+
   
   
   #T0 by species 
@@ -3912,7 +4004,7 @@ hist(erich.tab2its.pacu.T0$observed)
   
 ``` 
 alpha Observed Plots, no clade
-```{r}
+```{r} 
 #Means
 observed_mean <- ddply(erich.tab2its, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
@@ -3942,7 +4034,7 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+ ylim(0, 40) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -3952,12 +4044,12 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Mcap Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Mcap Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
 
 
@@ -3969,7 +4061,7 @@ Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean, aes(x=Time.Point, y=mean, 
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+ ylim(0, 40) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -3979,12 +4071,12 @@ Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean, aes(x=Time.Point, y=mean, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pcomp Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pcomp Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
 
 #Pvar plots
@@ -3996,7 +4088,7 @@ Pvar_observed_plot<-ggplot(data=Pvar_observed_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+ ylim(0, 40) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4006,12 +4098,12 @@ Pvar_observed_plot<-ggplot(data=Pvar_observed_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pvar Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pvar Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
 
 
@@ -4024,7 +4116,7 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+  ylim(0, 40) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4034,12 +4126,12 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pacu Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
 
 ###### All plots together
@@ -4053,7 +4145,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```  
 
 alpha Observed Plots, clade  
-```{r}  
+```{r}   
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
@@ -4097,12 +4189,12 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C, aes(x=Time.Point, y=mean, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Mcap Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Mcap Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
 
 #plot for defense Mcap T1 and TF
@@ -4114,7 +4206,8 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C_T1TF, aes(x=Time.Point, y=m
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+    ylab("") + #Label the X Axis
+ ylim(0, 45) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4124,25 +4217,27 @@ Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C_T1TF, aes(x=Time.Point, y=m
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Mcap Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Mcap Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
 
 
 #Pcomp plots
 #plot Pcomp
-Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+Pcomp_observed_mean.C_T1TF<-subset(Pcomp_observed_mean.C, Time.Point=="T1"|Time.Point=="TF")
+
+Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean.C_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+  ylim(0, 45) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4152,24 +4247,27 @@ Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean.C, aes(x=Time.Point, y=mean
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pcomp Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pcomp Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
 
 #Pvar plots
 #plot Pvar
-Pvar_observed_plot<-ggplot(data=Pvar_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+Pvar_observed_mean.C_T1TF<-subset(Pvar_observed_mean.C, Time.Point=="T1"|Time.Point=="TF")
+
+Pvar_observed_plot<-ggplot(data=Pvar_observed_mean.C_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
   geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+ xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+   ylim(0, 45) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4179,12 +4277,12 @@ Pvar_observed_plot<-ggplot(data=Pvar_observed_mean.C, aes(x=Time.Point, y=mean, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pvar Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pvar Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
 
 
@@ -4196,7 +4294,8 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C, aes(x=Time.Point, y=mean, 
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+    ylab("") + #Label the X Axis
+  ylim(0,45)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4206,12 +4305,12 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C, aes(x=Time.Point, y=mean, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pacu Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
 
 #plot Pacu FOR DEFENSE T1TF
@@ -4223,7 +4322,9 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C_T1TF, aes(x=Time.Point, y=m
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 45) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4233,12 +4334,12 @@ Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C_T1TF, aes(x=Time.Point, y=m
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pacu Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
 
 ###### All plots together
@@ -4252,7 +4353,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```
  
 #evenness_pielou Richness 
-```{r}    
+```{r}     
 #evenness_pielou  
 #not transformed
 
@@ -4557,7 +4658,8 @@ Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Poi
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4567,12 +4669,12 @@ Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Poi
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Mcap Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Mcap Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
 
 
@@ -4588,14 +4690,15 @@ erich.tab2its.mcapT1mean <- ddply(erich.tab2its.mcapT1, c("Treatment", "Clade"),
 )
 erich.tab2its.mcapT1mean
 
-Mcap_evenness_pielou_plot<-ggplot(data=erich.tab2its.mcapT1mean, aes(x=Clade, y=mean, group = Clade, color=Treatment)) +
+Mcap_evenness_pielou_plot<-ggplot(data=erich.tab2its.mcapT1mean, aes(x=Time.Point, y=mean, group = Clade, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
- # geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+ geom_point(aes(color=Treatment), size=4, show.legend = F)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+   xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4605,9 +4708,9 @@ Mcap_evenness_pielou_plot<-ggplot(data=erich.tab2its.mcapT1mean, aes(x=Clade, y=
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("Alpha Diversity"))) +
   ggtitle("Mcap Evenness by clade")+
@@ -4658,7 +4761,8 @@ Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean, aes(x=Time.P
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+  ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4668,12 +4772,12 @@ Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean, aes(x=Time.P
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pcomp Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pcomp Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
 
 #Pvar plots
@@ -4684,8 +4788,9 @@ Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean, aes(x=Time.Poi
   geom_point(aes(color=Treatment), size=4, show.legend = F)+
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+xlab("") + #Label the X Axis
+  ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4695,12 +4800,12 @@ Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean, aes(x=Time.Poi
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pvar Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pvar Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
 
 
@@ -4712,7 +4817,9 @@ Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean, aes(x=Time.Poi
   geom_point(aes(color=Treatment), size=4, show.legend = F)+
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
+xlab("") + #Label the X Axis
+  ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4723,12 +4830,12 @@ Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean, aes(x=Time.Poi
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Richness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pacu Richness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
 
 ###### All plots together
@@ -4742,7 +4849,7 @@ grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evennes
 ```  
 
 alpha evenness_pielou Plots, clade  
-```{r} 
+```{r}  
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
@@ -4776,7 +4883,8 @@ Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean.C, aes(x=Time.P
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
   xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4786,12 +4894,12 @@ Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean.C, aes(x=Time.P
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Mcap Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Mcap Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
 
 #Pcomp plots
@@ -4802,8 +4910,10 @@ Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean.C, aes(x=Time
   geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
+  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4813,12 +4923,12 @@ Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean.C, aes(x=Time
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pcomp Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pcomp Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
 
 #Pvar plots
@@ -4829,8 +4939,10 @@ Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean.C, aes(x=Time.P
   geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
+  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4840,12 +4952,12 @@ Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean.C, aes(x=Time.P
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pvar Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pvar Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
 
 
@@ -4856,8 +4968,10 @@ Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean.C, aes(x=Time.P
   geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
   geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
   scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
- # ylim(0, 11) + #set Y limits
+xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 1) + #set Y limits
+  # ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4867,12 +4981,12 @@ Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean.C, aes(x=Time.P
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Alpha Diversity"))) +
-  ggtitle("Pacu Evenness")+
+  # ylab(expression(paste("Alpha Diversity"))) +
+  # ggtitle("Pacu Evenness")+
   theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
 
 ###### All plots together
@@ -5399,3 +5513,208 @@ head(its2SeqList$samples)
 
 
 
+
+
+
+
+#For defense plots nmds means
+
+#Plot mean ordi
+```{r}
+
+## load packages
+library(lmerTest)
+library(naniar)
+library(multcomp)
+library(lmtest)
+library(lme4)
+library(car)
+library(effects)
+library(gplots)
+library(plotrix)
+library(psych)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(scales)
+library(MASS)
+library(lsmeans)
+library(pbkrtest)
+library(cowplot)
+library(devtools)
+library(dplyr)
+library(vegclust)
+library(smacof) #not loading
+library(devtools)
+library(zoo)
+library(lubridate)
+
+#install_github("vqv/ggbiplot")
+library(ggbiplot)
+require(graphics)
+library(tidyr)
+library(vegan)
+
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#install.packages("BiocManager")
+#BiocManager::install("mixOmics")
+#library("mixOmics")
+library(RVAideMemoire)
+```
+
+```{r}
+AA_DIVs<-DIV_RelA_stats.T1F #copy df
+
+fullNMDS<-AA_DIVs
+fullNMDS = prune_taxa(taxa_sums(fullNMDS) > 0, fullNMDS) #this removes any OTU with 0s
+
+
+# extract OTU table with metadata. 
+
+# Extract abundance matrix from the phyloseq object< 
+#OK some of your samples now have zero taxa. 
+OTU.DIV.v = as(otu_table(fullNMDS), "matrix")
+# transpose if necessary
+if(taxa_are_rows(fullNMDS)){OTU.DIV.v <- t(OTU.DIV.v)}
+# Coerce to data.frame
+OTU.DIV.v.df = as.data.frame(OTU.DIV.v)
+    sample_data<-rownames(OTU.DIV.v.df)  #make row names a column
+  rownames(OTU.DIV.v.df) <- NULL
+  OTU.DIV.v.df2 <- cbind(sample_data,OTU.DIV.v.df)
+
+
+
+#smash in meta in vegan, multivariate stats
+Asample.dataDIV <- as(sample_data(fullNMDS), "data.frame") #create sample data frame to view
+
+sample_data<-rownames(Asample.dataDIV)  #get meta organized, row names a column
+  rownames(Asample.dataDIV) <- NULL
+  Asample.dataDIV2 <- cbind(sample_data,Asample.dataDIV)
+  
+
+DIV.data<-merge(Asample.dataDIV2,OTU.DIV.v.df2) #merge on the metadata to OTU table. Bam
+
+DIV.data<-subset(DIV.data, Time.Point=="T1"|Time.Point=="TF")
+#CW code
+# cleaned data for full dataframe NMDS (Site, Period, dom)
+
+DIV.data$SpTrTi<-interaction(DIV.data$Species, DIV.data$Treatment, DIV.data$Time.Point)
+
+ fac.DIV.data<-DIV.data[,c("Treatment","Species", "Time.Point", "SpTrTi")] #  sans responses
+
+resp.DIV.data<-DIV.data[, 20:304] # just responses
+
+resp.DIV.data <- scale(resp.DIV.data, center = TRUE, scale = TRUE) 
+# 
+# ##  Run MANOVA 
+# # all.Manova<-adonis2(resp.DIV.data~Species*Treatment*Time.Point, data=DIV.data, permutations=1000,  method="euclidian")
+# # all.Manova
+# 
+allNMDS<-metaMDS(resp.DIV.data, distance='euclidean', k=2, trymax=300)
+# 
+# stressplot(allNMDS)
+# 
+# ##### next  ####
+# 
+allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
+                            Species=as.factor(fac.DIV.data[,2]),
+                            Treatment=as.factor(fac.DIV.data[,1]),
+                            Time.Point=as.factor(fac.DIV.data[,3]),
+                            SpTrTi=as.factor(fac.DIV.data[,4]))
+
+colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
+
+
+# scores.ord.DIV_RelA_stats  df from above nmds you can't get it to work here. 
+
+#centroid means scores.ord.DIV_RelA_stats
+NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$SpTrTi), mean) # mean by species*treatment*time
+
+############### All groups NMDS
+# DIV.data$Code<-droplevels(DIV.data$Code)
+groups<-DIV.data$Code
+groups2<-c("Montipora_capitata Ambient T1", 
+           "Montipora_capitata Ambient TF", 
+           "Montipora_capitata High T1",
+           "Montipora_capitata High TF", 
+           "Porites_compressa Ambient T1", 
+           "Porites_compressa Ambient TF", 
+           "Porites_compressa High T1",
+           "Porites_compressa High TF",
+           "Pavona_varians Ambient T1", 
+           "Pavona_varians Ambient TF", 
+           "Pavona_varians High T1",
+           "Pavona_varians High TF",
+           "Pocillopora_acuta Ambient T1", 
+           "Pocillopora_acuta Ambient TF", 
+           "Pocillopora_acutaa High T1",
+           "Pocillopora_acuta High TF")
+colors=c(
+  "#F8766D", #Mcap 
+  "#C77CFF", #Porites
+  "#7CAE00", # Pvar
+  "#00BFC4" # Pacu
+   ) 
+plot<-ordiplot(allNMDS, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
+axis(side = 1, labels = FALSE)
+abline(h = 0, lty = "dotted")
+abline(v = 0, lty = "dotted")
+ordihull(plot, groups=DIV.data$SpTrTi, draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
+
+# points for start and end
+with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], bg="white", col=colors[1], pch=21, cex=2, lwd=1)) #mcap T1 H
+with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3], col=colors[1], pch=16, cex=2, lwd=1)) # Mcap A T1
+with(plot, points(NMDS.mean[13,2], NMDS.mean[13,3], bg="white",col=colors[1], pch=24, cex=2, lwd=1)) #mcap TF H
+with(plot, points(NMDS.mean[9,2], NMDS.mean[9,3], col=colors[1], pch=17, cex=2, lwd=1)) # Mcap A TF
+
+with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], bg="white", col=colors[2], pch=21, cex=2, lwd=1)) # Pcomp H T1
+with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=2, lwd=1)) # Pcomp  A T1
+with(plot, points(NMDS.mean[16,2], NMDS.mean[16,3], bg="white", col=colors[2], pch=24, cex=2, lwd=1)) # Pcomp H TF
+with(plot, points(NMDS.mean[12,2], NMDS.mean[12,3], col=colors[2], pch=17, cex=2, lwd=1)) # PcompA TF
+
+with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], bg="white", col=colors[3], pch=21, cex=2, lwd=1)) # Pvar H T1
+with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=2, lwd=1)) # Pvar A T1
+with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], bg="white", col=colors[3], pch=24, cex=2, lwd=1)) # Pvar H TF
+with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=17, cex=2, lwd=1)) # Pvar A TF
+
+with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], bg="white", col=colors[4], pch=21, cex=2, lwd=1)) # Pacu H T1
+with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=2, lwd=1)) # Pac A Ta
+with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], bg="white", col=colors[4], pch=24, cex=2, lwd=1)) # Pacu H TF
+with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[4], pch=17, cex=2, lwd=1)) # Pac A TF
+
+
+
+# # points for others (if want)
+# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
+# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
+# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
+# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
+
+# lines for start and end
+with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
+with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
+with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
+with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
+with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
+with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
+with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
+with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
+
+# add labels
+# text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
+# text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
+# text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
+# text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
+
+text(-30, -22, "2D Stress = 0.18", cex=0.8, col="black")
+legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
+
+dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
+dev.off() 
+
+
+```

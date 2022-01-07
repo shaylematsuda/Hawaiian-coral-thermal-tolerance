@@ -12118,12 +12118,12 @@ resp.B16S.data<-B16S.data[, 13:2449] # just responses
 # # all.Manova<-adonis2(resp.B16S.data~Species*Treatment*Time.Point, data=B16S.data, permutations=1000,  method="euclidian")
 # # all.Manova
 # 
-
+ 
 allNMDS<-metaMDS(resp.B16S.data, distance='bray', k=3, trymax=300)
 # 
 # stressplot(allNMDS)
 # 
-# ##### next  ####
+# ##### next  #### 
 # 
 allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
                             Species=as.factor(fac.B16S.data[,2]))
@@ -12202,13 +12202,15 @@ dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
 dev.off() 
 
 ```
-
+ 
 #Mantel Test
-import the its2 matrix
+import the its2 matrix from the ITS script
+
+T0 only
 ```{r}
 # figure out which samples are represented in the its2 and 16s dfs
 
-#T0 only 
+# T0 only  #####
 
 #set up 16s
     Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
@@ -12218,68 +12220,520 @@ import the its2 matrix
     #save just sample names
       bac.T0.sd.samps<-bac.T0.sd[['sample_name.1']]
 
-#import ITS2 T0 (already pruned)
+#set up ITS2 T0, import  (already pruned)
     ITS2_T0_mantel <- readRDS("ITS2_T0_phyloseq.rds")
-# look at sample names
+  # look at sample names
     ITS.T0.sd <- as(sample_data(ITS2_T0_mantel), "data.frame") #sample df
   #save just sample names
       ITS.T0.sd.samps<-ITS.T0.sd[['ID']]
 
 # compare ITS to 16s at T0
-setdiff(bac.T0.sd.samps,ITS.T0.sd.samps) #samples in 16s but not ITS: S208b, SN70b
-setdiff(ITS.T0.sd.samps,bac.T0.sd.samps) #samples in ITS but not 16s: S208, Sn60, SN70, Sn11, SN40, Sn111, SN56, Sn109
-# in ITS change sample S208b name to S208
+  #identify missing samples btw datasets     
+      setdiff(bac.T0.sd.samps,ITS.T0.sd.samps) #samples in 16s but not ITS: S208b, SN70b
+      setdiff(ITS.T0.sd.samps,bac.T0.sd.samps) #samples in ITS but not 16s: "S208"  "SN60"  "SN70"  "S49"   "SN11"  "SN145" "SN40"  "SN111" "SN6"   "SN56"  "SN109"
+        
+      # in 16S change sample S208b name to S208
 
   # 16s changes: rename sample S208b = S208
-    as(sample_data(Bac.s.rel.u.T0), "BacT0.samps.edit")
-    
-  OTU.16sT0 = as(otu_table(Bac.s.rel.u.T0), "matrix")
-  Tax.16sT0 = as(tax_table(Bac.s.rel.u.T0), "matrix")
-  aSD.16sT0 = as(sample_data(Bac.s.rel.u.T0), "matrix")
-    aSD.16sT0<-as.data.frame(aSD.16sT0) #change to df
-    aSD.16sT0$Frag.ID[aSD.16sT0$Frag.ID == "S208b"] <- "S208"  #replace name S208b
-        aSD.16sT0$sample_name.1[aSD.16sT0$sample_name.1 == "S208b"] <- "S208"  #replace name S208b
+
+    # pull OTU table
+     OTU.16sT0 = as(otu_table(Bac.s.rel.u.T0), "matrix") #pull otu
+       OTU.16sT0<-as.data.frame(OTU.16sT0) #make into df
+        row.names(OTU.16sT0)[5] <- "S208"   #change row name by row number
+                row.names(OTU.16sT0)[31] <- "SN70"   #change row name by row number
+
+    #pull TAX table
+     aTax.16sT0 = as(tax_table(Bac.s.rel.u.T0), "matrix") #pull tax
+     
+     #pull phy tree table
+     tree.seq = phy_tree(Bac.s.rel.u.T0) #pull out tree
+
+    #pull SAMPLE DATA
+     aSD.16sT0 = as(sample_data(Bac.s.rel.u.T0), "matrix") #pull samp.data
+     aSD.16sT0<-as.data.frame(aSD.16sT0) #change to df
+        row.names(aSD.16sT0)[5] <- "S208"  #replace name S208b
+        row.names(aSD.16sT0)[31] <- "SN70"  #replace name S208b
+            
+
+    #remake the phyloseq obj
+      samdata = sample_data(aSD.16sT0)
+        seqtab = otu_table(OTU.16sT0, taxa_are_rows = FALSE)
+        taxtab = tax_table(aTax.16sT0)
+        phy_tree = read_tree(phyTree.16sT0)
+          Bac_T0_mantel = phyloseq(otu_table(seqtab), tax_table(taxtab), sample_data(samdata),phy_tree(tree.seq))
+          
+          
+   #ITS2 - remove samps not in the 16s df - "SN60"  "S49"   "SN11"  "SN145" "SN40"  "SN111" "SN6"   "SN56"  "SN109" 
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN60" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "S49" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN11" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN145" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN40" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN111" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN6" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN56" )
+        ITS2_T0_mantel <- subset_samples(ITS2_T0_mantel, ID != "SN109" )
+
+        # both have 39 samples - Bac_T0_mantel ITS2_T0_mantel
+      
+        # reorder ps object so samples are in the same order
+        library(microbiome)
+        library(microViz)
         
-  #remake the phyloseq obj
-        OTU.16sT0 <- phyloseq(otu, tax, sam)
+        Bac_T0_mantel <- Bac_T0_mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
+        phyloseq::sample_data(Bac_T0_mantel) %>% head(8)
+        
+        ITS2_T0_mantel <- ITS2_T0_mantel %>% ps_arrange(ID, desc(ID))
+        phyloseq::sample_data(ITS2_T0_mantel) %>% head(8)
+        
+  # MAKE data matrix
+       library(vegan)
+  
+  #16s T0        
+        unifrac.Bac.T0.mantel <- phyloseq::distance(Bac_T0_mantel, method = "wunifrac")
+        
+  #ITS2 T0
+     bray.ITS2.T0.mantel <- phyloseq::distance(ITS2_T0_mantel, method = "bray") 
 
- 
-   #ITS2 remove samps not in the 16s df
-        Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S1753b" )
-
+  # Run mantel test
+      mantel(unifrac.Bac.T0.mantel, bray.ITS2.T0.mantel,  permutations=1000)
     
-unifrac.all.T1 <- ordinate(Bac.s.rel.u.T1, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
-stressplot(unifrac.all.T1)
-scores.ord.u_RelA_stats.T1<-as.data.frame(cbind(vegan::scores(unifrac.all.T1, display="sites"))) # these are "points" ask hannah 
-     unifrac.all.sd.T1 <- as(sample_data(Bac.s.rel.u.T1), "data.frame") #sample df
+        
+#### T0 Mcap only ####        
+ # Bac_T0_mantel ITS2_T0_mantel
+    
+    #subset df for mcap
+    Bac_T0_mantel.Mcap <- subset_samples(Bac_T0_mantel, Species == "Montipora_capitata")
+    Bac_T0_mantel.Mcap = prune_taxa(taxa_sums(Bac_T0_mantel.Mcap) > 0, Bac_T0_mantel.Mcap) 
+    
+    ITS2_T0_mantel.Mcap  <- subset_samples(ITS2_T0_mantel, Species == "Montipora_capitata")
+    ITS2_T0_mantel.Mcap = prune_taxa(taxa_sums(ITS2_T0_mantel.Mcap) > 0, ITS2_T0_mantel.Mcap)
+        
+    #16s T0 mcap dist        
+      unifrac.Bac_T0_mantel.Mcap <- phyloseq::distance(Bac_T0_mantel.Mcap, method = "wunifrac")
+        
+   #ITS2 T0 mcap dist
+     bray.ITS2.T0.mantel.Mcap <- phyloseq::distance(ITS2_T0_mantel.Mcap, method = "bray") 
 
-scores.ord.u_RelA_stats.T1$Treatment <- unifrac.all.sd.T1$Treatment
-scores.ord.u_RelA_stats.T1$Species <- unifrac.all.sd.T1$Species
-scores.ord.u_RelA_stats.T1$Clade <- unifrac.all.sd.T1$Clade
-scores.ord.u_RelA_stats.T1$Code <- paste(scores.ord.u_RelA_stats.T1$Clade, scores.ord.u_RelA_stats.T1$Species)
-scores.ord.u_RelA_stats.T1$Code3 <- paste(scores.ord.u_RelA_stats.T1$Species, scores.ord.u_RelA_stats.T1$Treatment)
+   # Run mantel test
+      mantel(unifrac.Bac_T0_mantel.Mcap, bray.ITS2.T0.mantel.Mcap,  permutations=1000)
+    
+#### T0 Pcomp only ####        
+ # Bac_T0_mantel ITS2_T0_mantel
+    
+    #subset df for Pcomp
+    Bac_T0_mantel.Pcomp <- subset_samples(Bac_T0_mantel, Species == "Porites_compressa")
+    Bac_T0_mantel.Pcomp = prune_taxa(taxa_sums(Bac_T0_mantel.Pcomp) > 0, Bac_T0_mantel.Pcomp) 
+    
+    ITS2_T0_mantel.Pcomp  <- subset_samples(ITS2_T0_mantel, Species == "Porites_compressa")
+    ITS2_T0_mantel.Pcomp = prune_taxa(taxa_sums(ITS2_T0_mantel.Pcomp) > 0, ITS2_T0_mantel.Pcomp)
+        
+    #16s T0 Pcomp dist        
+      unifrac.Bac_T0_mantel.Pcomp <- phyloseq::distance(Bac_T0_mantel.Pcomp, method = "wunifrac")
+        
+   #ITS2 T0 Pcomp dist
+     bray.ITS2.T0.mantel.Pcomp <- phyloseq::distance(ITS2_T0_mantel.Pcomp, method = "bray") 
 
+   # Run mantel test
+      mantel(unifrac.Bac_T0_mantel.Pcomp, bray.ITS2.T0.mantel.Pcomp,  permutations=1000)        
+        
+        
+  #### T0 Pvar only ####        
+ # Bac_T0_mantel ITS2_T0_mantel
+    
+    #subset df for Pvar
+    Bac_T0_mantel.Pvar <- subset_samples(Bac_T0_mantel, Species == "Pavona_varians")
+    Bac_T0_mantel.Pvar = prune_taxa(taxa_sums(Bac_T0_mantel.Pvar) > 0, Bac_T0_mantel.Pvar) 
+    
+    ITS2_T0_mantel.Pvar  <- subset_samples(ITS2_T0_mantel, Species == "Pavona_varians")
+    ITS2_T0_mantel.Pvar = prune_taxa(taxa_sums(ITS2_T0_mantel.Pvar) > 0, ITS2_T0_mantel.Pvar)
+        
+    #16s T0 Pvar dist        
+      unifrac.Bac_T0_mantel.Pvar <- phyloseq::distance(Bac_T0_mantel.Pvar, method = "wunifrac")
+        
+   #ITS2 T0 Pvar dist
+     bray.ITS2.T0.mantel.Pvar <- phyloseq::distance(ITS2_T0_mantel.Pvar, method = "bray") 
 
+   # Run mantel test
+      mantel(unifrac.Bac_T0_mantel.Pvar, bray.ITS2.T0.mantel.Pvar,  permutations=1000)            
+        
+        
+     #### T0 Pacu only ####        
+ # Bac_T0_mantel ITS2_T0_mantel
+    
+    #subset df for Pacu
+    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pavona_varians")
+    Bac_T0_mantel.Pacu = prune_taxa(taxa_sums(Bac_T0_mantel.Pacu) > 0, Bac_T0_mantel.Pacu) 
+    
+    ITS2_T0_mantel.Pacu  <- subset_samples(ITS2_T0_mantel, Species == "Pavona_varians")
+    ITS2_T0_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T0_mantel.Pacu) > 0, ITS2_T0_mantel.Pacu)
+        
+    #16s T0 Pacu dist        
+      unifrac.Bac_T0_mantel.Pacu <- phyloseq::distance(Bac_T0_mantel.Pacu, method = "wunifrac")
+        
+   #ITS2 T0 Pacu dist
+     bray.ITS2.T0.mantel.Pacu <- phyloseq::distance(ITS2_T0_mantel.Pacu, method = "bray") 
 
-
-
-
-#TF only 
-Bac.s.rel.u.TF<-subset_samples(Bac.s.rel.u, Time.Point=="TF")
-    Bac.s.rel.u.TF = prune_taxa(taxa_sums(Bac.s.rel.u.TF) > 0, Bac.s.rel.u.TF) #this removes any OTU with 0s
-
-unifrac.all.TF <- ordinate(Bac.s.rel.u.TF, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
-stressplot(unifrac.all.TF)
-scores.ord.u_RelA_stats.TF<-as.data.frame(cbind(vegan::scores(unifrac.all.TF, display="sites"))) # these are "points" ask hannah 
-     unifrac.all.sd.TF <- as(sample_data(Bac.s.rel.u.TF), "data.frame") #sample df
-
-scores.ord.u_RelA_stats.TF$Treatment <- unifrac.all.sd.TF$Treatment
-scores.ord.u_RelA_stats.TF$Species <- unifrac.all.sd.TF$Species
-scores.ord.u_RelA_stats.TF$Clade <- unifrac.all.sd.TF$Clade
-scores.ord.u_RelA_stats.TF$Code <- paste(scores.ord.u_RelA_stats.TF$Clade, scores.ord.u_RelA_stats.TF$Species)
-scores.ord.u_RelA_stats.TF$Code3 <- paste(scores.ord.u_RelA_stats.TF$Species, scores.ord.u_RelA_stats.TF$Treatment)
-
+   # Run mantel test
+      mantel(unifrac.Bac_T0_mantel.Pacu, bray.ITS2.T0.mantel.Pacu,  permutations=1000)            
+        
+        
+    
 
 
 ```
+T1 High only
+```{r}
+# figure out which samples are represented in the its2 and 16s dfs
 
+# T1 only  #####
+
+#high only 
+
+#set up 16s
+    Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
+    Bac.s.rel.u.T1.High<-subset_samples(Bac.s.rel.u.T1, Treatment=="High")
+
+    Bac.s.rel.u.T1.High = prune_taxa(taxa_sums(Bac.s.rel.u.T1.High) > 0, Bac.s.rel.u.T1.High) #this removes any OTU with 0s
+  # look at sample names
+    bac.T1.sd <- as(sample_data(Bac.s.rel.u.T1.High), "data.frame") #sample df
+    #save just sample names
+      bac.T1.High.sd.samps<-bac.T1.sd[['sample_name.1']]
+
+#set up ITS2 T1, import  T1TF
+    ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds") 
+     ITS2_T1_mantel<-subset_samples(ITS2_T1TF_mantel, Time.Point=="T1")
+    ITS2_T1_mantel.High<-subset_samples(ITS2_T1_mantel, Treatment=="High")
+      ITS2_T1_mantel.High = prune_taxa(taxa_sums(ITS2_T1_mantel.High) > 0, ITS2_T1_mantel.High) #this removes any OTU with 0s
+
+    
+  # look at sample names
+    ITS.T1.High.sd <- as(sample_data(ITS2_T1_mantel.High), "data.frame") #sample df
+  #save just sample names
+      ITS.T1.High.sd.samps<-ITS.T1.High.sd[['ID']]
+
+# compare ITS to 16s at T1
+  #identify missing samples btw datasets     
+      setdiff(bac.T1.High.sd.samps,ITS.T1.High.sd.samps) #samples in 16s but not ITS: "S1857" "S3469" "SN134"
+      setdiff(ITS.T1.High.sd.samps,bac.T1.High.sd.samps) #samples in ITS but not 16s: "S1857b" "S3468"  "SN134b" "S670"   "S3025"  "S1388a"
+        
+      # in 16S remove S3469
+      #in ITS change S1857b to S1857 and SN134b to SN134. Remove S3468, S670, S3025, S1388a
+
+  # 16s changes: rename sample S3469
+      
+    Bac.T1.High.mantel <- subset_samples(Bac.s.rel.u.T1.High, sample_name.1 != "S3469" )
+        #40 samples
+          
+   #ITS2 - remove samps not in the 16s df - " S3468, S670, S3025, S1388a
+        ITS2_T1_mantel.High <- subset_samples(ITS2_T1_mantel.High, ID != "S3468" )
+        ITS2_T1_mantel.High <- subset_samples(ITS2_T1_mantel.High, ID != "S670" )
+        ITS2_T1_mantel.High <- subset_samples(ITS2_T1_mantel.High, ID != "S3025" )
+        ITS2_T1_mantel.High <- subset_samples(ITS2_T1_mantel.High, ID != "S1388a" )
+
+        
+    #change names ITS2 S1857b to S1857 and SN134b to SN134
+
+    # pull OTU table
+     OTU.ITS2T1.High = as(otu_table(ITS2_T1_mantel.High), "matrix") #pull otu
+       OTU.ITS2T1.High<-as.data.frame(OTU.ITS2T1.High) #make into df
+        row.names(OTU.ITS2T1.High)[7] <- "S1857"   #change row name by row number
+                row.names(OTU.ITS2T1.High)[17] <- "SN134"   #change row name by row number
+
+    #pull TAX table
+     aTax.ITS2T1.High = as(tax_table(ITS2_T1_mantel.High), "matrix") #pull tax
+
+    #pull SAMPLE DATA
+     aSD.ITS2T1.High = as(sample_data(ITS2_T1_mantel.High), "matrix") #pull samp.data
+     aSD.ITS2T1.High<-as.data.frame(aSD.ITS2T1.High) #change to df
+        row.names(aSD.ITS2T1.High)[7] <- "S1857"  #replace name S208b
+        row.names(aSD.ITS2T1.High)[17] <- "SN134"  #replace name S208b
+            
+
+    #remake the phyloseq obj
+      samdata.High = sample_data(aSD.ITS2T1.High)
+        seqtab.High = otu_table(OTU.ITS2T1.High, taxa_are_rows = FALSE)
+        taxtab.High = tax_table(aTax.ITS2T1.High)
+          ITS_T1.High_mantel = phyloseq(otu_table(seqtab.High), tax_table(taxtab.High), sample_data(samdata.High))
+             
+        # both have 40 samples - 
+      
+        # reorder ps object so samples are in the same order
+        
+        Bac.T1.High.mantel <- Bac.T1.High.mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
+        phyloseq::sample_data(Bac.T1.High.mantel) %>% head(8)
+        
+        ITS_T1.High_mantel <- ITS_T1.High_mantel %>% ps_arrange(ID, desc(ID))
+        phyloseq::sample_data(ITS_T1.High_mantel) %>% head(8)
+        
+  # MAKE data matrix
+  
+  #16s T1 High        
+        unifrac.Bac.T1.High.mantel <- phyloseq::distance(Bac.T1.High.mantel, method = "wunifrac")
+        
+  #ITS2 T1 High
+     bray.ITS2.T1.High.mantel <- phyloseq::distance(ITS_T1.High_mantel, method = "bray") 
+
+  # Run mantel test
+      mantel(unifrac.Bac.T1.High.mantel, bray.ITS2.T1.High.mantel,  permutations=1000)
+    
+        
+#### T1.High Mcap only ####        
+ # Bac_T1.High_mantel ITS2_T1.High_mantel
+    
+    #subset df for mcap
+    Bac_T1.High_mantel.Mcap <- subset_samples(Bac.T1.High.mantel, Species == "Montipora_capitata")
+    Bac_T1.High_mantel.Mcap = prune_taxa(taxa_sums(Bac_T1.High_mantel.Mcap) > 0, Bac_T1.High_mantel.Mcap) 
+    
+    ITS2_T1.High_mantel.Mcap  <- subset_samples(ITS_T1.High_mantel, Species == "Montipora_capitata")
+    ITS2_T1.High_mantel.Mcap = prune_taxa(taxa_sums(ITS2_T1.High_mantel.Mcap) > 0, ITS2_T1.High_mantel.Mcap)
+        
+    #16s T1.High mcap dist        
+      unifrac.Bac_T1.High_mantel.Mcap <- phyloseq::distance(Bac_T1.High_mantel.Mcap, method = "wunifrac")
+        
+   #ITS2 T1.High mcap dist
+     bray.ITS2.T1.High.mantel.Mcap <- phyloseq::distance(ITS2_T1.High_mantel.Mcap, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.High_mantel.Mcap, bray.ITS2.T1.High.mantel.Mcap,  permutations=1000)
+    
+#### T1.High Pcomp only ####        
+ # Bac_T1.High_mantel ITS2_T1.High_mantel
+    
+    #subset df for Pcomp
+    Bac_T1.High_mantel.Pcomp <- subset_samples(Bac.T1.High.mantel, Species == "Porites_compressa")
+    Bac_T1.High_mantel.Pcomp = prune_taxa(taxa_sums(Bac_T1.High_mantel.Pcomp) > 0, Bac_T1.High_mantel.Pcomp) 
+    
+    ITS2_T1.High_mantel.Pcomp  <- subset_samples(ITS_T1.High_mantel, Species == "Porites_compressa")
+    ITS2_T1.High_mantel.Pcomp = prune_taxa(taxa_sums(ITS2_T1.High_mantel.Pcomp) > 0, ITS2_T1.High_mantel.Pcomp)
+        
+    #16s T1.High Pcomp dist        
+      unifrac.Bac_T1.High_mantel.Pcomp <- phyloseq::distance(Bac_T1.High_mantel.Pcomp, method = "wunifrac")
+        
+   #ITS2 T1.High Pcomp dist
+     bray.ITS2.T1.High.mantel.Pcomp <- phyloseq::distance(ITS2_T1.High_mantel.Pcomp, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.High_mantel.Pcomp, bray.ITS2.T1.High.mantel.Pcomp,  permutations=1000)        
+        
+    
+#### T1.High Pvar only ####        
+ # Bac_T1.High_mantel ITS2_T1.High_mantel
+    
+    #subset df for Pvar
+    Bac_T1.High_mantel.Pvar <- subset_samples(Bac.T1.High.mantel, Species == "Pavona_varians")
+    Bac_T1.High_mantel.Pvar = prune_taxa(taxa_sums(Bac_T1.High_mantel.Pvar) > 0, Bac_T1.High_mantel.Pvar) 
+    
+    ITS2_T1.High_mantel.Pvar  <- subset_samples(ITS_T1.High_mantel, Species == "Pavona_varians")
+    ITS2_T1.High_mantel.Pvar = prune_taxa(taxa_sums(ITS2_T1.High_mantel.Pvar) > 0, ITS2_T1.High_mantel.Pvar)
+        
+    #16s T1.High Pvar dist        
+      unifrac.Bac_T1.High_mantel.Pvar <- phyloseq::distance(Bac_T1.High_mantel.Pvar, method = "wunifrac")
+        
+   #ITS2 T1.High Pvar dist
+     bray.ITS2.T1.High.mantel.Pvar <- phyloseq::distance(ITS2_T1.High_mantel.Pvar, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.High_mantel.Pvar, bray.ITS2.T1.High.mantel.Pvar,  permutations=1000)       
+      
+      #### T1.High Pacu only ####        
+ # Bac_T1.High_mantel ITS2_T1.High_mantel
+    
+    #subset df for Pacu
+    Bac_T1.High_mantel.Pacu <- subset_samples(Bac.T1.High.mantel, Species == "Pocillopora_acuta")
+    Bac_T1.High_mantel.Pacu = prune_taxa(taxa_sums(Bac_T1.High_mantel.Pacu) > 0, Bac_T1.High_mantel.Pacu) 
+    
+    ITS2_T1.High_mantel.Pacu  <- subset_samples(ITS_T1.High_mantel, Species == "Pocillopora_acuta")
+    ITS2_T1.High_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T1.High_mantel.Pacu) > 0, ITS2_T1.High_mantel.Pacu)
+        
+    #16s T1.High Pacu dist        
+      unifrac.Bac_T1.High_mantel.Pacu <- phyloseq::distance(Bac_T1.High_mantel.Pacu, method = "wunifrac")
+        
+   #ITS2 T1.High Pacu dist
+     bray.ITS2.T1.High.mantel.Pacu <- phyloseq::distance(ITS2_T1.High_mantel.Pacu, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.High_mantel.Pacu, bray.ITS2.T1.High.mantel.Pacu,  permutations=1000)  
+
+```
+T1 Ambient only
+```{r}
+# figure out which samples are represented in the its2 and 16s dfs
+
+# T1 only  #####
+
+#Ambient only 
+
+#set up 16s
+    Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
+    Bac.s.rel.u.T1.Ambient<-subset_samples(Bac.s.rel.u.T1, Treatment=="Ambient")
+
+    Bac.s.rel.u.T1.Ambient = prune_taxa(taxa_sums(Bac.s.rel.u.T1.Ambient) > 0, Bac.s.rel.u.T1.Ambient) #this removes any OTU with 0s
+  # look at sample names
+    bac.T1.sd <- as(sample_data(Bac.s.rel.u.T1.Ambient), "data.frame") #sample df
+    #save just sample names
+      bac.T1.Ambient.sd.samps<-bac.T1.sd[['sample_name.1']]
+
+#set up ITS2 T1, import  T1TF
+    ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds") 
+     ITS2_T1_mantel<-subset_samples(ITS2_T1TF_mantel, Time.Point=="T1")
+    ITS2_T1_mantel.Ambient<-subset_samples(ITS2_T1_mantel, Treatment=="Ambient")
+      ITS2_T1_mantel.Ambient = prune_taxa(taxa_sums(ITS2_T1_mantel.Ambient) > 0, ITS2_T1_mantel.Ambient) #this removes any OTU with 0s
+
+    
+  # look at sample names
+    ITS.T1.Ambient.sd <- as(sample_data(ITS2_T1_mantel.Ambient), "data.frame") #sample df
+  #save just sample names
+      ITS.T1.Ambient.sd.samps<-ITS.T1.Ambient.sd[['ID']]
+
+# compare ITS to 16s at T1
+  #identify missing samples btw datasets     
+      setdiff(bac.T1.Ambient.sd.samps,ITS.T1.Ambient.sd.samps) #samples in 16s but not ITS: "S1443b" "SN108b" "SN197b" "SN222"
+      setdiff(ITS.T1.Ambient.sd.samps,bac.T1.Ambient.sd.samps) #samples in ITS but not 16s: "S1573" "S2424" "S3035" "S1443" "S1895" "SN209" "SN63"  "S1418" "SN197" "SN126" "S785"  "SN108"
+        
+      # in 16S remove SN222,remove the bs on the rest "S1443b" "SN108b" "SN197b"
+      #in ITS  Remove "S1573" "S2424" "S3035" "S1895" "SN209" "SN63"  "S1418" " "SN126" "S785"  
+
+      
+    #######stoped here#########  
+      
+      
+      
+      
+      
+  # 16s changes: rename sample S3469
+      
+    Bac.T1.Ambient.mantel <- subset_samples(Bac.s.rel.u.T1.Ambient, sample_name.1 != "S3469" )
+        #40 samples
+          
+   #ITS2 - remove samps not in the 16s df - " S3468, S670, S3025, S1388a
+        ITS2_T1_mantel.Ambient <- subset_samples(ITS2_T1_mantel.Ambient, ID != "S3468" )
+        ITS2_T1_mantel.Ambient <- subset_samples(ITS2_T1_mantel.Ambient, ID != "S670" )
+        ITS2_T1_mantel.Ambient <- subset_samples(ITS2_T1_mantel.Ambient, ID != "S3025" )
+        ITS2_T1_mantel.Ambient <- subset_samples(ITS2_T1_mantel.Ambient, ID != "S1388a" )
+
+        
+    #change names ITS2 S1857b to S1857 and SN134b to SN134
+
+    # pull OTU table
+     OTU.ITS2T1.Ambient = as(otu_table(ITS2_T1_mantel.Ambient), "matrix") #pull otu
+       OTU.ITS2T1.Ambient<-as.data.frame(OTU.ITS2T1.Ambient) #make into df
+        row.names(OTU.ITS2T1.Ambient)[7] <- "S1857"   #change row name by row number
+                row.names(OTU.ITS2T1.Ambient)[17] <- "SN134"   #change row name by row number
+
+    #pull TAX table
+     aTax.ITS2T1.Ambient = as(tax_table(ITS2_T1_mantel.Ambient), "matrix") #pull tax
+
+    #pull SAMPLE DATA
+     aSD.ITS2T1.Ambient = as(sample_data(ITS2_T1_mantel.Ambient), "matrix") #pull samp.data
+     aSD.ITS2T1.Ambient<-as.data.frame(aSD.ITS2T1.Ambient) #change to df
+        row.names(aSD.ITS2T1.Ambient)[7] <- "S1857"  #replace name S208b
+        row.names(aSD.ITS2T1.Ambient)[17] <- "SN134"  #replace name S208b
+            
+
+    #remake the phyloseq obj
+      samdata.Ambient = sample_data(aSD.ITS2T1.Ambient)
+        seqtab.Ambient = otu_table(OTU.ITS2T1.Ambient, taxa_are_rows = FALSE)
+        taxtab.Ambient = tax_table(aTax.ITS2T1.Ambient)
+          ITS_T1.Ambient_mantel = phyloseq(otu_table(seqtab.Ambient), tax_table(taxtab.Ambient), sample_data(samdata.Ambient))
+             
+        # both have 40 samples - 
+      
+        # reorder ps object so samples are in the same order
+        
+        Bac.T1.Ambient.mantel <- Bac.T1.Ambient.mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
+        phyloseq::sample_data(Bac.T1.Ambient.mantel) %>% head(8)
+        
+        ITS_T1.Ambient_mantel <- ITS_T1.Ambient_mantel %>% ps_arrange(ID, desc(ID))
+        phyloseq::sample_data(ITS_T1.Ambient_mantel) %>% head(8)
+        
+  # MAKE data matrix
+  
+  #16s T1 Ambient        
+        unifrac.Bac.T1.Ambient.mantel <- phyloseq::distance(Bac.T1.Ambient.mantel, method = "wunifrac")
+        
+  #ITS2 T1 Ambient
+     bray.ITS2.T1.Ambient.mantel <- phyloseq::distance(ITS_T1.Ambient_mantel, method = "bray") 
+
+  # Run mantel test
+      mantel(unifrac.Bac.T1.Ambient.mantel, bray.ITS2.T1.Ambient.mantel,  permutations=1000)
+    
+        
+#### T1.Ambient Mcap only ####        
+ # Bac_T1.Ambient_mantel ITS2_T1.Ambient_mantel
+    
+    #subset df for mcap
+    Bac_T1.Ambient_mantel.Mcap <- subset_samples(Bac.T1.Ambient.mantel, Species == "Montipora_capitata")
+    Bac_T1.Ambient_mantel.Mcap = prune_taxa(taxa_sums(Bac_T1.Ambient_mantel.Mcap) > 0, Bac_T1.Ambient_mantel.Mcap) 
+    
+    ITS2_T1.Ambient_mantel.Mcap  <- subset_samples(ITS_T1.Ambient_mantel, Species == "Montipora_capitata")
+    ITS2_T1.Ambient_mantel.Mcap = prune_taxa(taxa_sums(ITS2_T1.Ambient_mantel.Mcap) > 0, ITS2_T1.Ambient_mantel.Mcap)
+        
+    #16s T1.Ambient mcap dist        
+      unifrac.Bac_T1.Ambient_mantel.Mcap <- phyloseq::distance(Bac_T1.Ambient_mantel.Mcap, method = "wunifrac")
+        
+   #ITS2 T1.Ambient mcap dist
+     bray.ITS2.T1.Ambient.mantel.Mcap <- phyloseq::distance(ITS2_T1.Ambient_mantel.Mcap, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.Ambient_mantel.Mcap, bray.ITS2.T1.Ambient.mantel.Mcap,  permutations=1000)
+    
+#### T1.Ambient Pcomp only ####        
+ # Bac_T1.Ambient_mantel ITS2_T1.Ambient_mantel
+    
+    #subset df for Pcomp
+    Bac_T1.Ambient_mantel.Pcomp <- subset_samples(Bac.T1.Ambient.mantel, Species == "Porites_compressa")
+    Bac_T1.Ambient_mantel.Pcomp = prune_taxa(taxa_sums(Bac_T1.Ambient_mantel.Pcomp) > 0, Bac_T1.Ambient_mantel.Pcomp) 
+    
+    ITS2_T1.Ambient_mantel.Pcomp  <- subset_samples(ITS_T1.Ambient_mantel, Species == "Porites_compressa")
+    ITS2_T1.Ambient_mantel.Pcomp = prune_taxa(taxa_sums(ITS2_T1.Ambient_mantel.Pcomp) > 0, ITS2_T1.Ambient_mantel.Pcomp)
+        
+    #16s T1.Ambient Pcomp dist        
+      unifrac.Bac_T1.Ambient_mantel.Pcomp <- phyloseq::distance(Bac_T1.Ambient_mantel.Pcomp, method = "wunifrac")
+        
+   #ITS2 T1.Ambient Pcomp dist
+     bray.ITS2.T1.Ambient.mantel.Pcomp <- phyloseq::distance(ITS2_T1.Ambient_mantel.Pcomp, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.Ambient_mantel.Pcomp, bray.ITS2.T1.Ambient.mantel.Pcomp,  permutations=1000)        
+        
+    
+#### T1.Ambient Pvar only ####        
+ # Bac_T1.Ambient_mantel ITS2_T1.Ambient_mantel
+    
+    #subset df for Pvar
+    Bac_T1.Ambient_mantel.Pvar <- subset_samples(Bac.T1.Ambient.mantel, Species == "Pavona_varians")
+    Bac_T1.Ambient_mantel.Pvar = prune_taxa(taxa_sums(Bac_T1.Ambient_mantel.Pvar) > 0, Bac_T1.Ambient_mantel.Pvar) 
+    
+    ITS2_T1.Ambient_mantel.Pvar  <- subset_samples(ITS_T1.Ambient_mantel, Species == "Pavona_varians")
+    ITS2_T1.Ambient_mantel.Pvar = prune_taxa(taxa_sums(ITS2_T1.Ambient_mantel.Pvar) > 0, ITS2_T1.Ambient_mantel.Pvar)
+        
+    #16s T1.Ambient Pvar dist        
+      unifrac.Bac_T1.Ambient_mantel.Pvar <- phyloseq::distance(Bac_T1.Ambient_mantel.Pvar, method = "wunifrac")
+        
+   #ITS2 T1.Ambient Pvar dist
+     bray.ITS2.T1.Ambient.mantel.Pvar <- phyloseq::distance(ITS2_T1.Ambient_mantel.Pvar, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.Ambient_mantel.Pvar, bray.ITS2.T1.Ambient.mantel.Pvar,  permutations=1000)       
+      
+      #### T1.Ambient Pacu only ####        
+ # Bac_T1.Ambient_mantel ITS2_T1.Ambient_mantel
+    
+    #subset df for Pacu
+    Bac_T1.Ambient_mantel.Pacu <- subset_samples(Bac.T1.Ambient.mantel, Species == "Pocillopora_acuta")
+    Bac_T1.Ambient_mantel.Pacu = prune_taxa(taxa_sums(Bac_T1.Ambient_mantel.Pacu) > 0, Bac_T1.Ambient_mantel.Pacu) 
+    
+    ITS2_T1.Ambient_mantel.Pacu  <- subset_samples(ITS_T1.Ambient_mantel, Species == "Pocillopora_acuta")
+    ITS2_T1.Ambient_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T1.Ambient_mantel.Pacu) > 0, ITS2_T1.Ambient_mantel.Pacu)
+        
+    #16s T1.Ambient Pacu dist        
+      unifrac.Bac_T1.Ambient_mantel.Pacu <- phyloseq::distance(Bac_T1.Ambient_mantel.Pacu, method = "wunifrac")
+        
+   #ITS2 T1.Ambient Pacu dist
+     bray.ITS2.T1.Ambient.mantel.Pacu <- phyloseq::distance(ITS2_T1.Ambient_mantel.Pacu, method = "bray") 
+
+   # Run mantel test
+      mantel(unifrac.Bac_T1.Ambient_mantel.Pacu, bray.ITS2.T1.Ambient.mantel.Pacu,  permutations=1000)  
+
+```
