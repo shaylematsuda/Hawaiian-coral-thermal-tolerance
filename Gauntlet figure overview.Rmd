@@ -1,0 +1,157 @@
+---
+title: "ACE21_overview_figure"
+author: "Shayle Matsuda"
+date: "2/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##  Combine Physio, ITS2, and 16S
+
+Load libraries
+```{r cars}
+library(ggbiplot)
+require(graphics)
+library(tidyr)
+library(vegan)
+
+
+
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(lmerTest)
+library(car)
+library(emmeans)
+library(gridExtra)
+library(multcomp)
+library(reshape)
+library(tidyverse)
+library(factoextra)
+library(reshape2)
+library(vegan)
+library(pairwiseAdonis)
+library("scales")
+packageVersion("scales")
+library(RColorBrewer)
+library(colorRamps)
+library(devtools)
+library(tidyverse)
+```
+
+Load data
+
+```{r}
+physio<-read.csv("PhysioData.csv")
+    physio$sample.id<-as.factor(physio$sample.id)  #change to tidy language when you have time. 
+     physio$Treatment<-as.factor(physio$Treatment)
+      physio$Species<-as.factor(physio$Species)
+        physio$Time.Point<-as.factor(physio$Time.Point)
+            physio$Clade<-as.factor(physio$Clade)
+                    physio$Tank.num<-as.factor(physio$Tank.num)
+                        physio$Tissue<-as.factor(physio$Tissue)
+                            physio$transmission<-as.factor(physio$transmission)
+                                physio$skeleton<-as.factor(physio$skeleton)
+                                    physio$shape<-as.factor(physio$shape)
+                                    
+its2<-read.csv("ITS2_T0_nmds.scores.csv")
+    its2$sample.id<-as.factor(its2$sample.id)
+its2.nmds1_T0<-subset(its2,its2$Time.Point=="T0")
+its2.nmds1_T0<-its2.nmds1_T0[, c("sample.id", "ITS2.NMDS1")]
+
+
+bacteria<-read.csv("16s_nmds.scores.ord.u_RelA_stats.T0.csv") #only T0
+    names(bacteria)[1]<-"sample.id"
+    bacteria$sample.id<-as.factor(bacteria$sample.id)
+# bacteria_T0<-subset(bacteria,bacteria$Time.Point=="T0")
+bacteria.nmds1<-bacteria[, c("sample.id", "bac.NMDS1")]
+#remove duplicates 
+
+
+#combine 16s and ITS with physio
+
+df<-merge(physio, bacteria.nmds1, by="sample.id")   
+   df<-merge(df, its2.nmds1_T0, by="sample.id")   
+ 
+```
+# Overview ordination: combine physio, its2 (subclade), and 16S (NMDS1)
+```{r}
+#load in ITS2 nmds1
+ITS2_T0_nmds1<-read.csv("ITS2_T0_nmds.scores.csv")
+ITS2_T0_nmds1b<-
+  ITS2_T0_nmds1$sample.id
+
+df1 %>%
+  select(A, B, E)
+```
+
+
+
+phy.dist <- vegdist(pData.T1TF [8:16], method="bray") #make dist matrix
+phy.div <- adonis2(pData.T1TF [8:16] ~ Species*Treatment*Time.Point, data = pData.T1TF [1:6], permutations = 999, method="bray")
+phy.div #view, 
+
+##Check for homogeneity of dispersions (you want this to be insignificant)
+phy.dist.disp <- betadisper(phy.dist, pData.T1TF$Species, type = "centroid")
+#par(pty = 's')
+boxplot(phy.dist.disp) #visualise your dispersion
+permutest(phy.dist.disp) #this is your PERMDISP test
+
+#this runs but it's only univariate so not helpful. 
+# pairwise.adonis(PhysioData_noMissing [7:12], PhysioData_noMissing$Species)
+
+#ALL THE DATA T0
+
+phy.dist.T0 <- vegdist(pData.T0 [9:16], method="bray") #make dist matrix
+phy.div.T0 <- adonis2(pData.T0 [9:16] ~ Species, data = pData.T0 [1:7], permutations = 999, method="bray")
+phy.div.T0 #view, 
+
+##Check for homogeneity of dispersions (you want this to be insignificant)
+phy.dist.disp <- betadisper(phy.dist.T0, pData.T0$Species, type = "centroid")
+#par(pty = 's')
+boxplot(phy.dist.disp) #visualise your dispersion
+permutest(phy.dist.disp) #this is your PERMDISP test
+
+
+
+
+apData<-PhysioData #make a copy
+apData$Respiration<-apData$Respiration*-1 #make respiration all positive
+apData<-subset(apData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
+apData<-na.omit(apData) #remove NAs
+apData<-apData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] #put cols in correct order
+
+apData2 <- prcomp(apData[c(5:13)], center = TRUE, scale = TRUE) #center and scale
+summary(apData2)
+ 
+str(apData2)
+
+ggbiplot(apData2) #quick look at plot
+
+#exract scores for gg
+Miss_scores <- as.data.frame(apData2$x)
+Miss_scores$frag.id <- apData$Frag.ID
+Miss_scores$parent.id <- apData$Parent.ID
+Miss_scores$treatment <- apData$Treatment
+Miss_scores$species <- apData$Species
+Miss_scores$time.point <- apData$Time.Point
+
+
+#Plot
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
+
+#plot by time and species
+Miss_scores$treatSpecies<-paste0(Miss_scores$species, Miss_scores$treatment )
+Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
+
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
+  theme_classic()
+
+
