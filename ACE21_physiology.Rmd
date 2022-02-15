@@ -765,12 +765,12 @@ Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
 
 
@@ -785,7 +785,7 @@ Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
   xlab("") + #Label the X Axis
-  ylab("") + #Label the X Axis
+  # ylab("") + #Label the X Axis
   ylim(0, 11) + #set Y limits
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -796,12 +796,12 @@ Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("P compressa")+
+   ylab(expression(paste(""))) +
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot
 
 Pcomp_biomass2<-subset(biomass2, Species=="Porites_compressa")
@@ -862,12 +862,12 @@ Pvar_biomass_mean_plot<-ggplot(data=Pvar_biomass_mean, aes(x=Time.Point, y=mean,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("P varians")+
+ ylab(expression(paste(""))) +
+  # ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_mean_plot
 
 # Pacu ####
@@ -890,12 +890,12 @@ Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean,
         plot.background =element_blank(), #Set the plot background
         text = element_text(size=18),  # set element text
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  #ggtitle("P acuta")+
   theme(plot.title = element_text(size=20,face = "italic"));Pacu_biomass_mean_plot
 
 
@@ -907,6 +907,163 @@ Pacu_biomass_mean_plot<-Pacu_biomass_mean_plot+ theme(legend.position = "none") 
 
 grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot, nrow = 1)
  
+```
+all plots by clade
+```{r}
+ 
+#means
+biomass_means.C <- ddply(biomass2, c( "Species","Treatment","Time.Point", "Clade"), summarise, #summarize cell counts
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(AFDWmg.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+biomass_means.C
+
+
+Mcap_biomass_mean.C<-subset(biomass_means.C, Species=="Montipora_capitata")
+Mcap_biomass_mean.C$Code<-paste(Mcap_biomass_mean.C$Clade,Mcap_biomass_mean.C$Treatment)
+
+
+
+  
+#plot Mcap #### 
+Mcap_biomass_plot.C<-ggplot(data=Mcap_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+  ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot.C
+
+
+
+
+# Pcomp  ####
+Pcomp_biomass_mean.C<-subset(biomass_means.C, Species=="Porites_compressa")
+Pcomp_biomass_mean.C$Code<-paste(Pcomp_biomass_mean.C$Clade,Pcomp_biomass_mean.C$Treatment)
+
+#plot Pcomp #### 
+Pcomp_biomass_plot.C<-ggplot(data=Pcomp_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot.C
+
+# Pvar  ####
+
+Pvar_biomass_mean.C<-subset(biomass_means.C, Species=="Pavona_varians")
+Pvar_biomass_mean.C$Code<-paste(Pvar_biomass_mean.C$Clade,Pvar_biomass_mean.C$Treatment)
+
+#plot Pvar #### 
+Pvar_biomass_plot.C<-ggplot(data=Pvar_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+ geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_plot.C
+
+# Pacu ####
+
+Pacu_biomass_mean.C<-subset(biomass_means.C, Species=="Pocillopora_acuta")
+Pacu_biomass_mean.C$Code<-paste(Pacu_biomass_mean.C$Clade,Pacu_biomass_mean.C$Treatment)
+
+#plot Pacu #### 
+Pacu_biomass_plot.C<-ggplot(data=Pacu_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_line(aes(color=Code),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_biomass_plot.C
+
+
+###### All plots together
+Mcap_biomass_plot.C<-Mcap_biomass_plot.C+ theme(legend.position = "none") #remove legend
+Pcomp_biomass_plot.C<-Pcomp_biomass_plot.C+ theme(legend.position = "none") #remove legend
+Pvar_biomass_plot.C<-Pvar_biomass_plot.C+ theme(legend.position = "none") #remove legend
+Pacu_biomass_plot.C<-Pacu_biomass_plot.C+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_biomass_plot.C, Pcomp_biomass_plot.C, Pvar_biomass_plot.C,Pacu_biomass_plot.C, nrow = 1)
 ```
 
 # Flow cytometry  cell counts
@@ -1485,8 +1642,8 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 ```
 
 Line plots 
-```{r}  
-#just T0 ####  
+```{r}   
+#just T0 ####   
 FC_T0_mean <- ddply(FC_stats_T0, c( "Species"), summarise, #summarize cell counts
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                  mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -1566,7 +1723,7 @@ FC_T0_mean_plot.c<-ggplot(data=FC_T0_mean.clade, aes(x=Species, y=mean, group = 
 
 
 
-#TFH only#### 
+#TFH only####  
 FC_TFH<-subset(FC_Data, Time.Point=="TF"&Treatment=="High") #Subset Pvar
 FC_TFH_mean <- ddply(FC_TFH, c( "Species"), summarise, #summarize cell counts
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
@@ -1642,7 +1799,7 @@ Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
        #scale_y_log10()+
    #   ylim(0, 4000000)+
   theme_bw() + #Set the background color
@@ -1654,12 +1811,12 @@ Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  ylab(expression(paste("cells cm" ^ "-2"*) )) +
+   # theme(panel.grid.major = element_blank(), 
+   #      panel.grid.minor = element_blank(),
+   #      panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot
 
     #by clade FC_SumClade.mcap
@@ -1667,10 +1824,10 @@ FC_SumClade.mcap$Code<-paste(FC_SumClade.mcap$Treatment,FC_SumClade.mcap$Clade)
  Mcap_FC_lineplot.c<-ggplot(data=FC_SumClade.mcap, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
+ geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        #scale_y_log10()+
    #   ylim(0, 4000000)+
@@ -1683,12 +1840,12 @@ FC_SumClade.mcap$Code<-paste(FC_SumClade.mcap$Treatment,FC_SumClade.mcap$Clade)
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("cells"))) +
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot.c
  
  FC_SumClade.mcap_T1TF<-subset(FC_SumClade.mcap, Time.Point=="T1"|Time.Point=="TF")
@@ -1763,7 +1920,7 @@ p+facet_wrap(~Clade)
 
 
 # Pcomp ####
-  
+   
 
 Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -1772,7 +1929,7 @@ Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = T
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       # scale_y_log10()+
   #  ylim(0, 4000000)+ 
   theme_bw() + #Set the background color
@@ -1784,23 +1941,23 @@ Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = T
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  ylab(expression(paste(""))) +
+   # theme(panel.grid.major = element_blank(), 
+   #      panel.grid.minor = element_blank(),
+   #      panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
 
-#pcomp clades Pcomp_FC_SumClade
+#pcomp clades Pcomp_FC_SumClade  FIX COLORS
 Pcomp_FC_SumClade$Code<-paste(Pcomp_FC_SumClade$Treatment,Pcomp_FC_SumClade$Clade)
 Pcomp_FC_lineplot.c<-ggplot(data=Pcomp_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
+ geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
       # scale_y_log10()+
   #  ylim(0, 4000000)+ 
@@ -1813,12 +1970,12 @@ Pcomp_FC_lineplot.c<-ggplot(data=Pcomp_FC_SumClade, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("cells"))) +
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot.c
 
 
@@ -1929,7 +2086,7 @@ p<-Pcomp_FC_lineplot<-ggplot(data=FC_Data.pcomp, aes(x=Time.Point, y=zoox.cm2, g
 p+facet_wrap(~Clade)
 
 
-# Pvar  ###
+# Pvar  ####
 
 Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -1938,7 +2095,7 @@ Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+   xlab(" ") + #Label the X Axis
      #  scale_y_log10()+
   #  ylim(0, 4000000)+
   theme_bw() + #Set the background color
@@ -1950,12 +2107,12 @@ Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-     theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+   ylab(expression(paste(""))) +
+  #    theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P varians")+
+  # ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot
 
 #by clade Pvar_FC_SumClade
@@ -1964,10 +2121,10 @@ Pvar_FC_SumClade$Code<-paste(Pvar_FC_SumClade$Treatment, Pvar_FC_SumClade$Clade)
 Pvar_FC_lineplot.c<-ggplot(data=Pvar_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
+geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+  scale_color_manual(values=c("dodgerblue3" ,"blue","darkred","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
      #  scale_y_log10()+
   #  ylim(0, 4000000)+
@@ -1980,12 +2137,12 @@ Pvar_FC_lineplot.c<-ggplot(data=Pvar_FC_SumClade, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-     theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("cells"))) +
+  #    theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P varians")+
+  # ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot.c
 
 FC_Data.pvar<-subset(FC_Data, Species=="Pavona_varians")
@@ -2022,7 +2179,7 @@ p<-pvar_FC_lineplot<-ggplot(data=FC_Data.pvar, aes(x=Time.Point, y=zoox.cm2, gro
 
 p+facet_wrap(~Clade)
 
-# Pacu  ####
+# Pacu  #### 
 
 Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -2031,7 +2188,7 @@ Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       # scale_y_log10()+
   #ylim(0, 4000000)+
   theme_bw() + #Set the background color
@@ -2043,12 +2200,12 @@ Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Tre
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-     theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  ylab(expression(paste(""))) +
+     # theme(panel.grid.major = element_blank(), 
+     #    panel.grid.minor = element_blank(),
+     #    panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  # ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_FC_lineplot
 
    #by clade FC_SumClade.pacu
@@ -2058,8 +2215,8 @@ FC_SumClade.pacu$Code<-paste(FC_SumClade.pacu$Treatment,FC_SumClade.pacu$Clade)
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+  scale_color_manual(values=c("dodgerblue3", "blue", "darkred","red"))+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
        #scale_y_log10()+
    #   ylim(0, 4000000)+
@@ -2072,12 +2229,12 @@ FC_SumClade.pacu$Code<-paste(FC_SumClade.pacu$Treatment,FC_SumClade.pacu$Clade)
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("cells"))) +
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  # ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pacu_FC_lineplot.c
 
 ###### All plots together
@@ -2099,6 +2256,153 @@ pacu_FC_lineplot.c<-pacu_FC_lineplot.c+ theme(legend.position = "none") #remove 
 
 grid.arrange(Mcap_FC_lineplot.c, Pcomp_FC_lineplot.c, Pvar_FC_lineplot.c,pacu_FC_lineplot.c, nrow = 1)
 ```
+all plots by clade
+```{r}
+FC_mean.C <- ddply(FC_Data, c( "Species","Treatment","Time.Point","Clade"), summarise, #summarize cell counts
+                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
+                 mean = mean(zoox.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
+                 sd   = sd(zoox.cm2, na.rm=TRUE), #calculate standard deviation
+                 se   = sd / sqrt(N), #calculate standard error
+                 max = max(zoox.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+)
+FC_mean.C
+
+FC_mean.C$Code<-paste(FC_mean.C$Species,FC_mean.C$Clade,FC_mean.C$Treatment)
+
+
+Mcap_FC_mean.C<-subset(FC_mean.C, Species=="Montipora_capitata")
+
+#plot Mcap #### 
+Mcap_FC_plot.C<-ggplot(data=Mcap_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=(2), show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+  xlab("") + #Label the X Axis
+  # ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("cells cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Mcap_FC_plot.C
+
+
+
+
+# Pcomp  ####
+Pcomp_FC_mean.C<-subset(FC_mean.C, Species=="Porites_compressa")
+
+#plot Pcomp #### 
+Pcomp_FC_plot.C<-ggplot(data=Pcomp_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  # ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_FC_plot.C
+
+# Pvar  ####
+
+Pvar_FC_mean.C<-subset(FC_mean.C, Species=="Pavona_varians")
+
+#plot Pvar #### 
+Pvar_FC_plot.C<-ggplot(data=Pvar_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  # ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pvar_FC_plot.C
+
+# Pacu ####
+
+Pacu_FC_mean.C<-subset(FC_mean.C, Species=="Pocillopora_acuta")
+
+#plot Pacu #### 
+Pacu_FC_plot.C<-ggplot(data=Pacu_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                width=0.1, show.legend = F)+
+  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
+  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
+  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+  # ylim(0, 12) + #set Y limits
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic"));Pacu_FC_plot.C
+
+
+###### All plots together
+Mcap_FC_plot.C<-Mcap_FC_plot.C+ theme(legend.position = "none") #remove legend
+Pcomp_FC_plot.C<-Pcomp_FC_plot.C+ theme(legend.position = "none") #remove legend
+Pvar_FC_plot.C<-Pvar_FC_plot.C+ theme(legend.position = "none") #remove legend
+Pacu_FC_plot.C<-Pacu_FC_plot.C+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_FC_plot.C, Pcomp_FC_plot.C, Pvar_FC_plot.C,Pacu_FC_plot.C, nrow = 1)
+```
+
 # boxplot
 ```{r}
 
@@ -2713,12 +3017,12 @@ FC_Pacu_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num),
 
 #Buoyant Weight/Calcification
 
-calibration (not sure what this does)
+calibration 
 ```{r}        
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
 #Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
  
-### Standard Cruve
+### Standard Curve
 #plot relationship between temp and Standard in fresh and salt water
 plot(BWCalData$Temp, BWCalData$StandardSalt, col = 'red', ylab = 'Salt Weight (g)', xlab = 'Temp C')
 par(new=TRUE)
@@ -2865,7 +3169,7 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       ylim(0, .6)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -2876,12 +3180,12 @@ Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot
 
 
@@ -2919,7 +3223,7 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
+  geom_line(aes(color=Code),linetype=2)+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
@@ -2933,12 +3237,12 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot.c
 
 ```
@@ -3041,7 +3345,7 @@ Pcomp_BW_plot<-ggplot(data=G_Pcomp, aes(x=newtime, y=mean, group = Treatment, co
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       ylim(0, .7)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -3053,12 +3357,12 @@ Pcomp_BW_plot<-ggplot(data=G_Pcomp, aes(x=newtime, y=mean, group = Treatment, co
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
  ylab(expression(paste(""))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+  
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("P compressa")+
+  # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pcomp_BW_plot
 
 #by clade
@@ -3088,7 +3392,7 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
+  geom_line(aes(color=Code),linetype=2)+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
@@ -3102,12 +3406,12 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("P compressa")+
+  # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pcomp_BW_plot.c
 
 ``` 
@@ -3210,7 +3514,8 @@ Pvar_BW_plot<-ggplot(data=G_Pvar, aes(x=newtime, y=mean, group = Treatment, colo
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, .7)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -3221,12 +3526,12 @@ Pvar_BW_plot<-ggplot(data=G_Pvar, aes(x=newtime, y=mean, group = Treatment, colo
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P varians")+
+  # ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pvar_BW_plot
 
 
@@ -3257,7 +3562,7 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
+  geom_line(aes(color=Code),linetype=2)+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
@@ -3271,12 +3576,12 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("P var")+
+  # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("P var")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pvar_BW_plot.c
 
 ```
@@ -3377,7 +3682,7 @@ Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, colo
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       ylim(0, .7)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -3389,12 +3694,12 @@ Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, colo
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste(" "))) + 
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-    ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("P acuta")+ 
+    # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("P acuta")+ 
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pacu_BW_plot
  
 #by clade
@@ -3424,10 +3729,12 @@ Pacu_BW_plot.c<-ggplot(data=G_Pacu.c, aes(x=Time, y=mean, group = Code, color=Co
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
+  geom_line(aes(color=Code),linetype=2)+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+
       ylim(0, .6)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -3438,12 +3745,12 @@ Pacu_BW_plot.c<-ggplot(data=G_Pacu.c, aes(x=Time, y=mean, group = Code, color=Co
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  ggtitle("P acu")+
+  # ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("P acu")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pacu_BW_plot.c
 
 ```
@@ -3456,6 +3763,17 @@ Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
 Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
+
+
+# plots by clade
+Mcap_BW_plot.c<-Mcap_BW_plot.c+ theme(legend.position = "none") #remove legend
+Pcomp_BW_plot.c<-Pcomp_BW_plot.c+ theme(legend.position = "none") #remove legend
+Pvar_BW_plot.c<-Pvar_BW_plot.c+ theme(legend.position = "none") #remove legend
+Pacu_BW_plot.c<-Pacu_BW_plot.c+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_BW_plot.c, Pcomp_BW_plot.c, Pvar_BW_plot.c, Pacu_BW_plot.c, nrow = 1)
+
+
 
 
 
@@ -4051,7 +4369,7 @@ chlatest<-merge(meta, Chla, all = T)
 
 means for plots 
 ```{r}     
-   
+    
 chlatest<-merge(meta, Chla, all.x = T)
 
 duplicated(Chla) #look for duplicate entries
@@ -4231,7 +4549,7 @@ Mcap_Chla_plot<-ggplot(data=Mcap_chla, aes(x=Time.Point, y=mean, group = Treatme
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
       ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4243,11 +4561,11 @@ Mcap_Chla_plot<-ggplot(data=Mcap_chla, aes(x=Time.Point, y=mean, group = Treatme
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot
 
 #clade Mcap_chla.Clade
@@ -4272,11 +4590,11 @@ Mcap_Chla_plot.c<-ggplot(data=Mcap_chla.Clade, aes(x=Time.Point, y=mean, group =
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot.c
 
 
@@ -4289,7 +4607,8 @@ Pcomp_Chla_plot<-ggplot(data=Pcomp_chla, aes(x=Time.Point, y=mean, group = Treat
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4300,12 +4619,12 @@ Pcomp_Chla_plot<-ggplot(data=Pcomp_chla, aes(x=Time.Point, y=mean, group = Treat
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot
 
 #clade Pcomp_chla.Clade
@@ -4329,12 +4648,12 @@ Pcomp_Chla_plot.c<-ggplot(data=Pcomp_chla.Clade, aes(x=Time.Point, y=mean, group
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P comp")+
+  # ggtitle("P comp")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot.c
 
 
@@ -4350,7 +4669,9 @@ Pvar_Chla_plot<-ggplot(data=Pvar_chla, aes(x=Time.Point, y=mean, group = Treatme
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+
       ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4361,17 +4682,17 @@ Pvar_Chla_plot<-ggplot(data=Pvar_chla, aes(x=Time.Point, y=mean, group = Treatme
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P varians")+
+  # ggtitle("P varians")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot
 
 #pvar by clade Pvar_chla.Clade
 Pvar_chla.Clade$Code<-paste(Pvar_chla.Clade$Treatment, Pvar_chla.Clade$Clade)
-Pvar_Chla_plot<-ggplot(data=Pvar_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
+Pvar_Chla_plot.c<-ggplot(data=Pvar_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+  
@@ -4379,7 +4700,7 @@ Pvar_Chla_plot<-ggplot(data=Pvar_chla.Clade, aes(x=Time.Point, y=mean, group = C
   scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-     # ylim(0, 8)+
+     ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4389,13 +4710,13 @@ Pvar_Chla_plot<-ggplot(data=Pvar_chla.Clade, aes(x=Time.Point, y=mean, group = C
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot
+  # ggtitle("P varians")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot.c
 
 
 #Pacu plot ####
@@ -4407,7 +4728,8 @@ Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatme
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -4418,12 +4740,12 @@ Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatme
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  # ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot
 
 #clade Pvar_chla.Clade
@@ -4437,7 +4759,7 @@ Pacu_Chla_plot.c<-ggplot(data=Pacu_chla.Clade, aes(x=Time.Point, y=mean, group =
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-      #ylim(0, 8)+
+      ylim(0, 8)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -4447,12 +4769,12 @@ Pacu_Chla_plot.c<-ggplot(data=Pacu_chla.Clade, aes(x=Time.Point, y=mean, group =
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acu")+
+  # ggtitle("P acu")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot.c
 
 
@@ -4471,6 +4793,14 @@ Pvar_Chla_plot<-Pvar_Chla_plot+ theme(legend.position = "none") #remove legend
 Pacu_Chla_plot<-Pacu_Chla_plot+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 1)
+
+###### All plots together CLADE
+Mcap_Chla_plot.c<-Mcap_Chla_plot.c+ theme(legend.position = "none") #remove legend
+Pcomp_Chla_plot.c<-Pcomp_Chla_plot.c+ theme(legend.position = "none") #remove legend
+Pvar_Chla_plot.c<-Pvar_Chla_plot.c+ theme(legend.position = "none") #remove legend
+Pacu_Chla_plot.c<-Pacu_Chla_plot.c+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Chla_plot.c, Pcomp_Chla_plot.c, Pvar_Chla_plot.c,Pacu_Chla_plot.c, nrow = 1)
 ```
  
 stats  
@@ -5412,8 +5742,9 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment,
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     # ylim(0, 1)+
+  xlab(" ") + #Label the X Axis
+      ylim(0, 1)+
+    ylab(" ") + #Label the X Axis
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -5425,11 +5756,11 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("fv/fm"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PAM_plot
 
 #by clade for mcap
@@ -5440,10 +5771,10 @@ Mcap_PAM_mean.clade$Code<-paste(Mcap_PAM_mean.clade$Clade, Mcap_PAM_mean.clade$T
 Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=6, show.legend = T)+  
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-   geom_point(shape = 1,size = 6,colour = "black")+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
    #   ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
@@ -5460,8 +5791,8 @@ Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean.clade, aes(x=Days, y=mean, group = Code
    # theme(panel.grid.major = element_blank(), 
    #      panel.grid.minor = element_blank(),
    #      panel.background = element_rect(colour = "black", size=1))+
-   #      theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
+        theme(aspect.ratio=1)+
+  # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PAM_plot
 
 
@@ -5477,7 +5808,8 @@ Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean, aes(x=Days, y=mean, group = Treatmen
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
@@ -5489,12 +5821,12 @@ Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean, aes(x=Days, y=mean, group = Treatmen
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-    theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  #   theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
+  # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
 
 
@@ -5506,10 +5838,10 @@ Pcomp_PAM_mean.clade$Code<-paste(Pcomp_PAM_mean.clade$Clade, Pcomp_PAM_mean.clad
 Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=4, show.legend = T)+  
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
    #   ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
@@ -5522,22 +5854,22 @@ Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Co
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P comp")+
+  # ggtitle("P comp")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PAM_plot
 
 #for defense
 Pcomp_PAM_plot<-ggplot(data=Pcomp_PAM_mean.clade, aes(x=Days, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
                 width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=6, show.legend = T)+  
+  geom_point(aes(color=Code, shape=Clade), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-   geom_point(shape = 1,size = 6,colour = "black")+
+   geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
    #   ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
@@ -5569,7 +5901,8 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean, aes(x=Days, y=mean, group = Treatment,
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
@@ -5581,11 +5914,11 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-  ggtitle("P varians")+
-    theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  # ggtitle("P varians")+
+  #   theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PAM_plot
 
@@ -5597,7 +5930,7 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean.clade, aes(x=Days, y=mean, group = Code
   geom_point(aes(color=Code), size=4, show.legend = T)+  
   geom_line(aes(color=Code),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
       ylim(0, 1)+
    scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
@@ -5610,11 +5943,11 @@ Pvar_PAM_plot<-ggplot(data=Pvar_PAM_mean.clade, aes(x=Days, y=mean, group = Code
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-  ggtitle("P varians")+
-    theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  # ggtitle("P varians")+
+  #   theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PAM_plot
 
@@ -5630,7 +5963,8 @@ Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean, aes(x=Days, y=mean, group = Treatment,
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
       ylim(0, 1)+
  scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
@@ -5642,12 +5976,12 @@ Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean, aes(x=Days, y=mean, group = Treatment,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-    theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  #   theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  # ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PAM_plot
 
 
@@ -5675,12 +6009,12 @@ Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean.clade, aes(x=Days, y=mean, group = Code
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("fv/fm"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("fv/fm"))) +
+  #  theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
+  # ggtitle("P acuta")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PAM_plot
 
 
@@ -6197,8 +6531,10 @@ Mcap_Protein_plot<-ggplot(data=Mcap_Protein_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, .7)+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+
+      ylim(0, 2.2)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6209,10 +6545,10 @@ Mcap_Protein_plot<-ggplot(data=Mcap_Protein_mean, aes(x=Time.Point, y=mean, grou
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("M capitata")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ggtitle("M capitata")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Protein_plot
 
@@ -6228,7 +6564,7 @@ Mcap_Protein_plot<-ggplot(data=Protein_meanCLADE.Mcap, aes(x=Time.Point, y=mean,
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   xlab("Time Point") + #Label the X Axis
-     # ylim(0, .7)+
+      ylim(0, 1.1)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6239,10 +6575,10 @@ Mcap_Protein_plot<-ggplot(data=Protein_meanCLADE.Mcap, aes(x=Time.Point, y=mean,
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("mg/mm2"))) +
-  ggtitle("Mcap")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ggtitle("Mcap")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Protein_plot
 
@@ -6255,8 +6591,10 @@ Pcomp_Protein_plot<-ggplot(data=Pcomp_Protein_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     # ylim(0, .7)+
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+
+     ylim(0, 2.2)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6266,11 +6604,11 @@ Pcomp_Protein_plot<-ggplot(data=Pcomp_Protein_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P compressa")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P compressa")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Protein_plot
 
@@ -6296,11 +6634,11 @@ Pcomp_Protein_plot<-ggplot(data=Protein_meanCLADE.Pcomp, aes(x=Time.Point, y=mea
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P compressa")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P compressa")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Protein_plot
 
@@ -6314,8 +6652,10 @@ Pvar_Protein_plot<-ggplot(data=Pvar_Protein_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     # ylim(0, .7)+
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
+
+      ylim(0, 2.2)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6325,11 +6665,11 @@ Pvar_Protein_plot<-ggplot(data=Pvar_Protein_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P varians")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P varians")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Protein_plot
 
@@ -6355,11 +6695,11 @@ Pvar_Protein_plot<-ggplot(data=Protein_meanCLADE.Pvar, aes(x=Time.Point, y=mean,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P var")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P var")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Protein_plot
 
@@ -6372,8 +6712,10 @@ Pacu_Protein_plot<-ggplot(data=Pacu_Protein_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, .7)+
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
+
+      ylim(0, 2.2)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6383,16 +6725,16 @@ Pacu_Protein_plot<-ggplot(data=Pacu_Protein_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P acuta")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P acuta")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Protein_plot
 
 #Pacu by clade
-Protein_meanCLADE.Pacu<-subset(Protein_meanCLADE, Species=="Porites_compressa")
+Protein_meanCLADE.Pacu<-subset(Protein_meanCLADE, Species=="Pocillopora_acuta")
 Protein_meanCLADE.Pacu$Code<-paste(Protein_meanCLADE.Pacu$Treatment,Protein_meanCLADE.Pacu$Clade)
 
 Pacu_Protein_plot<-ggplot(data=Protein_meanCLADE.Pacu, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6413,17 +6755,25 @@ Pacu_Protein_plot<-ggplot(data=Protein_meanCLADE.Pacu, aes(x=Time.Point, y=mean,
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("mg/mm2"))) +
-  ggtitle("P acuta")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # ylab(expression(paste("mg/mm2"))) +
+  # ggtitle("P acuta")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Protein_plot
 
 
 
 ###### All plots together
+Mcap_Protein_plot<-Mcap_Protein_plot+ theme(legend.position = "none") #remove legend
+Pcomp_Protein_plot<-Pcomp_Protein_plot+ theme(legend.position = "none") #remove legend
+Pvar_Protein_plot<-Pvar_Protein_plot+ theme(legend.position = "none") #remove legend
+Pacu_Protein_plot<-Pacu_Protein_plot+ theme(legend.position = "none") #remove legend
+
+grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot, nrow = 1)
+
+###### All plots together CLADSE
 Mcap_Protein_plot<-Mcap_Protein_plot+ theme(legend.position = "none") #remove legend
 Pcomp_Protein_plot<-Pcomp_Protein_plot+ theme(legend.position = "none") #remove legend
 Pvar_Protein_plot<-Pvar_Protein_plot+ theme(legend.position = "none") #remove legend
@@ -6528,7 +6878,7 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
 ```
 Plots
 Photosynthesis
-```{r}      
+```{r}       
 GrossP_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                    N    = length(GrossP[!is.na(GrossP)]), #calculate the length of the data frame, excluding NA’s *this part is important*
                    mean = mean(GrossP, na.rm=TRUE), #calculate mean of response variable, removing NA's
@@ -6651,7 +7001,9 @@ Mcap_GrossP_plot<-ggplot(data=Mcap_GrossP_mean, aes(x=Time.Point, y=mean, group 
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
+
   ylim(0,30)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -6663,11 +7015,11 @@ Mcap_GrossP_plot<-ggplot(data=Mcap_GrossP_mean, aes(x=Time.Point, y=mean, group 
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap P")+
+  # ggtitle("Mcap P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_GrossP_plot
 
 
@@ -6680,7 +7032,8 @@ Pcomp_GrossP_plot<-ggplot(data=Pcomp_GrossP_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
     ylim(0,30)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -6691,11 +7044,11 @@ Pcomp_GrossP_plot<-ggplot(data=Pcomp_GrossP_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Pcomp P")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # ggtitle("Pcomp P")+
           theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot
 
@@ -6740,7 +7093,8 @@ Pvar_GrossP_plot<-ggplot(data=Pvar_GrossP_mean, aes(x=Time.Point, y=mean, group 
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab("") + #Label the X Axis
+    ylab("") + #Label the X Axis
   theme_bw() + #Set the background color
     ylim(0,30)+
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -6751,12 +7105,12 @@ Pvar_GrossP_plot<-ggplot(data=Pvar_GrossP_mean, aes(x=Time.Point, y=mean, group 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
           theme(aspect.ratio=1)+
-  ggtitle("Pvar P")+
+  # ggtitle("Pvar P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_GrossP_plot
 
 #Pacu plot
@@ -6769,7 +7123,9 @@ Pacu_GrossP_plot<-ggplot(data=Pacu_GrossP_mean, aes(x=Time.Point, y=mean, group 
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -6779,12 +7135,12 @@ Pacu_GrossP_plot<-ggplot(data=Pacu_GrossP_mean, aes(x=Time.Point, y=mean, group 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-    ggtitle("Pacu P")+
+    # ggtitle("Pacu P")+
    
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot
 
@@ -6847,11 +7203,11 @@ Mcap_GrossP_plot.Clade<-ggplot(data=Mcap_GrossP_mean.Clade, aes(x=Time.Point, y=
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap P")+
+  # ggtitle("Mcap P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_GrossP_plot.Clade
 
 
@@ -6875,12 +7231,12 @@ Pcomp_GrossP_plot.Clade<-ggplot(data=Pcomp_GrossP_mean.Clade, aes(x=Time.Point, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp P")+
+  # ggtitle("Pcomp P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot.Clade
 
 #Pvar by clade
@@ -6903,12 +7259,12 @@ Pvar_GrossP_plot.Clade<-ggplot(data=Pvar_GrossP_mean.Clade, aes(x=Time.Point, y=
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar P")+
+  # ggtitle("Pvar P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_GrossP_plot.Clade
 
 #Pacu by clade
@@ -6931,12 +7287,12 @@ Pacu_GrossP_plot.Clade<-ggplot(data=Pacu_GrossP_mean.Clade, aes(x=Time.Point, y=
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu P")+
+  # ggtitle("Pacu P")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot.Clade
 
 Mcap_GrossP_plot.Clade<-Mcap_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
@@ -7264,7 +7620,7 @@ GrossP_Pacu_model<-lmer(GrossP~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+
     
 ```
 Respiration plots
-```{r}     
+```{r}      
 #Respiration (absolute)
 
 #T0
@@ -7342,7 +7698,9 @@ Mcap_RespPos_plot<-ggplot(data=Mcap_RespPos_mean, aes(x=Time.Point, y=mean, grou
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   ylim(0,12)+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7353,11 +7711,11 @@ Mcap_RespPos_plot<-ggplot(data=Mcap_RespPos_mean, aes(x=Time.Point, y=mean, grou
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap RespPos")+
+  # ggtitle("Mcap RespPos")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_RespPos_plot
 
 
@@ -7370,7 +7728,9 @@ Pcomp_RespPos_plot<-ggplot(data=Pcomp_RespPos_mean, aes(x=Time.Point, y=mean, gr
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
+
     ylim(0,12)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
@@ -7381,11 +7741,11 @@ Pcomp_RespPos_plot<-ggplot(data=Pcomp_RespPos_mean, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Pcomp RespPos")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # ggtitle("Pcomp RespPos")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_RespPos_plot
 
@@ -7399,7 +7759,8 @@ Pvar_RespPos_plot<-ggplot(data=Pvar_RespPos_mean, aes(x=Time.Point, y=mean, grou
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
     ylim(0,12)+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
+ xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis  
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7409,11 +7770,11 @@ Pvar_RespPos_plot<-ggplot(data=Pvar_RespPos_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Pvar RespPos")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # ggtitle("Pvar RespPos")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_RespPos_plot
 
@@ -7426,8 +7787,9 @@ Pacu_RespPos_plot<-ggplot(data=Pacu_RespPos_mean, aes(x=Time.Point, y=mean, grou
   geom_line(aes(color=Treatment),linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-    ylim(0,12)+
+ xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis    
+  ylim(0,12)+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7437,11 +7799,11 @@ Pacu_RespPos_plot<-ggplot(data=Pacu_RespPos_mean, aes(x=Time.Point, y=mean, grou
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Pacu RespPos")+
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
+  # ggtitle("Pacu RespPos")+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_RespPos_plot
 
@@ -7568,10 +7930,9 @@ Mcap_RespPos_plot.Clade<-ggplot(data=Mcap_RespPos_mean.Clade, aes(x=Time.Point, 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+  geom_line(linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
+  # xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7582,11 +7943,11 @@ Mcap_RespPos_plot.Clade<-ggplot(data=Mcap_RespPos_mean.Clade, aes(x=Time.Point, 
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(), 
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap RespPosiration")+
+  # ggtitle("Mcap RespPosiration")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_RespPos_plot.Clade
 
 
@@ -7597,10 +7958,10 @@ Pcomp_RespPos_plot.Clade<-ggplot(data=Pcomp_RespPos_mean.Clade, aes(x=Time.Point
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade))+
+  geom_line(linetype="dotted")+
     scale_linetype_manual(values=c("twodash", "dotted"))+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
+  # xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7610,12 +7971,12 @@ Pcomp_RespPos_plot.Clade<-ggplot(data=Pcomp_RespPos_mean.Clade, aes(x=Time.Point
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp RespPosiration")+
+  # ggtitle("Pcomp RespPosiration")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_RespPos_plot.Clade
 
 #Pvar by clade
@@ -7625,10 +7986,9 @@ Pvar_RespPos_plot.Clade<-ggplot(data=Pvar_RespPos_mean.Clade, aes(x=Time.Point, 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+  geom_line(linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
+  # xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7638,12 +7998,12 @@ Pvar_RespPos_plot.Clade<-ggplot(data=Pvar_RespPos_mean.Clade, aes(x=Time.Point, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar RespPosiration")+
+  # ggtitle("Pvar RespPosiration")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_RespPos_plot.Clade
 
 #Pacu by clade
@@ -7653,10 +8013,9 @@ Pacu_RespPos_plot.Clade<-ggplot(data=Pacu_RespPos_mean.Clade, aes(x=Time.Point, 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+  geom_line(linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
+  # xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -7666,12 +8025,12 @@ Pacu_RespPos_plot.Clade<-ggplot(data=Pacu_RespPos_mean.Clade, aes(x=Time.Point, 
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu RespPosiration")+
+  # ggtitle("Pacu RespPosiration")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_RespPos_plot.Clade
 
 Mcap_RespPos_plot.Clade<-Mcap_RespPos_plot.Clade+ theme(legend.position = "none") #remove legend
@@ -7982,7 +8341,7 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num)
 ```
 
 P:R plots
-```{r}     
+```{r}      
 
 #t0 only
 PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, #summarize cell counts
@@ -8089,7 +8448,7 @@ Rplot2<-Rplot1+theme(legend.position="none")
 
 
 
-
+ 
 #TFH only####
 PR_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
 PR_TFH_mean <- ddply(PR_TFH, c( "Species"), summarise, #summarize cell counts
@@ -8156,7 +8515,8 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
     ylim(0, 4)+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -8166,12 +8526,12 @@ Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
         theme(aspect.ratio=1)+
 #  ylab(expression(paste("nmol cm-2 m-"))) +
-  ggtitle("Mcap PR")+
+  # ggtitle("Mcap PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
 
 
@@ -8190,7 +8550,9 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
     ylim(0, 4)+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis  
+   
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -8201,11 +8563,11 @@ Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Trea
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
  # ylab(expression(paste("umol/sec/cm2"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp PR")+
+  # ggtitle("Pcomp PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot
 
 #Pvar plot
@@ -8218,7 +8580,8 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
     ylim(0, 4)+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -8229,11 +8592,11 @@ Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
 #  ylab(expression(paste("nmol cm-2 m-"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar PR")+
+  # ggtitle("Pvar PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot
 
 #Pacu plot
@@ -8246,7 +8609,8 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   scale_color_manual(values=c("dodgerblue3", "darkred"))+
    geom_point(shape = 1,size = 4,colour = "black")+
   ylim(0, 4)+
-  xlab("Time Point") + #Label the X Axis
+  xlab(" ") + #Label the X Axis
+    ylab(" ") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -8257,11 +8621,11 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   #ylab(expression(paste("nmol cm-2 min-"))) +
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu PR")+
+  # ggtitle("Pacu PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
  
 ```
@@ -8310,10 +8674,9 @@ Mcap_PR_plot.Clade<-ggplot(data=Mcap_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+  geom_line(linetype="dotted")+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
+  # xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
@@ -8323,12 +8686,12 @@ Mcap_PR_plot.Clade<-ggplot(data=Mcap_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         text = element_text(size=18),  # set element text
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
-  #ylab(expression(paste("nmol cm-2 m-"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+  ylab(expression(paste("nmol cm-2 m-"))) +
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Mcap PR")+
+  # ggtitle("Mcap PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot.Clade
 
 #Pcomp by clade
@@ -8337,8 +8700,8 @@ Pcomp_PR_mean.Clade$Code<-paste(Pcomp_PR_mean.Clade$Treatment,Pcomp_PR_mean.Clad
 Pcomp_PR_plot.Clade<-ggplot(data=Pcomp_PR_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
+    geom_point(aes(color=Code), size=4, show.legend = T)+ 
+  geom_line(linetype="dotted")+
     scale_linetype_manual(values=c("twodash", "dotted"))+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
   xlab("Time Point") + #Label the X Axis
@@ -8352,11 +8715,11 @@ Pcomp_PR_plot.Clade<-ggplot(data=Pcomp_PR_mean.Clade, aes(x=Time.Point, y=mean, 
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
   #ylab(expression(paste("umol/sec/cm2"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pcomp PR")+
+  # ggtitle("Pcomp PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot.Clade
 
 
@@ -8367,8 +8730,8 @@ Pvar_PR_plot.Clade<-ggplot(data=Pvar_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+  geom_line(linetype="dotted")+
+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
@@ -8381,11 +8744,11 @@ Pvar_PR_plot.Clade<-ggplot(data=Pvar_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
  # ylab(expression(paste("umol/sec/cm2"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pvar PR")+
+  # ggtitle("Pvar PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot.Clade
 
 #Pacu by clade
@@ -8395,8 +8758,8 @@ Pacu_PR_plot.Clade<-ggplot(data=Pacu_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
             width=0.1, show.legend = T)+
   geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
+    geom_line(linetype="dotted")+
+
   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
   xlab("Time Point") + #Label the X Axis
   theme_bw() + #Set the background color
@@ -8409,19 +8772,19 @@ Pacu_PR_plot.Clade<-ggplot(data=Pacu_PR_mean.Clade, aes(x=Time.Point, y=mean, gr
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) + #Set plot legend key
  # ylab(expression(paste("umol/sec/cm2"))) +
-theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
+# theme(panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_rect(colour = "black", size=2))+
         theme(aspect.ratio=1)+
-  ggtitle("Pacu PR")+
+  # ggtitle("Pacu PR")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot.Clade
 
 
 # 
-# Mcap_PR_plot.Clade<-Mcap_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-# Pcomp_PR_plot.Clade<-Pcomp_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-# Pvar_PR_plot.Clade<-Pvar_PR_plot.Clade+ theme(legend.position = "none") #remove legend
-# Pacu_PR_plot.Clade<-Pacu_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Mcap_PR_plot.Clade<-Mcap_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pcomp_PR_plot.Clade<-Pcomp_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pvar_PR_plot.Clade<-Pvar_PR_plot.Clade+ theme(legend.position = "none") #remove legend
+Pacu_PR_plot.Clade<-Pacu_PR_plot.Clade+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 1)
 
@@ -9077,7 +9440,7 @@ PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 # PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
 
-
+write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
 
 
 ```
@@ -9329,6 +9692,7 @@ ggplot(Phy_nmds.MDS.T0.scores, aes(x = NMDS1, y = NMDS2)) +
   
   theme_classic()
 
+write.csv(Phy_nmds.MDS.T0,"Phy_nmds.MDS.T0.csv") #for gauntlet figure
  
 ``` 
 #### By SPECIES. Make a NEW ordination for each species. 
@@ -9847,8 +10211,8 @@ phy_Pacu.div #view, all is significant
 
 
 
-####ITS2
-## ITS2
+
+
 
 # Physio PCA THIS IS THE WAY df= PhysioData
 ```{r}    
@@ -9915,13 +10279,48 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 
 
 #subset by T0#### 
+apDataT0<-PhysioData #make a copy
+apDataT0<-subset(apDataT0, Time.Point=="T0") #
+apDataT0<-na.omit(apDataT0) #remove NAs
+apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] #put cols in correct order
+
+apDataT02 <- prcomp(apDataT0[c(5:13)], center = TRUE, scale = TRUE) #center and scale
+summary(apData2)
+ 
+str(apData2)
+
+ggbiplot(apData2) #quick look at plot
+
+#exract scores for gg
+Miss_scores <- as.data.frame(apData2$x)
+Miss_scores$frag.id <- apData$Frag.ID
+Miss_scores$parent.id <- apData$Parent.ID
+Miss_scores$treatment <- apData$Treatment
+Miss_scores$species <- apData$Species
+Miss_scores$time.point <- apData$Time.Point
+
+
+#Plot
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
+
+#plot by time and species
+Miss_scores$treatSpecies<-paste0(Miss_scores$species, Miss_scores$treatment )
+Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
+
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
+  theme_classic()
+
+
 
 apDataT0<-PhysioData #copy
 apDataT0<-subset(apDataT0, Time.Point=="T0") #
 #remove calcification
-apDataT0<-subset(apDataT0, select=-c(Calcification))
+apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcificaiton
 apDataT0<-na.omit(apDataT0)
-apDataT02 <- prcomp(apDataT0[c(14:21)], center = TRUE, scale = TRUE)
+apDataT02 <- prcomp(apDataT0[c(5:12)], center = TRUE, scale = TRUE)
 summary(apDataT02)
  
 str(apDataT02)
@@ -9947,14 +10346,37 @@ Miss_scores_T0_plot<-ggplot(Miss_scores_T0, aes(x = PC1, y= PC2)) + geom_point(a
   stat_ellipse(aes(x = PC1, y = PC2, colour = species, geom="polygon",fill=species, alpha=.2), linetype = 2, level=0.75) ;Miss_scores_T0_plot
 
 ggplot(Miss_scores_T0, aes(PC1,PC2, color = species)) +
-  geom_point(alpha=0.2) +
+  geom_point(alpha=1) +
   stat_ellipse(aes(fill = species), geom="polygon",level=0.9,alpha=0.2) +
     theme_classic()
 
 ggbiplot(pcobj = apDataT02,
          choices=c(1,2),
-         ellipse=TRUE, groups=Miss_scores_T0$species, geom="polygon", ellipse_fill=T, alpha=0.2)+
+         ellipse=TRUE, groups=Miss_scores_T0$species, geom="polygon", ellipse_fill=T, alpha=1)+
   theme_classic()
+
+##ariana code not running 
+porTP2<-ggplot2::autoplot(apDataT02,data=apDataT0[1:5], loadings=T, color="species",
+                          loadings.label.colour="black", loadings.colour="black", loadins.label=T, frame=F, frame.type="convex", frame.level=0.95, loadings.labels.size=5, loadings.label.repel=T, size=4, alpha=1.0, loadings.arrow=grid::arrow(length =grid::unit(10,"points")),scale=0)+
+  theme_classic()+
+  coord_cartesian(xlim=c(-8,8),ylim=c(-5,5),slip="off")+
+  theme(legend.text=element_text(size=18),
+        legend.position = "none",
+        axis.text.x=element_text(colour = "black"),
+        axis.text.y=element_text(colour="black"),
+        plot.background = element_blank(),
+        plot.title = element_text(size=22,face="bold",hjust=0.5),
+        axis.text = element_text(size=18),
+        axist.title=element_text(size=18));porTP2
+        
+
+
+
+
+
+
+
+
 
 
 #subset by T1
@@ -11208,7 +11630,6 @@ grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 
 
 
-
 #Plot mean ordi
 ```{r} 
  
@@ -11376,7 +11797,7 @@ Try T0 apDataT0
 
 AA_PhysioT0<-apDataT0 #copy df
 AA_PhysioT0$Respiration<-AA_PhysioT0$Respiration*-1
-AA_PhysioT0<-AA_PhysioT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
+AA_PhysioT0<-AA_PhysioT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] # keep only columns you need
 
 
 

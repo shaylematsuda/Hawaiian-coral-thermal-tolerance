@@ -4476,6 +4476,11 @@ ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()+
   facet_wrap(~Species)
 
+write.csv(scores.ord.u_RelA_stats.T0, "16s_nmds.scores.ord.u_RelA_stats.T0.csv") #export for gauntlet
+
+
+
+
 #T1 only 
 Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
     Bac.s.rel.u.T1 = prune_taxa(taxa_sums(Bac.s.rel.u.T1) > 0, Bac.s.rel.u.T1) #this removes any OTU with 0s
