@@ -3132,9 +3132,9 @@ data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C
 data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
 
-
- 
-
+##calc BW for Mcap in general (T0-T1 ambient only) 
+# data_McapBW.amb<-subset(data_McapBW, Treatment=="Ambient")
+# write.csv(data_McapBW.amb,"data_McapBW.amb.csv")
 
 # mean, standard dev, and sem
 time1_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -3246,7 +3246,7 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot.c
 
 ```
-Porites compressa
+Porites compressa P lobata, 1.5 scoffin 1992, prachet 2015, low and barnes 1992
 ```{r}  
    
 ################################     PORITES COMPRESSA
@@ -3311,6 +3311,14 @@ data_PcompBW$time2.growth <- (((data_PcompBW$Dry.Weigh.g.Time2 - data_PcompBW$Dr
 
 data_PcompBW$time1.growth[data_PcompBW$time1.growth < 0] <- 0 
 data_PcompBW$time2.growth[data_PcompBW$time2.growth < 0] <- 0 
+
+
+##calc BW for Pcomp in general (T0-T1 ambient only) 
+#data_PcompBW.amb<-subset(data_PcompBW, Treatment=="Ambient")
+#write.csv(data_PcompBW.amb,"data_PcompBW.amb.csv")
+
+
+
 
 # mean, standard dev, and sem
 time1_PcompBW <-ddply(data_PcompBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -3481,6 +3489,11 @@ data_PvarBW$time1.growth[data_PvarBW$time1.growth < 0] <- 0 # neg values to 0 (c
 data_PvarBW$time2.growth[data_PvarBW$time2.growth < 0] <- 0 
 
 
+##calc BW for Pvar in general (T0-T1 ambient only) 
+#data_PvarBW.amb<-subset(data_PvarBW, Treatment=="Ambient")
+#write.csv(data_PvarBW.amb,"data_PvarBW.amb.csv")
+
+
 # mean, standard dev, and sem
 time1_PvarBW <-ddply(data_PvarBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
               N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
@@ -3585,7 +3598,7 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pvar_BW_plot.c
 
 ```
-P acuta
+P acuta manzello 2010 2.01, Marshalln 2000 1.72, manzello 2010 2.05
 ```{r}   
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
   #Parameters---------------------------------------------------------------
@@ -3673,7 +3686,9 @@ G_Pacu<-rbind(G_PacuA, G_PacuH)
 G_Pacu$newtime = ifelse(G_Pacu$Time == "Time1", "Post-Stress", "Post-Recovery")
 G_Pacu <- within(G_Pacu, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
 
-
+##calc BW for Pacu in general (T0-T1 ambient only) 
+# data_PacuBW.amb<-subset(data_PacuBW, Treatment=="Ambient")
+# write.csv(data_PacuBW.amb,"data_PacuBW.amb.csv")
 
 Pacu_BW_plot<-ggplot(data=G_Pacu, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),

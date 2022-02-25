@@ -48,16 +48,22 @@ Load data
 ```{r}
 physio<-read.csv("PhysioData.csv")
     physio$sample.id<-as.factor(physio$sample.id)  #change to tidy language when you have time. 
-     physio$Treatment<-as.factor(physio$Treatment)
-      physio$Species<-as.factor(physio$Species)
-        physio$Time.Point<-as.factor(physio$Time.Point)
-            physio$Clade<-as.factor(physio$Clade)
-                    physio$Tank.num<-as.factor(physio$Tank.num)
-                        physio$Tissue<-as.factor(physio$Tissue)
+     physio$treatment<-as.factor(physio$treatment)
+      physio$species<-as.factor(physio$species)
+            physio$parent.ID<-as.factor(physio$parent.ID)
+        physio$time.point<-as.factor(physio$time.point)
+                physio$code<-as.factor(physio$code)
+                physio$size<-as.factor(physio$size)
+            physio$clade<-as.factor(physio$clade)
+                        physio$repro.mode<-as.factor(physio$repro.mode)
+                        physio$sex<-as.factor(physio$sex)
+                        physio$repro.mode<-as.factor(physio$repro.mode)
+                    physio$tank.num<-as.factor(physio$tank.num)
                             physio$transmission<-as.factor(physio$transmission)
-                                physio$skeleton<-as.factor(physio$skeleton)
+                                physio$skeletal.density<-as.factor(physio$skeletal.density)
                                     physio$shape<-as.factor(physio$shape)
-                                    
+                   
+                            
 its2<-read.csv("ITS2_T0_nmds.scores.csv")
     its2$sample.id<-as.factor(its2$sample.id)
 its2.nmds1_T0<-subset(its2,its2$Time.Point=="T0")
@@ -76,45 +82,54 @@ bacteria.nmds1<-bacteria[, c("sample.id", "bac.NMDS1")]
 
 df<-merge(physio, bacteria.nmds1, by="sample.id")   
    df<-merge(df, its2.nmds1_T0, by="sample.id")   
- 
+  df<-na.omit(df) #remove rows with NAs in any trait
+  
+  df$respiration<-df$respiration*-1 #make resp positive
+
+  
+  
+#### make df with just a priori data
+  library(mcmc)
+phy.apriori<-df[,c(1,3,5:15)]
+  
+   MCMCmixfactanal()
 ```
-# Overview ordination: combine physio, its2 (subclade), and 16S (NMDS1)
+
 ```{r}
-#load in ITS2 nmds1
-ITS2_T0_nmds1<-read.csv("ITS2_T0_nmds.scores.csv")
-ITS2_T0_nmds1b<-
-  ITS2_T0_nmds1$sample.id
+# center data
+df.scale <- prcomp(df[c(12:23)], center = TRUE, scale = TRUE) #center and scale
+summary(df.scale)
+ 
+str(df.scale)
 
-df1 %>%
-  select(A, B, E)
-```
+ggbiplot(df.scale) #quick look at plot
+
+#exract scores for gg
+Miss_scores <- as.data.frame(df.scale$x)
+Miss_scores$sample.id <- df$sample.id
+Miss_scores$parent.ID <- df$parent.ID
+Miss_scores$treatment <- df$treatment
+Miss_scores$species <- df$species
+Miss_scores$clade <- df$clade
+Miss_scores$transmission <- df$transmission
+Miss_scores$skeletal.density <- df$skeletal.density
+Miss_scores$size <- df$size
+
+
+#Plot
+ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = species), size = 4) +
+  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
+  theme_classic()
+
+plot<-ggbiplot(df.scale,
+         ellipse = T, groups=df$species) 
+plot +theme_classic()
 
 
 
-phy.dist <- vegdist(pData.T1TF [8:16], method="bray") #make dist matrix
-phy.div <- adonis2(pData.T1TF [8:16] ~ Species*Treatment*Time.Point, data = pData.T1TF [1:6], permutations = 999, method="bray")
-phy.div #view, 
 
-##Check for homogeneity of dispersions (you want this to be insignificant)
-phy.dist.disp <- betadisper(phy.dist, pData.T1TF$Species, type = "centroid")
-#par(pty = 's')
-boxplot(phy.dist.disp) #visualise your dispersion
-permutest(phy.dist.disp) #this is your PERMDISP test
 
-#this runs but it's only univariate so not helpful. 
-# pairwise.adonis(PhysioData_noMissing [7:12], PhysioData_noMissing$Species)
 
-#ALL THE DATA T0
-
-phy.dist.T0 <- vegdist(pData.T0 [9:16], method="bray") #make dist matrix
-phy.div.T0 <- adonis2(pData.T0 [9:16] ~ Species, data = pData.T0 [1:7], permutations = 999, method="bray")
-phy.div.T0 #view, 
-
-##Check for homogeneity of dispersions (you want this to be insignificant)
-phy.dist.disp <- betadisper(phy.dist.T0, pData.T0$Species, type = "centroid")
-#par(pty = 's')
-boxplot(phy.dist.disp) #visualise your dispersion
-permutest(phy.dist.disp) #this is your PERMDISP test
 
 
 
@@ -154,4 +169,16 @@ ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, sha
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
   theme_classic()
 
+```
 
+
+
+ Try MCoA http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials/
+```{r}
+library("FactoMineR")
+library("factoextra")
+
+
+```
+ 
+ 

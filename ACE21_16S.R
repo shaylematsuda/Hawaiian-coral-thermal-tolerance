@@ -37,7 +37,7 @@ otu <- otu_table(otu5, taxa_are_rows = FALSE)
 #tax
 TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/raw_consensusClassification_100_taxonomy.csv", colClasses = "character")
 tax1 <- as.matrix(TAX[, -1], dimnames = list(TAX$OTU, colnames(TAX[-1])))
-rownames(tax1) <- tax0$OTU
+rownames(tax1) <- TAX$OTU
 tax <- tax_table(tax1)
 
 

@@ -88,7 +88,7 @@ S374TC,S374,field,374,,Montipora_capitata,TC,,,,,
 S374TF,S374,field,374,,Montipora_capitata,TF,,,,,
 SAT1,SAT1,extra,AT1,NA,Test1,T1,NA,NA,NA,,NA
 SBT1,SBT1,extra,BT1,NA,Test2,T1,NA,NA,NA,,NA
-S3059,S3059,sample,301,High,Pocillopora_acuta,F1,4.9,6,CCC,,3059
+S3059,S3059,sample,301,High,Pocillopora_acuta,T1,4.9,6,CCC,,3059
 S1037,S1037,sample,358,Ambient,Pavona_varians,TF,4.8,9,C1,,1037
 S1061,S1061,sample,301,Ambient,Pocillopora_acuta,TF,4.9,5,CCC,,1061
 S1068,S1068,sample,356,High,Pavona_varians,T1,5,3,C1,,1068
