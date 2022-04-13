@@ -497,7 +497,7 @@ Bac.seq.all<- transform_sample_counts(Bac.seq.all, function(x) x / sum(x) )
 #heatmap
   #plot_heatmap(Bac.RelA, method = "NMDS", distance = "bray")# way too much data
 
-
+### this isn't running bc you created it farther down.... FIX
 #t0
 Bac.s.rel.u.T0
 #make rel ativ e abundance df Bac.s
@@ -3141,6 +3141,9 @@ write.csv(ARC.16s.samples, "Arc.16s.samples.csv")
 ```{r}         
 Bac.s.rel.u<-Bac.s.rel #make a copy
 
+saveRDS(Bac.s.rel.u, file = "16S_rel.u.rds")
+
+
 
  #T0 only #### 
 Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
@@ -5585,7 +5588,7 @@ Fam.filter.16s.T1TF.m<-Fam.filter.16s.T1TF[7:263]
 Fam.filter.16s.T1TF.sd<-Fam.filter.16s.T1TF[1:6]
 
 # Calculate distance matrix 
-Fam.distmat <- vegdist(Fam.filter.16s.m, method = "bray")
+Fam.distmat <- (Fam.filter.16s.m, method = "bray")
 # Creating easy to view matrix and writing .csv
 Fam.distmat2 <- as.matrix(Fam.distmat, labels = T)
 
@@ -6408,7 +6411,7 @@ df16sotu2veg <- function(Bac.s.rel) {
 }
 
 # Calculate distance matrix 
-df16s.spp_distmat <- vegdist(OTU, method = "bray")
+df16s.spp_distmat <- (OTU, method = "bray")
 # Creating easy to view matrix and writing .csv
 df16s.spp_distmat <- 
   as.matrix(df16s.spp_distmat, labels = T)
