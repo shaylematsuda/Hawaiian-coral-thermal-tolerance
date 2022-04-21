@@ -974,8 +974,7 @@ TF Ambient only
       #in ITS  Remove S1736"  "SN208"  "SN223"  "S779"   "SN183"  "S3317"  "S1279"   "SN102"  RENAME "SN217b"
 
       
-    #######stoped here#########  
-    
+
   # 16s changes: remove "S1104" "S785b"
       
  # remove
@@ -1198,16 +1197,18 @@ T0
         # both have 37 samples - Bac_T0_mantel physio_T0_mantel
       
   # reorder ps object so samples are in the same order
-        physio_T0_mantel <- physio_T0_mantel[order(physio_T0_mantel$ID),]
-        rownames(physio_T0_mantel) <- physio_T0_mantel[,1] #make first col row names
-#build matrix  
+      
+                rownames(physio_T0_mantel) <- physio_T0_mantel[,1] #make first col row names
+
+        vec <- c("S1108","S148","S1753","S1982","S208","S231","S263","S31","S391","S488","S616","S74","S755","S914","SN107", "SN18","SN19","SN21","SN25","SN2","SN30","SN33","SN35","SN38","SN47","SN4","SN50","SN64","SN70","SN72","SN7","SN82","SN84","SN85","SN87","SN94","SN9")               # Create  vector order
+         physio_T0_mantel <- physio_T0_mantel[match(vec, physio_T0_mantel$ID), ]  
+        
+        
+        
+        #build matrix  
   #16s T0        
         unifrac.Bac.T0.mantel <- phyloseq::distance(Bac_T0_mantel, method = "wunifrac")
         
-  #physio T0 
-        ##WHICH TO USE!?!? I think euclidian 
-     # bray.physio.T0.mantel <- vegdist(physio_T0_mantel[,3:11], method = "bray",center = TRUE, scale = TRUE) 
-     # euc.physio.T0.mantel <- dist(physio_T0_mantel[,3:11], method = "euclidian") 
 
    #   Scale and center
    physio_T0_mantel2<-  physio_T0_mantel[,3:10]
@@ -1216,7 +1217,7 @@ T0
      
   # Run mantel test
       mantel(unifrac.Bac.T0.mantel, euc.physio.T0.mantel3,  permutations=999)
-    # r=0.1486 p=0.012
+    # r=0.3041 p=0.001
         
 #### T0 Mcap only ####        
  # Bac_T0_mantel physio_T0_mantel
@@ -1284,10 +1285,10 @@ T0
  # Bac_T0_mantel physio_T0_mantel
     
     #subset df for Pacu
-    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pavona_varians")
+    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pocillopora_acuta")
     Bac_T0_mantel.Pacu = prune_taxa(taxa_sums(Bac_T0_mantel.Pacu) > 0, Bac_T0_mantel.Pacu) 
     
-    physio_T0_mantel.Pacu  <- subset(physio_T0_mantel, species == "Pavona_varians")
+    physio_T0_mantel.Pacu  <- subset(physio_T0_mantel, species == "Pocillopora_acuta")
 
     #16s T0 Pacu dist        
       unifrac.Bac_T0_mantel.Pacu <- phyloseq::distance(Bac_T0_mantel.Pacu, method = "wunifrac")
@@ -1311,15 +1312,15 @@ T1 High only
 # T1 only  #####
 
 #set up 16s
-    Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
-    Bac.s.rel.u.T1.High<-subset_samples(Bac.s.rel.u.T1, Treatment=="High")
+      Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
+      Bac.s.rel.u.T1.High<-subset_samples(Bac.s.rel.u.T1, Treatment=="High")
 
-    Bac.s.rel.u.T1.High = prune_taxa(taxa_sums(Bac.s.rel.u.T1.High) > 0, Bac.s.rel.u.T1.High) #this removes any OTU with 0s
+      Bac.s.rel.u.T1.High = prune_taxa(taxa_sums(Bac.s.rel.u.T1.High) > 0, Bac.s.rel.u.T1.High) #this removes any OTU with 0s
   # look at sample names
-    bac.T1.High.sd <- as(sample_data(Bac.s.rel.u.T1.High), "data.frame") #sample df
+      bac.T1.High.sd <- as(sample_data(Bac.s.rel.u.T1.High), "data.frame") #sample df
     #save just sample names
       bac.T1.High.sd.samps<-bac.T1.High.sd[['sample_name.1']]
- bac.T1.High.sd.samps<-as.data.frame(bac.T1.High.sd.samps)
+      bac.T1.High.sd.samps<-as.data.frame(bac.T1.High.sd.samps)
       
 #set up physio T1
       
@@ -1351,8 +1352,12 @@ T1 High only
         # both have 42 obs
       
   # reorder ps object so samples are in the same order
-        physio_T1.High_mantel <- physio_T1.High_mantel[order(physio_T1.High_mantel$ID),]
         rownames(physio_T1.High_mantel) <- physio_T1.High_mantel[,1] #make first col row names
+
+        vec <- c("S1068","S1110","S1133","S1441","S1791","S179","S1857","S1943","S2001","S2142","S226","S2402","S2629","S2736","S2849","S2911","S3059","S3086","S3137","S314","S3246","S3340","S3458","S3469","S3472","S3475","S3478","S3479","S3482","S3488","S3490","S3512","S3513","S3514","S490","S634","S946","SN134","SN150","SN157","SN190")               # Create  vector order
+         physio_T1.High_mantel.ord <- physio_T1.High_mantel[match(vec, physio_T1.High_mantel$ID), ]  
+        
+       
 #build matrix  
   #16s T1        
         Bac.s.rel.u.T1.High.mantel<-Bac.s.rel.u.T1.High
@@ -1360,13 +1365,13 @@ T1 High only
         
   #physio T1 high
         #   Scale and center
-   physio_T1.High_mantel2<-  physio_T1.High_mantel[,3:10]
+   physio_T1.High_mantel2<-  physio_T1.High_mantel.ord[,3:10]
    physio_T1.High_mantel2<-scale(physio_T1.High_mantel2)
    euc.physio_T1.High_mantel2 <- dist(physio_T1.High_mantel2, method = "euclidian")
 
   # Run mantel test
       mantel(uni.Bac.s.rel.u.T1.High.mantel, euc.physio_T1.High_mantel2,  permutations=999)
-    # r=0.115. p=0.02
+    # r=0.1104 p=0.038
         
 #### T1 Mcap only ####        
  # Bac_T1_mantel physio_T1_mantel
@@ -1375,7 +1380,7 @@ T1 High only
     Bac_T1_mantel.Mcap <- subset_samples(Bac.s.rel.u.T1.High.mantel, Species == "Montipora_capitata")
     Bac_T1_mantel.Mcap = prune_taxa(taxa_sums(Bac_T1_mantel.Mcap) > 0, Bac_T1_mantel.Mcap) 
     
-    physio_T1_mantel.Mcap  <- subset(physio_T1.High_mantel, species == "Montipora_capitata")
+    physio_T1_mantel.Mcap  <- subset(physio_T1.High_mantel.ord, species == "Montipora_capitata")
 
     #16s T1 mcap dist        
       unifrac.Bac_T1_mantel.Mcap <- phyloseq::distance(Bac_T1_mantel.Mcap, method = "wunifrac")
@@ -1395,7 +1400,7 @@ T1 High only
     Bac_T1_mantel.Pcomp <- subset_samples(Bac.s.rel.u.T1.High.mantel, Species == "Porites_compressa")
     Bac_T1_mantel.Pcomp = prune_taxa(taxa_sums(Bac_T1_mantel.Pcomp) > 0, Bac_T1_mantel.Pcomp) 
     
-    physio_T1_mantel.Pcomp  <- subset(physio_T1.High_mantel, species == "Porites_compressa")
+    physio_T1_mantel.Pcomp  <- subset(physio_T1.High_mantel.ord, species == "Porites_compressa")
 
     #16s T1 Pcomp dist        
       unifrac.Bac_T1_mantel.Pcomp <- phyloseq::distance(Bac_T1_mantel.Pcomp, method = "wunifrac")
@@ -1416,7 +1421,7 @@ T1 High only
     Bac_T1_mantel.Pvar <- subset_samples(Bac.s.rel.u.T1.High.mantel, Species == "Pavona_varians")
     Bac_T1_mantel.Pvar = prune_taxa(taxa_sums(Bac_T1_mantel.Pvar) > 0, Bac_T1_mantel.Pvar) 
     
-    physio_T1_mantel.Pvar  <- subset(physio_T1.High_mantel, species == "Pavona_varians")
+    physio_T1_mantel.Pvar  <- subset(physio_T1.High_mantel.ord, species == "Pavona_varians")
 
     #16s T1 Pvar dist        
       unifrac.Bac_T1_mantel.Pvar <- phyloseq::distance(Bac_T1_mantel.Pvar, method = "wunifrac")
@@ -1437,7 +1442,7 @@ T1 High only
     Bac_T1_mantel.Pacu <- subset_samples(Bac.s.rel.u.T1.High.mantel, Species == "Pocillopora_acuta")
     Bac_T1_mantel.Pacu = prune_taxa(taxa_sums(Bac_T1_mantel.Pacu) > 0, Bac_T1_mantel.Pacu) 
     
-    physio_T1_mantel.Pacu  <- subset(physio_T1.High_mantel, species == "Pocillopora_acuta")
+    physio_T1_mantel.Pacu  <- subset(physio_T1.High_mantel.ord, species == "Pocillopora_acuta")
 
     #16s T1 Pacu dist        
       unifrac.Bac_T1_mantel.Pacu <- phyloseq::distance(Bac_T1_mantel.Pacu, method = "wunifrac")
@@ -1451,6 +1456,14 @@ T1 High only
       mantel(unifrac.Bac_T1_mantel.Pacu, euc.physio_T1_mantel.Pacu2,  permutations=1000)            
 ```
 T1 Amb only
+
+
+
+
+
+
+
+
 ```{r}
 
 # T1 only  #####
@@ -2026,7 +2039,8 @@ ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds")
   #save just sample names
       physio.T0.sd.samps<-physio.T0.sd[['ID']]
 # compare physio to 16s at T0
-  #identify missing samples btw datasets     
+  
+      #identify missing samples btw datasets     
       setdiff(ITS2.T0.sd.samps,physio.T0.sd.samps) #samples in ITSs but not phys: S915, SN3
       setdiff(physio.T0.sd.samps,ITS2.T0.sd.samps) #samples in phys but not 16s: NONE
         
@@ -2038,9 +2052,15 @@ ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds")
             ITS2.T0 <- subset_samples(ITS2.T0, ID != "SN3" )
       
   # reorder ps object so samples are in the same order
-        physio_T0_mantel <- physio.T0[order(physio.T0$ID),]
+       physio_T0_mantel<-     physio.T0
         rownames(physio_T0_mantel) <- physio_T0_mantel[,1] #make first col row names
-#build matrix  
+ 
+         vec <- c("S616","SN84","S1108","S1982","S391","S208","S231","SN60","SN107","SN70","SN47","SN25","SN50","S49","SN19","S74","S31","SN7","SN33","SN11","SN94","S1753","SN38","SN145","SN40","SN18","SN111","SN4","SN6","S755","SN2","SN9","S148","S914","SN56","SN87","SN82","S488","SN35","SN64","SN21","SN109","SN72","S263","SN85","SN30")               # Create  vector order
+         
+        
+        physio_T0_mantel <- physio_T0_mantel[match(vec, physio_T0_mantel$ID), ]  
+
+  #build matrix  
   #ITS2 T0        
         bray.ITS2.T0.mantel <- phyloseq::distance(ITS2.T0, method = "bray")
         
@@ -2178,7 +2198,7 @@ T1 High
               physio.T1.High<-physio.T1.High[!(physio.T1.High$ID=="S3085"),]
               physio.T1.High<-physio.T1.High[!(physio.T1.High$ID=="S3469"),]
               physio.T1.High<-physio.T1.High[!(physio.T1.High$ID=="S3477"),]
-      physio.T1.High_mantel<-physio.T1.High
+      
 
 #its2        
       ITS2_T1_mantel.High<-ITS2.T1.High
@@ -2213,21 +2233,26 @@ T1 High
 
 
   # reorder ps object so samples are in the same order
-        physio_T1.High_mantel <- physio.T1.High_mantel[order(physio.T1.High_mantel$ID),]
-        rownames(physio_T1.High_mantel) <- physio_T1.High_mantel[,1] #make first col row names
-#build matrix  
+        physio.T1.High_mantel<-physio.T1.High
+                rownames(physio.T1.High_mantel) <- physio.T1.High_mantel[,1] #make first col row names
+
+        vec <- c("S3137","S2001","S490","S2849","S2629","S2911","S1857","S634","S3488","S946","S3475","S3468","S226","S3340","S3458","SN157","S1110","SN134","S3514","SN190","S3479","S670","S3490","S3512","S3025","S2402","S3059","S3513","S1791","SN150","S1068","S1441","S3086","S314","S3482","S3246","S179","S3472","S2142","S1133","S2736","S1943","S3478","S1388")               # Create  vector order
+         physio_T1.High_mantel2 <- physio.T1.High_mantel[match(vec, physio.T1.High_mantel$ID), ]  
+
+        
+        #build matrix  
   #ITS2 T1        
         ITS2.T1.High.mantel<-ITS2.T1.High
         bray.ITS2.T1.High.mantel <- phyloseq::distance(ITS2.T1.High.mantel, method = "bray")
         
   #physio T1 high
-        physio_T1.High_mantel2<-  physio_T1.High_mantel[,3:10]
+        physio_T1.High_mantel2<-  physio_T1.High_mantel2[,3:10]
        physio_T1.High_mantel2<-scale(physio_T1.High_mantel2)
        euc.physio_T1.High_mantel2<- dist(physio_T1.High_mantel2, method = "euclidian")
 
   # Run mantel test
       mantel(euc.physio_T1.High_mantel2,bray.ITS2.T1.High.mantel,  permutations=999)
-    # r=0.08224 p=0.012
+    # r=0.2765 p=0.001
         
 #### T1 Mcap only ####        
  # ITS2_T1_mantel physio_T1_mantel
@@ -2344,9 +2369,8 @@ T1 Amb only
 #ITS: REMOVE: SN161, SN181, SN63
       
 #physio REMOVE: SN222, S1195
-      physio.T1.Amb<-physio.T1.High[!(physio.T1.Amb$ID=="SN222"),]
-            physio.T1.Amb<-physio.T1.High[!(physio.T1.Amb$ID=="S1195"),]
-        physio_T1.Amb_mantel<-physio.T1.Amb #make a copy
+      physio.T1.Amb<-physio.T1.Amb[!(physio.T1.Amb$ID=="SN222"),]
+            physio.T1.Amb<-physio.T1.Amb[!(physio.T1.Amb$ID=="S1195"),]
 
   #remove ITS2  SN161, SN181, SN63
       ITS2.T1.Amb <- subset_samples(ITS2.T1.Amb, ID != "SN161" )
@@ -2360,9 +2384,23 @@ T1 Amb only
         
    
   # reorder ps object so samples are in the same order
-        physio_T1.Amb_mantel <- physio_T1.Amb_mantel[order(physio_T1.Amb_mantel$ID),]
-        physio_T1.Amb_mantel<-na.omit(physio_T1.Amb_mantel)
+        physio_T1.Amb_mantel<-physio.T1.Amb #make a copy
+
+        # physio_T1.Amb_mantel<-na.omit(physio_T1.Amb_mantel)
         rownames(physio_T1.Amb_mantel) <- physio_T1.Amb_mantel[,1] #make first col row names
+
+        
+        
+  
+        vec <- c("S554","S761","S1573","S249","S436","S1254","S2424","S2286","SN124","S809","SN78","SN117","S650","S199","SN37","S284","SN149","S419","S848","S153","S797","SN172","S3035","SN104","S1443","S1895","S431","SN209","SN184","S1418","SN197","SN198","SN192","S1144","SN45","SN126","SN49","S785","SN92","S664","SN89","SN108","SN170")              
+         
+        physio_T1.High_mantel2 <- physio_T1.Amb_mantel[match(vec, physio_T1.Amb_mantel$ID), ]  
+
+        
+        
+        
+        
+        
 #build matrix  
   #ITS2 T1        
         ITS2.T1.Amb.mantel<-ITS2.T1.Amb
@@ -2375,21 +2413,15 @@ T1 Amb only
 
   # Run mantel test
       mantel(uni.ITS2.T1.Amb.mantel, euc.physio_T1.Amb_mantel2,  permutations=999)
-    # r=0.1051  p=0.004
-        
+    # r=0.07357  p=0.012
       
       
-      
-      
-      
-      
-#### T1 Mcap only ####   NOT RUNNING     
+#### T1 Mcap only ####     
  # ITS2.T1.Amb physio_T1.Amb_mantel
     
     #subset df for mcap
-    ITS2_T1.Amb_mantel.Mcap <- subset_samples(ITS2.T1.Amb, Species == "Montipora_capitata")
+    ITS2_T1.Amb_mantel.Mcap <- subset_samples(ITS2.T1.Amb.mantel, Species == "Montipora_capitata")
     ITS2_T1.Amb_mantel.Mcap = prune_taxa(taxa_sums(ITS2_T1.Amb_mantel.Mcap) > 0, ITS2_T1.Amb_mantel.Mcap) 
-    
     physio_T1.Amb_mantel.Mcap  <- subset(physio_T1.Amb_mantel, species == "Montipora_capitata")
 
     #ITS2 T1 mcap dist        
@@ -2417,10 +2449,12 @@ T1 Amb only
       bray.ITS2_T1.Amb_mantel.Pcomp <- phyloseq::distance(ITS2_T1.Amb_mantel.Pcomp, method = "bray")
         
    #physio T1 Pcomp dist
-     euc.physio.T1.Amb.mantel.Pcomp<- dist(physio_T1.Amb_mantel.Pcomp[,3:11], method = "euclidian") 
+      physio_T1.Amb_mantel.Pcomp2<-  physio_T1.Amb_mantel.Pcomp[,3:10]
+       physio_T1.Amb_mantel.Pcomp2<-scale(physio_T1.Amb_mantel.Pcomp2)
+       euc.physio_T1.Amb_mantel.Pcomp2<- dist(physio_T1.Amb_mantel.Pcomp2, method = "euclidian")
 
    # Run mantel test
-      mantel(bray.ITS2_T1.Amb_mantel.Pcomp, euc.physio.T1.Amb.mantel.Pcomp,  permutations=1000)        
+      mantel(bray.ITS2_T1.Amb_mantel.Pcomp, euc.physio_T1.Amb_mantel.Pcomp2,  permutations=1000)        
         
         
   #### T1 Pvar only ####        
@@ -2436,29 +2470,33 @@ T1 Amb only
       bray.ITS2_T1.Amb_mantel.Pvar <- phyloseq::distance(ITS2_T1.Amb_mantel.Pvar, method = "bray")
         
    #physio T1 Pvar dist
-     euc.physio.T1.Amb.mantel.Pvar <-dist(physio_T1.Amb_mantel.Pvar[,3:11], method = "euclidian")  
+       physio_T1.Amb_mantel.Pvar2<-  physio_T1.Amb_mantel.Pvar[,3:10]
+       physio_T1.Amb_mantel.Pvar2<-scale(physio_T1.Amb_mantel.Pvar2)
+       euc.physio_T1.Amb_mantel.Pvar2<- dist(physio_T1.Amb_mantel.Pvar2, method = "euclidian")
 
    # Run mantel test
-      mantel(bray.ITS2_T1.Amb_mantel.Pvar, euc.physio.T1.Amb.mantel.Pvar,  permutations=1000)            
+      mantel(bray.ITS2_T1.Amb_mantel.Pvar, euc.physio_T1.Amb_mantel.Pvar2,  permutations=1000)            
         
         
      #### T1 Pacu only ####        
  # ITS2_T1.Amb_mantel physio_T1.Amb_mantel
     
     #subset df for Pacu
-    ITS2_T1.Amb_mantel.Pacu <- subset_samples(ITS2.T1.Amb.mantel, Species == "Pavona_varians")
+    ITS2_T1.Amb_mantel.Pacu <- subset_samples(ITS2.T1.Amb.mantel, Species == "Pocillopora_acuta")
     ITS2_T1.Amb_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T1.Amb_mantel.Pacu) > 0, ITS2_T1.Amb_mantel.Pacu) 
     
-    physio_T1.Amb_mantel.Pacu  <- subset(physio_T1.Amb_mantel, species == "Pavona_varians")
+    physio_T1.Amb_mantel.Pacu  <- subset(physio_T1.Amb_mantel, species == "Pocillopora_acuta")
 
     #ITS2 T1 Pacu dist        
       bray.ITS2_T1.Amb_mantel.Pacu <- phyloseq::distance(ITS2_T1.Amb_mantel.Pacu, method = "bray")
         
    #physio T1 Pacu dist
-     euc.physio.T1.Amb.mantel.Pacu <- dist(physio_T1.Amb_mantel.Pacu[,3:11], method = "euclidian")  
+      physio_T1.Amb_mantel.Pacu2<-  physio_T1.Amb_mantel.Pacu[,3:10]
+       physio_T1.Amb_mantel.Pacu2<-scale(physio_T1.Amb_mantel.Pacu2)
+       euc.physio_T1.Amb_mantel.Pacu2<- dist(physio_T1.Amb_mantel.Pacu2, method = "euclidian")
 
    # Run mantel test
-      mantel(bray.ITS2_T1.Amb_mantel.Pacu, euc.physio.T1.Amb.mantel.Pacu,  permutations=1000)            
+      mantel(bray.ITS2_T1.Amb_mantel.Pacu, euc.physio_T1.Amb_mantel.Pacu2,  permutations=1000)            
         
         
     
@@ -2471,14 +2509,14 @@ TF High only
 # TF only  #####
 
 #set up ITS2
-    ITS2.TF<-subset_samples(ITS2, Time.Point=="TF")
+    ITS2.TF<-subset_samples(ITS2_T1TF_mantel, Time.Point=="TF")
     ITS2.TF.High<-subset_samples(ITS2.TF, Treatment=="High")
 
     ITS2.TF.High = prune_taxa(taxa_sums(ITS2.TF.High) > 0, ITS2.TF.High) #this removes any OTU with 0s
   # look at sample names
     ITS2.TF.High.sd <- as(sample_data(ITS2.TF.High), "data.frame") #sample df
     #save just sample names
-      ITS2.TF.High.sd.samps<-ITS2.TF.High.sd[['sample_name.1']]
+      ITS2.TF.High.sd.samps<-ITS2.TF.High.sd[['ID']]
  ITS2.TF.High.sd.samps<-as.data.frame(ITS2.TF.High.sd.samps)
       
 #set up physio TF
@@ -2493,80 +2531,75 @@ TF High only
       physio.TF.High.sd<-physio.TF.High.sd[['ID']]
 
       # compare physio to ITS2 at TF
-  #identify missing samples btw datasets     ***** This is not running i think it is a computer issue*** did by hand
-      setdiff(ITS2.TF.High.sd.samps,physio.TF.High.sd) #samples in ITS2 but not phys: REMOVE S1502, S2284, S3481, S3485, S619, S972 REPLACE: S3476b
-      setdiff(physio.TF.High.sd,ITS2.TF.High.sd.samps) #samples in phys but not ITS2:REMOVE: S1771, S2018, S3471, S3474, S3489,S3484 S3515, S3516, S477, S840, SN141, SN212   
+  #samples in ITS2 but not phys: REMOVE S1502, S2284, S3485, S619, S972, SN138 REPLACE: 1166b
+  #samples in phys but not ITS2:REMOVE: S2893, S3484, S3516, S775, SN212   
         
-#16 remove: S1502, S2284, S3481, S3485, S619, S972
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S1502" )
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S2284" )
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S3481" )
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S3485" )
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S619" )
-            ITS2.TF.High <- subset_samples(ITS2.TF.High, sample_name.1 != "S972" )
+#ITS2 remove: S1502, S2284, S3485, S619, S972, SN138
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "S1502" )
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "S2284" )
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "S3485" )
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "S619" )
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "S972" )
+            ITS2.TF.High <- subset_samples(ITS2.TF.High, ID != "SN138" ) #36 samples left
 
-#rename ITS2:S3476b
+#rename ITS2:1166b
     # pull OTU table
      OTU.ITS2TF.High = as(otu_table(ITS2.TF.High), "matrix") #pull otu
        OTU.ITS2TF.High<-as.data.frame(OTU.ITS2TF.High) #make into df
-        row.names(OTU.ITS2TF.High)[21] <- "S3476"   #change row name by row number
+        row.names(OTU.ITS2TF.High)[7] <- "S1166"   #change row name by row number
 
 
     #pull TAX table
      aTax.ITS2TF.High = as(tax_table(ITS2.TF.High), "matrix") #pull tax
-     
-     #pull phy tree table
-     tree.seq.TFHigh = phy_tree(ITS2.TF.High) #pull out tree
 
     #pull SAMPLE DATA
      aSD.ITS2TF.High = as(sample_data(ITS2.TF.High), "matrix") #pull samp.data
      aSD.ITS2TF.High<-as.data.frame(aSD.ITS2TF.High) #change to df
-        row.names(aSD.ITS2TF.High)[21] <- "S3476"  #replace name S208b
+        row.names(aSD.ITS2TF.High)[7] <- "S1166"  #replace name S1166b
 
 
     #remake the phyloseq obj
       samdata = sample_data(aSD.ITS2TF.High)
         seqtab = otu_table(OTU.ITS2TF.High, taxa_are_rows = FALSE)
         taxtab = tax_table(aTax.ITS2TF.High)
-        phy_tree = read_tree(tree.seq.TFHigh)
-          ITS2_TF.High_mantel = phyloseq(otu_table(seqtab), tax_table(taxtab), sample_data(samdata),phy_tree(tree.seq))      
+          ITS2_TF.High_mantel = phyloseq(otu_table(seqtab), tax_table(taxtab), sample_data(samdata))      
       
     
-   #physio - remove samps not in the ITS2 df-  S1771, S2018, S3471, S3474, S3489, S3515, S3516, S477, S840, SN141, SN212  , S3484 
+   #physio - remove samps not in the ITS2 df-  S2893, S3484 ,  S3516, S775, SN212   
 
         physio_TF.High_mantel<-physio.TF.High #make a copy
-        
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S1771"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S2018"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3471"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3474"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3489"),]
+        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S2893"),]
         physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3484"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3515"),]
         physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S3516"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S477"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S840"),]
-        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="SN141"),]
+        physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="S775"),]
         physio_TF.High_mantel<-physio_TF.High_mantel[!(physio_TF.High_mantel$ID=="SN212"),]
 
-
-  
-        # both have 30 obs...
+        # both have 39 obs...
       
   # reorder ps object so samples are in the same order
-        physio_TF.High_mantel <- physio_TF.High_mantel[order(physio_TF.High_mantel$ID),]
+        # physio_TF.High_mantel <- physio_TF.High_mantel[order(physio_TF.High_mantel$ID),]
         rownames(physio_TF.High_mantel) <- physio_TF.High_mantel[,1] #make first col row names
+        
+        
+        vec <- c("S2663","S2328","S3474","S1413","S2948","S2136","S1166","S3444","SN55","S3471","S3467","S3476","S3517","S3491","S3480","S2018","S3470","S1437","S3204","S840","S2879","S3515","S477","S3489","S3486","S3487","S335","S1803","S3383","S473","S3422","S2731","SN141","S3473","S1771","S1526")               # Create  vector order
+         
+        
+        physio_TF.High_mantel <- physio_TF.High_mantel[match(vec, physio_TF.High_mantel$ID), ]  
+       
+        
 #build matrix  
   #ITS2 TF        
-        ITS2_TF.High_mantel2<-ITS2_TF.High_mantel
-        ITS2_TF.High_mantel2 <- phyloseq::distance(ITS2_TF.High_mantel2, method = "bray")
+        ITS2_TF.High_mantel2<-ITS2_TF.High_mantel  
+        ITS2_TF.High_mantel3 <- phyloseq::distance(ITS2_TF.High_mantel2, method = "bray")
         
   #physio TF high
-   euc.physio_TF.High_mantel <- dist(physio_TF.High_mantel[,3:11], method = "euclidian") 
-
-  # Run mantel test
-      mantel(ITS2_TF.High_mantel2, euc.physio_TF.High_mantel,  permutations=999)
-    # r=-0.1817 . p=0.997
+         physio_TF.High_mantel2<-  physio_TF.High_mantel[,3:10]
+       physio_TF.High_mantel3<-scale(physio_TF.High_mantel2)
+       euc.physio_TF.High_mantel4<- dist(physio_TF.High_mantel3, method = "euclidian")
+       
+# Run mantel test
+      mantel(ITS2_TF.High_mantel3, euc.physio_TF.High_mantel4,  permutations=999)
+    # r=0.2281 . p=0.001
         
 #### TF Mcap only ####        
  # ITS2_TF_mantel physio_TF_mantel
@@ -2581,10 +2614,11 @@ TF High only
       bray.ITS2_TF.High_mantel.Mcap <- phyloseq::distance(ITS2_TF.High_mantel.Mcap, method = "bray")
         
    #physio TF mcap dist
-     euc.physio.TF.High.mantel.Mcap  <- dist(physio_TF.High_mantel.Mcap[,3:11], method = "euclidian") 
-
+    physio_TF.High_mantel.Mcap2<-  physio_TF.High_mantel.Mcap[,3:10]
+       physio_TF.High_mantel.Mcap3<-scale(physio_TF.High_mantel.Mcap2)
+       physio_TF.High_mantel.Mcap4<- dist(physio_TF.High_mantel.Mcap3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.High_mantel.Mcap, euc.physio.TF.High.mantel.Mcap,  permutations=1000)
+      mantel(bray.ITS2_TF.High_mantel.Mcap, physio_TF.High_mantel.Mcap4,  permutations=1000)
     
 #### TF Pcomp only ####        
  # ITS2_TF.High_mantel physio_TF.High_mantel
@@ -2599,10 +2633,11 @@ TF High only
       bray.ITS2_TF.High_mantel.Pcomp <- phyloseq::distance(ITS2_TF.High_mantel.Pcomp, method = "bray")
         
    #physio TF Pcomp dist
-     euc.physio.TF.mantel.Pcomp<- dist(physio_TF.High_mantel.Pcomp[,3:11], method = "euclidian") 
-
+ physio_TF.High_mantel.Pcomp2<-  physio_TF.High_mantel.Pcomp[,3:10]
+       physio_TF.High_mantel.Pcomp3<-scale(physio_TF.High_mantel.Pcomp2)
+       physio_TF.High_mantel.Pcomp4<- dist(physio_TF.High_mantel.Pcomp3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.High_mantel.Pcomp, euc.physio.TF.mantel.Pcomp,  permutations=1000)        
+      mantel(bray.ITS2_TF.High_mantel.Pcomp, physio_TF.High_mantel.Pcomp4,  permutations=1000)        
         
         
   #### TF Pvar only ####        
@@ -2618,29 +2653,32 @@ TF High only
       bray.ITS2_TF.High_mantel.Pvar <- phyloseq::distance(ITS2_TF.High_mantel.Pvar, method = "bray")
         
    #physio TF Pvar dist
-     euc.physio.TF.mantel.Pvar <-dist(physio_TF.High_mantel.Pvar[,3:11], method = "euclidian")  
-
+ physio_TF.High_mantel.Pvar2<-  physio_TF.High_mantel.Pvar[,3:10]
+       physio_TF.High_mantel.Pvar3<-scale(physio_TF.High_mantel.Pvar2)
+       physio_TF.High_mantel.Pvar4<- dist(physio_TF.High_mantel.Pvar3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.High_mantel.Pvar, euc.physio.TF.mantel.Pvar,  permutations=1000)            
+      mantel(bray.ITS2_TF.High_mantel.Pvar, physio_TF.High_mantel.Pvar4,  permutations=1000)            
         
         
      #### TF Pacu only ####        
  # ITS2_TF.High_mantel physio_TF.High_mantel
     
     #subset df for Pacu
-    ITS2_TF.High_mantel.Pacu <- subset_samples(ITS2_TF.High_mantel, Species == "Pavona_varians")
+    ITS2_TF.High_mantel.Pacu <- subset_samples(ITS2_TF.High_mantel, Species == "Pocillopora_acuta")
     ITS2_TF.High_mantel.Pacu = prune_taxa(taxa_sums(ITS2_TF.High_mantel.Pacu) > 0, ITS2_TF.High_mantel.Pacu) 
     
-    physio_TF.High_mantel.Pacu  <- subset(physio_TF.High_mantel, species == "Pavona_varians")
+    physio_TF.High_mantel.Pacu  <- subset(physio_TF.High_mantel, species == "Pocillopora_acuta")
 
     #ITS2 TF Pacu dist        
       bray.ITS2_TF.High_mantel.Pacu <- phyloseq::distance(ITS2_TF.High_mantel.Pacu, method = "bray")
         
    #physio TF Pacu dist
-     euc.physio.TF.mantel.Pacu <- dist(physio_TF.High_mantel.Pacu[,3:11], method = "euclidian")  
-
+ physio_TF.High_mantel.Pacu2<-  physio_TF.High_mantel.Pacu[,3:10]
+       physio_TF.High_mantel.Pacu3<-scale(physio_TF.High_mantel.Pacu2)
+       physio_TF.High_mantel.Pacu4<- dist(physio_TF.High_mantel.Pacu3, method = "euclidian")
+       
    # Run mantel test
-      mantel(bray.ITS2_TF.High_mantel.Pacu, euc.physio.TF.mantel.Pacu,  permutations=1000)            
+      mantel(bray.ITS2_TF.High_mantel.Pacu, physio_TF.High_mantel.Pacu4,  permutations=1000)            
         
         
     
@@ -2653,157 +2691,174 @@ TF Amb only
 # TF only  #####
 
 #set up ITS2
-    ITS2.TF<-subset_samples(ITS2, Time.Point=="TF")
-    ITS2.TF.Ambient<-subset_samples(ITS2.TF, Treatment=="Ambient")
+    ITS2.TF<-subset_samples(ITS2_T1TF_mantel, Time.Point=="TF")
+    ITS2.TF.Amb<-subset_samples(ITS2.TF, Treatment=="Ambient")
 
-    ITS2.TF.Ambient = prune_taxa(taxa_sums(ITS2.TF.Ambient) > 0, ITS2.TF.Ambient) #this removes any OTU with 0s
+    ITS2.TF.Amb = prune_taxa(taxa_sums(ITS2.TF.Amb) > 0, ITS2.TF.Amb) #this removes any OTU with 0s
   # look at sample names
-    ITS2.TF.Ambient.sd <- as(sample_data(ITS2.TF.Ambient), "data.frame") #sample df
+    ITS2.TF.Amb.sd <- as(sample_data(ITS2.TF.Amb), "data.frame") #sample df
     #save just sample names
-      ITS2.TF.Ambient.sd.samps<-ITS2.TF.Ambient.sd[['sample_name.1']]
- ITS2.TF.Ambient.sd.samps<-as.data.frame(ITS2.TF.Ambient.sd.samps)
+      ITS2.TF.Amb.sd.samps<-ITS2.TF.Amb.sd[['ID']]
+ ITS2.TF.Amb.sd.samps<-as.data.frame(ITS2.TF.Amb.sd.samps)
       
 #set up physio TF
       
       physio.TF<-subset(physio, time.point=="TF")
-            physio.TF.Ambient<-subset(physio.TF, treatment=="Ambient")
-      physio.TF.Ambient<-physio.TF.Ambient[,c(1,5,15:23)]
+            physio.TF.Amb<-subset(physio.TF, treatment=="Ambient")
+      physio.TF.Amb<-physio.TF.Amb[,c(1,5,15:23)]
 
   # look at sample names
-    physio.TF.Ambient.sd <- as(sample_data(physio.TF.Ambient), "data.frame") #sample df
+    physio.TF.Amb.sd <- as(sample_data(physio.TF.Amb), "data.frame") #sample df
   #save just sample names
-      physio.TF.Ambient.sd<-physio.TF.Ambient.sd[['ID']]
+      physio.TF.Amb.sd<-physio.TF.Amb.sd[['ID']]
 
       # compare physio to ITS2 at TF
-  #identify missing samples btw datasets     ***** This is not running i think it is a computer issue*** did by hand
-      setdiff(ITS2.TF.Ambient.sd.samps,physio.TF.Ambient.sd) #samples in ITS2 but not phys: REMOVE: S1226, S1688. S2214, S2226, S377. S471. S955. SN110 SN158, SN169, SN217, 
-      setdiff(physio.TF.Ambient.sd,ITS2.TF.Ambient.sd.samps) #samples in phys but not ITS2:REMOVE:SN42 REAL: S3317, S779, SN102, SN208, S1279 S 1556 S785b
+  #samples in ITS2 but not phys: REMOVE: S1226, S1688. S2214, S2226, S377, S471, S955, SN110 SN158, SN169, SN217b,SN183, SN223, SN42, S1556, S1688, S1736, S2214, S2226, S3081
+  #samples in phys but not ITS2:REMOVE: S1104, S3081,       REPLACE: S785b  
+        
+#ITS2 remove:  S1226, S1688. S2214, S2226, S377. S471, S955, SN110 SN158, SN169, SN217b,SN183, SN223, SN42,   S1556, S1688, S1736, S2214, S2226, S3081
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S1226" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S1688" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S2214" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S2226" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S377" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S471" ) 
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S955" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN110" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN158" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN169" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN217b" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN183" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN223" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "SN42" )
+                        ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S1556" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S1688" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S1736" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S2214" )
+                        ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S2226" )
+            ITS2.TF.Amb <- subset_samples(ITS2.TF.Amb, ID != "S3081" )
+            #28 samples left
+
+          ITS2_TF.Amb_mantel <- ITS2.TF.Amb     
       
+    
+   #physio - remove samps not in the ITS2 df-  REMOVE: S1104, S3081,       
+        physio_TF.Amb_mantel<-physio.TF.Amb #make a copy
+        physio_TF.Amb_mantel<-physio_TF.Amb_mantel[!(physio_TF.Amb_mantel$ID=="S1104"),]
+           physio_TF.Amb_mantel<-physio_TF.Amb_mantel[!(physio_TF.Amb_mantel$ID=="S3081"),]
+
+          physio_TF.Amb_mantel
+          
       
-#16 remove: S1226, S1688, S2214, S2226, S377 S471 S955 SN110 SN158, SN169, SN217, SN42 S785b
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S1226" )
-                        ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S1556" )
-                        ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S785b" )
-
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S1688" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S2214" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S2226" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S377" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S471" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "S955" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "SN110" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "SN158" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "SN169" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "SN217" )
-            ITS2.TF.Ambient <- subset_samples(ITS2.TF.Ambient, sample_name.1 != "SN42" )
-
-
-   #physio - remove samps not in the ITS2 df-  S1226, S1688. S2214, S2226, S377 S471 S955 SN110 SN158, SN169, SN217, SN42
-
-        physio_TF.Ambient_mantel<-physio.TF.Ambient #make a copy
-        
-        physio_TF.Ambient_mantel<-physio_TF.Ambient_mantel[!(physio_TF.Ambient_mantel$ID=="S3317"),]
-        physio_TF.Ambient_mantel<-physio_TF.Ambient_mantel[!(physio_TF.Ambient_mantel$ID=="S779"),]
-        physio_TF.Ambient_mantel<-physio_TF.Ambient_mantel[!(physio_TF.Ambient_mantel$ID=="SN102"),]
-        physio_TF.Ambient_mantel<-physio_TF.Ambient_mantel[!(physio_TF.Ambient_mantel$ID=="SN208"),]
-        physio_TF.Ambient_mantel<-physio_TF.Ambient_mantel[!(physio_TF.Ambient_mantel$ID=="S1279"),]
-
-        
-        
-
-        # both have 27 obs...
       
   # reorder ps object so samples are in the same order
-        physio_TF.Ambient_mantel <- physio_TF.Ambient_mantel[order(physio_TF.Ambient_mantel$ID),]
-        rownames(physio_TF.Ambient_mantel) <- physio_TF.Ambient_mantel[,1] #make first col row names
+        # physio_TF.Amb_mantel <- physio_TF.Amb_mantel[order(physio_TF.Amb_mantel$ID),]
+        rownames(physio_TF.Amb_mantel) <- physio_TF.Amb_mantel[,1] #make first col row names
+        
+        
+        vec <- c("S420","S832","S422","S3442","S3337","SN189","SN211","SN131","S579","SN122","SN98","SN115","SN205","SN77","SN105","SN208","SN152","S3164","SN132","S779","S1061","S1037","SN191","S3317","S1279","SN96","SN102","S403")               # Create  vector order
+         
+        
+        physio_TF.Amb_mantel <- physio_TF.Amb_mantel[match(vec, physio_TF.Amb_mantel$ID), ]  
+       
+        
 #build matrix  
   #ITS2 TF        
-        ITS2_TF.Ambient_mantel2<-ITS2.TF.Ambient
-        ITS2_TF.Ambient_mantel2 <- phyloseq::distance(ITS2_TF.Ambient_mantel2, method = "bray")
+        ITS2_TF.Amb_mantel2<-ITS2_TF.Amb_mantel  
+        ITS2_TF.Amb_mantel3 <- phyloseq::distance(ITS2_TF.Amb_mantel2, method = "bray")
         
-  #physio TF Ambient
-   euc.physio_TF.Ambient_mantel <- dist(physio_TF.Ambient_mantel[,3:11], method = "euclidian") 
-
-  # Run mantel test
-      mantel(ITS2_TF.Ambient_mantel2, euc.physio_TF.Ambient_mantel,  permutations=999)
-    # r=-0.1817 . p=0.997
+  #physio TF Amb
+         physio_TF.Amb_mantel2<-  physio_TF.Amb_mantel[,3:10]
+       physio_TF.Amb_mantel3<-scale(physio_TF.Amb_mantel2)
+       euc.physio_TF.Amb_mantel4<- dist(physio_TF.Amb_mantel3, method = "euclidian")
+       
+# Run mantel test
+      mantel(ITS2_TF.Amb_mantel3, euc.physio_TF.Amb_mantel4,  permutations=999)
+    # r=0.2525 . p=0.001
         
 #### TF Mcap only ####        
  # ITS2_TF_mantel physio_TF_mantel
     
     #subset df for mcap
-    ITS2_TF.Ambient_mantel.Mcap <- subset_samples(ITS2.TF.Ambient, Species == "Montipora_capitata")
-    ITS2_TF.Ambient_mantel.Mcap = prune_taxa(taxa_sums(ITS2_TF.Ambient_mantel.Mcap) > 0, ITS2_TF.Ambient_mantel.Mcap) 
+    ITS2_TF.Amb_mantel.Mcap <- subset_samples(ITS2_TF.Amb_mantel, Species == "Montipora_capitata")
+    ITS2_TF.Amb_mantel.Mcap = prune_taxa(taxa_sums(ITS2_TF.Amb_mantel.Mcap) > 0, ITS2_TF.Amb_mantel.Mcap) 
     
-    physio_TF.Ambient_mantel.Mcap  <- subset(physio_TF.Ambient_mantel, species == "Montipora_capitata")
+    physio_TF.Amb_mantel.Mcap  <- subset(physio_TF.Amb_mantel, species == "Montipora_capitata")
 
     #ITS2 TF mcap dist        
-      bray.ITS2_TF.Ambient_mantel.Mcap <- phyloseq::distance(ITS2_TF.Ambient_mantel.Mcap, method = "bray")
+      bray.ITS2_TF.Amb_mantel.Mcap <- phyloseq::distance(ITS2_TF.Amb_mantel.Mcap, method = "bray")
         
    #physio TF mcap dist
-     euc.physio.TF.Ambient.mantel.Mcap  <- dist(physio_TF.Ambient_mantel.Mcap[,3:11], method = "euclidian") 
+       physio_TF.Amb_mantel.Mcap2<-  physio_TF.Amb_mantel.Mcap[,3:10]
+       physio_TF.Amb_mantel.Mcap3<-scale(physio_TF.Amb_mantel.Mcap2)
+       physio_TF.Amb_mantel.Mcap4<- dist(physio_TF.Amb_mantel.Mcap3, method = "euclidian")
+       
 
    # Run mantel test
-      mantel(bray.ITS2_TF.Ambient_mantel.Mcap, euc.physio.TF.Ambient.mantel.Mcap,  permutations=1000)
+      mantel(bray.ITS2_TF.Amb_mantel.Mcap, physio_TF.Amb_mantel.Mcap4,  permutations=1000)
     
 #### TF Pcomp only ####        
- # ITS2_TF.Ambient_mantel physio_TF.Ambient_mantel
+ # ITS2_TF.Amb_mantel physio_TF.Amb_mantel
     
     #subset df for Pcomp
-    ITS2_TF.Ambient_mantel.Pcomp <- subset_samples(ITS2.TF.Ambient, Species == "Porites_compressa")
-    ITS2_TF.Ambient_mantel.Pcomp = prune_taxa(taxa_sums(ITS2_TF.Ambient_mantel.Pcomp) > 0, ITS2_TF.Ambient_mantel.Pcomp) 
+    ITS2_TF.Amb_mantel.Pcomp <- subset_samples(ITS2_TF.Amb_mantel, Species == "Porites_compressa")
+    ITS2_TF.Amb_mantel.Pcomp = prune_taxa(taxa_sums(ITS2_TF.Amb_mantel.Pcomp) > 0, ITS2_TF.Amb_mantel.Pcomp) 
     
-    physio_TF.Ambient_mantel.Pcomp  <- subset(physio_TF.Ambient_mantel, species == "Porites_compressa")
+    physio_TF.Amb_mantel.Pcomp  <- subset(physio_TF.Amb_mantel, species == "Porites_compressa")
 
     #ITS2 TF Pcomp dist        
-      bray.ITS2_TF.Ambient_mantel.Pcomp <- phyloseq::distance(ITS2_TF.Ambient_mantel.Pcomp, method = "bray")
+      bray.ITS2_TF.Amb_mantel.Pcomp <- phyloseq::distance(ITS2_TF.Amb_mantel.Pcomp, method = "bray")
         
    #physio TF Pcomp dist
-     euc.physio.TF.mantel.Pcomp<- dist(physio_TF.Ambient_mantel.Pcomp[,3:11], method = "euclidian") 
-
+       physio_TF.Amb_mantel.Pcom2<-  physio_TF.Amb_mantel.Pcomp[,3:10]
+       physio_TF.Amb_mantel.Pcom3<-scale(physio_TF.Amb_mantel.Pcom2)
+       physio_TF.Amb_mantel.Pcom4<- dist(physio_TF.Amb_mantel.Pcom3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.Ambient_mantel.Pcomp, euc.physio.TF.mantel.Pcomp,  permutations=1000)        
+      mantel(bray.ITS2_TF.Amb_mantel.Pcomp, physio_TF.Amb_mantel.Pcom4,  permutations=1000)        
         
         
   #### TF Pvar only ####        
- # ITS2_TF.Ambient_mantel physio_TF.Ambient_mantel
+ # ITS2_TF.Amb_mantel physio_TF.Amb_mantel
     
     #subset df for Pvar
-    ITS2_TF.Ambient_mantel.Pvar <- subset_samples(ITS2.TF.Ambient, Species == "Pavona_varians")
-    ITS2_TF.Ambient_mantel.Pvar = prune_taxa(taxa_sums(ITS2_TF.Ambient_mantel.Pvar) > 0, ITS2_TF.Ambient_mantel.Pvar) 
+    ITS2_TF.Amb_mantel.Pvar <- subset_samples(ITS2_TF.Amb_mantel, Species == "Pavona_varians")
+    ITS2_TF.Amb_mantel.Pvar = prune_taxa(taxa_sums(ITS2_TF.Amb_mantel.Pvar) > 0, ITS2_TF.Amb_mantel.Pvar) 
     
-    physio_TF.Ambient_mantel.Pvar  <- subset(physio_TF.Ambient_mantel, species == "Pavona_varians")
+    physio_TF.Amb_mantel.Pvar  <- subset(physio_TF.Amb_mantel, species == "Pavona_varians")
 
     #ITS2 TF Pvar dist        
-      bray.ITS2_TF.Ambient_mantel.Pvar <- phyloseq::distance(ITS2_TF.Ambient_mantel.Pvar, method = "bray")
+      bray.ITS2_TF.Amb_mantel.Pvar <- phyloseq::distance(ITS2_TF.Amb_mantel.Pvar, method = "bray")
         
    #physio TF Pvar dist
-     euc.physio.TF.mantel.Pvar <-dist(physio_TF.Ambient_mantel.Pvar[,3:11], method = "euclidian")  
-
+     physio_TF.Amb_mantel.Pvar2<-  physio_TF.Amb_mantel.Pvar[,3:10]
+       physio_TF.Amb_mantel.Pvar3<-scale(physio_TF.Amb_mantel.Pvar2)
+       physio_TF.Amb_mantel.Pvar4<- dist(physio_TF.Amb_mantel.Pvar3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.Ambient_mantel.Pvar, euc.physio.TF.mantel.Pvar,  permutations=1000)            
+      mantel(bray.ITS2_TF.Amb_mantel.Pvar, physio_TF.Amb_mantel.Pvar4,  permutations=1000)            
         
         
      #### TF Pacu only ####        
- # ITS2_TF.Ambient_mantel physio_TF.Ambient_mantel
+ # ITS2_TF.Amb_mantel physio_TF.Amb_mantel
     
     #subset df for Pacu
-    ITS2_TF.Ambient_mantel.Pacu <- subset_samples(ITS2.TF.Ambient, Species == "Pavona_varians")
-    ITS2_TF.Ambient_mantel.Pacu = prune_taxa(taxa_sums(ITS2_TF.Ambient_mantel.Pacu) > 0, ITS2_TF.Ambient_mantel.Pacu) 
+    ITS2_TF.Amb_mantel.Pacu <- subset_samples(ITS2_TF.Amb_mantel, Species == "Pocillopora_acuta")
+    ITS2_TF.Amb_mantel.Pacu = prune_taxa(taxa_sums(ITS2_TF.Amb_mantel.Pacu) > 0, ITS2_TF.Amb_mantel.Pacu) 
     
-    physio_TF.Ambient_mantel.Pacu  <- subset(physio_TF.Ambient_mantel, species == "Pavona_varians")
+    physio_TF.Amb_mantel.Pacu  <- subset(physio_TF.Amb_mantel, species == "Pocillopora_acuta")
 
     #ITS2 TF Pacu dist        
-      bray.ITS2_TF.Ambient_mantel.Pacu <- phyloseq::distance(ITS2_TF.Ambient_mantel.Pacu, method = "bray")
+      bray.ITS2_TF.Amb_mantel.Pacu <- phyloseq::distance(ITS2_TF.Amb_mantel.Pacu, method = "bray")
         
    #physio TF Pacu dist
-     euc.physio.TF.mantel.Pacu <- dist(physio_TF.Ambient_mantel.Pacu[,3:11], method = "euclidian")  
-
+        physio_TF.Amb_mantel.Pacu2<-  physio_TF.Amb_mantel.Pacu[,3:10]
+       physio_TF.Amb_mantel.Pacu3<-scale(physio_TF.Amb_mantel.Pacu2)
+       physio_TF.Amb_mantel.Pacu4<- dist(physio_TF.Amb_mantel.Pacu3, method = "euclidian")
    # Run mantel test
-      mantel(bray.ITS2_TF.Ambient_mantel.Pacu, euc.physio.TF.mantel.Pacu,  permutations=1000)            
+      mantel(bray.ITS2_TF.Amb_mantel.Pacu, physio_TF.Amb_mantel.Pacu4,  permutations=1000)            
         
         
     
 
 
 ```
+
