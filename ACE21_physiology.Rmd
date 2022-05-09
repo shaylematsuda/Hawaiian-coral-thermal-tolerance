@@ -3132,6 +3132,8 @@ data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C
 data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
 
+#write.csv(data_McapBW,"data_McapBW.csv")
+
 ##calc BW for Mcap in general (T0-T1 ambient only) 
 # data_McapBW.amb<-subset(data_McapBW, Treatment=="Ambient")
 # write.csv(data_McapBW.amb,"data_McapBW.amb.csv")

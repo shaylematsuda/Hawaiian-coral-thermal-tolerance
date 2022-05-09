@@ -5688,3 +5688,268 @@ dev.off()
 
 
 ```
+
+
+
+#Profiles/CLades JUST for visualization, not stats
+THIS IS FOR UROP growth-tradeoffs
+```{r}         
+## check out data
+ntaxa(coral2)  #num taxa
+nsamples(coral2)   #num samples
+sample_names(coral2)[1:5] #samp names
+rank_names(coral2) #ranks are DIV and clade
+sample_variables(coral2) #all metadata cats
+
+# create df of sample data to view 
+sample.data <- as(sample_data(coral2), "data.frame") #create sample data frame to view
+sample.data$LibrarySize <- sample_sums(coral2)
+sample.data <- sample.data[order(sample.data$LibrarySize),]
+sample.data$Index <- seq(nrow(sample.data))
+ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
+  geom_point()
+
+#Remove all samples with <5000 reads and create sample data
+#These data also useful for beta diversity analyses (non-rarefied)
+coral2_nonrare <- prune_samples(sample_sums(coral2)>=5000, coral2) # remove samps <5000, save as new obj
+coral2_data.nonrare <- as(sample_data(coral2_nonrare), "data.frame")
+
+##Sample filtering and rarefaction
+#remove duplicates that failed
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1110B")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1166")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1388b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1857")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3085")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3149b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3149")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3477a")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S761b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S775b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN134")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN198b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN209b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S3085b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S1857")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S761b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S198b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN127")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "SN98b")
+coral2_nonrare <- subset_samples(coral2_nonrare, ID != "S2893")
+
+coral2_data.nonrare <- as(sample_data(coral2_nonrare), "data.frame")
+
+#saveRDS(coral2_nonrare, file = "coral2_nonrare.RDS", compress = TRUE) #s
+
+#Make a rarefied phyloseq object for alpha diversity analyses
+coral2_rare <- rarefy_even_depth(coral2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
+sample_sums(coral2_rare) #Double check that the sub-sampling worked, this should report 1000 for each sample
+coral2.rare <- as(sample_data(coral2_rare), "data.frame")
+coral2_rare
+#saveRDS(coral2_rare, file = "coral2_rare.RDS", compress = TRUE) #save!
+
+coral2_rare2<-coral2_rare
+# Fill in clade col for the sep clade groups for each speices ####
+ 
+tax  = tax_table(coral2_rare2)
+otu  = otu_table(coral2_rare2)
+# # pull out sample data
+ sd = sample_data(coral2_rare2)
+ sd$Clade<-as.character(sd$Clade)
+
+# EDIT sample data
+ #Pcomp
+  sd$Clade[sd$Parent.ID==314]<-"C15cj"
+  sd$Clade[sd$Parent.ID==317]<-"C15cj"
+  sd$Clade[sd$Parent.ID==319]<-"C15cj"
+  sd$Clade[sd$Parent.ID==320]<-"C15cj"
+  sd$Clade[sd$Parent.ID==321]<-"C15cj"
+  sd$Clade[sd$Parent.ID==322]<-"C15cj"
+  sd$Clade[sd$Parent.ID==313]<-"C15n"
+  sd$Clade[sd$Parent.ID==315]<-"C15n"
+  sd$Clade[sd$Parent.ID==316]<-"C15n"
+  sd$Clade[sd$Parent.ID==318]<-"C15n"
+  sd$Clade[sd$Parent.ID==323]<-"C15n"
+  sd$Clade[sd$Parent.ID==324]<-"C15n"
+  
+  #Pvar
+  sd$Clade[sd$Parent.ID==353]<-"C1"
+  sd$Clade[sd$Parent.ID==358]<-"C1"
+  sd$Clade[sd$Parent.ID==361]<-"C1"
+  sd$Clade[sd$Parent.ID==325]<-"C1"
+  sd$Clade[sd$Parent.ID==356]<-"C1"
+  sd$Clade[sd$Parent.ID==351]<-"C27"
+  sd$Clade[sd$Parent.ID==354]<-"C27"
+  sd$Clade[sd$Parent.ID==355]<-"C27"
+  sd$Clade[sd$Parent.ID==357]<-"C27"
+  sd$Clade[sd$Parent.ID==359]<-"C27"
+  sd$Clade[sd$Parent.ID==360]<-"C27"
+  sd$Clade[sd$Parent.ID==362]<-"C27"
+  
+#Pacu
+  sd$Clade[sd$Parent.ID==311]<-"C42"
+  sd$Clade[sd$Parent.ID==301]<-"CCC"
+  sd$Clade[sd$Parent.ID==304]<-"CCC"
+  sd$Clade[sd$Parent.ID==306]<-"CCC"
+  sd$Clade[sd$Parent.ID==303]<-"CCC"
+  sd$Clade[sd$Parent.ID==307]<-"CCC"
+  sd$Clade[sd$Parent.ID==308]<-"CCC"
+  sd$Clade[sd$Parent.ID==310]<-"CCC"
+  sd$Clade[sd$Parent.ID==312]<-"CCC"
+  sd$Clade[sd$Parent.ID==302]<-"CCC"
+  sd$Clade[sd$Parent.ID==305]<-"C42"
+  sd$Clade[sd$Parent.ID==309]<-"C42"
+  
+  sd$Clade<-as.factor(sd$Clade) #change to factor
+
+   coral2_rare2<-merge_phyloseq(tax, otu, sd)
+   coral2_rare2
+coral2_rare2.sd <- as(sample_data(coral2_rare2), "data.frame") #create sample data frame to view
+
+```
+
+# clade analysis and plots, use rarefied coral2_rare2. 
+FOR UROP
+```{r}       
+#RELA 
+clade_RelA  = transform_sample_counts(coral2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
+data.ra <- as(sample_data(clade_RelA), "data.frame") #look at samp data
+#write.csv(data.ra, "clade_its2_sampledata.csv")
+
+# pull df sections for craig 
+
+# OTU1 = as(otu_table(clade_RelA), "matrix")
+# # transpose if necessary
+# if(taxa_are_rows(clade_RelA)){OTU1 <- t(OTU1)}
+# # Coerce to data.frame
+# OTUdf = as.data.frame(OTU1)
+# write.csv(OTUdf, "clade_its2.csv")
+
+
+
+
+ 
+
+
+
+# there are >300 taxa, let's prune to top 100
+topN = 100
+most_abundant_taxa = sort(taxa_sums(clade_RelA), TRUE)[1:topN]
+print(most_abundant_taxa)
+
+#top100 DIVs across all data
+TopNOTUs = names(sort(taxa_sums(clade_RelA), TRUE)[1:100])
+ent100 = prune_taxa(TopNOTUs, clade_RelA)
+plot_bar(ent100, "Species", fill = "clade", facet_grid = ~clade)
+
+#subset by species
+Mcap_clade_RA <- subset_samples(clade_RelA, host_genus=="montipora")
+Pcomp_clade_RA <- subset_samples(clade_RelA, host_genus=="porites")
+Pvar_clade_RA <- subset_samples(clade_RelA, host_genus=="pavona")
+Pacu_clade_RA <- subset_samples(clade_RelA, host_genus=="pocillopora")
+
+# clades across by species 
+
+#Mcap
+
+McapBarPlot<-plot_bar(Mcap_clade_RA, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");McapBarPlot
+#ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
+nb.cols <- 2
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcapent50, aes(x = Parent.ID, y = Abundance, fill = clade)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+Mcap_its2.melt <- psmelt(Mcap_clade_RA)
+
+## Pull out dataframe for %C and D
+Mcap_its2.melt2<-Mcap_its2.melt[c(2,3,13:16,23)]
+Mcap_its2.melt3<-Mcap_its2.melt2 %>%
+  filter(Abundance>0)
+
+#remove rows with D, and keep as %C and ambient only
+Mcap_its2.melt4<-Mcap_its2.melt3 %>%
+  filter(clade=="C", Treatment=="Ambient")
+names(Mcap_its2.melt4)[1]<-"Frag.ID" 
+
+Mcap_its2.melt4<-Mcap_its2.melt4[c(1:4)] #keep cols
+
+Mcap_its2.melt4<-Mcap_its2.melt4 %>%
+  group_by(Frag.ID)%>%
+  summarize(Sum=sum(Abundance))
+names(Mcap_its2.melt4)[2]<-"Percent.C" 
+
+
+# average by parent
+# Mcap_its2.melt5<-Mcap_its2.melt4 %>%
+# group_by(Parent.ID)%>%
+#   summarize(Mean=mean(Abundance))
+
+# pull in df of growth over time from physio rmd
+Mcap.BW.df<-read.csv("data_McapBW.csv")
+Mcap.BW.df2<-Mcap.BW.df[c(2,3,14)] #keep cols
+Mcap.BW.df3<-Mcap.BW.df2 %>%
+  filter(Treatment=="Ambient") %>%
+  filter(time1.growth>0)
+
+#read in physio metadata
+meta  <- read.csv("Data/Master_Metadata_20190402.csv")
+meta2<-meta[c(1:2)] #keep cols
+
+
+ Mcap.BW.df3<- left_join(Mcap.BW.df3, meta2, by="Frag.ID")
+Mcap.BW.df3$Parent.ID<-as.factor(as.character(Mcap.BW.df3$Parent.ID))
+Mcap.BW.df3$Frag.ID<-paste("S",Mcap.BW.df3$Frag.ID, sep="") #add an S to fragID
+
+
+Mcap_its2.melt6<-  left_join(Mcap.BW.df3,Mcap_its2.melt4, by="Frag.ID")
+Mcap_its2.melt6<-na.omit(Mcap_its2.melt6) #remove 2 samples with no ITS2 data (we do have parent, so could add that)
+ 
+ p<-ggplot(Mcap_its2.melt6, aes(Percent.C, time1.growth ) )
+ p + geom_point()+
+       geom_smooth(method=lm) #add linear trend line
+
+ 
+ 
+
+#Mcap C and CD
+#C
+Mcap_clade_RA.C<-subset_samples(Mcap_clade_RA, Clade=="C")
+TopNOTUsMcap.C = names(sort(taxa_sums(Mcap_clade_RA.C), TRUE)[1:50])
+Mcap.50.C = prune_taxa(TopNOTUsMcap.C, Mcap_clade_RA.C)
+McapBarPlot.C<-plot_bar(Mcap.50.C, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");McapBarPlot.C
+#ggsave("McapBarPlot_clade_C.pdf", McapBarPlot.C, dpi=300, width=8)
+
+#CD
+Mcap_clade_RA.CD<-subset_samples(Mcap_clade_RA, Clade=="CD")
+TopNOTUsMcap.CD = names(sort(taxa_sums(Mcap_clade_RA.CD), TRUE)[1:50])
+Mcap.50.CD = prune_taxa(TopNOTUsMcap.CD, Mcap_clade_RA.CD)
+McapBarPlot.CD<-plot_bar(Mcap.50.CD, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");McapBarPlot.CD
+#ggsave("McapBarPlot_clade_CD.pdf", McapBarPlot.CD, dpi=300, width=8)
+
+
+#Pcomp
+TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_clade_RA), TRUE)[1:10])
+Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_clade_RA )
+PcompBarPlot<-plot_bar(Pcompent50, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");PcompBarPlot
+#ggsave("PcompBarPlot_DIVrelARare.pdf", PcompBarPlot, dpi=300, width=8)
+
+#Pvar
+TopNOTUsVar = names(sort(taxa_sums(Pvar_clade_RA), TRUE)[1:10])
+Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_clade_RA)
+PvarBarPlot<-plot_bar(Pvarent50, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");PvarBarPlot
+#ggsave("PvarBarPlot_DIVrelARare.pdf", PvarBarPlot, dpi=300, width=8)
+
+#Pacu
+TopNOTUsPacu = names(sort(taxa_sums(Pacu_clade_RA), TRUE)[1:50])
+Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_clade_RA)
+PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="clade", facet_grid = "Time.Point~Treatment");PacuBarPlot
+#ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
+
+```
+

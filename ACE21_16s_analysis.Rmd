@@ -3137,15 +3137,128 @@ write.csv(ARC.16s.samples, "Arc.16s.samples.csv")
 
 ```
 
-#Permanova UNIFRAC by ASV (no filter) to compare with above
+#Permanova UNIFRAC by ASV (no filter) Adonis
 ```{r}         
 Bac.s.rel.u<-Bac.s.rel #make a copy
+#saveRDS(Bac.s.rel.u, file = "16S_rel.u.rds")
 
-saveRDS(Bac.s.rel.u, file = "16S_rel.u.rds")
+# New section running the models on all timepionts together 20220506 ####
+Bac.s.rel.u.AllTime<-Bac.s.rel.u
+    Bac.s.rel.u.AllTime = prune_taxa(taxa_sums(Bac.s.rel.u.AllTime) > 0, Bac.s.rel.u.AllTime) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.AllTime) #check all duplicates removed
+
+      #make unifrac matrix
+Bac.s.u.AllTime <- phyloseq::distance(Bac.s.rel.u.AllTime, method = "wunifrac")
+s.u.samp.df.AllTime <- as(sample_data(Bac.s.rel.u.AllTime), "data.frame") #sample df
+s.u.samp.df.AllTime$Code<-paste(s.u.samp.df.AllTime$Treatment, s.u.samp.df.AllTime$Species, s.u.samp.df.AllTime$Time.Point)
+
+  #adonis test
+set.seed(30)
+adonis(Bac.s.u.AllTime ~ Species*Treatment*Time.Point, data = s.u.samp.df.AllTime)
+set.seed(30)    
+adonis(Bac.s.u.AllTime ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df.AllTime)
+
+     # Homogeneity of dispersion test  
+    set.seed(30)
+  permutest(betadisper(Bac.s.u.AllTime, s.u.samp.df.AllTime$Code, type = "centroid")) 
+   set.seed(30)
+    permutest(betadisper(Bac.s.u.AllTime, s.u.samp.df.AllTime$Treatment, type = "centroid")) 
+    
+ # mcap #### 
+mcap.u.bac.AllTime <- subset_samples(Bac.s.rel.u.AllTime, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.AllTime)
+
+mcap.u.f.bac.AllTime = prune_taxa(taxa_sums(mcap.u.bac.AllTime) > 0, mcap.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.AllTime)
+
+#make bray curtis data matrix 
+  u.mcap.u.AllTime <- phyloseq::distance(mcap.u.bac.AllTime, method = "wunifrac")
+     mcap.u.samp.df.AllTime <- as(sample_data(mcap.u.bac.AllTime), "data.frame") #sample df
+        mcap.u.samp.df.AllTime$Code<-paste(mcap.u.samp.df.AllTime$Treatment, mcap.u.samp.df.AllTime$Time.Point)
+        mcap.u.samp.df.AllTime$Code2<-paste(mcap.u.samp.df.AllTime$Treatment, mcap.u.samp.df.AllTime$Time.Point,mcap.u.samp.df.AllTime$Clade)
+
+    set.seed(30)
+    adonis(u.mcap.u.AllTime ~ Treatment*Time.Point, data = mcap.u.samp.df.AllTime) #adonis test no clade
+    set.seed(30)
+    adonis(u.mcap.u.AllTime ~ Clade*Treatment*Time.Point, data = mcap.u.samp.df.AllTime)#adonis test with clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.mcap.u.AllTime, mcap.u.samp.df.AllTime$Code, type = "centroid"))
+        permutest(betadisper(u.mcap.u.AllTime, mcap.u.samp.df.AllTime$Code2, type = "centroid"))
+
+ # pcomp #### 
+pcomp.u.bac.AllTime <- subset_samples(Bac.s.rel.u.AllTime, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.AllTime)
+
+pcomp.u.f.bac.AllTime = prune_taxa(taxa_sums(pcomp.u.bac.AllTime) > 0, pcomp.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.AllTime)
+
+#make bray curtis data matrix 
+  u.pcomp.u.AllTime <- phyloseq::distance(pcomp.u.bac.AllTime, method = "wunifrac")
+     pcomp.u.samp.df.AllTime <- as(sample_data(pcomp.u.bac.AllTime), "data.frame") #sample df
+        pcomp.u.samp.df.AllTime$Code<-paste(pcomp.u.samp.df.AllTime$Treatment, pcomp.u.samp.df.AllTime$Time.Point)
+        pcomp.u.samp.df.AllTime$Code2<-paste(pcomp.u.samp.df.AllTime$Treatment,pcomp.u.samp.df.AllTime$Time.Point,pcomp.u.samp.df.AllTime$Clade)
+
+    set.seed(30)
+    adonis(u.pcomp.u.AllTime ~ Treatment*Time.Point, data = pcomp.u.samp.df.AllTime) #adonis test no clade
+    set.seed(30)
+    adonis(u.pcomp.u.AllTime ~ Clade*Treatment*Time.Point, data = pcomp.u.samp.df.AllTime)#adonis test with clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pcomp.u.AllTime, pcomp.u.samp.df.AllTime$Code, type = "centroid"))
+        permutest(betadisper(u.pcomp.u.AllTime, pcomp.u.samp.df.AllTime$Code2, type = "centroid"))
+
+# pvar #### 
+pvar.u.bac.AllTime <- subset_samples(Bac.s.rel.u.AllTime, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.AllTime)
+
+pvar.u.f.bac.AllTime = prune_taxa(taxa_sums(pvar.u.bac.AllTime) > 0, pvar.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.AllTime)
+
+#make bray curtis data matrix 
+  u.pvar.u.AllTime <- phyloseq::distance(pvar.u.bac.AllTime, method = "wunifrac")
+     pvar.u.samp.df.AllTime <- as(sample_data(pvar.u.bac.AllTime), "data.frame") #sample df
+        pvar.u.samp.df.AllTime$Code<-paste(pvar.u.samp.df.AllTime$Treatment, pvar.u.samp.df.AllTime$Time.Point)
+        pvar.u.samp.df.AllTime$Code2<-paste(pvar.u.samp.df.AllTime$Treatment,pvar.u.samp.df.AllTime$Time.Point,pvar.u.samp.df.AllTime$Clade)
+
+    set.seed(30)
+    adonis(u.pvar.u.AllTime ~ Treatment*Time.Point, data = pvar.u.samp.df.AllTime) #adonis test no clade
+    set.seed(30)
+    adonis(u.pvar.u.AllTime ~ Clade*Treatment*Time.Point, data = pvar.u.samp.df.AllTime)#adonis test with clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pvar.u.AllTime, pvar.u.samp.df.AllTime$Code, type = "centroid"))
+        permutest(betadisper(u.pvar.u.AllTime, pvar.u.samp.df.AllTime$Code2, type = "centroid"))
+
+# pvar #### 
+pvar.u.bac.AllTime <- subset_samples(Bac.s.rel.u.AllTime, Species == "Pocillopora_acuta")
+  sample_sums(pvar.u.bac.AllTime)
+
+pvar.u.f.bac.AllTime = prune_taxa(taxa_sums(pvar.u.bac.AllTime) > 0, pvar.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.AllTime)
+
+#make bray curtis data matrix 
+  u.pvar.u.AllTime <- phyloseq::distance(pvar.u.bac.AllTime, method = "wunifrac")
+     pvar.u.samp.df.AllTime <- as(sample_data(pvar.u.bac.AllTime), "data.frame") #sample df
+        pvar.u.samp.df.AllTime$Code<-paste(pvar.u.samp.df.AllTime$Treatment, pvar.u.samp.df.AllTime$Time.Point)
+        pvar.u.samp.df.AllTime$Code2<-paste(pvar.u.samp.df.AllTime$Treatment,pvar.u.samp.df.AllTime$Time.Point,pvar.u.samp.df.AllTime$Clade)
+
+    set.seed(30)
+    adonis(u.pvar.u.AllTime ~ Treatment*Time.Point, data = pvar.u.samp.df.AllTime) #adonis test no clade
+    set.seed(30)
+    adonis(u.pvar.u.AllTime ~ Clade*Treatment*Time.Point, data = pvar.u.samp.df.AllTime)#adonis test with clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pvar.u.AllTime, pvar.u.samp.df.AllTime$Code, type = "centroid"))
+        permutest(betadisper(u.pvar.u.AllTime, pvar.u.samp.df.AllTime$Code2, type = "centroid"))
 
 
-
- #T0 only #### 
+        
+        
+        
+        
+        
+#T0 only #### 
 Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
     Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
       sample_sums(Bac.s.rel.u.T0)
@@ -3175,7 +3288,7 @@ adonis(Bac.s.u.T0 ~ Species*Clade, data = s.u.samp.df)
   mcap.u.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this removes any OTU with 0s
   sample_sums(mcap.u.bac.T0)
   
-  #make bray curtis data matrix -T1 and TF
+  #make bray curtis data matrix -T0
   u.mcap.u.T0 <- phyloseq::distance(mcap.u.bac.T0, method = "wunifrac")
      mcap.u.samp.df.T0 <- as(sample_data(mcap.u.bac.T0), "data.frame") #sample df
         mcap.u.samp.df.T0$Code<-paste(mcap.u.samp.df.T0$Treatment, mcap.u.samp.df.T0$Time.Point)
@@ -3184,13 +3297,14 @@ set.seed(30)
     adonis(u.mcap.u.T0 ~ Clade, data = mcap.u.samp.df.T0) #adonis test no clade
 set.seed(30)
     permutest(betadisper(u.mcap.u.T0, mcap.u.samp.df.T0$Clade, type = "centroid")) 
+    permutest(betadisper(u.mcap.u.T0, mcap.u.samp.df.T0$Time.Point, type = "centroid")) 
 
 #Pcomp  
   Pcomp.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Porites_compressa")
   Pcomp.u.bac.T0 = prune_taxa(taxa_sums(Pcomp.u.bac.T0) > 0, Pcomp.u.bac.T0) #this removes any OTU with 0s
   sample_sums(Pcomp.u.bac.T0)
   
-  #make bray curtis data matrix -T1 and TF
+  #make bray curtis data matrix -T0
   u.Pcomp.u.T0 <- phyloseq::distance(Pcomp.u.bac.T0, method = "wunifrac")
      Pcomp.u.samp.df.T0 <- as(sample_data(Pcomp.u.bac.T0), "data.frame") #sample df
         Pcomp.u.samp.df.T0$Code<-paste(Pcomp.u.samp.df.T0$Treatment, Pcomp.u.samp.df.T0$Time.Point)
@@ -3199,6 +3313,8 @@ set.seed(30)
     adonis(u.Pcomp.u.T0 ~ Clade, data = Pcomp.u.samp.df.T0) #adonis test no clade
 set.seed(30)
     permutest(betadisper(u.Pcomp.u.T0, Pcomp.u.samp.df.T0$Clade, type = "centroid")) 
+    betadisper(u.Pcomp.u.T0, Pcomp.u.samp.df.T0$Time.Point, type = "centroid")
+    betadisper(u.Pcomp.u.T0, Pcomp.u.samp.df.T0$Clade, type = "centroid")
   
 #Pvar  
   #t0 only Bac.s.rel.u.T0
@@ -3206,7 +3322,7 @@ set.seed(30)
   Pvar.u.bac.T0 = prune_taxa(taxa_sums(Pvar.u.bac.T0) > 0, Pvar.u.bac.T0) #this removes any OTU with 0s
   sample_sums(Pvar.u.bac.T0)
   
-  #make bray curtis data matrix -T1 and TF
+  #make bray curtis data matrix -T0
   u.Pvar.u.T0 <- phyloseq::distance(Pvar.u.bac.T0, method = "wunifrac")
      Pvar.u.samp.df.T0 <- as(sample_data(Pvar.u.bac.T0), "data.frame") #sample df
         Pvar.u.samp.df.T0$Code<-paste(Pvar.u.samp.df.T0$Treatment, Pvar.u.samp.df.T0$Time.Point)
@@ -3215,7 +3331,7 @@ set.seed(30)
     adonis(u.Pvar.u.T0 ~ Clade, data = Pvar.u.samp.df.T0) #adonis test no clade
 set.seed(30)
     permutest(betadisper(u.Pvar.u.T0, Pvar.u.samp.df.T0$Clade, type = "centroid"))     
-
+betadisper(u.Pvar.u.T0, Pvar.u.samp.df.T0$Time.Point, type = "centroid")
     
 #Pacu  
   #t0 only Bac.s.rel.u.T0
@@ -3223,7 +3339,7 @@ set.seed(30)
   Pacu.u.bac.T0 = prune_taxa(taxa_sums(Pacu.u.bac.T0) > 0, Pacu.u.bac.T0) #this removes any OTU with 0s
   sample_sums(Pacu.u.bac.T0)
   
-  #make bray curtis data matrix -T1 and TF
+  #make bray curtis data matrix -T0
   u.Pacu.u.T0 <- phyloseq::distance(Pacu.u.bac.T0, method = "wunifrac")
      Pacu.u.samp.df.T0 <- as(sample_data(Pacu.u.bac.T0), "data.frame") #sample df
         Pacu.u.samp.df.T0$Code<-paste(Pacu.u.samp.df.T0$Treatment, Pacu.u.samp.df.T0$Time.Point)
@@ -3232,7 +3348,7 @@ set.seed(30)
     adonis(u.Pacu.u.T0 ~ Clade, data = Pacu.u.samp.df.T0) #adonis test no clade
 set.seed(30)
     permutest(betadisper(u.Pacu.u.T0, Pacu.u.samp.df.T0$Clade, type = "centroid")) 
-  
+  betadisper(u.Pacu.u.T0, Pacu.u.samp.df.T0$Time.Point, type = "centroid")
     
     
     
@@ -3315,16 +3431,16 @@ adonis(Bac.s.u.T1F ~ Species*Treatment*Time.Point*Clade, data = s.u.samp.df.T1F)
 mcap.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Montipora_capitata")
   sample_sums(mcap.u.bac.T1F)
 
-mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.f.bac.T1F) > 0, mcap.u.f.bac.T1F) #this removes any OTU with 0s
+mcap.u.f.bac.T1F = prune_taxa(taxa_sums(mcap.u.bac.T1F) > 0, mcap.u.bac.T1F) #this removes any OTU with 0s
   sample_sums(mcap.u.f.bac.T1F)
 
 
 
 #make dfs you need 
 mcap.u.bac.T1 <- subset_samples(mcap.u.bac.T1F, Time.Point == "T1")
-  mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.f.bac.T1) > 0, mcap.u.f.bac.T1) #this removes any OTU with 0s
+  mcap.u.f.bac.T1 = prune_taxa(taxa_sums(mcap.u.bac.T1) > 0, mcap.u.bac.T1) #this removes any OTU with 0s
 mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
-  mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.f.bac.TF) > 0, mcap.u.f.bac.TF) #this removes any OTU with 0s
+  mcap.u.f.bac.TF = prune_taxa(taxa_sums(mcap.u.bac.TF) > 0, mcap.u.bac.TF) #this removes any OTU with 0s
 
 #T1TF
 #make bray curtis data matrix -T1 and TF
@@ -3362,10 +3478,12 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
     set.seed(30)
     permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Clade, type = "centroid")) 
    set.seed(30)
-    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid")) 
+    permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid"))
+    betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Treatment, type = "centroid")
+    
     set.seed(30)
     permutest(betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Code, type = "centroid")) 
- 
+ betadisper(mcap.u.bac.mcapT1, mcap.u.samp.df.T1$Code, type = "centroid")
 
 
 #TF
@@ -3379,11 +3497,12 @@ mcap.u.bac.TF <- subset_samples(mcap.u.f.bac.T1F, Time.Point == "TF")
   # Homogeneity of dispersion test  
     set.seed(30)
     permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Clade, type = "centroid")) 
+    betadisper(mcap.u.TF, mcap.u.samp.df.TF$Clade, type = "centroid")
    set.seed(30)
     permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Treatment, type = "centroid")) 
     set.seed(30)
     permutest(betadisper(mcap.u.TF, mcap.u.samp.df.TF$Code, type = "centroid")) 
-    
+    betadisper(mcap.u.TF, mcap.u.samp.df.TF$Code, type = "centroid")
     
 #mcap ambient only all three times
     mcap.u.bac.AmbT01F <- subset_samples(Bac.s.rel.u, Species == "Montipora_capitata")
@@ -3396,12 +3515,39 @@ mcap.u.f.bac.AmbT01F = prune_taxa(taxa_sums(mcap.u.bac.AmbT01F) > 0, mcap.u.bac.
   mcap.u.AmbT01F <- phyloseq::distance(mcap.u.f.bac.AmbT01F, method = "wunifrac")
      mcap.u.samp.df.AmbT01F <- as(sample_data(mcap.u.bac.AmbT01F), "data.frame")
      mcap.u.samp.df.AmbT01F$Code<-paste(mcap.u.samp.df.AmbT01F$Treatment,mcap.u.samp.df.AmbT01F$Clade)
+          mcap.u.samp.df.AmbT01F$Code2<-paste(mcap.u.samp.df.AmbT01F$Treatment,mcap.u.samp.df.AmbT01F$Clade,mcap.u.samp.df.AmbT01F$Time.Point)
+
     set.seed(30)
     adonis(mcap.u.AmbT01F ~ Time.Point, data = mcap.u.samp.df.AmbT01F)
+    
+    
+    
+    #mcap high only all three times
+    mcap.u.bac.HighT01F <- subset_samples(Bac.s.rel.u, Species == "Montipora_capitata")
+        mcap.u.bac.HighT01F <- subset_samples(mcap.u.bac.HighT01F, Treatment == "High")
+  sample_sums(mcap.u.bac.HighT01F)
+
+mcap.u.f.bac.HighT01F = prune_taxa(taxa_sums(mcap.u.bac.HighT01F) > 0, mcap.u.bac.HighT01F) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.HighT01F)
+    
+  mcap.u.HighT01F <- phyloseq::distance(mcap.u.f.bac.HighT01F, method = "wunifrac")
+     mcap.u.samp.df.HighT01F <- as(sample_data(mcap.u.bac.HighT01F), "data.frame")
+     mcap.u.samp.df.HighT01F$Code<-paste(mcap.u.samp.df.HighT01F$Treatment,mcap.u.samp.df.HighT01F$Clade)
+          mcap.u.samp.df.HighT01F$Code2<-paste(mcap.u.samp.df.HighT01F$Treatment,mcap.u.samp.df.HighT01F$Clade,mcap.u.samp.df.HighT01F$Time.Point)
+
+    set.seed(30)
+    adonis(mcap.u.HighT01F ~ Time.Point, data = mcap.u.samp.df.HighT01F)
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(mcap.u.AmbT01F, mcap.u.samp.df.AmbT01F$Time.Point, type = "centroid")) 
+    permutest(betadisper(mcap.u.HighT01F, mcap.u.samp.df.HighT01F$Time.Point, type = "centroid")) 
+  betadisper(mcap.u.HighT01F, mcap.u.samp.df.HighT01F$Time.Point, type = "centroid")
+  betadisper(mcap.u.HighT01F, mcap.u.samp.df.HighT01F$Code2, type = "centroid")
+
+  
+  
+  
+  
   
 # Mcap Bac.s.rel.u.T0   only
     mcap.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Montipora_capitata")
@@ -3418,8 +3564,8 @@ mcap.u.f.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this 
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(mcap.u.T0, mcap.u.samp.df.T0$Clade, type = "centroid")) 
-  
+    permutest(betadisper(mcap.u.T0, mcap.u.samp.df.T0$Code, type = "centroid")) 
+  betadisper(mcap.u.T0, mcap.u.samp.df.T0$Code, type = "centroid")
   
   
   
@@ -3442,7 +3588,7 @@ write.csv(OTUendodf,"OTUendodf.csv")
 
 
     
-#Pcomp
+#Pcomp ####
 pcomp.u.bac.T1F <- subset_samples(Bac.s.rel.u.T1F, Species == "Porites_compressa")
 pcomp.u.bac.T1F = prune_taxa(taxa_sums(pcomp.u.bac.T1F) > 0, pcomp.u.bac.T1F) #this removes any OTU with 0s
 
@@ -3539,42 +3685,33 @@ pcomp.u.f.bac.T0 = prune_taxa(taxa_sums(pcomp.u.bac.T0) > 0, pcomp.u.bac.T0) #th
     permutest(betadisper(pcomp.u.T0, pcomp.u.samp.df.T0$Clade, type = "centroid")) 
   
 
-#Ambient only !!! ####
+#All time only !!! ####
     pcomp.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Porites_compressa") #all pcomp
       
-    # pull out otu and tax
-    tax  = tax_table(pcomp.u.bac.AllTime)
-    OTU = otu_table(pcomp.u.bac.AllTime)
-    tree=phy_tree(pcomp.u.bac.AllTime)
-  # sample data
-  sd = sample_data(pcomp.u.bac.AllTime)
-  sd$Treatment<-as.character(sd$Treatment)
-  
-  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
-  sd$Treatment<-as.factor(sd$Treatment)
+  pcomp.u.bac.Alltime2.sd <- as(sample_data(pcomp.u.bac.AllTime), "data.frame") #create sample data frame to view
 
-  pcomp.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
-  pcomp.u.bac.Alltime2.sd <- as(sample_data(pcomp.u.bac.Alltime2), "data.frame") #create sample data frame to view
-
-  pcomp.u.bac.Amb <- subset_samples(pcomp.u.bac.Alltime2, Treatment == "Ambient")
-
-  sample_sums(pcomp.u.bac.Amb)
-
-pcomp.u.f.bac.Amb = prune_taxa(taxa_sums(pcomp.u.bac.Amb) > 0, pcomp.u.bac.Amb) #this removes any OTU with 0s
-  sample_sums(pcomp.u.f.bac.Amb)
+pcomp.u.f.bac.Alltime = prune_taxa(taxa_sums(pcomp.u.bac.AllTime) > 0, pcomp.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.Alltime)
     
-  pcomp.u.Amb <- phyloseq::distance(pcomp.u.f.bac.Amb, method = "wunifrac")
-     pcomp.u.samp.df.Amb <- as(sample_data(pcomp.u.f.bac.Amb), "data.frame")
-     pcomp.u.samp.df.Amb$Code<-paste(pcomp.u.samp.df.Amb$Treatment,pcomp.u.samp.df.Amb$Clade)
-    
+  pcomp.u.Alltime <- phyloseq::distance(pcomp.u.f.bac.Alltime, method = "wunifrac")
+     pcomp.u.samp.df.Alltime <- as(sample_data(pcomp.u.f.bac.Alltime), "data.frame")
+     pcomp.u.samp.df.Alltime$Code<-paste(pcomp.u.samp.df.Alltime$Treatment,pcomp.u.samp.df.Alltime$Clade,pcomp.u.samp.df.Alltime$Time.Point)
+         pcomp.u.samp.df.Alltime$Code2<-paste(pcomp.u.samp.df.Alltime$Treatment,pcomp.u.samp.df.Alltime$Time.Point)
+
      set.seed(30)
-    adonis(pcomp.u.Amb ~ Clade, data = pcomp.u.samp.df.Amb)
+    adonis(pcomp.u.Alltime ~ Clade, data = pcomp.u.samp.df.Alltime)
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pcomp.u.Amb, pcomp.u.samp.df.Amb$Clade, type = "centroid")) 
+    permutest(betadisper(pcomp.u.Alltime, pcomp.u.samp.df.Alltime$Clade, type = "centroid")) 
+betadisper(pcomp.u.Alltime, pcomp.u.samp.df.Alltime$Code, type = "centroid")
+betadisper(pcomp.u.Alltime, pcomp.u.samp.df.Alltime$Code2, type = "centroid")
 
-# Pcomp remove the two outliers  T1 ####
+    
+    
+    
+    
+    # Pcomp remove the two outliers  T1 ####
   pcomp.u.bac.T1.removed <- subset_samples(pcomp.u.bac.T1, sample_name.1 != "SN134" )
     
 #T1
@@ -3723,40 +3860,27 @@ pvar.u.f.bac.T0 = prune_taxa(taxa_sums(pvar.u.bac.T0) > 0, pvar.u.bac.T0) #this 
     set.seed(30)
     permutest(betadisper(pvar.u.T0, pvar.u.samp.df.T0$Clade, type = "centroid")) 
       
-#Ambient only !!! ####
+#ALL maybe the only one you need ####
     pvar.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Pavona_varians") #all pvar
       
-    # pull out otu and tax
-    tax  = tax_table(pvar.u.bac.AllTime) 
-    OTU = otu_table(pvar.u.bac.AllTime)
-    tree=phy_tree(pvar.u.bac.AllTime)
-  # sample data
-  sd = sample_data(pvar.u.bac.AllTime)
-  sd$Treatment<-as.character(sd$Treatment)
-  
-  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
-  sd$Treatment<-as.factor(sd$Treatment)
+  pvar.u.bac.Alltime2.sd <- as(sample_data(pvar.u.bac.AllTime), "data.frame") #create sample data frame to view
 
-  pvar.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
-  pvar.u.bac.Alltime2.sd <- as(sample_data(pvar.u.bac.Alltime2), "data.frame") #create sample data frame to view
-
-  pvar.u.bac.Amb <- subset_samples(pvar.u.bac.Alltime2, Treatment == "Ambient")
-
-  sample_sums(pvar.u.bac.Amb)
-
-pvar.u.f.bac.Amb = prune_taxa(taxa_sums(pvar.u.bac.Amb) > 0, pvar.u.bac.Amb) #this removes any OTU with 0s
-  sample_sums(pvar.u.f.bac.Amb)
+pvar.u.f.bac.Alltime = prune_taxa(taxa_sums(pvar.u.bac.AllTime) > 0, pvar.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.Alltime)
     
-  pvar.u.Amb <- phyloseq::distance(pvar.u.f.bac.Amb, method = "wunifrac")
-     pvar.u.samp.df.Amb <- as(sample_data(pvar.u.f.bac.Amb), "data.frame")
-     pvar.u.samp.df.Amb$Code<-paste(pvar.u.samp.df.Amb$Treatment,pvar.u.samp.df.Amb$Clade)
-    
+  pvar.u.Alltime <- phyloseq::distance(pvar.u.f.bac.Alltime, method = "wunifrac")
+     pvar.u.samp.df.Alltime <- as(sample_data(pvar.u.f.bac.Alltime), "data.frame")
+     pvar.u.samp.df.Alltime$Code<-paste(pvar.u.samp.df.Alltime$Treatment,pvar.u.samp.df.Alltime$Clade,pvar.u.samp.df.Alltime$Time.Point )
+         pvar.u.samp.df.Alltime$Code2<-paste(pvar.u.samp.df.Alltime$Treatment,pvar.u.samp.df.Alltime$Time.Point)
+
      set.seed(30)
-    adonis(pvar.u.Amb ~ Clade, data = pvar.u.samp.df.Amb)
+    adonis(pvar.u.Alltime ~ Clade, data = pvar.u.samp.df.Alltime)
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pvar.u.Amb, pvar.u.samp.df.Amb$Clade, type = "centroid")) 
+    permutest(betadisper(pvar.u.Alltime, pvar.u.samp.df.Alltime$Clade, type = "centroid")) 
+    betadisper(pvar.u.Alltime, pvar.u.samp.df.Alltime$Code, type = "centroid")
+    betadisper(pvar.u.Alltime, pvar.u.samp.df.Alltime$Code2, type = "centroid")
       
     
     
@@ -3858,49 +3982,398 @@ pacu.u.f.bac.T0 = prune_taxa(taxa_sums(pacu.u.bac.T0) > 0, pacu.u.bac.T0) #this 
     set.seed(30)
     permutest(betadisper(pacu.u.T0, pacu.u.samp.df.T0$Clade, type = "centroid"))    
     
-#Ambient only !!!
+# All for betadisper #### 
     pacu.u.bac.AllTime <- subset_samples(Bac.s.rel.u, Species == "Pocillopora_acuta") #all pacu
-      
-    # pull out otu and tax
-    tax  = tax_table(pacu.u.bac.AllTime)
-    OTU = otu_table(pacu.u.bac.AllTime)
-    tree=phy_tree(pacu.u.bac.AllTime)
-  # sample data
-  sd = sample_data(pacu.u.bac.AllTime)
-  sd$Treatment<-as.character(sd$Treatment)
-  
-  sd$Treatment[sd$Treatment == "High" & sd$Time.Point=="T0"] <- "Ambient" 
-  sd$Treatment<-as.factor(sd$Treatment)
-
-  pacu.u.bac.Alltime2<-  phyloseq(sd, tax, OTU,tree) #make phylo ojb
-  pacu.u.bac.Alltime2.sd <- as(sample_data(pacu.u.bac.Alltime2), "data.frame") #create sample data frame to view
-
-  pacu.u.bac.Amb <- subset_samples(pacu.u.bac.Alltime2, Treatment == "Ambient")
-
+    
+  pacu.u.bac.Alltime2.sd <- as(sample_data(pacu.u.bac.AllTime), "data.frame") #create sample data frame to view
   sample_sums(pacu.u.bac.Amb)
 
-pacu.u.f.bac.Amb = prune_taxa(taxa_sums(pacu.u.bac.Amb) > 0, pacu.u.bac.Amb) #this removes any OTU with 0s
-  sample_sums(pacu.u.f.bac.Amb)
+pacu.u.f.bac.Alltime = prune_taxa(taxa_sums(pacu.u.bac.AllTime) > 0, pacu.u.bac.AllTime) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.Alltime)
     
-  pacu.u.Amb <- phyloseq::distance(pacu.u.f.bac.Amb, method = "wunifrac")
-     pacu.u.samp.df.Amb <- as(sample_data(pacu.u.f.bac.Amb), "data.frame")
-     pacu.u.samp.df.Amb$Code<-paste(pacu.u.samp.df.Amb$Treatment,pacu.u.samp.df.Amb$Clade)
-    
+  pacu.u.Alltime <- phyloseq::distance(pacu.u.f.bac.Alltime, method = "wunifrac")
+     pacu.u.samp.df.Alltime <- as(sample_data(pacu.u.f.bac.Alltime), "data.frame")
+     pacu.u.samp.df.Alltime$Code<-paste(pacu.u.samp.df.Alltime$Treatment,pacu.u.samp.df.Alltime$Clade,pacu.u.samp.df.Alltime$Time.Point)
+         pacu.u.samp.df.Alltime$Code2<-paste(pacu.u.samp.df.Alltime$Treatment,pacu.u.samp.df.Alltime$Time.Point)
+
      set.seed(30)
-    adonis(pacu.u.Amb ~ Clade, data = pacu.u.samp.df.Amb)
+    adonis(pacu.u.Alltime ~ Clade, data = pacu.u.samp.df.Alltime)
 
   # Homogeneity of dispersion test  
     set.seed(30)
-    permutest(betadisper(pacu.u.Amb, pacu.u.samp.df.Amb$Clade, type = "centroid")) 
+    permutest(betadisper(pacu.u.Alltime, pacu.u.samp.df.Alltime$Clade, type = "centroid")) 
       
-        
-    
+        betadisper(pacu.u.Alltime, pacu.u.samp.df.Alltime$Code, type = "centroid")
+            betadisper(pacu.u.Alltime, pacu.u.samp.df.Alltime$Code2, type = "centroid")
+
     
     
     
     
     
 ``` 
+#permanova uni by asv ambient only - for cn
+```{r}
+# New section running the models on all timepionts together 20220506 ambient only ####
+#by species only
+
+# Amb T0-T1 only
+Bac.s.rel.u.Amb<-subset_samples(Bac.s.rel.u.AllTime, Treatment=="Ambient")
+Bac.s.rel.u.AmbT0T1<-subset_samples(Bac.s.rel.u.Amb, Time.Point=="T0"| Time.Point=="T1")
+
+    Bac.s.rel.u.AmbT0T1 = prune_taxa(taxa_sums(Bac.s.rel.u.AmbT0T1) > 0, Bac.s.rel.u.AmbT0T1) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.AmbT0T1) #check all duplicates removed
+     
+# Amb T1-TF onl
+Bac.s.rel.u.AmbT1TF<-subset_samples(Bac.s.rel.u.Amb, Time.Point=="T1"| Time.Point=="TF")
+
+    Bac.s.rel.u.AmbT1TF = prune_taxa(taxa_sums(Bac.s.rel.u.AmbT1TF) > 0, Bac.s.rel.u.AmbT1TF) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.AmbT1TF) #check all duplicates removed      
+      
+      
+       
+# mcap #### 
+ #T0-T1
+mcap.u.bac.AmbT0T1 <- subset_samples(Bac.s.rel.u.AmbT0T1, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.AmbT0T1)
+
+mcap.u.f.bac.AmbT0T1 = prune_taxa(taxa_sums(mcap.u.bac.AmbT0T1) > 0, mcap.u.bac.AmbT0T1) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.AmbT0T1)
+
+#make bray curtis data matrix 
+  u.mcap.u.AmbT0T1 <- phyloseq::distance(mcap.u.f.bac.AmbT0T1, method = "wunifrac")
+     mcap.u.samp.df.AmbT0T1 <- as(sample_data(mcap.u.f.bac.AmbT0T1), "data.frame") #sample df
+        mcap.u.samp.df.AmbT0T1$Code<-paste(mcap.u.samp.df.AmbT0T1$Treatment, mcap.u.samp.df.AmbT0T1$Time.Point)
+        mcap.u.samp.df.AmbT0T1$Code2<-paste(mcap.u.samp.df.AmbT0T1$Treatment, mcap.u.samp.df.AmbT0T1$Time.Point,mcap.u.samp.df.AmbT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.mcap.u.AmbT0T1 ~ Time.Point, data = mcap.u.samp.df.AmbT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.mcap.u.AmbT0T1, mcap.u.samp.df.AmbT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.mcap.u.AmbT0T1, mcap.u.samp.df.AmbT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  mcap.u.bac.AmbT1TF <- subset_samples(Bac.s.rel.u.AmbT1TF, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.AmbT1TF)
+
+mcap.u.f.bac.AmbT1TF = prune_taxa(taxa_sums(mcap.u.bac.AmbT1TF) > 0, mcap.u.bac.AmbT1TF) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.AmbT1TF)
+
+#make bray curtis data matrix 
+  u.mcap.u.AmbT1TF <- phyloseq::distance(Bac.s.rel.u.AmbT1TF, method = "wunifrac")
+     mcap.u.samp.df.AmbT1TF <- as(sample_data(Bac.s.rel.u.AmbT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.mcap.u.AmbT1TF ~ Time.Point, data = mcap.u.samp.df.AmbT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.mcap.u.AmbT1TF, mcap.u.samp.df.AmbT1TF$Time.Point, type = "centroid"))
+
+        
+        
+# pcomp #### 
+ #T0-T1
+pcomp.u.bac.AmbT0T1 <- subset_samples(Bac.s.rel.u.AmbT0T1, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.AmbT0T1)
+
+pcomp.u.f.bac.AmbT0T1 = prune_taxa(taxa_sums(pcomp.u.bac.AmbT0T1) > 0, pcomp.u.bac.AmbT0T1) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.AmbT0T1)
+
+#make bray curtis data matrix 
+  u.pcomp.u.AmbT0T1 <- phyloseq::distance(pcomp.u.f.bac.AmbT0T1, method = "wunifrac")
+     pcomp.u.samp.df.AmbT0T1 <- as(sample_data(pcomp.u.f.bac.AmbT0T1), "data.frame") #sample df
+        pcomp.u.samp.df.AmbT0T1$Code<-paste(pcomp.u.samp.df.AmbT0T1$Treatment, pcomp.u.samp.df.AmbT0T1$Time.Point)
+        pcomp.u.samp.df.AmbT0T1$Code2<-paste(pcomp.u.samp.df.AmbT0T1$Treatment, pcomp.u.samp.df.AmbT0T1$Time.Point,pcomp.u.samp.df.AmbT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pcomp.u.AmbT0T1 ~ Time.Point, data = pcomp.u.samp.df.AmbT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pcomp.u.AmbT0T1, pcomp.u.samp.df.AmbT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pcomp.u.AmbT0T1, pcomp.u.samp.df.AmbT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pcomp.u.bac.AmbT1TF <- subset_samples(Bac.s.rel.u.AmbT1TF, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.AmbT1TF)
+
+pcomp.u.f.bac.AmbT1TF = prune_taxa(taxa_sums(pcomp.u.bac.AmbT1TF) > 0, pcomp.u.bac.AmbT1TF) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.AmbT1TF)
+
+#make bray curtis data matrix 
+  u.pcomp.u.AmbT1TF <- phyloseq::distance(Bac.s.rel.u.AmbT1TF, method = "wunifrac")
+     pcomp.u.samp.df.AmbT1TF <- as(sample_data(Bac.s.rel.u.AmbT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pcomp.u.AmbT1TF ~ Time.Point, data = pcomp.u.samp.df.AmbT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pcomp.u.AmbT1TF, pcomp.u.samp.df.AmbT1TF$Time.Point, type = "centroid"))    
+# pvar #### 
+ #T0-T1
+pvar.u.bac.AmbT0T1 <- subset_samples(Bac.s.rel.u.AmbT0T1, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.AmbT0T1)
+
+pvar.u.f.bac.AmbT0T1 = prune_taxa(taxa_sums(pvar.u.bac.AmbT0T1) > 0, pvar.u.bac.AmbT0T1) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.AmbT0T1)
+
+#make bray curtis data matrix 
+  u.pvar.u.AmbT0T1 <- phyloseq::distance(pvar.u.f.bac.AmbT0T1, method = "wunifrac")
+     pvar.u.samp.df.AmbT0T1 <- as(sample_data(pvar.u.f.bac.AmbT0T1), "data.frame") #sample df
+        pvar.u.samp.df.AmbT0T1$Code<-paste(pvar.u.samp.df.AmbT0T1$Treatment, pvar.u.samp.df.AmbT0T1$Time.Point)
+        pvar.u.samp.df.AmbT0T1$Code2<-paste(pvar.u.samp.df.AmbT0T1$Treatment, pvar.u.samp.df.AmbT0T1$Time.Point,pvar.u.samp.df.AmbT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pvar.u.AmbT0T1 ~ Time.Point, data = pvar.u.samp.df.AmbT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pvar.u.AmbT0T1, pvar.u.samp.df.AmbT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pvar.u.AmbT0T1, pvar.u.samp.df.AmbT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pvar.u.bac.AmbT1TF <- subset_samples(Bac.s.rel.u.AmbT1TF, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.AmbT1TF)
+
+pvar.u.f.bac.AmbT1TF = prune_taxa(taxa_sums(pvar.u.bac.AmbT1TF) > 0, pvar.u.bac.AmbT1TF) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.AmbT1TF)
+
+#make bray curtis data matrix 
+  u.pvar.u.AmbT1TF <- phyloseq::distance(Bac.s.rel.u.AmbT1TF, method = "wunifrac")
+     pvar.u.samp.df.AmbT1TF <- as(sample_data(Bac.s.rel.u.AmbT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pvar.u.AmbT1TF ~ Time.Point, data = pvar.u.samp.df.AmbT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pvar.u.AmbT1TF, pvar.u.samp.df.AmbT1TF$Time.Point, type = "centroid"))    
+
+# pacu #### 
+ #T0-T1
+pacu.u.bac.AmbT0T1 <- subset_samples(Bac.s.rel.u.AmbT0T1, Species == "Pocillopora_acuta")
+  sample_sums(pacu.u.bac.AmbT0T1)
+
+pacu.u.f.bac.AmbT0T1 = prune_taxa(taxa_sums(pacu.u.bac.AmbT0T1) > 0, pacu.u.bac.AmbT0T1) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.AmbT0T1)
+
+#make bray curtis data matrix 
+  u.pacu.u.AmbT0T1 <- phyloseq::distance(pacu.u.f.bac.AmbT0T1, method = "wunifrac")
+     pacu.u.samp.df.AmbT0T1 <- as(sample_data(pacu.u.f.bac.AmbT0T1), "data.frame") #sample df
+        pacu.u.samp.df.AmbT0T1$Code<-paste(pacu.u.samp.df.AmbT0T1$Treatment, pacu.u.samp.df.AmbT0T1$Time.Point)
+        pacu.u.samp.df.AmbT0T1$Code2<-paste(pacu.u.samp.df.AmbT0T1$Treatment, pacu.u.samp.df.AmbT0T1$Time.Point,pacu.u.samp.df.AmbT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pacu.u.AmbT0T1 ~ Time.Point, data = pacu.u.samp.df.AmbT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pacu.u.AmbT0T1, pacu.u.samp.df.AmbT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pacu.u.AmbT0T1, pacu.u.samp.df.AmbT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pacu.u.bac.AmbT1TF <- subset_samples(Bac.s.rel.u.AmbT1TF, Species == "Pocillopora_acuta")
+  sample_sums(pacu.u.bac.AmbT1TF)
+
+pacu.u.f.bac.AmbT1TF = prune_taxa(taxa_sums(pacu.u.bac.AmbT1TF) > 0, pacu.u.bac.AmbT1TF) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.AmbT1TF)
+
+#make bray curtis data matrix 
+  u.pacu.u.AmbT1TF <- phyloseq::distance(Bac.s.rel.u.AmbT1TF, method = "wunifrac")
+     pacu.u.samp.df.AmbT1TF <- as(sample_data(Bac.s.rel.u.AmbT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pacu.u.AmbT1TF ~ Time.Point, data = pacu.u.samp.df.AmbT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pacu.u.AmbT1TF, pacu.u.samp.df.AmbT1TF$Time.Point, type = "centroid"))    
+
+
+
+
+
+
+```
+#permanova uni by asv High only - for cn
+```{r}
+# New section running the models on all timepionts together 20220506 Highient only ####
+#by species only
+
+# High T0-T1 only
+Bac.s.rel.u.High<-subset_samples(Bac.s.rel.u.AllTime, Treatment=="High")
+Bac.s.rel.u.HighT0T1<-subset_samples(Bac.s.rel.u.High, Time.Point=="T0"| Time.Point=="T1")
+
+    Bac.s.rel.u.HighT0T1 = prune_taxa(taxa_sums(Bac.s.rel.u.HighT0T1) > 0, Bac.s.rel.u.HighT0T1) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.HighT0T1) #check all duplicates removed
+     
+# High T1-TF onl
+Bac.s.rel.u.HighT1TF<-subset_samples(Bac.s.rel.u.High, Time.Point=="T1"| Time.Point=="TF")
+
+    Bac.s.rel.u.HighT1TF = prune_taxa(taxa_sums(Bac.s.rel.u.HighT1TF) > 0, Bac.s.rel.u.HighT1TF) #this removes any OTU with 0s
+      sample_sums(Bac.s.rel.u.HighT1TF) #check all duplicates removed      
+      
+      
+       
+# mcap #### 
+ #T0-T1
+mcap.u.bac.HighT0T1 <- subset_samples(Bac.s.rel.u.HighT0T1, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.HighT0T1)
+
+mcap.u.f.bac.HighT0T1 = prune_taxa(taxa_sums(mcap.u.bac.HighT0T1) > 0, mcap.u.bac.HighT0T1) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.HighT0T1)
+
+#make bray curtis data matrix 
+  u.mcap.u.HighT0T1 <- phyloseq::distance(mcap.u.f.bac.HighT0T1, method = "wunifrac")
+     mcap.u.samp.df.HighT0T1 <- as(sample_data(mcap.u.f.bac.HighT0T1), "data.frame") #sample df
+        mcap.u.samp.df.HighT0T1$Code<-paste(mcap.u.samp.df.HighT0T1$Treatment, mcap.u.samp.df.HighT0T1$Time.Point)
+        mcap.u.samp.df.HighT0T1$Code2<-paste(mcap.u.samp.df.HighT0T1$Treatment, mcap.u.samp.df.HighT0T1$Time.Point,mcap.u.samp.df.HighT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.mcap.u.HighT0T1 ~ Time.Point, data = mcap.u.samp.df.HighT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.mcap.u.HighT0T1, mcap.u.samp.df.HighT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.mcap.u.HighT0T1, mcap.u.samp.df.HighT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  mcap.u.bac.HighT1TF <- subset_samples(Bac.s.rel.u.HighT1TF, Species == "Montipora_capitata")
+  sample_sums(mcap.u.bac.HighT1TF)
+
+mcap.u.f.bac.HighT1TF = prune_taxa(taxa_sums(mcap.u.bac.HighT1TF) > 0, mcap.u.bac.HighT1TF) #this removes any OTU with 0s
+  sample_sums(mcap.u.f.bac.HighT1TF)
+
+#make bray curtis data matrix 
+  u.mcap.u.HighT1TF <- phyloseq::distance(Bac.s.rel.u.HighT1TF, method = "wunifrac")
+     mcap.u.samp.df.HighT1TF <- as(sample_data(Bac.s.rel.u.HighT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.mcap.u.HighT1TF ~ Time.Point, data = mcap.u.samp.df.HighT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.mcap.u.HighT1TF, mcap.u.samp.df.HighT1TF$Time.Point, type = "centroid"))
+
+        
+        
+# pcomp #### 
+ #T0-T1
+pcomp.u.bac.HighT0T1 <- subset_samples(Bac.s.rel.u.HighT0T1, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.HighT0T1)
+
+pcomp.u.f.bac.HighT0T1 = prune_taxa(taxa_sums(pcomp.u.bac.HighT0T1) > 0, pcomp.u.bac.HighT0T1) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.HighT0T1)
+
+#make bray curtis data matrix 
+  u.pcomp.u.HighT0T1 <- phyloseq::distance(pcomp.u.f.bac.HighT0T1, method = "wunifrac")
+     pcomp.u.samp.df.HighT0T1 <- as(sample_data(pcomp.u.f.bac.HighT0T1), "data.frame") #sample df
+        pcomp.u.samp.df.HighT0T1$Code<-paste(pcomp.u.samp.df.HighT0T1$Treatment, pcomp.u.samp.df.HighT0T1$Time.Point)
+        pcomp.u.samp.df.HighT0T1$Code2<-paste(pcomp.u.samp.df.HighT0T1$Treatment, pcomp.u.samp.df.HighT0T1$Time.Point,pcomp.u.samp.df.HighT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pcomp.u.HighT0T1 ~ Time.Point, data = pcomp.u.samp.df.HighT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pcomp.u.HighT0T1, pcomp.u.samp.df.HighT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pcomp.u.HighT0T1, pcomp.u.samp.df.HighT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pcomp.u.bac.HighT1TF <- subset_samples(Bac.s.rel.u.HighT1TF, Species == "Porites_compressa")
+  sample_sums(pcomp.u.bac.HighT1TF)
+
+pcomp.u.f.bac.HighT1TF = prune_taxa(taxa_sums(pcomp.u.bac.HighT1TF) > 0, pcomp.u.bac.HighT1TF) #this removes any OTU with 0s
+  sample_sums(pcomp.u.f.bac.HighT1TF)
+
+#make bray curtis data matrix 
+  u.pcomp.u.HighT1TF <- phyloseq::distance(Bac.s.rel.u.HighT1TF, method = "wunifrac")
+     pcomp.u.samp.df.HighT1TF <- as(sample_data(Bac.s.rel.u.HighT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pcomp.u.HighT1TF ~ Time.Point, data = pcomp.u.samp.df.HighT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pcomp.u.HighT1TF, pcomp.u.samp.df.HighT1TF$Time.Point, type = "centroid"))    
+# pvar #### 
+ #T0-T1
+pvar.u.bac.HighT0T1 <- subset_samples(Bac.s.rel.u.HighT0T1, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.HighT0T1)
+
+pvar.u.f.bac.HighT0T1 = prune_taxa(taxa_sums(pvar.u.bac.HighT0T1) > 0, pvar.u.bac.HighT0T1) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.HighT0T1)
+
+#make bray curtis data matrix 
+  u.pvar.u.HighT0T1 <- phyloseq::distance(pvar.u.f.bac.HighT0T1, method = "wunifrac")
+     pvar.u.samp.df.HighT0T1 <- as(sample_data(pvar.u.f.bac.HighT0T1), "data.frame") #sample df
+        pvar.u.samp.df.HighT0T1$Code<-paste(pvar.u.samp.df.HighT0T1$Treatment, pvar.u.samp.df.HighT0T1$Time.Point)
+        pvar.u.samp.df.HighT0T1$Code2<-paste(pvar.u.samp.df.HighT0T1$Treatment, pvar.u.samp.df.HighT0T1$Time.Point,pvar.u.samp.df.HighT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pvar.u.HighT0T1 ~ Time.Point, data = pvar.u.samp.df.HighT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pvar.u.HighT0T1, pvar.u.samp.df.HighT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pvar.u.HighT0T1, pvar.u.samp.df.HighT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pvar.u.bac.HighT1TF <- subset_samples(Bac.s.rel.u.HighT1TF, Species == "Pavona_varians")
+  sample_sums(pvar.u.bac.HighT1TF)
+
+pvar.u.f.bac.HighT1TF = prune_taxa(taxa_sums(pvar.u.bac.HighT1TF) > 0, pvar.u.bac.HighT1TF) #this removes any OTU with 0s
+  sample_sums(pvar.u.f.bac.HighT1TF)
+
+#make bray curtis data matrix 
+  u.pvar.u.HighT1TF <- phyloseq::distance(Bac.s.rel.u.HighT1TF, method = "wunifrac")
+     pvar.u.samp.df.HighT1TF <- as(sample_data(Bac.s.rel.u.HighT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pvar.u.HighT1TF ~ Time.Point, data = pvar.u.samp.df.HighT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pvar.u.HighT1TF, pvar.u.samp.df.HighT1TF$Time.Point, type = "centroid"))    
+
+# pacu #### 
+ #T0-T1
+pacu.u.bac.HighT0T1 <- subset_samples(Bac.s.rel.u.HighT0T1, Species == "Pocillopora_acuta")
+  sample_sums(pacu.u.bac.HighT0T1)
+
+pacu.u.f.bac.HighT0T1 = prune_taxa(taxa_sums(pacu.u.bac.HighT0T1) > 0, pacu.u.bac.HighT0T1) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.HighT0T1)
+
+#make bray curtis data matrix 
+  u.pacu.u.HighT0T1 <- phyloseq::distance(pacu.u.f.bac.HighT0T1, method = "wunifrac")
+     pacu.u.samp.df.HighT0T1 <- as(sample_data(pacu.u.f.bac.HighT0T1), "data.frame") #sample df
+        pacu.u.samp.df.HighT0T1$Code<-paste(pacu.u.samp.df.HighT0T1$Treatment, pacu.u.samp.df.HighT0T1$Time.Point)
+        pacu.u.samp.df.HighT0T1$Code2<-paste(pacu.u.samp.df.HighT0T1$Treatment, pacu.u.samp.df.HighT0T1$Time.Point,pacu.u.samp.df.HighT0T1$Clade)
+
+    set.seed(30)
+    adonis(u.pacu.u.HighT0T1 ~ Time.Point, data = pacu.u.samp.df.HighT0T1) #adonis test no clade
+   # Homogeneity of dispersion test  
+     set.seed(30)
+        permutest(betadisper(u.pacu.u.HighT0T1, pacu.u.samp.df.HighT0T1$Code, type = "centroid"))
+        permutest(betadisper(u.pacu.u.HighT0T1, pacu.u.samp.df.HighT0T1$Code2, type = "centroid"))
+
+#T1-TF
+  pacu.u.bac.HighT1TF <- subset_samples(Bac.s.rel.u.HighT1TF, Species == "Pocillopora_acuta")
+  sample_sums(pacu.u.bac.HighT1TF)
+
+pacu.u.f.bac.HighT1TF = prune_taxa(taxa_sums(pacu.u.bac.HighT1TF) > 0, pacu.u.bac.HighT1TF) #this removes any OTU with 0s
+  sample_sums(pacu.u.f.bac.HighT1TF)
+
+#make bray curtis data matrix 
+  u.pacu.u.HighT1TF <- phyloseq::distance(Bac.s.rel.u.HighT1TF, method = "wunifrac")
+     pacu.u.samp.df.HighT1TF <- as(sample_data(Bac.s.rel.u.HighT1TF), "data.frame") #sample df
+
+    set.seed(30)
+    adonis(u.pacu.u.HighT1TF ~ Time.Point, data = pacu.u.samp.df.HighT1TF) #adonis 
+   # Homogeneity of dispersion test  
+     set.seed(30)
+    permutest(betadisper(u.pacu.u.HighT1TF, pacu.u.samp.df.HighT1TF$Time.Point, type = "centroid"))    
+
+
+
+
+
+
+```
+
+
+
+
 #Endo found in what samples and speices
 ```{r}
  #what endos are in here? all speices

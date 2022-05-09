@@ -23,10 +23,11 @@ library(vegan)
 library(pairwiseAdonis)
 library(tidyverse)
 library(phyloseq)
+library(microViz)
+
 ```
 
 Load data
-
 ```{r}
 physio<-read.csv("PhysioData.csv")
     physio$sample.id<-as.factor(physio$sample.id)  #change to tidy language when you have time. 
@@ -68,9 +69,6 @@ bacteria.nmds1<-bacteria[, c("sample.id", "bac.NMDS1")]
 
   
   
-#### make df with just a priori data one row per species 
-
-apriori<-read.csv("apriori2.csv") #ths only loads bc you opened in textwrangler and hit a hard return and saved....
 
   
 ```
@@ -155,44 +153,10 @@ ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, sha
 
 ```
 
+# MANTEL TESTS
 
-
- Try MCoA http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials/
-```{r}
-library("FactoMineR")
-library("factoextra")
-library(phyloseq)
-
-
-apriori.df<-apriori[2:11]
-summary(apriori.df)[,1:4]
-  apriori.df$clade<-as.factor(apriori.df$clade)
-    apriori.df$repro.mode<-as.factor(apriori.df$repro.mode)
-  apriori.df$transmission<-as.factor(apriori.df$transmission)
-  apriori.df$sex<-as.factor(apriori.df$sex)
-  apriori.df$skeletal.density<-as.factor(apriori.df$skeletal.density)
-  apriori.df$size<-as.factor(apriori.df$size)
-
-
-  
-  
-  
-  
-  
-  
-res.apriori<-MCA(apriori.df,  graph = TRUE)
-print(res.apriori)
-eig.val <- get_eigenvalue(res.apriori)
-fviz_screeplot(res.apriori, addlabels = TRUE, ylim = c(0, 45))
-
-fviz_mca_biplot(res.apriori, 
-               repel = TRUE, # Avoid text overlapping (slow if many point)
-               ggtheme = theme_minimal())
-
-var <- get_mca_var(res.apriori)
-
-```
  
+# 16s and ITS2
 Try mantel test for comparing 16S and ITS2 at T1 and then at T2
  r value of 
  -1 suggests a strong negative correlation
@@ -242,7 +206,7 @@ readRDS(file = "16S_rel.u.rds")
      aTax.16sT0 = as(tax_table(Bac.s.rel.u.T0), "matrix") #pull tax
      
      #pull phy tree table
-     tree.seq = phy_tree(Bac.s.rel.u.T0) #pull out tree
+     phyTree.16sT0 = phy_tree(Bac.s.rel.u.T0) #pull out tree
 
     #pull SAMPLE DATA
      aSD.16sT0 = as(sample_data(Bac.s.rel.u.T0), "matrix") #pull samp.data
@@ -274,8 +238,7 @@ readRDS(file = "16S_rel.u.rds")
       
   # reorder ps object so samples are in the same order
         library(microbiome)
-        library(microViz)
-        
+
         Bac_T0_mantel <- Bac_T0_mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
         phyloseq::sample_data(Bac_T0_mantel) %>% head(8)
         
@@ -358,10 +321,10 @@ readRDS(file = "16S_rel.u.rds")
  # Bac_T0_mantel ITS2_T0_mantel
     
     #subset df for Pacu
-    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pavona_varians")
+    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pocillopora_acuta")
     Bac_T0_mantel.Pacu = prune_taxa(taxa_sums(Bac_T0_mantel.Pacu) > 0, Bac_T0_mantel.Pacu) 
     
-    ITS2_T0_mantel.Pacu  <- subset_samples(ITS2_T0_mantel, Species == "Pavona_varians")
+    ITS2_T0_mantel.Pacu  <- subset_samples(ITS2_T0_mantel, Species == "Pocillopora_acuta")
     ITS2_T0_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T0_mantel.Pacu) > 0, ITS2_T0_mantel.Pacu)
         
     #16s T0 Pacu dist        
@@ -592,8 +555,7 @@ T1 Ambient only
       #in ITS  Remove "S1573" "S2424" "S3035" "S1895" "SN209" "SN63"  "S1418" " "SN126" "S785"  
 
       
-    #######stoped here#########  
-    
+
   # 16s changes: remove "SN222"  rename "SN108b""S1443b"  "SN197b",
       
  # remove
@@ -609,8 +571,11 @@ T1 Ambient only
         row.names(OTU.16ST1.Ambient)[30] <- "SN197"   #change row name by row number
 
     #pull TAX table
-     OTU.16ST1.Ambient = as(tax_table(Bac.T1.Ambient.mantel), "matrix") #pull tax
+     OTU.16ST1.Ambient.tax = as(tax_table(Bac.T1.Ambient.mantel), "matrix") #pull tax
 
+#pull phy tree table
+     tree.seq.T1Amb = phy_tree(Bac.T1.Ambient.mantel) #pull out tree
+     
     #pull SAMPLE DATA
      aSD.16ST1.Ambient = as(sample_data(Bac.T1.Ambient.mantel), "matrix") #pull samp.data
      aSD.16ST1.Ambient<-as.data.frame(aSD.16ST1.Ambient) #change to df
@@ -621,8 +586,10 @@ T1 Ambient only
     #remake the phyloseq obj
       samdata.Ambient = sample_data(aSD.16ST1.Ambient)
         seqtab.Ambient = otu_table(OTU.16ST1.Ambient, taxa_are_rows = FALSE)
-        taxtab.Ambient = tax_table(OTU.16ST1.Ambient)
-          BacT1.Ambient_mantel = phyloseq(otu_table(seqtab.Ambient), tax_table(taxtab.Ambient), sample_data(samdata.Ambient))
+        taxtab.Ambient = tax_table(OTU.16ST1.Ambient.tax)
+        phy_tree.amb = read_tree(tree.seq.T1Amb)
+
+BacT1.Ambient_mantel = phyloseq(otu_table(seqtab.Ambient), tax_table(taxtab.Ambient), sample_data(samdata.Ambient), phy_tree(phy_tree.amb))
     
           
    #ITS2 - remove samps not in the 16s df - "S1573" "S2424" "S3035" "S1895" "SN209" "SN63"  "S1418" " "SN126" "S785"  
@@ -640,7 +607,7 @@ T1 Ambient only
 
         # reorder ps object so samples are in the same order
         
-        Bac.T1.Ambient.mantel <- Bac.T1.Ambient.mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
+        Bac.T1.Ambient.mantel <- BacT1.Ambient_mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
         phyloseq::sample_data(Bac.T1.Ambient.mantel) %>% head(8)
         
         ITS2_T1_mantel.Ambient <- ITS2_T1_mantel.Ambient %>% ps_arrange(ID, desc(ID))
@@ -787,8 +754,10 @@ TF High only
         row.names(OTU.16STF.High)[22] <- "S3476"   #change row name by row number
        
     #pull TAX table
-     OTU.16STF.High = as(tax_table(Bac.TF.High.mantel), "matrix") #pull tax
-
+     OTU.16STF.High.tax = as(tax_table(Bac.TF.High.mantel), "matrix") #pull tax
+ #pull phy tree table
+     tree.seq.T1High = phy_tree(Bac.TF.High.mantel) #pull out tree
+     
     #pull SAMPLE DATA
      aSD.16STF.High = as(sample_data(Bac.TF.High.mantel), "matrix") #pull samp.data
      aSD.16STF.High<-as.data.frame(aSD.16STF.High) #change to df
@@ -797,8 +766,10 @@ TF High only
     #remake the phyloseq obj
       samdata.High = sample_data(aSD.16STF.High)
         seqtab.High = otu_table(OTU.16STF.High, taxa_are_rows = FALSE)
-        taxtab.High = tax_table(OTU.16STF.High)
-          BacTF.High_mantel = phyloseq(otu_table(seqtab.High), tax_table(taxtab.High), sample_data(samdata.High))
+        taxtab.High = tax_table(OTU.16STF.High.tax)
+        phy_tree = read_tree(tree.seq.T1High)
+
+          BacTF.High_mantel = phyloseq(otu_table(seqtab.High), tax_table(taxtab.High), sample_data(samdata.High), phy_tree(phy_tree))
       
         #31 samples
           
@@ -840,7 +811,7 @@ TF High only
       
         # reorder ps object so samples are in the same order
         
-        Bac.TF.High.mantel <- Bac.TF.High.mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
+        Bac.TF.High.mantel <- BacTF.High_mantel %>% ps_arrange(sample_name.1, desc(sample_name.1))
         phyloseq::sample_data(Bac.TF.High.mantel) %>% head(8)
         
         ITS_TF.High_mantel <- ITS_TF.High_mantel %>% ps_arrange(ID, desc(ID))
@@ -1117,7 +1088,7 @@ TF Ambient only
 
 
 
-##Physio and 16s
+# Physio and 16s
 
 T0
 ```{r}
@@ -1457,13 +1428,6 @@ T1 High only
 ```
 T1 Amb only
 
-
-
-
-
-
-
-
 ```{r}
 
 # T1 only  #####
@@ -1488,9 +1452,8 @@ T1 Amb only
       physio.T1.Amb.sd<-physio.T1.Amb.sd[['ID']]
 
       # compare physio to 16s at T1
-      #identify missing samples btw datasets     ***** This is not running i think it is a computer issue*** did by hand
-      setdiff(bac.T1.Amb.sd.samps,physio.T1.Amb.sd) #samples in 16s but not phys: RENAME: S1443b, SN108b, SN197b, REMOVE: SN161, SN181
-      setdiff(physio.T1.Amb.sd,bac.T1.Amb.sd.samps) #samples in phys but not 16s: REMOVE: S1195, S1418, S1573, S1895, S2424, S3035, S785, SN126, SN209 
+    #samples in 16s but not phys: RENAME: S1443b, SN108b, SN197b, REMOVE: SN161, SN181
+      #samples in phys but not 16s: REMOVE: S1195, S1418, S1573, S1895, S2424, S3035, S785, SN126, SN209 
       
       
  #remove 16S SN161, SN181
@@ -1514,9 +1477,9 @@ T1 Amb only
     #pull SAMPLE DATA
      aSD.16sT1.Amb = as(sample_data(Bac.s.rel.u.T1.Amb), "matrix") #pull samp.data
      aSD.16sT1.Amb<-as.data.frame(aSD.16sT1.Amb) #change to df
-        row.names(aSD.16sT1.Amb)[3] <- "S208"  #replace name S208b
-        row.names(aSD.16sT1.Amb)[20] <- "SN108"  #replace name S208b
-        row.names(aSD.16sT1.Amb)[28] <- "SN197"  #replace name S208b
+        row.names(aSD.16sT1.Amb)[3] <- "S1443"  #replace name 
+        row.names(aSD.16sT1.Amb)[20] <- "SN108"  #replace name 
+        row.names(aSD.16sT1.Amb)[28] <- "SN197"  #replace name 
 
     #remake the phyloseq obj
       samdata = sample_data(aSD.16sT1.Amb)
@@ -1539,24 +1502,25 @@ T1 Amb only
         physio_T1.Amb_mantel<-physio_T1.Amb_mantel[!(physio_T1.Amb_mantel$ID=="SN126"),]
         physio_T1.Amb_mantel<-physio_T1.Amb_mantel[!(physio_T1.Amb_mantel$ID=="SN209"),]
 
-        # both have  obs
-      
   # reorder ps object so samples are in the same order
-        physio_T1.Amb_mantel <- physio_T1.Amb_mantel[order(physio_T1.Amb_mantel$ID),]
         rownames(physio_T1.Amb_mantel) <- physio_T1.Amb_mantel[,1] #make first col row names
+        
+         vec <- c("S1144","S1254","S1443","S153","S199","S2286","S249","S284","S419","S431","S436","S554","S650","S664","S761","S797","S809","S848","SN104","SN108","SN117","SN124","SN149","SN170","SN172","SN184","SN192","SN197","SN198","SN222","SN37","SN45","SN49","SN78","SN89","SN92")               # Create  vector order
+         physio_T1.Amb_mantel.ord <- physio_T1.Amb_mantel[match(vec, physio_T1.Amb_mantel$ID), ]  
+        
 #build matrix  
   #16s T1        
         Bac.s.rel.u.T1.Amb.mantel<-Bac.s.rel.u.T1.Amb
         uni.Bac.s.rel.u.T1.Amb.mantel <- phyloseq::distance(Bac.s.rel.u.T1.Amb.mantel, method = "wunifrac")
         
   #physio T1 Amb
-       physio_T1.Amb_mantel2<-  physio_T1.Amb_mantel[,3:10]
+       physio_T1.Amb_mantel2<-  physio_T1.Amb_mantel.ord[,3:10]
        physio_T1.Amb_mantel2<-scale(physio_T1.Amb_mantel2)
        euc.physio_T1.Amb_mantel2 <- dist(physio_T1.Amb_mantel2, method = "euclidian")
 
   # Run mantel test
       mantel(uni.Bac.s.rel.u.T1.Amb.mantel, euc.physio_T1.Amb_mantel2,  permutations=999)
-    # r=0.2119  p=0.001
+    # r= -0.2119   p=0.001
         
 #### T1 Mcap only ####        
  # Bac_T1_mantel physio_T1_mantel
@@ -1565,7 +1529,7 @@ T1 Amb only
     Bac_T1.Amb_mantel.Mcap <- subset_samples(Bac.s.rel.u.T1.Amb.mantel, Species == "Montipora_capitata")
     Bac_T1.Amb_mantel.Mcap = prune_taxa(taxa_sums(Bac_T1.Amb_mantel.Mcap) > 0, Bac_T1.Amb_mantel.Mcap) 
     
-    physio_T1.Amb_mantel.Mcap  <- subset(physio_T1.Amb_mantel, species == "Montipora_capitata")
+    physio_T1.Amb_mantel.Mcap  <- subset(physio_T1.Amb_mantel.ord, species == "Montipora_capitata")
 
     #16s T1 mcap dist        
       unifrac.Bac_T1.Amb_mantel.Mcap <- phyloseq::distance(Bac_T1.Amb_mantel.Mcap, method = "wunifrac")
@@ -1585,7 +1549,7 @@ T1 Amb only
     Bac_T1.Amb_mantel.Pcomp <- subset_samples(Bac.s.rel.u.T1.Amb.mantel, Species == "Porites_compressa")
     Bac_T1.Amb_mantel.Pcomp = prune_taxa(taxa_sums(Bac_T1.Amb_mantel.Pcomp) > 0, Bac_T1.Amb_mantel.Pcomp) 
     
-    physio_T1.Amb_mantel.Pcomp  <- subset(physio_T1.Amb_mantel, species == "Porites_compressa")
+    physio_T1.Amb_mantel.Pcomp  <- subset(physio_T1.Amb_mantel.ord, species == "Porites_compressa")
 
     #16s T1 Pcomp dist        
       unifrac.Bac_T1.Amb_mantel.Pcomp <- phyloseq::distance(Bac_T1.Amb_mantel.Pcomp, method = "wunifrac")
@@ -1606,7 +1570,7 @@ T1 Amb only
     Bac_T1.Amb_mantel.Pvar <- subset_samples(Bac.s.rel.u.T1.Amb.mantel, Species == "Pavona_varians")
     Bac_T1.Amb_mantel.Pvar = prune_taxa(taxa_sums(Bac_T1.Amb_mantel.Pvar) > 0, Bac_T1.Amb_mantel.Pvar) 
     
-    physio_T1.Amb_mantel.Pvar  <- subset(physio_T1.Amb_mantel, species == "Pavona_varians")
+    physio_T1.Amb_mantel.Pvar  <- subset(physio_T1.Amb_mantel.ord, species == "Pavona_varians")
 
     #16s T1 Pvar dist        
       unifrac.Bac_T1.Amb_mantel.Pvar <- phyloseq::distance(Bac_T1.Amb_mantel.Pvar, method = "wunifrac")
@@ -1627,7 +1591,7 @@ T1 Amb only
     Bac_T1.Amb_mantel.Pacu <- subset_samples(Bac.s.rel.u.T1.Amb.mantel, Species == "Pocillopora_acuta")
     Bac_T1.Amb_mantel.Pacu = prune_taxa(taxa_sums(Bac_T1.Amb_mantel.Pacu) > 0, Bac_T1.Amb_mantel.Pacu) 
     
-    physio_T1.Amb_mantel.Pacu  <- subset(physio_T1.Amb_mantel, species == "Pocillopora_acuta")
+    physio_T1.Amb_mantel.Pacu  <- subset(physio_T1.Amb_mantel.ord, species == "Pocillopora_acuta")
 
     #16s T1 Pacu dist        
       unifrac.Bac_T1.Amb_mantel.Pacu <- phyloseq::distance(Bac_T1.Amb_mantel.Pacu, method = "wunifrac")
@@ -1734,15 +1698,19 @@ TF High only
         # both have 30 obs...
       
   # reorder ps object so samples are in the same order
-        physio_TF.High_mantel <- physio_TF.High_mantel[order(physio_TF.High_mantel$ID),]
         rownames(physio_TF.High_mantel) <- physio_TF.High_mantel[,1] #make first col row names
+        
+        
+         vec <- c("S1166","S1413","S1437","S1526","S1803","S2136","S2328","S2663","S2731","S2879","S2893","S2948","S3204","S335","S3383","S3422","S3444","S3467","S3470","S3473","S3476","S3480","S3486","S3487","S3491","S3517","S473","S775","SN55")               # Create  vector order
+         
+         physio_TF.High_mantel.ord <- physio_TF.High_mantel[match(vec, physio_TF.High_mantel$ID), ]  
 #build matrix  
   #16s TF        
         Bac_TF.High_mantel2<-Bac_TF.High_mantel
         Bac_TF.High_mantel2 <- phyloseq::distance(Bac_TF.High_mantel2, method = "wunifrac")
         
   #physio TF high
-        physio_TF.High_mantel2<-  physio_TF.High_mantel[,3:10]
+        physio_TF.High_mantel2<-  physio_TF.High_mantel.ord[,3:10]
        physio_TF.High_mantel2<-scale(physio_TF.High_mantel2)
        euc.physio_TF.High_mantel2 <- dist(physio_TF.High_mantel2, method = "euclidian")
 
@@ -1904,8 +1872,13 @@ TF Amb only
         # both have 27 obs...
       
   # reorder ps object so samples are in the same order
-        physio_TF.Ambient_mantel <- physio_TF.Ambient_mantel[order(physio_TF.Ambient_mantel$ID),]
-        rownames(physio_TF.Ambient_mantel) <- physio_TF.Ambient_mantel[,1] #make first col row names
+
+        
+                rownames(physio_TF.Ambient_mantel) <- physio_TF.Ambient_mantel[,1] #make first col row names
+                
+                 vec <- c("S1037","S1061","S1104","S3081","S3164","S3337","S3442","S403","S420","S422","S579","S832","SN105","SN115","SN122","SN131","SN132","SN152","SN189","SN191","SN205","SN211","SN77","SN96","SN98")               # Create  vector order
+         
+         physio_TF.High_mantel.ord <- physio_TF.High_mantel[match(vec, physio_TF.High_mantel$ID), ] 
 #build matrix  
   #16s TF        
         Bac_TF.Ambient_mantel2<-Bac.s.rel.u.TF.Ambient
@@ -1918,7 +1891,7 @@ TF Amb only
 
   # Run mantel test
       mantel(Bac_TF.Ambient_mantel2, euc.physio_TF.Ambient_mantel2,  permutations=999)
-    # r=-0.2536 . p=0.005
+    # r=-0.003539  . p=0.499
         
 #### TF Mcap only ####        
  # Bac_TF_mantel physio_TF_mantel
@@ -2010,7 +1983,7 @@ TF Amb only
 ```
 
 
-##Physio and ITS2
+# Physio and ITS2
 
 T0
 ```{r}
@@ -2862,3 +2835,55 @@ TF Amb only
 
 ```
 
+### Try this again with the physio data set culled down to fewer metrics (goal of having more samples included. )
+
+
+
+
+# gauntlet
+```{r}
+#### make df with just a priori data one row per species 
+
+apriori<-read.csv("apriori3.csv") #ths only loads bc you opened in textwrangler and hit a hard return and saved....
+
+
+
+
+
+
+```
+
+Try MCoA http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials/
+```{r}
+library("FactoMineR")
+library("factoextra")
+library(phyloseq)
+
+
+apriori.df<-apriori[2:15]
+summary(apriori.df)[,1:4]
+  #apriori.df$clade<-as.factor(apriori.df$clade)
+    apriori.df$repro.mode<-as.factor(apriori.df$repro.mode)
+  apriori.df$transmission<-as.factor(apriori.df$transmission)
+  apriori.df$sex<-as.factor(apriori.df$sex)
+  apriori.df$skeletal.density<-as.factor(apriori.df$skeletal.density)
+  apriori.df$size<-as.factor(apriori.df$size)
+  apriori.df$genera.num<-as.factor(apriori.df$genera.num)
+    apriori.df$sex.ord<-as.factor(apriori.df$sex.ord)
+    apriori.df$bleaching<-as.factor(apriori.df$bleaching)
+    apriori.df$calcification<-as.factor(apriori.df$calcification)
+    apriori.df$tissue.thick<-as.factor(apriori.df$tissue.thick)
+    apriori.df$Corralite.width.max<-as.factor(apriori.df$Corralite.width.max)
+
+res.apriori<-MCA(apriori.df,  graph = TRUE)
+print(res.apriori)
+eig.val <- get_eigenvalue(res.apriori)
+fviz_screeplot(res.apriori, addlabels = TRUE, ylim = c(0, 45))
+
+fviz_mca_biplot(res.apriori, 
+               repel = F, # Avoid text overlapping (slow if many point)
+               ggtheme = theme_minimal())
+
+var <- get_mca_var(res.apriori)
+
+```
