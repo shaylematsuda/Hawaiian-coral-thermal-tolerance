@@ -558,7 +558,7 @@ Biomass_Pacu_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|
     Biomass_Pacu_model.T1<-lmer(AFDWmg.cm2~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_Pacu.T1)
   anova(Biomass_Pacu_model.T1) 
   qqPlot(residuals(Biomass_Pacu_model.T1)) 
-  emm<-emmeans(Biomass_Pacu_model.T1,  ~ Treatment, adjust="Tukey")
+  emm<-emmeans(Biomass_Pacu_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -1564,7 +1564,7 @@ FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num)
   cld(emm)
   pairs(emm)  
   
-#Pvar-C only
+#Pvar-C1 only  run models above not with timepoint...
   FC_Pvar_model.C1<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C1)
   anova(FC_Pvar_model.C1) 
   qqPlot(residuals(FC_Pvar_model.C1)) 
@@ -1572,7 +1572,7 @@ FC_Pvar_model<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num)
     cld(emm)
     pairs(emm)
 
-#Pvar-CD only
+#Pvar-C27 only
   FC_Pvar_model.C27<-lmer(zoox.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C27)
   anova(FC_Pvar_model.C27) 
   qqPlot(residuals(FC_Pvar_model.C27)) 
@@ -3997,7 +3997,7 @@ emm<-emmeans(percent.change_sqrt_stats_model,  ~ Days*Treatment|Species, adjust=
  cld(emm)
  pairs(emm)
   
-#mcap
+#mcap####
 #lmer
  percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3_Mcap)
   anova(percent.change_sqrt_Mcap_model) 
@@ -4123,12 +4123,12 @@ percent.change_sqrt_Pvar_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
   pairs(emm)
   
   #TF only
-    Biomass_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
-  anova(Biomass_Pvar_model.TF) 
-  Biomass_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
-  anova(Biomass_Pvar_model.TF) 
-  qqPlot(residuals(Biomass_Pvar_model.TF)) 
-  emm<-emmeans(Biomass_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+    grow_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
+  anova(grow_Pvar_model.TF) 
+  grow_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
+  anova(grow_Pvar_model.TF) 
+  qqPlot(residuals(grow_Pvar_model.TF)) 
+  emm<-emmeans(grow_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
@@ -5084,7 +5084,7 @@ Chla_Pvar_model.TF<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla
   Chla_Pvar_model.TF<-lmer(ChlaSA_quart~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_Pvar.TF)
   anova(Chla_Pvar_model.TF) 
   qqPlot(residuals(Chla_Pvar_model.TF)) 
-  emm<-emmeans(Chla_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Chla_Pvar_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -5548,7 +5548,7 @@ Yield_cu_Pvar_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   Yield_cu_Pvar_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pvar.TF)
   anova(Yield_cu_Pvar_model.TF) 
   qqPlot(residuals(Yield_cu_Pvar_model.TF)) 
-  emm<-emmeans(Yield_cu_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Yield_cu_Pvar_model.TF,  ~ Clade*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
@@ -8269,7 +8269,7 @@ Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
     PR.df_B_Pvar_model.T1<-lmer(Resp~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.T1)
   anova(PR.df_B_Pvar_model.T1) 
   qqPlot(residuals(PR.df_B_Pvar_model.T1)) 
-  emm<-emmeans(PR.df_B_Pvar_model.T1,  ~ Treatment, adjust="Tukey")
+  emm<-emmeans(PR.df_B_Pvar_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -8280,7 +8280,7 @@ Resp_Pvar_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|T
   PR.df_B_Pvar_model.TF<-lmer(Resp~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.TF)
   anova(PR.df_B_Pvar_model.TF) 
   qqPlot(residuals(PR.df_B_Pvar_model.TF)) 
-  emm<-emmeans(PR.df_B_Pvar_model.TF,  ~ Treatment, adjust="Tukey")
+  emm<-emmeans(PR.df_B_Pvar_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
     

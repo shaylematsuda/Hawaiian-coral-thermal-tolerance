@@ -224,8 +224,15 @@ coral_RELA <- phyloseq(otu, tax, sam)
 Read in coral post-QC sequence variants: "coralDIV_RELA"
 ```{r} 
 sam0 <- Symp_sub_Meta
-rownames(sam0) <- sam0$sample_name
-sam <- sample_data(data.frame(sam0))
+sam1 <- as.matrix(sam0[, -1])
+rownames(sam1) <- sam0$sample_name
+sam <- sample_data(data.frame(sam1))
+
+
+
+
+
+
 taxnames <- read_tsv(
   file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.relative.abund_only.txt",
   n_max = 0) %>%
@@ -386,7 +393,7 @@ coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
 
 #Make a rarefied phyloseq object for alpha diversity analyses
 coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
-sample_sums(coralDIV2_rare) #Double check that the sub-sampling worked, this should report 1000 for each sample
+sample_sums(coralDIV2_rare) #Double check that the sub-sampling worked, this should report 7000 for each sample
 coralDIV2.rare <- as(sample_data(coralDIV2_rare), "data.frame")
 coralDIV2_rare
 #saveRDS(coralDIV2_rare, file = "coralDIV2_rare.RDS", compress = TRUE) #save!
@@ -551,7 +558,7 @@ Pacu_DIV_RA <- subset_samples(DIV_RelA, host_genus=="pocillopora")
 #top 50 DIVs across by species 
 
 #Mcap
-TopNOTUsMcap = names(sort(taxa_sums(Mcap_DIV_RA), TRUE)[1:10])
+TopNOTUsMcap = names(sort(taxa_sums(Mcap_DIV_RA), TRUE)[1:50])
 Mcapent50 = prune_taxa(TopNOTUsMcap, Mcap_DIV_RA)
 McapBarPlot<-plot_bar(Mcapent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");McapBarPlot
 #ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
@@ -566,7 +573,7 @@ mcap.p <- ggplot(Mcapent50, aes(x = Parent.ID, y = Abundance, fill = Phylum)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 mcap.p +  facet_wrap(~ Code, nrow=2)
 
-Mcap_its2.melt <- psmelt(Mcap_DIV_RA)
+#Mcap_its2.melt <- psmelt(Mcap_DIV_RA)
 
 
 
@@ -589,24 +596,293 @@ Mcap.50.CD = prune_taxa(TopNOTUsMcap.CD, Mcap_DIV_RA.CD)
 McapBarPlot.CD<-plot_bar(Mcap.50.CD, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");McapBarPlot.CD
 #ggsave("McapBarPlot_DIV_CD.pdf", McapBarPlot.CD, dpi=300, width=8)
 
+#group by timepoint*Treatment for presentation top 50 otus
+#C only
+#T1
+Mcap.50.C.T1<-subset_samples(Mcap.50.C, Time.Point=="T1")
+ps0 <- transform_sample_counts(Mcap.50.C.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
 
-#Pcomp
+#TF
+Mcap.50.C.T2<-subset_samples(Mcap.50.C, Time.Point=="TF")
+ps0 <- transform_sample_counts(Mcap.50.C.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#CD only
+#T1
+Mcap.50.CD.T1<-subset_samples(Mcap.50.CD, Time.Point=="T1")
+ps0 <- transform_sample_counts(Mcap.50.CD.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#TF
+Mcap.50.CD.T2<-subset_samples(Mcap.50.CD, Time.Point=="TF")
+ps0 <- transform_sample_counts(Mcap.50.CD.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+
+############# High only all
+# to get T0 for all samples regardless of treatment
+Mcap.50.T0<-subset_samples(Mcapent50,Time.Point=="T0")
+
+#combine all T0 samps with the Highs only at T1 and TF
+T1TF = c("T1", "TF") #pull T1 and TF only
+Mcap.50.T1TF<-subset_samples(Mcapent50, Time.Point %in% T1TF)
+Mcap.50.high<-subset_samples(Mcap.50.T1TF, Treatment=="High") #high only
+
+#combine Mcap.50.high with T0
+Mcap.50.high<-merge_phyloseq(Mcap.50.high, Mcap.50.T0)
+#test <- as(sample_data(Mcap.50.high2), "data.frame") #sample df
+
+#all together High only
+ps0 <- transform_sample_counts(Mcap.50.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C
+Mcap.50.C.high<-subset_samples(Mcap.50.high, Clade=="C")
+ps0 <- transform_sample_counts(Mcap.50.C.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only CD
+Mcap.50.CD.high<-subset_samples(Mcap.50.high, Clade=="CD")
+ps0 <- transform_sample_counts(Mcap.50.CD.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#sampledataMcaphigh <- as(sample_data(ps0), "data.frame") #sample df
+
+
+#Pcomp ####
 TopNOTUsPcomp = names(sort(taxa_sums(Pcomp_DIV_RA), TRUE)[1:10])
 Pcompent50 = prune_taxa(TopNOTUsPcomp,Pcomp_DIV_RA )
 PcompBarPlot<-plot_bar(Pcompent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PcompBarPlot
 #ggsave("PcompBarPlot_DIVrelARare.pdf", PcompBarPlot, dpi=300, width=8)
 
-#Pvar
-TopNOTUsVar = names(sort(taxa_sums(Pvar_DIV_RA), TRUE)[1:10])
+#Pcomp C15s
+#C15n
+Pcomp_DIV_RA.C15n<-subset_samples(Pcomp_DIV_RA, Clade=="C15n")
+TopNOTUsPcomp.C15n = names(sort(taxa_sums(Pcomp_DIV_RA.C15n), TRUE)[1:50])
+Pcomp.50.C15n = prune_taxa(TopNOTUsPcomp.C15n, Pcomp_DIV_RA.C15n)
+PcompBarPlot.C15n<-plot_bar(Pcomp.50.C15n, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PcompBarPlot.C15n
+#ggsave("PcompBarPlot_DIV_C.pdf", PcompBarPlot.C, dpi=300, width=8)
+
+#Cn=16cj
+Pcomp_DIV_RA.C15cj<-subset_samples(Pcomp_DIV_RA, Clade=="C15cj")
+TopNOTUsPcomp.C15cj = names(sort(taxa_sums(Pcomp_DIV_RA.C15cj), TRUE)[1:50])
+Pcomp.50.C15cj = prune_taxa(TopNOTUsPcomp.C15cj, Pcomp_DIV_RA.C15cj)
+PcompBarPlot.C15cj<-plot_bar(Pcomp.50.CD, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PcompBarPlot.C15cj
+
+
+#group by timepoint*Treatment for presentation top 50 otus
+#C15n only
+#T1
+Pcomp.50.C15n.T1<-subset_samples(Pcomp.50.C15n, Time.Point=="T1")
+ps0 <- transform_sample_counts(Pcomp.50.C15n.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#TF
+Pcomp.50.C15n.T2<-subset_samples(Pcomp.50.C15n, Time.Point=="TF")
+ps0 <- transform_sample_counts(Pcomp.50.C15n.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#C15cj only
+#T1
+Pcomp.50.C15cj.T1<-subset_samples(Pcomp.50.C15cj, Time.Point=="T1")
+ps0 <- transform_sample_counts(Pcomp.50.C15cj.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#TF
+Pcomp.50.C15cj.T2<-subset_samples(Pcomp.50.C15cj, Time.Point=="TF")
+ps0 <- transform_sample_counts(Pcomp.50.C15cj.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+
+############# High only all
+# to get T0 for all samples regardless of treatment
+Pcomp.50.T0<-subset_samples(Pcompent50,Time.Point=="T0")
+
+#combine all T0 samps with the Highs only at T1 and TF
+T1TF = c("T1", "TF") #pull T1 and TF only
+Pcomp.50.T1TF<-subset_samples(Pcompent50, Time.Point %in% T1TF)
+Pcomp.50.high<-subset_samples(Pcomp.50.T1TF, Treatment=="High") #high only
+
+#combine Pcomp.50.high with T0
+Pcomp.50.high<-merge_phyloseq(Pcomp.50.high, Pcomp.50.T0)
+#test <- as(sample_data(Pcomp.50.high2), "data.frame") #sample df
+
+#all together High only
+ps0 <- transform_sample_counts(Pcomp.50.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C15n
+Pcomp.50.C15n.high<-subset_samples(Pcomp.50.high, Clade=="C15n")
+ps0 <- transform_sample_counts(Pcomp.50.C15n.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C15cj
+Pcomp.50.C15cj.high<-subset_samples(Pcomp.50.high, Clade=="C15cj")
+ps0 <- transform_sample_counts(Pcomp.50.C15cj.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#sampledataPcomphigh <- as(sample_data(ps0), "data.frame") #sample df
+
+
+
+#Pvar ####
+TopNOTUsVar = names(sort(taxa_sums(Pvar_DIV_RA), TRUE)[1:50])
 Pvarent50 = prune_taxa(TopNOTUsVar, Pvar_DIV_RA)
 PvarBarPlot<-plot_bar(Pvarent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PvarBarPlot
 #ggsave("PvarBarPlot_DIVrelARare.pdf", PvarBarPlot, dpi=300, width=8)
+
+
+#Pvar C1
+#C1
+Pvar_DIV_RA.C1<-subset_samples(Pvar_DIV_RA, Clade=="C1")
+TopNOTUsPvar.C1 = names(sort(taxa_sums(Pvar_DIV_RA.C1), TRUE)[1:50])
+Pvar.50.C1 = prune_taxa(TopNOTUsPvar.C1, Pvar_DIV_RA.C1)
+PvarBarPlot.C1<-plot_bar(Pvar.50.C1, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PvarBarPlot.C1
+#ggsave("PvarBarPlot_DIV_C.pdf", PvarBarPlot.C, dpi=300, width=8)
+
+#C27
+Pvar_DIV_RA.C27<-subset_samples(Pvar_DIV_RA, Clade=="C27")
+TopNOTUsPvar.C27 = names(sort(taxa_sums(Pvar_DIV_RA.C27), TRUE)[1:50])
+Pvar.50.C27 = prune_taxa(TopNOTUsPvar.C27, Pvar_DIV_RA.C27)
+PvarBarPlot.C27<-plot_bar(Pvar.50.CD, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PvarBarPlot.C27
+
+
+#group by timepoint*Treatment for presentation top 50 otus
+#C1 only
+#T1
+Pvar.50.C1.T1<-subset_samples(Pvar.50.C1, Time.Point=="T1")
+ps0 <- transform_sample_counts(Pvar.50.C1.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#TF
+Pvar.50.C1.T2<-subset_samples(Pvar.50.C1, Time.Point=="TF")
+ps0 <- transform_sample_counts(Pvar.50.C1.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#C27 only
+#T1
+Pvar.50.C27.T1<-subset_samples(Pvar.50.C27, Time.Point=="T1")
+ps0 <- transform_sample_counts(Pvar.50.C27.T1, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#TF
+Pvar.50.C27.T2<-subset_samples(Pvar.50.C27, Time.Point=="TF")
+ps0 <- transform_sample_counts(Pvar.50.C27.T2, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Treatment")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+############# High only all
+# to get T0 for all samples regardless of treatment
+Pvar.50.T0<-subset_samples(Pvarent50,Time.Point=="T0")
+
+#combine all T0 samps with the Highs only at T1 and TF
+T1TF = c("T1", "TF") #pull T1 and TF only
+Pvar.50.T1TF<-subset_samples(Pvarent50, Time.Point %in% T1TF)
+Pvar.50.high<-subset_samples(Pvar.50.T1TF, Treatment=="High") #high only
+
+#combine Pvar.50.high with T0
+Pvar.50.high<-merge_phyloseq(Pvar.50.high, Pvar.50.T0)
+#test <- as(sample_data(Pvar.50.high), "data.frame") #sample df
+
+#all together High only
+ps0 <- transform_sample_counts(Pvar.50.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C27
+Pvar.50.C27.high<-subset_samples(Pvar.50.high, Clade=="C27")
+ps0 <- transform_sample_counts(Pvar.50.C27.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C1
+Pvar.50.C1.high<-subset_samples(Pvar.50.high, Clade=="C1")
+ps0 <- transform_sample_counts(Pvar.50.C1.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+#sampledataPvarhigh <- as(sample_data(ps0), "data.frame") #sample df
+
+
+
 
 #Pacu
 TopNOTUsPacu = names(sort(taxa_sums(Pacu_DIV_RA), TRUE)[1:50])
 Pacuent50 = prune_taxa(TopNOTUsPacu, Pacu_DIV_RA)
 PacuBarPlot<-plot_bar(Pacuent50, x="Parent.ID", fill="DIV", facet_grid = "Time.Point~Treatment");PacuBarPlot
 #ggsave("PacuBarPlot_DIVrelARare.pdf", PacuBarPlot, dpi=300, width=8)
+
+############# High only all
+# to get T0 for all samples regardless of treatment
+Pacu.50.T0<-subset_samples(Pacuent50,Time.Point=="T0")
+
+#combine all T0 samps with the Highs only at T1 and TF
+T1TF = c("T1", "TF") #pull T1 and TF only
+Pacu.50.T1TF<-subset_samples(Pacuent50, Time.Point %in% T1TF)
+Pacu.50.high<-subset_samples(Pacu.50.T1TF, Treatment=="High") #high only
+
+#combine Pacu.50.high with T0
+Pacu.50.high<-merge_phyloseq(Pacu.50.high, Pacu.50.T0)
+#test <- as(sample_data(Pacu.50.high), "data.frame") #sample df
+
+#all together High only
+ps0 <- transform_sample_counts(Pacu.50.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only CCC
+Pacu.50.CCC.high<-subset_samples(Pacu.50.high, Clade=="CCC")
+ps0 <- transform_sample_counts(Pacu.50.CCC.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
+
+# High only C42
+Pacu.50.C42.high<-subset_samples(Pacu.50.high, Clade=="C42")
+ps0 <- transform_sample_counts(Pacu.50.C42.high, function(x) x / sum(x))
+ps1 <- merge_samples(ps0, "Time.Point")
+ps2 <- transform_sample_counts(ps1, function(x) x / sum(x))
+pl<-plot_bar(ps2, fill="DIV") ;pl
 
 ```
 #Make way nicer bar plots
@@ -5899,10 +6175,10 @@ Mcap.BW.df3<-Mcap.BW.df2 %>%
 
 #read in physio metadata
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
-meta2<-meta[c(1:2)] #keep cols
+meta2<-meta[c(1:2,7)] #keep cols
+meta3<-na.omit(meta2)
 
-
- Mcap.BW.df3<- left_join(Mcap.BW.df3, meta2, by="Frag.ID")
+ Mcap.BW.df3<- left_join(Mcap.BW.df3, meta3, by="Frag.ID")
 Mcap.BW.df3$Parent.ID<-as.factor(as.character(Mcap.BW.df3$Parent.ID))
 Mcap.BW.df3$Frag.ID<-paste("S",Mcap.BW.df3$Frag.ID, sep="") #add an S to fragID
 
@@ -5914,6 +6190,14 @@ Mcap_its2.melt6<-na.omit(Mcap_its2.melt6) #remove 2 samples with no ITS2 data (w
  p + geom_point()+
        geom_smooth(method=lm) #add linear trend line
 
+#Stats
+ library(lme4)
+  library(lmerTest)
+library(car)
+ mod <- lmer(time1.growth ~ Percent.C  + (1|Parent.ID)+(1|Tank.num), data = Mcap_its2.melt6)
+Anova(mod)
+summary(mod)
+ 
  
  
 
