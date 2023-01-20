@@ -1,0 +1,133 @@
+Plate Name,Experiment Name,Specimen Name,Sample Name,Workspace Name,Plot Name,Gate Name,X Parameter,Y Parameter,Event Count,% Parent,% Total,Mean X,Mean Y,Median X,Median Y,Std. Dev. X,Std. Dev. Y,% C.V. X,% C.V. Y,Concentration
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A1,Default,Global,All Events,Global,Global,"77,568",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,551.36"
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A1,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"7,488",Disabled,Disabled,"1,391,689.13","1,951,645.50","859,746.50","1,778,357.00",Disabled,Disabled,96.40%,48.05%,149.76
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A1,Default,BL3-H vs Count,R1,BL3-H,Count,"3,091",Disabled,Disabled,"3,022,263.00",---,"2,789,704.00",---,Disabled,Disabled,26.83%,---,61.82
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A2,Default,Global,All Events,Global,Global,"32,834",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,670.081633
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A2,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"7,283",Disabled,Disabled,"994,509.94","2,092,089.00","623,487.00","1,962,710.00",Disabled,Disabled,92.40%,42.98%,148.632653
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A2,Default,BL3-H vs Count,R1,BL3-H,Count,"3,330",Disabled,Disabled,"2,974,221.75",---,"2,798,143.00",---,Disabled,Disabled,24.49%,---,67.959184
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A3,Default,Global,All Events,Global,Global,"258,421",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,914.23"
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A3,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"26,850",Disabled,Disabled,"1,121,393.38","2,545,494.25","837,699.50","2,321,092.50",Disabled,Disabled,85.60%,46.52%,198.888889
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A3,Default,BL3-H vs Count,R1,BL3-H,Count,"16,940",Disabled,Disabled,"3,336,643.25",---,"3,104,991.50",---,Disabled,Disabled,28.88%,---,125.481481
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A4,Default,Global,All Events,Global,Global,"86,077",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,637.607407
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A4,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"3,029",Disabled,Disabled,"1,192,755.63","3,083,271.00","901,155.00","2,849,736.00",Disabled,Disabled,85.32%,49.37%,22.437037
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A4,Default,BL3-H vs Count,R1,BL3-H,Count,"2,338",Disabled,Disabled,"3,612,238.50",---,"3,389,351.00",---,Disabled,Disabled,30.18%,---,17.318519
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A5,Default,Global,All Events,Global,Global,"46,243",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,345.097015
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A5,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"5,327",Disabled,Disabled,"886,324.50","2,180,962.25","593,756.00","2,158,283.00",Disabled,Disabled,96.22%,48.12%,39.753731
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A5,Default,BL3-H vs Count,R1,BL3-H,Count,"2,797",Disabled,Disabled,"3,009,392.50",---,"2,852,498.00",---,Disabled,Disabled,23.56%,---,20.873134
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A6,Default,Global,All Events,Global,Global,"38,937",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,290.574627
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A6,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"3,546",Disabled,Disabled,"1,103,557.38","2,419,783.50","574,640.50","2,397,402.00",Disabled,Disabled,108.07%,47.66%,26.462687
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A6,Default,BL3-H vs Count,R1,BL3-H,Count,"2,403",Disabled,Disabled,"3,147,771.00",---,"2,928,937.00",---,Disabled,Disabled,26.80%,---,17.932836
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A7,Default,Global,All Events,Global,Global,"171,545",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,280.19"
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A7,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"17,143",Disabled,Disabled,"1,255,437.38","2,035,787.25","808,525.00","1,843,468.00",Disabled,Disabled,93.76%,48.48%,127.932836
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A7,Default,BL3-H vs Count,R1,BL3-H,Count,"7,377",Disabled,Disabled,"3,052,739.50",---,"2,837,508.00",---,Disabled,Disabled,26.79%,---,55.052239
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A8,Default,Global,All Events,Global,Global,"96,870",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,717.555556
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A8,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"23,010",Disabled,Disabled,"691,767.25","3,428,514.00","537,329.00","3,323,402.00",Disabled,Disabled,98.95%,36.54%,170.444444
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A8,Default,BL3-H vs Count,R1,BL3-H,Count,"20,236",Disabled,Disabled,"3,646,990.75",---,"3,517,594.50",---,Disabled,Disabled,26.71%,---,149.896296
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A9,Default,Global,All Events,Global,Global,"207,257",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,546.69"
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A9,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"8,830",Disabled,Disabled,"1,098,876.00","3,330,763.25","778,987.50","3,176,375.50",Disabled,Disabled,94.93%,47.46%,65.895522
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A9,Default,BL3-H vs Count,R1,BL3-H,Count,"7,252",Disabled,Disabled,"3,699,719.50",---,"3,536,717.50",---,Disabled,Disabled,28.69%,---,54.119403
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A10,Default,Global,All Events,Global,Global,"153,871",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,139.79"
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A10,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"29,703",Disabled,Disabled,"542,998.56","2,703,925.00","384,481.00","2,638,874.00",Disabled,Disabled,96.81%,40.16%,220.022222
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A10,Default,BL3-H vs Count,R1,BL3-H,Count,"20,628",Disabled,Disabled,"3,221,488.00",---,"3,078,508.00",---,Disabled,Disabled,24.79%,---,152.8
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A11,Default,Global,All Events,Global,Global,"36,956",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,275.791045
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A11,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"5,100",Disabled,Disabled,"828,262.19","2,406,155.25","520,689.00","2,294,854.00",Disabled,Disabled,98.95%,42.09%,38.059701
+Standard.Curves.Dec.13.Run1,Samples,p.acuta,A11,Default,BL3-H vs Count,R1,BL3-H,Count,"3,082",Disabled,Disabled,"3,073,284.75",---,"2,871,825.00",---,Disabled,Disabled,25.40%,---,23
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B1,Default,Global,All Events,Global,Global,"31,636",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,236.089552
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B1,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"14,620",Disabled,Disabled,"533,094.13","3,811,138.75","387,875.50","3,666,040.00",Disabled,Disabled,119.26%,47.23%,109.104478
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B1,Default,BL3-H vs Count,R1,BL3-H,Count,"10,660",Disabled,Disabled,"3,975,617.25",---,"3,897,302.00",---,Disabled,Disabled,27.69%,---,79.552239
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B2,Default,Global,All Events,Global,Global,"14,786",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,110.343284
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B2,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"4,049",Disabled,Disabled,"724,684.06","3,221,261.50","519,916.00","3,043,049.00",Disabled,Disabled,116.42%,51.97%,30.216418
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B2,Default,BL3-H vs Count,R1,BL3-H,Count,"2,872",Disabled,Disabled,"3,833,551.25",---,"3,686,691.00",---,Disabled,Disabled,28.61%,---,21.432836
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B3,Default,Global,All Events,Global,Global,"74,424",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,555.402985
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B3,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"25,665",Disabled,Disabled,"470,242.41","4,348,867.50","344,323.00","4,244,750.00",Disabled,Disabled,118.60%,53.51%,191.529851
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B3,Default,BL3-H vs Count,R1,BL3-H,Count,"13,515",Disabled,Disabled,"4,135,045.00",---,"4,176,272.00",---,Disabled,Disabled,30.95%,---,100.858209
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B4,Default,Global,All Events,Global,Global,"39,070",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,291.567164
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B4,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"15,022",Disabled,Disabled,"363,692.44","4,401,980.00","250,473.00","4,247,092.00",Disabled,Disabled,158.33%,44.11%,112.104478
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B4,Default,BL3-H vs Count,R1,BL3-H,Count,"10,745",Disabled,Disabled,"4,121,621.50",---,"4,097,164.00",---,Disabled,Disabled,28.27%,---,80.186567
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B5,Default,Global,All Events,Global,Global,"28,784",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,213.214815
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B5,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"12,707",Disabled,Disabled,"711,070.31","3,673,373.50","433,266.00","3,339,858.00",Disabled,Disabled,130.43%,53.10%,94.125926
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B5,Default,BL3-H vs Count,R1,BL3-H,Count,"8,962",Disabled,Disabled,"3,860,982.50",---,"3,708,781.00",---,Disabled,Disabled,29.67%,---,66.385185
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B6,Default,Global,All Events,Global,Global,"7,485",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,55.444444
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B6,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,257,Disabled,Disabled,"1,820,589.75","2,222,244.25","1,462,612.00","1,996,754.00",Disabled,Disabled,76.23%,53.84%,1.903704
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B6,Default,BL3-H vs Count,R1,BL3-H,Count,274,Disabled,Disabled,"3,343,220.25",---,"3,095,849.50",---,Disabled,Disabled,29.61%,---,2.02963
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B7,Default,Global,All Events,Global,Global,"140,047",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,045.13"
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B7,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"15,530",Disabled,Disabled,"847,121.06","2,951,194.50","407,405.00","2,412,197.50",Disabled,Disabled,137.07%,59.31%,115.895522
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B7,Default,BL3-H vs Count,R1,BL3-H,Count,"10,320",Disabled,Disabled,"3,765,024.25",---,"3,557,631.00",---,Disabled,Disabled,32.41%,---,77.014925
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B8,Default,Global,All Events,Global,Global,"38,138",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,282.503704
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B8,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"7,778",Disabled,Disabled,"1,126,015.13","4,398,515.00","719,749.00","4,064,970.00",Disabled,Disabled,103.18%,52.29%,57.614815
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B8,Default,BL3-H vs Count,R1,BL3-H,Count,"5,467",Disabled,Disabled,"4,018,244.25",---,"3,906,730.00",---,Disabled,Disabled,30.49%,---,40.496296
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B9,Default,Global,All Events,Global,Global,"55,608",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,411.911111
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B9,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"9,713",Disabled,Disabled,"654,530.44","4,700,778.50","225,412.00","4,168,794.00",Disabled,Disabled,176.33%,49.19%,71.948148
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B9,Default,BL3-H vs Count,R1,BL3-H,Count,"6,547",Disabled,Disabled,"3,845,881.75",---,"3,601,326.00",---,Disabled,Disabled,30.49%,---,48.496296
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B10,Default,Global,All Events,Global,Global,"71,408",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,528.948148
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B10,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"9,882",Disabled,Disabled,"715,915.94","3,772,945.00","357,113.00","3,425,419.50",Disabled,Disabled,146.34%,53.54%,73.2
+Standard.Curves.Dec.13.Run1,Samples,p.varians,B10,Default,BL3-H vs Count,R1,BL3-H,Count,"7,088",Disabled,Disabled,"3,955,216.75",---,"3,877,104.50",---,Disabled,Disabled,30.29%,---,52.503704
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C1,Default,Global,All Events,Global,Global,"489,845",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"3,655.56"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C1,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"55,363",Disabled,Disabled,"362,794.56","1,866,311.25","213,910.00","1,696,488.00",Disabled,Disabled,151.36%,43.03%,413.156716
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C1,Default,BL3-H vs Count,R1,BL3-H,Count,"17,943",Disabled,Disabled,"2,847,015.00",---,"2,686,379.00",---,Disabled,Disabled,22.19%,---,133.902985
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C2,Default,Global,All Events,Global,Global,"502,154",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"5,399.51"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C2,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"32,363",Disabled,Disabled,"882,302.44","1,888,908.63","427,137.00","1,807,832.00",Disabled,Disabled,126.60%,47.19%,347.989247
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C2,Default,BL3-H vs Count,R1,BL3-H,Count,"12,265",Disabled,Disabled,"2,894,610.25",---,"2,648,584.00",---,Disabled,Disabled,26.39%,---,131.88172
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C3,Default,Global,All Events,Global,Global,"501,319",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"4,042.90"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C3,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"45,815",Disabled,Disabled,"774,889.94","2,585,277.50","496,784.00","2,331,512.00",Disabled,Disabled,111.69%,50.74%,369.475806
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C3,Default,BL3-H vs Count,R1,BL3-H,Count,"27,603",Disabled,Disabled,"3,320,982.25",---,"3,078,839.00",---,Disabled,Disabled,28.95%,---,222.604839
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C4,Default,Global,All Events,Global,Global,"502,425",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"6,441.35"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C4,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"31,961",Disabled,Disabled,"914,225.44","2,738,904.25","583,070.00","2,206,604.00",Disabled,Disabled,108.86%,66.85%,409.75641
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C4,Default,BL3-H vs Count,R1,BL3-H,Count,"16,392",Disabled,Disabled,"3,755,544.00",---,"3,544,655.50",---,Disabled,Disabled,32.56%,---,210.153846
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C5,Default,Global,All Events,Global,Global,"501,539",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"4,179.49"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C5,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"46,809",Disabled,Disabled,"448,726.25","1,791,361.38","275,824.00","1,414,479.00",Disabled,Disabled,140.25%,61.09%,390.075
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C5,Default,BL3-H vs Count,R1,BL3-H,Count,"13,112",Disabled,Disabled,"3,304,459.50",---,"3,126,178.50",---,Disabled,Disabled,27.52%,---,109.266667
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C6,Default,Global,All Events,Global,Global,"478,694",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"3,572.34"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C6,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"27,343",Disabled,Disabled,"513,845.78","2,059,341.25","321,883.00","1,848,154.00",Disabled,Disabled,129.44%,57.82%,204.052239
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C6,Default,BL3-H vs Count,R1,BL3-H,Count,"11,203",Disabled,Disabled,"3,161,000.00",---,"2,817,991.00",---,Disabled,Disabled,31.11%,---,83.604478
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C7,Default,Global,All Events,Global,Global,"472,079",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"3,522.98"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C7,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"16,602",Disabled,Disabled,"652,129.38","2,788,188.25","386,912.50","2,469,723.00",Disabled,Disabled,127.76%,58.94%,123.895522
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C7,Default,BL3-H vs Count,R1,BL3-H,Count,"10,442",Disabled,Disabled,"3,302,675.75",---,"2,996,113.00",---,Disabled,Disabled,30.84%,---,77.925373
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C8,Default,Global,All Events,Global,Global,"136,227",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,016.62"
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C8,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"5,017",Disabled,Disabled,"342,184.84","1,741,710.75","155,569.00","1,708,995.00",Disabled,Disabled,215.01%,34.01%,37.440299
+Standard.Curves.Dec.13.Run1,Samples,p.compressa,C8,Default,BL3-H vs Count,R1,BL3-H,Count,"1,298",Disabled,Disabled,"2,632,136.00",---,"2,428,968.00",---,Disabled,Disabled,24.18%,---,9.686567
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D1,Default,Global,All Events,Global,Global,"36,981",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,275.977612
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D1,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"12,676",Disabled,Disabled,"519,539.06","4,943,428.00","399,932.00","5,144,763.50",Disabled,Disabled,110.73%,42.96%,94.597015
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D1,Default,BL3-H vs Count,R1,BL3-H,Count,"7,396",Disabled,Disabled,"4,544,695.00",---,"4,723,181.00",---,Disabled,Disabled,25.47%,---,55.19403
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D2,Default,Global,All Events,Global,Global,"197,150",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,471.27"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D2,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"6,018",Disabled,Disabled,"1,286,827.88","4,987,620.50","1,082,267.50","5,217,669.50",Disabled,Disabled,72.56%,39.58%,44.910448
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D2,Default,BL3-H vs Count,R1,BL3-H,Count,"4,209",Disabled,Disabled,"4,771,119.00",---,"4,892,118.00",---,Disabled,Disabled,20.68%,---,31.410448
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D3,Default,Global,All Events,Global,Global,"394,987",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"2,925.83"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D3,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"8,963",Disabled,Disabled,"1,498,084.63","4,155,555.50","1,227,696.00","4,564,356.00",Disabled,Disabled,77.29%,57.74%,66.392593
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D3,Default,BL3-H vs Count,R1,BL3-H,Count,"5,081",Disabled,Disabled,"4,648,153.50",---,"4,750,158.00",---,Disabled,Disabled,22.09%,---,37.637037
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D4,Default,Global,All Events,Global,Global,"500,674",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"4,723.34"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D4,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"19,175",Disabled,Disabled,"1,100,364.50","5,569,468.00","875,552.00","6,110,041.00",Disabled,Disabled,79.33%,45.00%,180.896226
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D4,Default,BL3-H vs Count,R1,BL3-H,Count,"7,996",Disabled,Disabled,"4,538,601.00",---,"4,665,948.00",---,Disabled,Disabled,25.50%,---,75.433962
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D5,Default,Global,All Events,Global,Global,"205,716",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,523.82"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D5,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"9,436",Disabled,Disabled,"1,235,274.63","5,380,937.50","1,018,206.50","6,388,066.50",Disabled,Disabled,78.55%,53.88%,69.896296
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D5,Default,BL3-H vs Count,R1,BL3-H,Count,"3,370",Disabled,Disabled,"4,350,924.50",---,"4,434,060.00",---,Disabled,Disabled,28.87%,---,24.962963
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D6,Default,Global,All Events,Global,Global,"502,123",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"4,443.57"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D6,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"2,990",Disabled,Disabled,"1,345,632.13","3,045,900.75","900,104.50","1,178,902.00",Disabled,Disabled,102.78%,97.82%,26.460177
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D6,Default,BL3-H vs Count,R1,BL3-H,Count,892,Disabled,Disabled,"4,153,827.00",---,"4,099,112.00",---,Disabled,Disabled,30.70%,---,7.893805
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D7,Default,Global,All Events,Global,Global,"500,874",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"4,317.88"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D7,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"9,675",Disabled,Disabled,"1,756,662.00","5,478,989.00","1,424,585.00","6,883,784.00",Disabled,Disabled,73.61%,56.66%,83.405172
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D7,Default,BL3-H vs Count,R1,BL3-H,Count,"2,098",Disabled,Disabled,"4,745,820.50",---,"5,106,515.00",---,Disabled,Disabled,26.16%,---,18.086207
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D8,Default,Global,All Events,Global,Global,"502,082",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"5,071.54"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D8,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"14,235",Disabled,Disabled,"1,441,947.00","4,701,880.00","1,033,736.00","4,724,047.00",Disabled,Disabled,86.57%,51.85%,143.787879
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D8,Default,BL3-H vs Count,R1,BL3-H,Count,"8,361",Disabled,Disabled,"4,316,898.50",---,"4,387,236.00",---,Disabled,Disabled,26.60%,---,84.454545
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D9,Default,Global,All Events,Global,Global,"278,568",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"2,063.47"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D9,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"10,285",Disabled,Disabled,"1,123,638.00","4,241,818.00","834,736.00","4,559,973.00",Disabled,Disabled,92.34%,56.10%,76.185185
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D9,Default,BL3-H vs Count,R1,BL3-H,Count,"5,909",Disabled,Disabled,"4,565,305.00",---,"4,680,991.00",---,Disabled,Disabled,23.59%,---,43.77037
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D10,Default,Global,All Events,Global,Global,"500,085",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"5,682.78"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D10,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"23,737",Disabled,Disabled,"1,795,588.00","5,756,852.00","1,382,251.00","6,940,516.00",Disabled,Disabled,76.89%,49.88%,269.738636
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D10,Default,BL3-H vs Count,R1,BL3-H,Count,"5,925",Disabled,Disabled,"4,870,708.00",---,"5,176,522.00",---,Disabled,Disabled,23.54%,---,67.329545
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D11,Default,Global,All Events,Global,Global,"502,359",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"5,287.99"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D11,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"27,350",Disabled,Disabled,"2,426,834.75","5,081,699.00","2,112,568.00","5,853,378.00",Disabled,Disabled,62.95%,54.90%,287.894737
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D11,Default,BL3-H vs Count,R1,BL3-H,Count,"10,619",Disabled,Disabled,"4,887,627.50",---,"5,143,877.00",---,Disabled,Disabled,22.04%,---,111.778947
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D12,Default,Global,All Events,Global,Global,"502,282",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"5,643.62"
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D12,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"7,749",Disabled,Disabled,"1,951,732.75","4,493,201.00","1,536,608.00","5,037,374.00",Disabled,Disabled,73.23%,54.72%,87.067416
+Standard.Curves.Dec.13.Run1,Samples,m.capitata,D12,Default,BL3-H vs Count,R1,BL3-H,Count,"4,529",Disabled,Disabled,"4,867,209.00",---,"5,027,412.00",---,Disabled,Disabled,20.24%,---,50.88764
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E6,Default,Global,All Events,Global,Global,"2,554",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,19.059701
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E6,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,29,Disabled,Disabled,"2,018,805.63","3,331,122.00","1,353,452.00","1,831,482.00",Disabled,Disabled,89.31%,79.69%,0.216418
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E6,Default,BL3-H vs Count,R1,BL3-H,Count,9,Disabled,Disabled,"4,859,498.50",---,"4,608,561.00",---,Disabled,Disabled,16.95%,---,0.067164
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E7,Default,Global,All Events,Global,Global,"176,256",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,"1,315.34"
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E7,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"18,233",Disabled,Disabled,"1,412,694.00","2,062,070.88","924,186.00","1,924,042.00",Disabled,Disabled,90.46%,44.33%,136.067164
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E7,Default,BL3-H vs Count,R1,BL3-H,Count,"8,121",Disabled,Disabled,"2,940,382.50",---,"2,747,924.00",---,Disabled,Disabled,24.74%,---,60.604478
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E8,Default,Global,All Events,Global,Global,"73,943",Disabled,Disabled,0,0,---,---,Disabled,Disabled,---,---,551.813433
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E8,Default,VL3-A vs BL3-H,Symbiodinium,VL3-A,BL3-H,"13,163",Disabled,Disabled,"1,102,835.75","2,131,091.25","680,223.00","1,984,434.00",Disabled,Disabled,92.75%,43.16%,98.231343
+Standard.Curves.Dec.13.Run1,Samples,pacuta.redo.MilliQ,E8,Default,BL3-H vs Count,R1,BL3-H,Count,"6,260",Disabled,Disabled,"3,003,073.00",---,"2,823,839.50",---,Disabled,Disabled,24.90%,---,46.716418
