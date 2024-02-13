@@ -167,13 +167,6 @@ coralDIV_RAW <- phyloseq(otu, tax, sam)
 ```
 
 
-
-
-
-
-
-
-
 ## RELATIVE ABUNDANCES
 Read in coral ITS2 profiles: "coral_RELA"
 ```{r}  

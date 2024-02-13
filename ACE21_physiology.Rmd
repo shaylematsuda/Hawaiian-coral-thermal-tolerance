@@ -126,7 +126,6 @@ meta$Clade<-as.factor(meta$Clade)
   meta$transmission[meta$Species=="Pavona_varians"]<-"horizontal"
   meta$transmission[meta$Species=="Pocillopora_acuta"]<-"vertical"
 
-
   meta$skeleton[meta$Species=="Montipora_capitata"]<-"porous"
   meta$skeleton[meta$Species=="Porites_compressa"]<-"porous"
   meta$skeleton[meta$Species=="Pavona_varians"]<-"self-shading"
@@ -136,9 +135,6 @@ meta$Clade<-as.factor(meta$Clade)
   meta$shape[meta$Species=="Porites_compressa"]<-"branch"
   meta$shape[meta$Species=="Pavona_varians"]<-"encrust"
   meta$shape[meta$Species=="Pocillopora_acuta"]<-"small"
-
-
-
 
 #write.csv(meta,"meta16s.csv")
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
@@ -152,8 +148,7 @@ meta$Clade<-as.factor(meta$Clade)
 # metaResp<-metaResp[,c("Frag.ID","Time.Point")] # keep only columns you need
 # Respcheck3<-merge(metaResp, RespCheckC)
 # #write.csv(Respcheck3,"Respcheck3.csv")
-
-
+  
 AFDW <- read.csv("Data/ACE21_AFDW_20210308.csv")
 #AFDW <- AFDW[!(AFDW$Frag.ID == "1195"),]
 #AFDW <- AFDW[!(AFDW$Frag.ID == "N49"),]
@@ -176,7 +171,7 @@ Slurrytest<-merge(meta, Slurry, all.x = T)
 
 #merge 
 testAFDW<-merge(AFDW, meta, all=T)
-ohhh#testSlurry<-merge(Slurry, meta, all.y=T)
+#testSlurry<-merge(Slurry, meta, all.y=T)
 #testflow<-merge(tData, meta, all.y=T)
 #SurfaceArea<-merge(SA, meta, all.y=T)
 #write.csv(SurfaceArea, "SurfaceAreaACE21.csv")
@@ -337,12 +332,6 @@ qqPlot(residuals(Biomass_T0_model))
 emm<-emmeans(Biomass_T0_model,  ~ Clade, adjust="Tukey")
 cld(emm)
 pairs(emm)
-
-
-
-
-
-
 
 hist(biomass_stats_T1TF$AFDWmg.cm2) 
 # biomass_stats_T1TF$AFDWmg.cm2_log<-log10(biomass_stats_T1TF$AFDWmg.cm2)
@@ -609,7 +598,6 @@ biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise, #summarize cell c
 )
 biomass_T0_mean
 
-
 #### all species#
 #plot all
 All_biomass_plot<-ggplot(data=biomass_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
@@ -676,23 +664,16 @@ biomass_T0_mean_plot.c<-ggplot(data=biomass_T0_mean.clade, aes(x=Species, y=mean
   ggtitle("Time 0 biomass")+
   theme(plot.title = element_text(size=20, face = "italic"));biomass_T0_mean_plot.c
 
-
-
-
-
-
-
 #TFH only#### 
 biomass_TFH<-subset(biomass2, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-biomass_TFH_mean <- ddply(biomass_TFH, c( "Species"), summarise, #summarize cell counts
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #calculate the length of the data frame, excluding NA’s *this part is important*
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), #calculate standard deviation
-                 se   = sd / sqrt(N), #calculate standard error
-                 max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
+biomass_TFH_mean <- ddply(biomass_TFH, c( "Species"), summarise, 
+                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
+                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
+                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
+                 se   = sd / sqrt(N), 
+                 max = max(AFDWmg.cm2, na.rm=TRUE) 
 )
 biomass_TFH_mean
-
 
 #means
 biomass_means <- ddply(biomass2, c( "Species","Treatment","Time.Point"), summarise, #summarize cell counts
@@ -703,8 +684,6 @@ biomass_means <- ddply(biomass2, c( "Species","Treatment","Time.Point"), summari
                  max = max(AFDWmg.cm2, na.rm=TRUE) #calculate max, could also calculate min () if desired
 )
 biomass_means
-
-
 
 #all at t1
 biomass_mean.T1<-subset(biomass_means, Time.Point=="T1")
@@ -743,10 +722,6 @@ All_biomass_plot<-ggplot(data=biomass_TFH_mean, aes(x=Species, y=mean, group = S
   ggtitle("Time F, High only")+
   theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
 
-
-
-
-
 #plot Mcap #### 
 Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
@@ -772,9 +747,6 @@ Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, grou
   ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
   # ggtitle("M capitata")+
   theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
-
-
-
 
 # Pcomp  ####
 
