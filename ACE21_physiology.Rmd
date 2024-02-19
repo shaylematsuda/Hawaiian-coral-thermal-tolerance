@@ -48,12 +48,22 @@ library(devtools)
 ```
 
 Load meta
-```{r}          
+```{r}   
+library(tidyverse)
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
+meta<-meta %>%
+    mutate(Species = str_replace(Species, "_", " "))
 #remove frags that re duplicated or T3
 meta<-meta[!(meta$X=="REMOVE"),]
 meta<- meta[!(meta$Frag.ID == "3149"),] # dup
-#write.csv(meta,"ACE21meta.csv")
+meta$Species<-as.factor(meta$Species)
+meta$Species <- factor(meta$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
+
+meta$Parent.ID<-as.factor(meta$Parent.ID)
+meta$Frag.ID<-as.factor(meta$Frag.ID)
+meta$Time.Point<-as.factor(meta$Time.Point)
+meta$Treatment<-as.factor(meta$Treatment)
+meta$Tank.num<-as.factor(meta$Tank.num)
 
 #add new col for Clades
 # EDIT sample data
@@ -120,21 +130,25 @@ meta$Clade<-as.factor(meta$Clade)
   meta$Tissue[meta$Species=="Porites_compressa"]<-"thick"
   meta$Tissue[meta$Species=="Pavona_varians"]<-"thick"
   meta$Tissue[meta$Species=="Pocillopora_acuta"]<-"thin"
+  meta$Tissue<-as.factor(meta$Tissue)
 
   meta$transmission[meta$Species=="Montipora_capitata"]<-"vertical"
   meta$transmission[meta$Species=="Porites_compressa"]<-"vertical"
   meta$transmission[meta$Species=="Pavona_varians"]<-"horizontal"
   meta$transmission[meta$Species=="Pocillopora_acuta"]<-"vertical"
+  meta$transmission<-as.factor(meta$transmission)
 
   meta$skeleton[meta$Species=="Montipora_capitata"]<-"porous"
   meta$skeleton[meta$Species=="Porites_compressa"]<-"porous"
   meta$skeleton[meta$Species=="Pavona_varians"]<-"self-shading"
   meta$skeleton[meta$Species=="Pocillopora_acuta"]<-"non-porous"
+  meta$skeleton<-as.factor(meta$skeleton)
 
   meta$shape[meta$Species=="Montipora_capitata"]<-"branch"
   meta$shape[meta$Species=="Porites_compressa"]<-"branch"
   meta$shape[meta$Species=="Pavona_varians"]<-"encrust"
   meta$shape[meta$Species=="Pocillopora_acuta"]<-"small"
+  meta$shape<-as.factor(meta$shape)
 
 #write.csv(meta,"meta16s.csv")
 #Ashfreedryweight, Wax dipping, Total airbrush volume, metadata
@@ -175,9 +189,6 @@ testAFDW<-merge(AFDW, meta, all=T)
 #testflow<-merge(tData, meta, all.y=T)
 #SurfaceArea<-merge(SA, meta, all.y=T)
 #write.csv(SurfaceArea, "SurfaceAreaACE21.csv")
-
-
-
 ```
 #Biomass (AFDW and SA)
 ```{r}     
@@ -571,7 +582,7 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
 PLOTS
 ```{r}    
 #t0 only#### 
-biomass_T0<-subset(biomass2, Time.Point=="T0") #Subset Pvar
+biomass_T0<-subset(biomass2, Time.Point=="T0") 
 biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise, 
                  N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
                  mean = mean(AFDWmg.cm2, na.rm=TRUE), 
@@ -581,286 +592,71 @@ biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise,
 )
 biomass_T0_mean
 
-#### all species#
-#plot all
-All_biomass_plot<-ggplot(data=biomass_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("mg cm"^"-2"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
+#redo 2/16/24 boxplot ####
+#T0 only
+  ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+     theme(axis.text.x = element_text(face = "italic"))+
+  ggtitle("Ash-free Dry Weight")+
+    geom_boxplot( show.legend = FALSE)
 
-#by clade T0
-biomass_T0_mean.clade <- ddply(biomass_T0, c( "Species","Clade"), summarise, 
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(AFDWmg.cm2, na.rm=TRUE) 
-)
-biomass_T0_mean.clade
+#T0 only - by algal profile
+  ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Clade, group=interaction(Species, Clade))) + 
+      scale_fill_manual(values=c("darkorange2", "pink1","powderblue","#0072B2" ,"firebrick","springgreen4", "palegreen2","goldenrod1"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+     theme(axis.text.x = element_text(face = "italic"))+
+      ggtitle("Ash-free Dry Weight by Algal Profile")+
+    geom_boxplot( show.legend = FALSE)
 
-biomass_T0_mean.clade$Code<-paste(biomass_T0_mean.clade$Species, biomass_T0_mean.clade$Clade)
+#all species ####
+#Subset by time 1 or F only 
+biomass_T1<-subset(biomass2, Time.Point=="T1") 
+biomass_TF<-subset(biomass2, Time.Point=="TF") 
 
-#plot all
-biomass_T0_mean_plot.c<-ggplot(data=biomass_T0_mean.clade, aes(x=Species, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+
-  geom_line(aes(color=Code), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("AFDWmg.cm2"))) +
-  ggtitle("Time 0 biomass")+
-  theme(plot.title = element_text(size=20, face = "italic"));biomass_T0_mean_plot.c
+#T1
+ggplot(biomass_T1, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("blue", "red"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+     theme(axis.text.x = element_text(face = "italic"))+
+    ggtitle("Ash-free Dry Weight Post-Elevated Temperatures")+
+    geom_boxplot( show.legend = FALSE)
 
-#TFH only#### 
-biomass_TFH<-subset(biomass2, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-biomass_TFH_mean <- ddply(biomass_TFH, c( "Species"), summarise, 
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(AFDWmg.cm2, na.rm=TRUE) 
-)
-biomass_TFH_mean
+#TF
+ggplot(biomass_TF, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("blue", "red"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+     theme(axis.text.x = element_text(face = "italic"))+
+      ggtitle("Ash-free Dry Weight Post-Recovery")+
+    geom_boxplot( show.legend = FALSE)
 
-#means
-biomass_means <- ddply(biomass2, c( "Species","Treatment","Time.Point"), summarise, 
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(AFDWmg.cm2, na.rm=TRUE) 
-)
-biomass_means
+#By species ####
 
-#all at t1
-biomass_mean.T1<-subset(biomass_means, Time.Point=="T1")
-# Notched box plot
-T1.Biomass.plot<-ggplot(biomass_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
-  scale_color_manual(values=c("blue", "red"))+
-     # coord_cartesian(ylim = c(0, 10))+
-   theme_classic()+
- theme(legend.position="none") +# Remove legend
-  geom_boxplot(notch=TRUE);T1.Biomass.plot
+Biomass_means <- summarySE(biomass2, measurevar="AFDWmg.cm2", groupvars=c("Species","Treatment","Time.Point"))
 
-#### all species#
-#plot all
-All_biomass_plot<-ggplot(data=biomass_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));All_biomass_plot
+#Subset
+biomass_Mcap<-subset(biomass2, Species=="Montipora capitata") 
+biomass_Pcomp<-subset(biomass2, Species=="Porites compressa") 
+biomass_Pvar<-subset(biomass2, Species=="Pavona varians") 
+biomass_Pacu<-subset(biomass2, Species=="Pocillopora acuta") 
 
-#plot Mcap #### 
-Mcap_biomass_plot<-ggplot(data=Mcap_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot
+#Mcap
 
-# Pcomp  ####
+    
+   
 
-Pcomp_biomass_plot<-ggplot(data=Pcomp_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  # ylab("") + #Label the X Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-   ylab(expression(paste(""))) +
-  # ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot
-
-Pcomp_biomass2<-subset(biomass2, Species=="Porites_compressa")
-biomass2_Pcompmean <- ddply(Pcomp_biomass2, c("Treatment", "Clade", "Time.Point"), summarise, 
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(AFDWmg.cm2, na.rm=TRUE) 
-)
-biomass2_Pcompmean #display table
-biomass2_PcompmeanTF<-subset(biomass2_Pcompmean, Time.Point=="TF")
-biomass2_PcompmeanTF$Code<-paste(biomass2_PcompmeanTF$Clade,biomass2_PcompmeanTF$Treatment)
-
-Pcomp_biomass_plot_Clade<-ggplot(data=biomass2_PcompmeanTF, aes(x=Clade, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+
-  geom_line(aes(color=Code), linetype=2, show.legend = T)+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-  xlab("") + #Label the X Axis
-  ylab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  ggtitle("P. compressa TF by algal profile")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot_Clade
-Pcomp_biomass_plot_Clade 
-
-# Pvar  ####
-Pvar_biomass_mean_plot<-ggplot(data=Pvar_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
- ylab(expression(paste(""))) +
-  # ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_mean_plot
-
-# Pacu ####
-
-Pacu_biomass_mean_plot<-ggplot(data=Pacu_biomass_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  ylab("") + #Label the Y Axis
-  ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        plot.background =element_blank(), #Set the plot background
-        text = element_text(size=18),  # set element text
-        legend.key = element_blank()) + #Set plot legend key
-  #ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  #ggtitle("P acuta")+
-  theme(plot.title = element_text(size=20,face = "italic"));Pacu_biomass_mean_plot
-
-
-###### All plots together
-Mcap_biomass_plot_plot<-Mcap_biomass_plot+ theme(legend.position = "none") #remove legend
-Pcomp_biomass_plot<-Pcomp_biomass_plot+ theme(legend.position = "none") #remove legend
-Pvar_biomass_mean_plot<-Pvar_biomass_mean_plot+ theme(legend.position = "none") #remove legend
-Pacu_biomass_mean_plot<-Pacu_biomass_mean_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot, nrow = 1)
- 
 ```
 all plots by clade
 ```{r}
