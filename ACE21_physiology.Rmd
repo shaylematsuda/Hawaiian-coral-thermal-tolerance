@@ -598,64 +598,134 @@ biomass_T0_mean
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Ash-free Dry Weight")+
+      theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-     theme(axis.text.x = element_text(face = "italic"))+
-  ggtitle("Ash-free Dry Weight")+
-    geom_boxplot( show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE)
 
 #T0 only - by algal profile
   ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Clade, group=interaction(Species, Clade))) + 
-      scale_fill_manual(values=c("darkorange2", "pink1","powderblue","#0072B2" ,"firebrick","springgreen4", "palegreen2","goldenrod1"))+
+      scale_fill_manual(values=c("darkorange3", "pink1","powderblue","#0072B2" ,"firebrick","darkgreen",    "palegreen2","goldenrod1"))+
       xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
       ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-     theme(axis.text.x = element_text(face = "italic"))+
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Ash-free Dry Weight by Algal Profile")+
-    geom_boxplot( show.legend = FALSE)
+      geom_boxplot( show.legend = FALSE)
 
 #all species ####
 #Subset by time 1 or F only 
 biomass_T1<-subset(biomass2, Time.Point=="T1") 
 biomass_TF<-subset(biomass2, Time.Point=="TF") 
 
-#T1
+#T1 - by species
 ggplot(biomass_T1, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
-      scale_fill_manual(values=c("blue", "red"))+
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Ash-free Dry Weight Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
       ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-     theme(axis.text.x = element_text(face = "italic"))+
-    ggtitle("Ash-free Dry Weight Post-Elevated Temperatures")+
-    geom_boxplot( show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE)
+
+#T1 - by species and algal profile - make for each species and then cowplot####
+biomass_T1_mcap<-subset(biomass_T1, Species=="Montipora capitata") 
+biomass_T1_pcomp<-subset(biomass_T1, Species=="Porites compressa") 
+biomass_T1_pvar<-subset(biomass_T1, Species=="Pavona varians") 
+biomass_T1_pacu<-subset(biomass_T1, Species=="Pocillopora acuta") 
+
+#Mcap ####
+AFDW_Mcap_plot<- ggplot(biomass_T1_mcap, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Mcap_plot
+  
+#Pcomp ####
+AFDW_Pcomp_plot<- ggplot(biomass_T1_pcomp, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pcomp_plot
+
+#Pvar ####
+AFDW_Pvar_plot<- ggplot(biomass_T1_pvar, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pvar_plot
+
+#Pacu ####
+AFDW_Pacu_plot<- ggplot(biomass_T1_pacu, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pacu_plot
+
+library(cowplot) 
+plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Ash-free Dry Weight", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+
+plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
 #TF
-ggplot(biomass_TF, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
-      scale_fill_manual(values=c("blue", "red"))+
+      ggplot(biomass_TF, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Ash-free Dry Weight Post-Recovery")+
       xlab("") + #Label the X Axis
       ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-     theme(axis.text.x = element_text(face = "italic"))+
-      ggtitle("Ash-free Dry Weight Post-Recovery")+
-    geom_boxplot( show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE)
 
-#By species ####
 
-Biomass_means <- summarySE(biomass2, measurevar="AFDWmg.cm2", groupvars=c("Species","Treatment","Time.Point"))
-
-#Subset
-biomass_Mcap<-subset(biomass2, Species=="Montipora capitata") 
-biomass_Pcomp<-subset(biomass2, Species=="Porites compressa") 
-biomass_Pvar<-subset(biomass2, Species=="Pavona varians") 
-biomass_Pacu<-subset(biomass2, Species=="Pocillopora acuta") 
-
-#Mcap
-
-    
-   
 
 ```
 all plots by clade
