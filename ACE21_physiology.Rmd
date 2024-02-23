@@ -11,17 +11,12 @@ editor_options:
   chunk_output_type: console
 ---
 
-Data analysis for the All Coral Experiment #2021. Physiological variables:  
-AFDW
-Flow Cytometry (cell counts)
-Protien
-Biomass
-BW
-PAM
-
+Data analysis for the All Coral Experiment #2021. Physiological variables:\
+AFDW Flow Cytometry (cell counts) Protien Biomass BW PAM
 
 #Data and libraries
-```{r}    
+
+```{r}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 
@@ -41,15 +36,17 @@ library(reshape2)
 library(vegan)
 library(pairwiseAdonis)
 library("scales")
-packageVersion("scales")
 library(RColorBrewer)
 library(colorRamps)
 library(devtools)
+library(cowplot) 
+library(ggh4x)
+
 ```
 
 Load meta
-```{r}   
-library(tidyverse)
+
+```{r}
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 meta<-meta %>%
     mutate(Species = str_replace(Species, "_", " "))
@@ -96,58 +93,58 @@ meta$Tank.num<-as.factor(meta$Tank.num)
   meta$Clade[meta$Parent.ID==362]<-"C27"
   
 #Pacu
-  meta$Clade[meta$Parent.ID==311]<-"C42"
-  meta$Clade[meta$Parent.ID==301]<-"CCC"
-  meta$Clade[meta$Parent.ID==304]<-"CCC"
-  meta$Clade[meta$Parent.ID==306]<-"CCC"
-  meta$Clade[meta$Parent.ID==303]<-"CCC"
-  meta$Clade[meta$Parent.ID==307]<-"C42"
-  meta$Clade[meta$Parent.ID==308]<-"CCC"
-  meta$Clade[meta$Parent.ID==310]<-"CCC"
-  meta$Clade[meta$Parent.ID==312]<-"CCC"
-  meta$Clade[meta$Parent.ID==302]<-"CCC"
-  meta$Clade[meta$Parent.ID==305]<-"C42"
-  meta$Clade[meta$Parent.ID==309]<-"C42"
+  meta$Clade[meta$Parent.ID==311]<-"C42_2"
+  meta$Clade[meta$Parent.ID==301]<-"C1d"
+  meta$Clade[meta$Parent.ID==304]<-"C1d"
+  meta$Clade[meta$Parent.ID==306]<-"C1d"
+  meta$Clade[meta$Parent.ID==303]<-"C1d"
+  meta$Clade[meta$Parent.ID==307]<-"C42_2"
+  meta$Clade[meta$Parent.ID==308]<-"C1d"
+  meta$Clade[meta$Parent.ID==310]<-"C1d"
+  meta$Clade[meta$Parent.ID==312]<-"C1d"
+  meta$Clade[meta$Parent.ID==302]<-"C1d"
+  meta$Clade[meta$Parent.ID==305]<-"C42_2"
+  meta$Clade[meta$Parent.ID==309]<-"C42_2"
 
 #Mcap
-  meta$Clade[meta$Parent.ID==363]<-"C"
-  meta$Clade[meta$Parent.ID==364]<-"CD"
-  meta$Clade[meta$Parent.ID==365]<-"CD"
-  meta$Clade[meta$Parent.ID==366]<-"CD"
-  meta$Clade[meta$Parent.ID==367]<-"C"
-  meta$Clade[meta$Parent.ID==368]<-"CD"
-  meta$Clade[meta$Parent.ID==369]<-"CD"
-  meta$Clade[meta$Parent.ID==370]<-"C"
-  meta$Clade[meta$Parent.ID==371]<-"C"
-  meta$Clade[meta$Parent.ID==372]<-"C"
-  meta$Clade[meta$Parent.ID==373]<-"C"
-  meta$Clade[meta$Parent.ID==374]<-"CD"
+  meta$Clade[meta$Parent.ID==363]<-"C31"
+  meta$Clade[meta$Parent.ID==364]<-"C31D4"
+  meta$Clade[meta$Parent.ID==365]<-"C31D4"
+  meta$Clade[meta$Parent.ID==366]<-"C31D4"
+  meta$Clade[meta$Parent.ID==367]<-"C31"
+  meta$Clade[meta$Parent.ID==368]<-"C31D4"
+  meta$Clade[meta$Parent.ID==369]<-"C31D4"
+  meta$Clade[meta$Parent.ID==370]<-"C31"
+  meta$Clade[meta$Parent.ID==371]<-"C31"
+  meta$Clade[meta$Parent.ID==372]<-"C31"
+  meta$Clade[meta$Parent.ID==373]<-"C31"
+  meta$Clade[meta$Parent.ID==374]<-"C31D4"
 
 meta$Clade<-as.factor(meta$Clade)
 
 #add tissue thickness, transmission mode, 
-  meta$Tissue[meta$Species=="Montipora_capitata"]<-"thick"
-  meta$Tissue[meta$Species=="Porites_compressa"]<-"thick"
-  meta$Tissue[meta$Species=="Pavona_varians"]<-"thick"
-  meta$Tissue[meta$Species=="Pocillopora_acuta"]<-"thin"
+  meta$Tissue[meta$Species=="Montipora capitata"]<-"thick"
+  meta$Tissue[meta$Species=="Porites compressa"]<-"thick"
+  meta$Tissue[meta$Species=="Pavona varians"]<-"thick"
+  meta$Tissue[meta$Species=="Pocillopora acuta"]<-"thin"
   meta$Tissue<-as.factor(meta$Tissue)
 
-  meta$transmission[meta$Species=="Montipora_capitata"]<-"vertical"
-  meta$transmission[meta$Species=="Porites_compressa"]<-"vertical"
-  meta$transmission[meta$Species=="Pavona_varians"]<-"horizontal"
-  meta$transmission[meta$Species=="Pocillopora_acuta"]<-"vertical"
+  meta$transmission[meta$Species=="Montipora capitata"]<-"vertical"
+  meta$transmission[meta$Species=="Porites compressa"]<-"vertical"
+  meta$transmission[meta$Species=="Pavona varians"]<-"horizontal"
+  meta$transmission[meta$Species=="Pocillopora acuta"]<-"vertical"
   meta$transmission<-as.factor(meta$transmission)
 
-  meta$skeleton[meta$Species=="Montipora_capitata"]<-"porous"
-  meta$skeleton[meta$Species=="Porites_compressa"]<-"porous"
-  meta$skeleton[meta$Species=="Pavona_varians"]<-"self-shading"
-  meta$skeleton[meta$Species=="Pocillopora_acuta"]<-"non-porous"
+  meta$skeleton[meta$Species=="Montipora capitata"]<-"porous"
+  meta$skeleton[meta$Species=="Porites compressa"]<-"porous"
+  meta$skeleton[meta$Species=="Pavona varians"]<-"self-shading"
+  meta$skeleton[meta$Species=="Pocillopora acuta"]<-"non-porous"
   meta$skeleton<-as.factor(meta$skeleton)
 
-  meta$shape[meta$Species=="Montipora_capitata"]<-"branch"
-  meta$shape[meta$Species=="Porites_compressa"]<-"branch"
-  meta$shape[meta$Species=="Pavona_varians"]<-"encrust"
-  meta$shape[meta$Species=="Pocillopora_acuta"]<-"small"
+  meta$shape[meta$Species=="Montipora capitata"]<-"branch"
+  meta$shape[meta$Species=="Porites compressa"]<-"branch"
+  meta$shape[meta$Species=="Pavona varians"]<-"encrust"
+  meta$shape[meta$Species=="Pocillopora acuta"]<-"small"
   meta$shape<-as.factor(meta$shape)
 
 #write.csv(meta,"meta16s.csv")
@@ -190,8 +187,10 @@ testAFDW<-merge(AFDW, meta, all=T)
 #SurfaceArea<-merge(SA, meta, all.y=T)
 #write.csv(SurfaceArea, "SurfaceAreaACE21.csv")
 ```
+
 #Biomass (AFDW and SA)
-```{r}     
+
+```{r}
 SA<-WaxDipping 
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
 
@@ -235,7 +234,7 @@ biomass2_meanClade
 
 # Make "BOTH" into Ambeint and High...THIS IS UGLY CODE BUT IT WORKS
 # Mcap 
-#Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora_capitata") #Subset Mcap
+#Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora capitata") #Subset Mcap
 
 #Mcap_biomass_mean_Both<-Mcap_biomass_mean #copy df
 #row.names.remove <- c("1","2","13","14") #remove high and amb by row numbers
@@ -250,23 +249,25 @@ biomass2_meanClade
 #Mcap_biomass_mean<-rbind(Mcap_biomass_mean,Mcap_biomass_mean_Both,Mcap_biomass_mean_Both2) #bind together
 
 #Mcap 
-Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora_capitata") #Subset Mcap
-Mcap_biomass_meanClade<-subset(biomass2_meanClade, Species=="Montipora_capitata") #Subset Mcap
+Mcap_biomass_mean<-subset(biomass2_mean, Species=="Montipora capitata") #Subset Mcap
+Mcap_biomass_meanClade<-subset(biomass2_meanClade, Species=="Montipora capitata") #Subset Mcap
 
 # Pcomp 
-Pcomp_biomass_mean<-subset(biomass2_mean, Species=="Porites_compressa") #Subset Pcomp
-Pcomp_biomass_meanClade<-subset(biomass2_meanClade, Species=="Porites_compressa") #Subset Mcap
+Pcomp_biomass_mean<-subset(biomass2_mean, Species=="Porites compressa") #Subset Pcomp
+Pcomp_biomass_meanClade<-subset(biomass2_meanClade, Species=="Porites compressa") #Subset Mcap
 
 # Pacu 
-Pacu_biomass_mean<-subset(biomass2_mean, Species=="Pocillopora_acuta") #Subset Pacu
-Pacu_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pocillopora_acuta") #Subset Mcap
+Pacu_biomass_mean<-subset(biomass2_mean, Species=="Pocillopora acuta") #Subset Pacu
+Pacu_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pocillopora acuta") #Subset Mcap
 
 # Pvar 
-Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona_varians") #Subset Pvar
-Pvar_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pavona_varians") #Subset Mcap
+Pvar_biomass_mean<-subset(biomass2_mean, Species=="Pavona varians") #Subset Pvar
+Pvar_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pavona varians") #Subset Mcap
 ```
+
 Stats - T0 is n=6, not n=12. T1 and TF
-```{r}      
+
+```{r}
 Biomass_stats<-biomass2
 biomass_stats_T1TF<-biomass2
 biomass_stats_T1TF<-subset(biomass_stats_T1TF, Time.Point=="T1"|Time.Point=="TF")
@@ -292,10 +293,10 @@ cld(emm)
 pairs(emm)
 
 #t0 only by species
-biomass_stats_T0.mcap<-subset(biomass_stats_T0, Species=="Montipora_capitata")
-biomass_stats_T0.pcomp<-subset(biomass_stats_T0, Species=="Porites_compressa")
-biomass_stats_T0.pvar<-subset(biomass_stats_T0, Species=="Pavona_varians")
-biomass_stats_T0.pacu<-subset(biomass_stats_T0, Species=="Pocillopora_acuta")
+biomass_stats_T0.mcap<-subset(biomass_stats_T0, Species=="Montipora capitata")
+biomass_stats_T0.pcomp<-subset(biomass_stats_T0, Species=="Porites compressa")
+biomass_stats_T0.pvar<-subset(biomass_stats_T0, Species=="Pavona varians")
+biomass_stats_T0.pacu<-subset(biomass_stats_T0, Species=="Pocillopora acuta")
 
 # T0 by Algal profile ####
 #mcap by algal species
@@ -345,16 +346,16 @@ cld(emm)
 pairs(emm)
 
 # by Species df: biomass_stats_T1TF_Mcap, biomass_stats_T1TF_Pcomp, biomass_stats_T1TF_Pvar, biomass_stats_T1TF_Pacu ####
-biomass_stats_T1TF_Mcap<-subset(biomass_stats_T1TF, Species=="Montipora_capitata")
+biomass_stats_T1TF_Mcap<-subset(biomass_stats_T1TF, Species=="Montipora capitata")
   biomass_stats_T1TF_Mcap.C<-subset(biomass_stats_T1TF_Mcap, Clade=="C")
   biomass_stats_T1TF_Mcap.CD<-subset(biomass_stats_T1TF_Mcap, Clade=="CD")
-biomass_stats_T1TF_Pcomp<-subset(biomass_stats_T1TF, Species=="Porites_compressa")
+biomass_stats_T1TF_Pcomp<-subset(biomass_stats_T1TF, Species=="Porites compressa")
   biomass_stats_T1TF_Pcomp.C15cj<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15cj")
   biomass_stats_T1TF_Pcomp.C15n<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15n")
-biomass_stats_T1TF_Pvar<-subset(biomass_stats_T1TF, Species=="Pavona_varians")
+biomass_stats_T1TF_Pvar<-subset(biomass_stats_T1TF, Species=="Pavona varians")
   biomass_stats_T1TF_Pvar.C1<-subset(biomass_stats_T1TF_Pvar, Clade=="C1")
   biomass_stats_T1TF_Pvar.C27<-subset(biomass_stats_T1TF_Pvar, Clade=="C27")
-biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora_acuta")
+biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora acuta")
   biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="CCC")
   biomass_stats_T1TF_Pacu.C42<-subset(biomass_stats_T1TF_Pacu, Clade=="C42")
   
@@ -579,8 +580,9 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
 
 
 ```
+
 PLOTS
-```{r}    
+```{r}
 #t0 only#### 
 biomass_T0<-subset(biomass2, Time.Point=="T0") 
 biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise, 
@@ -647,7 +649,8 @@ biomass_T1_pvar<-subset(biomass_T1, Species=="Pavona varians")
 biomass_T1_pacu<-subset(biomass_T1, Species=="Pocillopora acuta") 
 
 #Mcap ####
-AFDW_Mcap_plot<- ggplot(biomass_T1_mcap, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+AFDW_Mcap_plot<- 
+  ggplot(biomass_T1_mcap, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("M. capitata")+
       xlab("") + #Label the X Axis
@@ -658,8 +661,8 @@ AFDW_Mcap_plot<- ggplot(biomass_T1_mcap, aes(x=interaction(Treatment,Clade), y=A
       theme(plot.title = element_text(size=16, face="bold.italic"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-      scale_x_discrete(guide = "axis_nested")+
-      geom_boxplot(show.legend = F);AFDW_Mcap_plot
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");AFDW_Mcap_plot
   
 #Pcomp ####
 AFDW_Pcomp_plot<- ggplot(biomass_T1_pcomp, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
@@ -703,13 +706,13 @@ AFDW_Pacu_plot<- ggplot(biomass_T1_pacu, aes(x=interaction(Treatment,Clade), y=A
       scale_x_discrete(guide = "axis_nested")+
       geom_boxplot(show.legend = F);AFDW_Pacu_plot
 
-library(cowplot) 
 plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_plot, nrow=1,label_size = 12)
   title <- ggdraw() + 
-  draw_label("Ash-free Dry Weight", fontface = 'bold',x = 0, hjust = 0) +
+  draw_label("Ash-free Dry Weight T1", fontface = 'bold',x = 0, hjust = 0) +
   theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
+ggsave("AFDW_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF
       ggplot(biomass_TF, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
@@ -725,169 +728,82 @@ plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       geom_boxplot(show.legend = FALSE)
 
+#TF - by species and algal profile - make for each species and then cowplot####
+biomass_TF_mcap<-subset(biomass_TF, Species=="Montipora capitata") 
+biomass_TF_pcomp<-subset(biomass_TF, Species=="Porites compressa") 
+biomass_TF_pvar<-subset(biomass_TF, Species=="Pavona varians") 
+biomass_TF_pacu<-subset(biomass_TF, Species=="Pocillopora acuta") 
 
-
-```
-all plots by clade
-```{r}
- 
-#means
-biomass_means.C <- ddply(biomass2, c( "Species","Treatment","Time.Point", "Clade"), summarise, 
-                 N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), 
-                 mean = mean(AFDWmg.cm2, na.rm=TRUE), 
-                 sd   = sd(AFDWmg.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(AFDWmg.cm2, na.rm=TRUE) 
-)
-biomass_means.C
-
-
-Mcap_biomass_mean.C<-subset(biomass_means.C, Species=="Montipora_capitata")
-Mcap_biomass_mean.C$Code<-paste(Mcap_biomass_mean.C$Clade,Mcap_biomass_mean.C$Treatment)
-
-
-
+#Mcap ####
+AFDW_Mcap_plot<- 
+  ggplot(biomass_TF_mcap, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");AFDW_Mcap_plot
   
-#plot Mcap #### 
-Mcap_biomass_plot.C<-ggplot(data=Mcap_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-  ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_biomass_plot.C
+#Pcomp ####
+AFDW_Pcomp_plot<- ggplot(biomass_TF_pcomp, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pcomp_plot
 
+#Pvar ####
+AFDW_Pvar_plot<- ggplot(biomass_TF_pvar, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pvar_plot
 
+#Pacu ####
+AFDW_Pacu_plot<- ggplot(biomass_TF_pacu, aes(x=interaction(Treatment,Clade), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);AFDW_Pacu_plot
 
+plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Ash-free Dry Weight TF", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  AFDW_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));AFDW_profilesTF
 
-# Pcomp  ####
-Pcomp_biomass_mean.C<-subset(biomass_means.C, Species=="Porites_compressa")
-Pcomp_biomass_mean.C$Code<-paste(Pcomp_biomass_mean.C$Clade,Pcomp_biomass_mean.C$Treatment)
-
-#plot Pcomp #### 
-Pcomp_biomass_plot.C<-ggplot(data=Pcomp_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_biomass_plot.C
-
-# Pvar  ####
-
-Pvar_biomass_mean.C<-subset(biomass_means.C, Species=="Pavona_varians")
-Pvar_biomass_mean.C$Code<-paste(Pvar_biomass_mean.C$Clade,Pvar_biomass_mean.C$Treatment)
-
-#plot Pvar #### 
-Pvar_biomass_plot.C<-ggplot(data=Pvar_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
- geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_biomass_plot.C
-
-# Pacu ####
-
-Pacu_biomass_mean.C<-subset(biomass_means.C, Species=="Pocillopora_acuta")
-Pacu_biomass_mean.C$Code<-paste(Pacu_biomass_mean.C$Clade,Pacu_biomass_mean.C$Treatment)
-
-#plot Pacu #### 
-Pacu_biomass_plot.C<-ggplot(data=Pacu_biomass_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue biomass mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_biomass_plot.C
-
-
-###### All plots together
-Mcap_biomass_plot.C<-Mcap_biomass_plot.C+ theme(legend.position = "none") #remove legend
-Pcomp_biomass_plot.C<-Pcomp_biomass_plot.C+ theme(legend.position = "none") #remove legend
-Pvar_biomass_plot.C<-Pvar_biomass_plot.C+ theme(legend.position = "none") #remove legend
-Pacu_biomass_plot.C<-Pacu_biomass_plot.C+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_biomass_plot.C, Pcomp_biomass_plot.C, Pvar_biomass_plot.C,Pacu_biomass_plot.C, nrow = 1)
+ggsave("AFDW_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
-# Flow cytometry  cell counts
-```{r}      
+# Flow cytometry cell counts
+
+```{r}
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
 
@@ -965,19 +881,16 @@ duplicated(tData$Frag.ID) #check 428 Pacu TF, N172mcap T1,1133 mcap t1
 Biomass4FC<-subset(biomass, select=c("Frag.ID","AFDWmg.cm2"))
 tData <- merge(tData, Biomass4FC)
 
-
-
-
 #write.csv(tData, "tdataCHECK.csv")
 #Subset by Species and correct for 10% dilutions in Mcap and Pcomp
-Mcap_FC <- subset(tData, Species == "Montipora_capitata")
+Mcap_FC <- subset(tData, Species == "Montipora capitata")
 Mcap_FC$corrected <- Mcap_FC$corrected*10 # to compensate for the 10% dultion
 
-Pcomp_FC <- subset(tData, Species == "Porites_compressa")
+Pcomp_FC <- subset(tData, Species == "Porites compressa")
 Pcomp_FC$corrected <- Pcomp_FC$corrected*10 # to compensate for the 10% dultion
 
-Pvar_FC <- subset(tData, Species == "Pavona_varians") #not diluted
-Pacu_FC <- subset(tData, Species == "Pocillopora_acuta") #not diluted
+Pvar_FC <- subset(tData, Species == "Pavona varians") #not diluted
+Pacu_FC <- subset(tData, Species == "Pocillopora acuta") #not diluted
 
 # Create new column for total cells in total slurry
 Mcap_FC$Tot.zoox <- Mcap_FC$corrected*(Mcap_FC$TotalVolume)
@@ -998,123 +911,12 @@ Pvar_FC$zoox.AFDWmg.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$AFDWmg.cm2
 Pacu_FC$zoox.AFDWmg.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$AFDWmg.cm2
 
 FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
-
-
-#mean by biomas
-
-#mean tables
-#
-FC.biomass_Sum <- ddply(FC_Data, c("Species","Treatment", "Time.Point"), summarise, 
-                   N    = length(zoox.AFDWmg.cm2[!is.na(zoox.AFDWmg.cm2)]), 
-                   mean = mean(zoox.AFDWmg.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.AFDWmg.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.AFDWmg.cm2, na.rm=TRUE) 
-)
-FC.biomass_Sum #display table
-
-
-FC_SumClade <- ddply(FC_Data, c("Treatment", "Clade", "Species","Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_SumClade #display table
-
-FC_SumClade.mcap<-subset(FC_SumClade, Species=="Montipora_capitata")
-FC_SumClade.pcomp<-subset(FC_SumClade, Species=="Porites_compressa")
-FC_SumClade.pvar<-subset(FC_SumClade, Species=="Pavona_varians")
-FC_SumClade.pacu<-subset(FC_SumClade, Species=="Pocillopora_acuta")
-
-
-FC_SumCladenoTemp <- ddply(FC_Data, c( "Clade", "Species","Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_SumCladenoTemp #display table
-
-FC_SumCladeSp.bio <- ddply(FC_Data, c( "Species","Time.Point"), summarise, 
-                   N    = length(zoox.AFDWmg.cm2[!is.na(zoox.AFDWmg.cm2)]), 
-                   mean = mean(zoox.AFDWmg.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.AFDWmg.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.AFDWmg.cm2, na.rm=TRUE) 
-)
-FC_SumCladeSp.bio #display table
-
-
-#mean tables
-# Mcap
-Mcap_FC_Sum <- ddply(Mcap_FC, c("Treatment", "Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-Mcap_FC_Sum #display table
-
-# Pcomp
-Pcomp_FC_Sum <- ddply(Pcomp_FC, c("Treatment", "Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-Pcomp_FC_Sum #display table
-
-Pcomp_FC_SumClade <- ddply(Pcomp_FC, c("Treatment", "Clade", "Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-Pcomp_FC_SumClade #display table
-
-
-# Pvar
-Pvar_FC_Sum <- ddply(Pvar_FC, c("Treatment", "Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-Pvar_FC_Sum #display table
-
-Pvar_FC_SumClade <- ddply(Pvar_FC, c("Treatment", "Time.Point","Clade"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-)
-Pvar_FC_SumClade #display table
-
-# Pacu
-Pacu_FC_Sum <- ddply(Pacu_FC, c("Treatment", "Time.Point"), summarise, 
-                   N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                   mean = mean(zoox.cm2, na.rm=TRUE), 
-                   sd   = sd(zoox.cm2, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(zoox.cm2, na.rm=TRUE) 
-) 
-Pacu_FC_Sum #display table
-
 ```
+
 Stats
-```{r}     
- FC.biomass_SumT0<-subset(FC.biomass_Sum, Time.Point=="T0")
+```{r}
 
 #T0 only
-hist(FC_stats_T0$zoox.cm2) 
 FC_stats_T0<-subset(FC_Data, Time.Point=="T0")
 FC_stats_T0$zoox.cm2_log<-log10(FC_stats_T0$zoox.cm2+1)
 hist(FC_stats_T0$zoox.cm2_log) #normal (use)
@@ -1129,10 +931,10 @@ pairs(emm)
 
 
 #t0 only by speices?
-FC_stats_T0.mcap<-subset(FC_stats_T0, Species=="Montipora_capitata")
-FC_stats_T0.pcomp<-subset(FC_stats_T0, Species=="Porites_compressa")
-FC_stats_T0.pvar<-subset(FC_stats_T0, Species=="Pavona_varians")
-FC_stats_T0.pacu<-subset(FC_stats_T0, Species=="Pocillopora_acuta")
+FC_stats_T0.mcap<-subset(FC_stats_T0, Species=="Montipora capitata")
+FC_stats_T0.pcomp<-subset(FC_stats_T0, Species=="Porites compressa")
+FC_stats_T0.pvar<-subset(FC_stats_T0, Species=="Pavona varians")
+FC_stats_T0.pacu<-subset(FC_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 FC_T0_model<-lmer(zoox.cm2_log~Clade+(1|Tank.num), FC_stats_T0.mcap)
@@ -1189,15 +991,15 @@ FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
 
 #test adding traits
-FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Montipora_capitata"] <- "thick"  
-FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Porites_compressa"] <- "thick"  
-FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona_varians"] <- "thin"  
-FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pocillopora_acuta"] <- "thin"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Montipora capitata"] <- "thick"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Porites compressa"] <- "thick"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona varians"] <- "thin"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "thin"  
 FC_stats_T1TF$tissue<-as.factor(FC_stats_T1TF$tissue)
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Montipora_capitata"] <- "porous"  
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Porites_compressa"] <- "porous"  
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona_varians"] <- "porous"  
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora_acuta"] <- "nonporous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Montipora capitata"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Porites compressa"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona varians"] <- "porous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "nonporous"  
  FC_stats_T1TF$skeleton<-as.factor(FC_stats_T1TF$skeleton)
 
 
@@ -1224,16 +1026,16 @@ anova(CellCount_model)
 
 
 # by Species df: FC_stats_T1TF_Mcap, FC_stats_T1TF_Pcomp, FC_stats_T1TF_Pvar, FC_stats_T1TF_Pacu
-FC_stats_T1TF_Mcap<-subset(FC_stats_T1TF, Species=="Montipora_capitata")
+FC_stats_T1TF_Mcap<-subset(FC_stats_T1TF, Species=="Montipora capitata")
   FC_stats_T1TF_Mcap.C<-subset(FC_stats_T1TF_Mcap, Clade=="C")
   FC_stats_T1TF_Mcap.CD<-subset(FC_stats_T1TF_Mcap, Clade=="CD")
-FC_stats_T1TF_Pcomp<-subset(FC_stats_T1TF, Species=="Porites_compressa")
+FC_stats_T1TF_Pcomp<-subset(FC_stats_T1TF, Species=="Porites compressa")
   FC_stats_T1TF_Pcomp.C15cj<-subset(FC_stats_T1TF_Pcomp, Clade=="C15cj")
   FC_stats_T1TF_Pcomp.C15n<-subset(FC_stats_T1TF_Pcomp, Clade=="C15n")
-FC_stats_T1TF_Pvar<-subset(FC_stats_T1TF, Species=="Pavona_varians")
+FC_stats_T1TF_Pvar<-subset(FC_stats_T1TF, Species=="Pavona varians")
   FC_stats_T1TF_Pvar.C1<-subset(FC_stats_T1TF_Pvar, Clade=="C1")
   FC_stats_T1TF_Pvar.C27<-subset(FC_stats_T1TF_Pvar, Clade=="C27")
-FC_stats_T1TF_Pacu<-subset(FC_stats_T1TF, Species=="Pocillopora_acuta")
+FC_stats_T1TF_Pacu<-subset(FC_stats_T1TF, Species=="Pocillopora acuta")
   FC_stats_T1TF_Pacu.CCC<-subset(FC_stats_T1TF_Pacu, Clade=="CCC")
   FC_stats_T1TF_Pacu.C42<-subset(FC_stats_T1TF_Pacu, Clade=="C42")
   
@@ -1461,1384 +1263,230 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 
 ```
 
-Line plots 
-```{r}   
-#just T0 ####   
-FC_T0_mean <- ddply(FC_stats_T0, c( "Species"), summarise, 
-                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                 mean = mean(zoox.cm2, na.rm=TRUE), 
-                 sd   = sd(zoox.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_T0_mean
-
-
-
-#plot all
-FC_T0_mean_plot<-ggplot(data=FC_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("cells cm"^"-2"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));FC_T0_mean_plot
-
-#by clade T0
-FC_T0_mean.clade <- ddply(FC_stats_T0, c( "Species","Clade"), summarise, 
-                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                 mean = mean(zoox.cm2, na.rm=TRUE), 
-                 sd   = sd(zoox.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_T0_mean.clade
-
-FC_T0_mean.clade$Code<-paste(FC_T0_mean.clade$Species, FC_T0_mean.clade$Clade)
-
-#plot all
-FC_T0_mean_plot.c<-ggplot(data=FC_T0_mean.clade, aes(x=Species, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+
-  geom_line(aes(color=Code), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Algal Cell Counts"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));FC_T0_mean_plot.c
-
-
-
-#TFH only####  
-FC_TFH<-subset(FC_Data, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-FC_TFH_mean <- ddply(FC_TFH, c( "Species"), summarise, 
-                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                 mean = mean(zoox.cm2, na.rm=TRUE), 
-                 sd   = sd(zoox.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_TFH_mean
- 
-
-
-#means
-FC_mean <- ddply(FC_Data, c( "Species","Treatment","Time.Point"), summarise, 
-                 N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
-                 mean = mean(zoox.cm2, na.rm=TRUE), 
-                 sd   = sd(zoox.cm2, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_mean
-
-
-#all at t1
-FC_mean.T1<-subset(FC_mean, Time.Point=="T1")
-# Notched box plot
-T1.Biomass.plot<-ggplot(FC_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
-  scale_color_manual(values=c("blue", "red"))+
-     # coord_cartesian(ylim = c(0, 10))+
-   theme_classic()+
-  ggtitle("Algal Cell Density T1")+
- theme(legend.position="none") +# Remove legend
-  geom_boxplot(notch=TRUE);T1.Biomass.plot
-
-
-
-
-
-#### all species#
-#plot all####
-All_FC_plot<-ggplot(data=FC_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Cell counts"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));All_FC_plot
-
-
-# Mcap   #### 
-
-Mcap_FC_lineplot<-ggplot(data=Mcap_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells cm" ^ "-2"*) )) +
-   # theme(panel.grid.major = element_blank(), 
-   #      panel.grid.minor = element_blank(),
-   #      panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot
-
-    #by clade FC_SumClade.mcap
-FC_SumClade.mcap$Code<-paste(FC_SumClade.mcap$Treatment,FC_SumClade.mcap$Clade)
- Mcap_FC_lineplot.c<-ggplot(data=FC_SumClade.mcap, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
- geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("cells"))) +
-  #  theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot.c
- 
- FC_SumClade.mcap_T1TF<-subset(FC_SumClade.mcap, Time.Point=="T1"|Time.Point=="TF")
- 
-   #by clade FC_SumClade.mcap
- Mcap_FC_lineplot.c2<-ggplot(data=FC_SumClade.mcap_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot.c2
- 
- Mcap_FC_lineplot.c2+facet_wrap(~Clade)
-
- 
-
- 
-
-FC_Data.mcap<-subset(FC_Data, Species=="Montipora_capitata")
-FC_Data.mcap<-subset(FC_Data.mcap, Time.Point=="T1"|Time.Point=="TF")
-
-FC_Data.mcap$Code<-paste(FC_Data.mcap$Parent.ID, FC_Data.mcap$Treatment,FC_Data.mcap$Clade)
-
-p<-mcap_FC_lineplot<-ggplot(data=FC_Data.mcap, aes(x=Time.Point, y=zoox.cm2, group = Code, color=Treatment)) +
-  #geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-               # width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("Mcap")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));mcap_FC_lineplot
-
-p+facet_wrap(~Clade)
-
-
-# Pcomp ####
-   
-
-Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste(""))) +
-   # theme(panel.grid.major = element_blank(), 
-   #      panel.grid.minor = element_blank(),
-   #      panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
-
-#pcomp clades Pcomp_FC_SumClade  FIX COLORS
-Pcomp_FC_SumClade$Code<-paste(Pcomp_FC_SumClade$Treatment,Pcomp_FC_SumClade$Clade)
-Pcomp_FC_lineplot.c<-ggplot(data=Pcomp_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
- geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("cells"))) +
-  #  theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot.c
-
-
-
-Pcomp_FC_SumClade_T1TF<-subset(Pcomp_FC_SumClade, Time.Point=="T1"|Time.Point=="TF")
- 
-   #by clade FC_SumClade.mcap
- pcmp_FC_lineplot.c2<-ggplot(data=Pcomp_FC_SumClade_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   # theme(panel.grid.major = element_blank(), 
-   #      panel.grid.minor = element_blank(),
-   #      panel.background = element_rect(colour = "black", size=1))+
-   #      theme(aspect.ratio=1)+
-  ggtitle("pcomp")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pcmp_FC_lineplot.c2
- 
-
-
-
-
-
-
-
-FC_SumClade.pcomp_T1TF<-subset(Pcomp_FC_SumClade, Time.Point=="T1"|Time.Point=="TF")
- 
-   #by clade FC_SumClade.mcap
- pcomp_FC_lineplot.c2<-ggplot(data=FC_SumClade.pcomp_T1TF, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code, shape=Clade), size=8, show.legend = T)+
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   # geom_point(aes(shape=Clade),shape = 1,size = 8,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("Pcomp")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pcomp_FC_lineplot.c2
-
-
-
-
-
-FC_Data.pcomp<-subset(FC_Data, Species=="Porites_compressa")
-FC_Data.pcomp<-subset(FC_Data.pcomp, Time.Point=="T1"|Time.Point=="TF")
-
-FC_Data.pcomp$Code<-paste(FC_Data.pcomp$Parent.ID, FC_Data.pcomp$Treatment,FC_Data.pcomp$Clade)
-
-p<-Pcomp_FC_lineplot<-ggplot(data=FC_Data.pcomp, aes(x=Time.Point, y=zoox.cm2, group = Code, color=Treatment)) +
-  #geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-               # width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
-
-p+facet_wrap(~Clade)
-
-
-# Pvar  ####
-
-Pvar_FC_lineplot<-ggplot(data=Pvar_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-   xlab(" ") + #Label the X Axis
-     #  scale_y_log10()+
-  #  ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-   ylab(expression(paste(""))) +
-  #    theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot
-
-#by clade Pvar_FC_SumClade
-Pvar_FC_SumClade$Code<-paste(Pvar_FC_SumClade$Treatment, Pvar_FC_SumClade$Clade)
-
-Pvar_FC_lineplot.c<-ggplot(data=Pvar_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3" ,"blue","darkred","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     #  scale_y_log10()+
-  #  ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("cells"))) +
-  #    theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot.c
-
-FC_Data.pvar<-subset(FC_Data, Species=="Pavona_varians")
-FC_Data.pvar<-subset(FC_Data.pvar, Time.Point=="T1"|Time.Point=="TF")
-
-FC_Data.pvar$Code<-paste(FC_Data.pvar$Parent.ID, FC_Data.pvar$Treatment,FC_Data.pvar$Clade)
-
-p<-pvar_FC_lineplot<-ggplot(data=FC_Data.pvar, aes(x=Time.Point, y=zoox.cm2, group = Code, color=Treatment)) +
-  #geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-               # width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("P var")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pvar_FC_lineplot
-
-p+facet_wrap(~Clade)
-
-# Pacu  #### 
-
-Pacu_FC_lineplot<-ggplot(data=Pacu_FC_Sum, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-      # scale_y_log10()+
-  #ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste(""))) +
-     # theme(panel.grid.major = element_blank(), 
-     #    panel.grid.minor = element_blank(),
-     #    panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P acuta")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_FC_lineplot
-
-   #by clade FC_SumClade.pacu
-FC_SumClade.pacu$Code<-paste(FC_SumClade.pacu$Treatment,FC_SumClade.pacu$Clade)
- pacu_FC_lineplot.c<-ggplot(data=FC_SumClade.pacu, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "blue", "darkred","red"))+
-    geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("cells"))) +
-  #  theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P acuta")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));pacu_FC_lineplot.c
-
-###### All plots together
-Mcap_FC_lineplot<-Mcap_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pcomp_FC_lineplot<-Pcomp_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pvar_FC_lineplot<-Pvar_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pacu_FC_lineplot<-Pacu_FC_lineplot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot, nrow = 1)
-
-
-#clade together
-Pcomp_FC_lineplot.c
-
-Mcap_FC_lineplot.c<-Mcap_FC_lineplot.c+ theme(legend.position = "none") #remove legend
-Pcomp_FC_lineplot.c<-Pcomp_FC_lineplot.c+ theme(legend.position = "none") #remove legend
-Pvar_FC_lineplot.c<-Pvar_FC_lineplot.c+ theme(legend.position = "none") #remove legend
-pacu_FC_lineplot.c<-pacu_FC_lineplot.c+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_FC_lineplot.c, Pcomp_FC_lineplot.c, Pvar_FC_lineplot.c,pacu_FC_lineplot.c, nrow = 1)
-```
-all plots by clade
+Plots - FC standardized by Surface Area
 ```{r}
-FC_mean.C <- ddply(FC_Data, c( "Species","Treatment","Time.Point","Clade"), summarise, 
+#just T0 ####  
+FC_Data_T0<-subset(FC_Data, Time.Point=="T0")
+FC_T0_mean <- ddply(FC_Data_T0, c( "Species"), summarise, 
                  N    = length(zoox.cm2[!is.na(zoox.cm2)]), 
                  mean = mean(zoox.cm2, na.rm=TRUE), 
                  sd   = sd(zoox.cm2, na.rm=TRUE), 
                  se   = sd / sqrt(N), 
                  max = max(zoox.cm2, na.rm=TRUE) 
-)
-FC_mean.C
-
-FC_mean.C$Code<-paste(FC_mean.C$Species,FC_mean.C$Clade,FC_mean.C$Treatment)
-
-
-Mcap_FC_mean.C<-subset(FC_mean.C, Species=="Montipora_capitata")
-
-#plot Mcap #### 
-Mcap_FC_plot.C<-ggplot(data=Mcap_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment), linetype=(2), show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-  xlab("") + #Label the X Axis
-  # ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("cells cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_FC_plot.C
-
-
-
-
-# Pcomp  ####
-Pcomp_FC_mean.C<-subset(FC_mean.C, Species=="Porites_compressa")
-
-#plot Pcomp #### 
-Pcomp_FC_plot.C<-ggplot(data=Pcomp_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  # ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_FC_plot.C
-
-# Pvar  ####
-
-Pvar_FC_mean.C<-subset(FC_mean.C, Species=="Pavona_varians")
-
-#plot Pvar #### 
-Pvar_FC_plot.C<-ggplot(data=Pvar_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  # ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_FC_plot.C
-
-# Pacu ####
-
-Pacu_FC_mean.C<-subset(FC_mean.C, Species=="Pocillopora_acuta")
-
-#plot Pacu #### 
-Pacu_FC_plot.C<-ggplot(data=Pacu_FC_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred","blue","red"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  # ylim(0, 12) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Tissue FC mg cm"^"-2"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_FC_plot.C
-
-
-###### All plots together
-Mcap_FC_plot.C<-Mcap_FC_plot.C+ theme(legend.position = "none") #remove legend
-Pcomp_FC_plot.C<-Pcomp_FC_plot.C+ theme(legend.position = "none") #remove legend
-Pvar_FC_plot.C<-Pvar_FC_plot.C+ theme(legend.position = "none") #remove legend
-Pacu_FC_plot.C<-Pacu_FC_plot.C+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_FC_plot.C, Pcomp_FC_plot.C, Pvar_FC_plot.C,Pacu_FC_plot.C, nrow = 1)
-```
-
-# boxplot
-```{r}
-
-FC_meanlog <- ddply(FC_Data, c( "Species","Treatment","Time.Point"), summarise, 
-                 N    = length(zoox.cm2_log[!is.na(zoox.cm2_log)]), 
-                 mean = mean(zoox.cm2_log, na.rm=TRUE), 
-                 sd   = sd(zoox.cm2_log, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(zoox.cm2_log, na.rm=TRUE) 
-)
-FC_meanlog
-
-
-FC_mean_box<-subset(FC_meanlog, Time.Point=="T1"|Time.Point=="TF")
-FC_mean_box_mcap<-subset(FC_mean_box, Species=="Montipora_capitata")
-FC_mean_box_pcomp<-subset(FC_mean_box, Species=="Porites_compressa")
-FC_mean_box_pvar<-subset(FC_mean_box, Species=="Pavona_varians")
-FC_mean_box_pacu<-subset(FC_mean_box, Species=="Pocillopora_acuta")
-
-plot1<-ggplot(data=FC_mean_box_mcap, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
-  geom_boxplot(position=position_dodge(0.9), lwd=1)+
-  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-
-    xlab("Time Point")+
-  ylab(paste("log cells cm2")) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
-
-plot1<-ggplot(data=FC_mean_box_pcomp, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
-  geom_boxplot(position=position_dodge(0.9), lwd=1)+
-  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-
-    xlab("Time Point")+
-  ylab(paste("log cells cm2")) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
-
-plot1<-ggplot(data=FC_mean_box_pvar, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
-  geom_boxplot(position=position_dodge(0.9), lwd=1)+
-  # geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-
-    xlab("Time Point")+
-  ylab(paste("log cells cm2")) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
-
-plot1<-ggplot(data=FC_mean_box_pacu, aes(x=Time.Point, y=mean, colour=Treatment, group=interaction(Time.Point, Treatment))) +
-  geom_boxplot(position=position_dodge(0.9), lwd=.5)+
-  geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-
-    xlab("Time Point")+
-  ylab(paste("log cells cm2")) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));plot1
-
-```
-
-
-
-LIne plots by standardizing to biomass  for Ford
-FC.biomass_Sum
-```{r} 
- 
-FC_SumCladeSpT0<-subset(FC_SumCladeSp.bioFC_SumCladeSp.bio, Time.Point=="T0")
-#plot all
-FC_T0_mean_plot<-ggplot(data=FC_SumCladeSpT0, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Algal Cell Counts per biomass"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));FC_T0_mean_plot
-
-
-
-
-
-
- 
-
-
-# Mcap   ####
-FC.biomass_SumMcap<-subset(FC.biomass_Sum, Species=="Montipora_capitata")
-
-Mcap_FC_lineplot<-ggplot(data=FC.biomass_SumMcap, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-       #scale_y_log10()+
-   #   ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_FC_lineplot
-
-# Pcomp 
-FC.biomass_SumPcomp<-subset(FC.biomass_Sum, Species=="Porites_compressa")
-
-Pcomp_FC_lineplot<-ggplot(data=FC.biomass_SumPcomp, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #  ylim(0, 4000000)+ 
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
-
-#pcomp clades Pcomp_FC_SumClade
-# 
-# Pcomp_FC_SumClade$Code<-paste(Pcomp_FC_SumClade$Treatment,Pcomp_FC_SumClade$Clade)
-# Pcomp_FC_lineplot<-ggplot(data=Pcomp_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-#   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-#                 width=0.1, show.legend = T)+
-#   geom_point(aes(color=Code), size=4, show.legend = T)+  
-#   geom_line(aes(color=Code),linetype="dotted")+
-#   scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-#    geom_point(shape = 1,size = 4,colour = "black")+
-#   xlab("Time Point") + #Label the X Axis
-#       # scale_y_log10()+
-#   #  ylim(0, 4000000)+ 
-#   theme_bw() + #Set the background color
-#   theme(axis.line = element_line(color = 'black'), #Set the axes color
-#         axis.title=element_text(size=14,face="bold"), #Set axis format
-#         panel.border = element_blank(), #Set the border 
-#         panel.grid.major = element_blank(), #Set the major gridlines
-#         panel.grid.minor = element_blank(), #Set the minor gridlines
-#         text = element_text(size=18),  # set element text
-#         plot.background =element_blank(), #Set the plot background
-#         legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("cells"))) +
-#    theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=1))+
-#         theme(aspect.ratio=1)+
-#   ggtitle("P compressa")+
-#   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_FC_lineplot
-
-# Pvar 
-FC.biomass_SumPvar<-subset(FC.biomass_Sum, Species=="Pavona_varians")
-
-Pvar_FC_lineplot<-ggplot(data=FC.biomass_SumPvar, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     #  scale_y_log10()+
-  #  ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-     theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplot
-
-# #by clade Pvar_FC_SumClade
-# Pvar_FC_SumClade$Code<-paste(Pvar_FC_SumClade$Treatment, Pvar_FC_SumClade$Clade)
-# 
-# Pvar_FC_lineplotClade<-ggplot(data=Pvar_FC_SumClade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-#   geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-#                 width=0.1, show.legend = T)+
-#   geom_point(aes(color=Code), size=4, show.legend = T)+  
-#   geom_line(aes(color=Code),linetype="dotted")+
-#   scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-#    geom_point(shape = 1,size = 4,colour = "black")+
-#   xlab("Time Point") + #Label the X Axis
-#      #  scale_y_log10()+
-#   #  ylim(0, 4000000)+
-#   theme_bw() + #Set the background color
-#   theme(axis.line = element_line(color = 'black'), #Set the axes color
-#         axis.title=element_text(size=14,face="bold"), #Set axis format
-#         panel.border = element_blank(), #Set the border 
-#         panel.grid.major = element_blank(), #Set the major gridlines
-#         panel.grid.minor = element_blank(), #Set the minor gridlines
-#         text = element_text(size=18),  # set element text
-#         plot.background =element_blank(), #Set the plot background
-#         legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("cells"))) +
-#      theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=1))+
-#         theme(aspect.ratio=1)+
-#   ggtitle("P varians")+
-#   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_FC_lineplotClade
-
-
-# Pacu 
-FC.biomass_SumPacu<-subset(FC.biomass_Sum, Species=="Pocillopora_acuta")
-
-Pacu_FC_lineplot<-ggplot(data=FC.biomass_SumPacu, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      # scale_y_log10()+
-  #ylim(0, 4000000)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("cells"))) +
-     theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ggtitle("P acuta")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_FC_lineplot
- 
-###### All plots together
-Mcap_FC_lineplot<-Mcap_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pcomp_FC_lineplot<-Pcomp_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pvar_FC_lineplot<-Pvar_FC_lineplot+ theme(legend.position = "none") #remove legend
-Pacu_FC_lineplot<-Pacu_FC_lineplot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot, nrow = 1)
-
-
-
-  
-####### STATS #####
-#FC_Data
-hist(FC_Data$zoox.AFDWmg.cm2)
-hist(log10(FC_Data$zoox.AFDWmg.cm2+1))
-FC_Data$zoox.AFDWmg.cm2_log<-log10(FC_Data$zoox.AFDWmg.cm2+1)
-
+);FC_T0_mean
 
 #T0 only
-#t0 only
-FC_T0_model<-lmer(zoox.AFDWmg.cm2_log~Treatment*Species+(1|Tank.num), FC_stats_T0)
-anova(FC_T0_model)  #species differ
-qqPlot(residuals(FC_T0_model)) 
-emm<-emmeans(FC_T0_model,  ~ Species, adjust="Tukey")
-cld(emm)
-pairs(emm)
+  ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Symbiodiniaceae Cell Density")+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("FC_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#T0 only - by algal profile
+  ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Clade, group=interaction(Species, Clade))) + 
+      scale_fill_manual(values=c("darkorange3", "pink1","powderblue","#0072B2" ,"firebrick","darkgreen",    "palegreen2","goldenrod1"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle("Symbiodiniaceae Cell Density by Algal Profile")+
+      geom_boxplot( show.legend = FALSE)
+ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#Subset by time 1 or F only 
+FC_T1<-subset(FC_Data, Time.Point=="T1") 
+FC_TF<-subset(FC_Data, Time.Point=="TF") 
 
-FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
+#T1 - by species  ####
+ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Symbiodiniaceae Cell Density Post-Elevated Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("FC_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-CellCount_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Species+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
-anova(CellCount_model) 
-qqPlot(residuals(CellCount_model)) 
+#T1 - by species and algal profile - make for each species and then cowplot
+FC_T1_mcap<-subset(FC_T1, Species=="Montipora capitata") 
+FC_T1_pcomp<-subset(FC_T1, Species=="Porites compressa") 
+FC_T1_pvar<-subset(FC_T1, Species=="Pavona varians") 
+FC_T1_pacu<-subset(FC_T1, Species=="Pocillopora acuta") 
 
-  emm<-emmeans(CellCount_model,  ~ Time.Point*Treatment|Species, adjust="Tukey")
-cld(emm)
-pairs(emm)
-
-CellCount_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
-anova(CellCount_model) 
-
-
-
-
-# by Species df: FC_stats_T1TF_Mcap, FC_stats_T1TF_Pcomp, FC_stats_T1TF_Pvar, FC_stats_T1TF_Pacu
-FC_stats_T1TF_Mcap<-subset(FC_stats_T1TF, Species=="Montipora_capitata")
-  FC_stats_T1TF_Mcap.C<-subset(FC_stats_T1TF_Mcap, Clade=="C")
-  FC_stats_T1TF_Mcap.CD<-subset(FC_stats_T1TF_Mcap, Clade=="CD")
-FC_stats_T1TF_Pcomp<-subset(FC_stats_T1TF, Species=="Porites_compressa")
-  FC_stats_T1TF_Pcomp.C15cj<-subset(FC_stats_T1TF_Pcomp, Clade=="C15cj")
-  FC_stats_T1TF_Pcomp.C15n<-subset(FC_stats_T1TF_Pcomp, Clade=="C15n")
-FC_stats_T1TF_Pvar<-subset(FC_stats_T1TF, Species=="Pavona_varians")
-  FC_stats_T1TF_Pvar.C1<-subset(FC_stats_T1TF_Pvar, Clade=="C1")
-  FC_stats_T1TF_Pvar.C27<-subset(FC_stats_T1TF_Pvar, Clade=="C27")
-FC_stats_T1TF_Pacu<-subset(FC_stats_T1TF, Species=="Pocillopora_acuta")
-  FC_stats_T1TF_Pacu.CCC<-subset(FC_stats_T1TF_Pacu, Clade=="CCC")
-  FC_stats_T1TF_Pacu.C42<-subset(FC_stats_T1TF_Pacu, Clade=="C42")
+#Mcap
+FC_Mcap_plot<- 
+  ggplot(FC_T1_mcap, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");FC_Mcap_plot
   
-#mcap ####
-#lmer
-  FC_Mcap_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap)
-  anova(FC_Mcap_model) 
-FC_Mcap_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap)
-  anova(FC_Mcap_model) 
-  qqPlot(residuals(FC_Mcap_model)) 
-  emm<-emmeans(FC_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pcomp
+FC_Pcomp_plot<- ggplot(FC_T1_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pcomp_plot
 
-#T1 only
-  FC_stats_Mcap.T1<-subset(FC_stats_T1TF_Mcap, Time.Point=="T1")
-      FC_Mcap_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.T1)
-  anova(FC_Mcap_model.T1) 
-    FC_Mcap_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.T1)
-  anova(FC_Mcap_model.T1) 
-  qqPlot(residuals(FC_Mcap_model.T1)) 
-  emm<-emmeans(FC_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #TF only
-    FC_stats_Mcap.TF<-subset(FC_stats_T1TF_Mcap, Time.Point=="TF")
-  FC_Mcap_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.TF)
-  anova(FC_Mcap_model.TF) 
-  FC_Mcap_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.TF)
-  anova(FC_Mcap_model.TF) 
-  qqPlot(residuals(FC_Mcap_model.TF)) 
-  emm<-emmeans(FC_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)  
-  
-  
-  
-  
-#mcap-C only
-  FC_Mcap_model.C<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap.C)
-  anova(FC_Mcap_model.C) 
-  qqPlot(residuals(FC_Mcap_model.C)) 
-    emm<-emmeans(FC_Mcap_model.C,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
+#Pvar
+FC_Pvar_plot<- ggplot(FC_T1_pvar, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pvar_plot
 
-#mcap-CD only
-  FC_Mcap_model.CD<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Mcap.CD)
-  anova(FC_Mcap_model.CD) 
-  qqPlot(residuals(FC_Mcap_model.CD)) 
-    emm<-emmeans(FC_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)*
-    pairs(emm)
-    
-#Pcomp ####
-#lmer
-FC_Pcomp_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
-  anova(FC_Pcomp_model) 
-  qqPlot(residuals(FC_Pcomp_model)) 
-  emm<-emmeans(FC_Pcomp_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pacu
+FC_Pacu_plot<- ggplot(FC_T1_pacu, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pacu_plot
 
-FC_Pcomp_model.Clade<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp)
-  anova(FC_Pcomp_model.Clade) 
-  qqPlot(residuals(FC_Pcomp_model.Clade)) 
-  emm<-emmeans(FC_Pcomp_model.Clade,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
- #T1 only
-  FC_stats_Pcomp.T1<-subset(FC_stats_T1TF_Pcomp, Time.Point=="T1")
-    FC_Pcomp_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pcomp.T1)
-  anova(FC_Pcomp_model.T1) 
-    FC_Pcomp_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pcomp.T1)
-  anova(FC_Pcomp_model.T1) 
-  qqPlot(residuals(FC_Pcomp_model.T1)) 
-  emm<-emmeans(FC_Pcomp_model.T1,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-    emm<-emmeans(FC_Pcomp_model.T1,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #TF only
-    FC_stats_Pcomp.TF<-subset(FC_stats_T1TF_Pcomp, Time.Point=="TF")
-FC_Pcomp_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pcomp.TF)
-  anova(FC_Pcomp_model.TF) 
-  FC_Pcomp_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pcomp.TF)
-  anova(FC_Pcomp_model.TF) 
-  qqPlot(residuals(FC_Pcomp_model.TF)) 
-  emm<-emmeans(FC_Pcomp_model.TF,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)  
-      emm<-emmeans(FC_Pcomp_model.TF,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)  
-    
-    
-#Pcomp-C15cj only
-  FC_Pcomp_model.C15cj<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp.C15cj)
-  anova(FC_Pcomp_model.C15cj) 
-  qqPlot(residuals(FC_Pcomp_model.C15cj)) 
-    emm<-emmeans(FC_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
+plot_row<-plot_grid(FC_Mcap_plot, FC_Pcomp_plot, FC_Pvar_plot, FC_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Symbiodiniaceae Cell Density T1", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
-#Pcomp-C15cj only
-  FC_Pcomp_model.C15n<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pcomp.C15n)
-  anova(FC_Pcomp_model.C15n) 
-  qqPlot(residuals(FC_Pcomp_model.C15n)) 
-    emm<-emmeans(FC_Pcomp_model.C15n,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
-#Pvar ####
-#lmer
-FC_Pvar_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
-  anova(FC_Pvar_model) 
-  qqPlot(residuals(FC_Pvar_model)) 
-  emm<-emmeans(FC_Pvar_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  FC_Pvar_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar)
-  anova(FC_Pvar_model) 
-  qqPlot(residuals(FC_Pvar_model)) 
-  emm<-emmeans(FC_Pvar_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+ggsave("FC_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-#T1 only
-  FC_stats_Pvar.T1<-subset(FC_stats_T1TF_Pvar, Time.Point=="T1")
-   FC_Pvar_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pvar.T1)
-  anova(FC_Pvar_model.T1) 
-    FC_Pvar_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pvar.T1)
-  anova(FC_Pvar_model.T1) 
-  qqPlot(residuals(FC_Pvar_model.T1)) 
-  emm<-emmeans(FC_Pvar_model.T1,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-    emm<-emmeans(FC_Pvar_model.T1,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #TF only
-    FC_stats_Pvar.TF<-subset(FC_stats_T1TF_Pvar, Time.Point=="TF")
-  FC_Pvar_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pvar.TF)
-  anova(FC_Pvar_model.TF) 
-  FC_Pvar_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pvar.TF)
-  anova(FC_Pvar_model.TF) 
-  qqPlot(residuals(FC_Pvar_model.TF)) 
-  emm<-emmeans(FC_Pvar_model.TF,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)  
-  
-#Pvar-C only
-  FC_Pvar_model.C1<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C1)
-  anova(FC_Pvar_model.C1) 
-  qqPlot(residuals(FC_Pvar_model.C1)) 
-    emm<-emmeans(FC_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
+#TF ####
+      ggplot(FC_TF, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Symbiodiniaceae Cell Density Post-Recovery")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("FC_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#Pvar-CD only
-  FC_Pvar_model.C27<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pvar.C27)
-  anova(FC_Pvar_model.C27) 
-  qqPlot(residuals(FC_Pvar_model.C27)) 
-    emm<-emmeans(FC_Pvar_model.C27,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)  
+#TF - by species and algal profile - make for each species and then cowplot####
+FC_TF_mcap<-subset(FC_TF, Species=="Montipora capitata") 
+FC_TF_pcomp<-subset(FC_TF, Species=="Porites compressa") 
+FC_TF_pvar<-subset(FC_TF, Species=="Pavona varians") 
+FC_TF_pacu<-subset(FC_TF, Species=="Pocillopora acuta") 
 
-#Pacu ####
-#lmer
-    FC_Pacu_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
-  anova(FC_Pacu_model)
-  emm<-emmeans(FC_Pacu_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Mcap 
+FC_Mcap_plot<- 
+  ggplot(FC_TF_mcap, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");FC_Mcap_plot
   
-  
-FC_Pacu_model<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu)
-  anova(FC_Pacu_model) 
-  qqPlot(residuals(FC_Pacu_model)) 
-  emm<-emmeans(FC_Pacu_model,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pcomp
+FC_Pcomp_plot<- ggplot(FC_TF_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pcomp_plot
 
-  #T1 only
-  FC_stats_Pacu.T1<-subset(FC_stats_T1TF_Pacu, Time.Point=="T1")
-  FC_Pacu_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pacu.T1)
-  anova(FC_Pacu_model.T1)
-    FC_Pacu_model.T1<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pacu.T1)
-  anova(FC_Pacu_model.T1) 
-  qqPlot(residuals(FC_Pacu_model.T1)) 
-  emm<-emmeans(FC_Pacu_model.T1,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-   emm<-emmeans(FC_Pacu_model.T1,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #TF only
-    FC_stats_Pacu.TF<-subset(FC_stats_T1TF_Pacu, Time.Point=="TF")
-FC_Pacu_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_Pacu.TF)
-  anova(FC_Pacu_model.TF) 
-  FC_Pacu_model.TF<-lmer(zoox.AFDWmg.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Pacu.TF)
-  anova(FC_Pacu_model.TF) 
-  qqPlot(residuals(FC_Pacu_model.TF)) 
-  emm<-emmeans(FC_Pacu_model.TF,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)  
-  
-  
-#Pacu-CCC only
-  FC_Pacu_model.CCC<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu.CCC)
-  anova(FC_Pacu_model.CCC) 
-  qqPlot(residuals(FC_Pacu_model.CCC)) 
-    emm<-emmeans(FC_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
+#Pvar
+FC_Pvar_plot<- ggplot(FC_TF_pvar, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pvar_plot
 
-#Pacu-C42 only
-  FC_Pacu_model.C42<-lmer(zoox.AFDWmg.cm2_log~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF_Pacu.C42)
-  anova(FC_Pacu_model.C42) 
-  qqPlot(residuals(FC_Pacu_model.C42)) 
-    emm<-emmeans(FC_Pacu_model.C42,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)
-    pairs(emm)
-    
+#Pacu
+FC_Pacu_plot<- ggplot(FC_TF_pacu, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);FC_Pacu_plot
 
+plot_row<-plot_grid(FC_Mcap_plot, FC_Pcomp_plot, FC_Pvar_plot, FC_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Ash-free Dry Weight TF", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  FC_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));FC_profilesTF
+
+ggsave("FC_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
-
-
-
-
-
-
 #Buoyant Weight/Calcification
-
-calibration 
-```{r}        
+```{r}
+#calibration
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
 #Data with Standard weights in grams in deionized water, saltwater, and the temp that they were measured at
  
@@ -2865,36 +1513,36 @@ summary(StandardFreshModel)$r.squared
 StandardFreshModel$coef
 
 ```
-Analysis 
-```{r}     
- 
+
+Analysis
+```{r}
 #load coral weight data
 BW.data <-read.csv('Data/BWdata_Final.csv') # this is a file I compiled with all dates
-
+BW.data<-BW.data %>%
+    mutate(Species = str_replace(Species, "_", " "))
 ## Split data by species, change to numeric
-Mcap_BW<- subset(BW.data, Species =="Montipora_capitata")
+Mcap_BW<- subset(BW.data, Species =="Montipora capitata")
 Mcap_BW$Temp.C <- as.numeric(as.character(Mcap_BW$Temp.C))
 BW_Mcap <- Mcap_BW$Mass.g
 Temp_Mcap <- Mcap_BW$Temp.C 
 
-Pcomp_BW<- subset(BW.data, Species =="Porites_compressa")
+Pcomp_BW<- subset(BW.data, Species =="Porites compressa")
 Pcomp_BW$Temp.C <- as.numeric(as.character(Pcomp_BW$Temp.C))
 BW_Pcomp <- Pcomp_BW$Mass.g
 Temp_Pcomp <- Pcomp_BW$Temp.C 
 
-Pvar_BW<- subset(BW.data, Species =="Pavona_varians")
+Pvar_BW<- subset(BW.data, Species =="Pavona varians")
 Pvar_BW$Temp.C <- as.numeric(as.character(Pvar_BW$Temp.C))
 BW_Pvar <- Pvar_BW$Mass.g
 Temp_Pvar <- Pvar_BW$Temp.C 
 
-Pacu_BW<- subset(BW.data, Species =="Pocillopora_acuta")
+Pacu_BW<- subset(BW.data, Species =="Pocillopora acuta")
 BW_Pacu <- Pacu_BW$Mass.g
 Temp_Pacu <- Pacu_BW$Temp.C  
-
- 
 ```
+
 Montipora capitata
-```{r}   
+```{r}
 BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -2952,12 +1600,6 @@ data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C
 data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
 
-#write.csv(data_McapBW,"data_McapBW.csv")
-
-##calc BW for Mcap in general (T0-T1 ambient only) 
-# data_McapBW.amb<-subset(data_McapBW, Treatment=="Ambient")
-# write.csv(data_McapBW.amb,"data_McapBW.amb.csv")
-
 # mean, standard dev, and sem
 time1_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
               N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
@@ -2981,147 +1623,22 @@ G_Mcap<-rbind(G_McapA, G_McapH)
  # make new column that renames "time" to Stress or Recovery
 G_Mcap$newtime = ifelse(G_Mcap$Time == "Time1", "Post-Stress", "Post-Recovery")
 G_Mcap <- within(G_Mcap, newtime <- factor(newtime, levels = c("Post-Stress", "Post-Recovery"))) # Set order of levels so plots in right order
- 
- 
-
-Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-      ylim(0, .6)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot
-
-
-
-
-
-
-
-
-
-#by clade
-
-# mean, standard dev, and sem
-time1_McapBW.c <-ddply(data_McapBW, c("Treatment","Clade"), summarize, #
-              N=length(na.omit(time1.growth)), # 
-              mean = (mean(time1.growth, na.rm=TRUE)) ,  #t
-              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
-              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
-time1_McapBW.c$Time <- "Time1"  # this puts these data in our "time1" dataframe
-
-time2_McapBW.c <-ddply(data_McapBW, c( "Treatment","Clade"), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
-              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
-              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
-              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
-              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
-time2_McapBW.c$Time <- "Time2"  # this puts these data in our "time1" dataframe
-
-#save this dataframe as "G"
-
-G_Mcap.c<-rbind(time1_McapBW.c, time2_McapBW.c)
-
-G_Mcap.c$Code<-paste(G_Mcap.c$Treatment,G_Mcap.c$Clade)
-
-Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype=2)+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, .6)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("% Change Dry.Weigh.g"))) +
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot.c
 
 ```
+
 Porites compressa P lobata, 1.5 scoffin 1992, prachet 2015, low and barnes 1992
-```{r}  
-   
-################################     PORITES COMPRESSA
+```{r}
+#     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
-  #Parameters---------------------------------------------------------------
-  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
-  # Temp is the temperature of the water during the coral measurement
-  # BW is the buoywant weight of the coral
-  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
-  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
-  
-  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
-  
-  # below: Medellin-Maldonado et al 2016
-  # Pavona varians 1.04 +-0.07
-  # panama 8.5380° N, 80.7821° W, 
-  # coasta rica 9.7489° N, 83.7534° W
-  # mexico la entrega 15.7424° N, 96.1282° W
-  # hawaii 19.8968° N, 155.5828° W
-  # Pocillopora 1.78 +- 0.31
-  
-  
-  # You can change the density to literatrue values for the specific coral species of interest in the function. 
-  
-  #Calculation------------------------------------------------------------
-  #Step 1: correct the Standard weights for temperature
-  # StandardFresh is the weight of the Standard in  fresh water at temp x
-  # StandardSalt is the weight of the Standard in salt water at temp x
-  
-  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
   StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
   StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
-  
-  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
-  # the density of the Standard (Davies eq. 4)
-  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
   StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
-  
-  # Step 3: Calculate the density of seawater using the density of the Standard
-  # (Spencer Davies eq. 3)
   SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
-  
-  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
   CoralWeight <- BW_Pcomp/(1-(SWDensity/CoralDensity))
-  
-  return(CoralWeight) #returns coral dry weights in g
+  return(CoralWeight) 
 }
 
-
-Pcomp_BW$Dry.Weigh.g <- BWCalc_Pcomp(BW=BW_Pcomp, Temp=Temp_Pcomp) #use function to calculate dry weight
-# hist(Pcomp_BW$Dry.Weigh.g) 
-# Pcomp_BW$Dry.Weigh.g_log<-log10(Pcomp_BW$Dry.Weigh.g+1)
-# hist(Pcomp_BW$Dry.Weigh.g_log) # normal
+Pcomp_BW$Dry.Weigh.g <- BWCalc_Pcomp(BW=BW_Pcomp, Temp=Temp_Pcomp) 
 boxplot(Pcomp_BW$Dry.Weigh.g_log) #examine data
 
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
@@ -3244,9 +1761,99 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
   # ggtitle("P compressa")+
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pcomp_BW_plot.c
 
-``` 
+```
+
+#old plot code mcap
+```{r}
+#df data_McapBW
+
+
+
+
+#old
+
+Mcap_BW_plot<-ggplot(data=G_Mcap, aes(x=newtime, y=mean, group = Treatment, color=Treatment)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
+  geom_line(aes(color=Treatment),linetype="dotted")+
+  scale_color_manual(values=c("dodgerblue3", "darkred"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("") + #Label the X Axis
+      ylim(0, .6)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot
+
+#by clade
+
+# mean, standard dev, and sem
+time1_McapBW.c <-ddply(data_McapBW, c("Treatment","Clade"), summarize, #
+              N=length(na.omit(time1.growth)), # 
+              mean = (mean(time1.growth, na.rm=TRUE)) ,  #t
+              sd = sd(time1.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time1.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time1_McapBW.c$Time <- "Time1"  # this puts these data in our "time1" dataframe
+
+time2_McapBW.c <-ddply(data_McapBW, c( "Treatment","Clade"), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+              N=length(na.omit(time2.growth)), # the sample size of the light column summarized by Tank number
+              mean = (mean(time2.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
+              sd = sd(time2.growth, na.rm=TRUE) ,# the standard deviation of the temp column summarized by Tank number
+              sem = (sd(time2.growth,na.rm=T)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
+time2_McapBW.c$Time <- "Time2"  # this puts these data in our "time1" dataframe
+
+#save this dataframe as "G"
+
+G_Mcap.c<-rbind(time1_McapBW.c, time2_McapBW.c)
+
+G_Mcap.c$Code<-paste(G_Mcap.c$Treatment,G_Mcap.c$Clade)
+
+Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Code)) +
+  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
+                width=0.1, show.legend = T)+
+  geom_point(aes(color=Code), size=4, show.legend = T)+  
+  geom_line(aes(color=Code),linetype=2)+
+  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
+   geom_point(shape = 1,size = 4,colour = "black")+
+  xlab("Time Point") + #Label the X Axis
+      ylim(0, .6)+
+  theme_bw() + #Set the background color
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  # theme(panel.grid.major = element_blank(), 
+  #       panel.grid.minor = element_blank(),
+  #       panel.background = element_rect(colour = "black", size=1))+
+        theme(aspect.ratio=1)+
+  ylab(expression(paste("% Change Dry.Weigh.g"))) +
+  # ggtitle("M capitata")+
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Mcap_BW_plot.c
+
+```
+
+
+
 Pavona varians
-```{r}  
+
+```{r}
 BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -3420,8 +2027,10 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pvar_BW_plot.c
 
 ```
+
 P acuta manzello 2010 2.01, Marshalln 2000 1.72, manzello 2010 2.05
-```{r}   
+
+```{r}
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
   #Parameters---------------------------------------------------------------
   # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
@@ -3591,7 +2200,9 @@ Pacu_BW_plot.c<-ggplot(data=G_Pacu.c, aes(x=Time, y=mean, group = Code, color=Co
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.25));Pacu_BW_plot.c
 
 ```
+
 Plots together
+
 ```{r}
 ###### All plots together 
 Mcap_BW_plot<-Mcap_BW_plot+ theme(legend.position = "none") #remove legend
@@ -3614,10 +2225,10 @@ grid.arrange(Mcap_BW_plot.c, Pcomp_BW_plot.c, Pvar_BW_plot.c, Pacu_BW_plot.c, nr
 
 
 
-G_Mcap$Species<-"Montipora_capitata"
-G_Pcomp$Species<-"Porites_compressa"
-G_Pvar$Species<-"Pavona_varians"
-G_Pacu$Species<-"Pocillopora_acuta"
+G_Mcap$Species<-"Montipora capitata"
+G_Pcomp$Species<-"Porites compressa"
+G_Pvar$Species<-"Pavona varians"
+G_Pacu$Species<-"Pocillopora acuta"
 
 T1Growth<-rbind(G_Mcap, G_Pcomp,G_Pvar,G_Pacu)
 
@@ -3677,10 +2288,11 @@ grow_T0_mean_plot<-ggplot(data=T0Growth, aes(x=Species, y=mean, group = Species,
   ggtitle("Time 0")+
   theme(plot.title = element_text(size=20, face = "italic"));grow_T0_mean_plot
 
-``` 
- 
+```
+
 stats
-```{r}         
+
+```{r}
 Growth<- rbind(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
 GrowthKeep<- c("Frag.ID","time1.growth","time2.growth")
 Growth <- Growth[GrowthKeep]
@@ -3726,10 +2338,10 @@ pairs(emm)
 
 
 #t0 only by speices?
-Growth3_T1Ambient_stats_T0.mcap<-subset(Growth3_T1Ambient, Species=="Montipora_capitata")
-Growth3_T1Ambient_stats_T0.pcomp<-subset(Growth3_T1Ambient, Species=="Porites_compressa")
-Growth3_T1Ambient_stats_T0.pvar<-subset(Growth3_T1Ambient, Species=="Pavona_varians")
-Growth3_T1Ambient_stats_T0.pacu<-subset(Growth3_T1Ambient, Species=="Pocillopora_acuta")
+Growth3_T1Ambient_stats_T0.mcap<-subset(Growth3_T1Ambient, Species=="Montipora capitata")
+Growth3_T1Ambient_stats_T0.pcomp<-subset(Growth3_T1Ambient, Species=="Porites compressa")
+Growth3_T1Ambient_stats_T0.pvar<-subset(Growth3_T1Ambient, Species=="Pavona varians")
+Growth3_T1Ambient_stats_T0.pacu<-subset(Growth3_T1Ambient, Species=="Pocillopora acuta")
 
 #mcap
 Growth3_T1Ambient_T0_model<-lmer(percent.change~Clade+(1|Tank.num), Growth3_T1Ambient_stats_T0.mcap)
@@ -3779,25 +2391,25 @@ anova(BW_model)
 #lmer
 
 # by Species df: Growth3_Mcap, Growth3_Pcomp, Growth3_Pvar, Growth3_Pacu
-Growth3_Mcap<-subset(Growth3, Species=="Montipora_capitata")
+Growth3_Mcap<-subset(Growth3, Species=="Montipora capitata")
   Growth3_Mcap.C<-subset(Growth3_Mcap, Clade=="C")
   Growth3_Mcap.CD<-subset(Growth3_Mcap, Clade=="CD")
     Growth3_Mcap.T1<-subset(Growth3_Mcap, Time.point=="time1.growth")
     Growth3_Mcap.TF<-subset(Growth3_Mcap, Time.point=="time2.growth")
 
-Growth3_Pcomp<-subset(Growth3, Species=="Porites_compressa")
+Growth3_Pcomp<-subset(Growth3, Species=="Porites compressa")
   Growth3_Pcomp.C15cj<-subset(Growth3_Pcomp, Clade=="C15cj")
   Growth3_Pcomp.C15n<-subset(Growth3_Pcomp, Clade=="C15n")
     Growth3_Pcomp.T1<-subset(Growth3_Pcomp, Time.point=="time1.growth")
     Growth3_Pcomp.TF<-subset(Growth3_Pcomp, Time.point=="time2.growth")
     
-Growth3_Pvar<-subset(Growth3, Species=="Pavona_varians")
+Growth3_Pvar<-subset(Growth3, Species=="Pavona varians")
   Growth3_Pvar.C1<-subset(Growth3_Pvar, Clade=="C1")
   Growth3_Pvar.C27<-subset(Growth3_Pvar, Clade=="C27")
     Growth3_Pvar.T1<-subset(Growth3_Pvar, Time.point=="time1.growth")
     Growth3_Pvar.TF<-subset(Growth3_Pvar, Time.point=="time2.growth")
     
-Growth3_Pacu<-subset(Growth3, Species=="Pocillopora_acuta")
+Growth3_Pacu<-subset(Growth3, Species=="Pocillopora acuta")
   Growth3_Pacu.CCC<-subset(Growth3_Pacu, Clade=="CCC")
   Growth3_Pacu.C42<-subset(Growth3_Pacu, Clade=="C42")
     Growth3_Pacu.T1<-subset(Growth3_Pacu, Time.point=="time1.growth")
@@ -4044,12 +2656,10 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 
 ```
 
+#Chl-a\
+dfs: Slurry=airbrush, SA=wax dip, SHOULD YOU STANDARDIZE TO CELLS INSTEAD?
 
-
-#Chl-a  
-dfs: Slurry=airbrush, SA=wax dip, 
-SHOULD YOU STANDARDIZE TO CELLS INSTEAD?
-```{r}       
+```{r}
  
  # Plate 1
 
@@ -4204,8 +2814,9 @@ chlatest<-merge(meta, Chla, all = T)
   
 ```
 
-means for plots 
-```{r}     
+means for plots
+
+```{r}
     
 chlatest<-merge(meta, Chla, all.x = T)
 
@@ -4236,10 +2847,10 @@ Chla_mean <- ddply(Chla, c("Treatment", "Species", "Time.Point"), summarise,
 Chla_mean #display table
 
 # divide by species
-Mcap_chla<-subset(Chla_mean, Species =="Montipora_capitata")
-Pcomp_chla<-subset(Chla_mean, Species =="Porites_compressa")
-Pvar_chla<-subset(Chla_mean, Species =="Pavona_varians")
-Pacu_chla<-subset(Chla_mean, Species =="Pocillopora_acuta")
+Mcap_chla<-subset(Chla_mean, Species =="Montipora capitata")
+Pcomp_chla<-subset(Chla_mean, Species =="Porites compressa")
+Pvar_chla<-subset(Chla_mean, Species =="Pavona varians")
+Pacu_chla<-subset(Chla_mean, Species =="Pocillopora acuta")
 
 #by clade
 Chla_meanClade <- ddply(Chla, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
@@ -4251,10 +2862,10 @@ Chla_meanClade <- ddply(Chla, c("Treatment", "Species", "Time.Point","Clade"), s
 )
 Chla_meanClade #display table
 # divide by species
-Mcap_chla.Clade<-subset(Chla_meanClade, Species =="Montipora_capitata")
-Pcomp_chla.Clade<-subset(Chla_meanClade, Species =="Porites_compressa")
-Pvar_chla.Clade<-subset(Chla_meanClade, Species =="Pavona_varians")
-Pacu_chla.Clade<-subset(Chla_meanClade, Species =="Pocillopora_acuta")
+Mcap_chla.Clade<-subset(Chla_meanClade, Species =="Montipora capitata")
+Pcomp_chla.Clade<-subset(Chla_meanClade, Species =="Porites compressa")
+Pvar_chla.Clade<-subset(Chla_meanClade, Species =="Pavona varians")
+Pacu_chla.Clade<-subset(Chla_meanClade, Species =="Pocillopora acuta")
 
 #just T0 ####
 Chla_T0<-subset(Chla, Time.Point=="T0")
@@ -4621,8 +3232,9 @@ Pacu_Chla_plot.c<-ggplot(data=Pacu_chla.Clade, aes(x=Time.Point, y=mean, group =
 
 ```
 
-Plots together 
-```{r}  
+Plots together
+
+```{r}
 ###### All plots together
 Mcap_Chla_plot<-Mcap_Chla_plot+ theme(legend.position = "none") #remove legend
 Pcomp_Chla_plot<-Pcomp_Chla_plot+ theme(legend.position = "none") #remove legend
@@ -4639,9 +3251,10 @@ Pacu_Chla_plot.c<-Pacu_Chla_plot.c+ theme(legend.position = "none") #remove lege
 
 grid.arrange(Mcap_Chla_plot.c, Pcomp_Chla_plot.c, Pvar_Chla_plot.c,Pacu_Chla_plot.c, nrow = 1)
 ```
- 
-stats  
-```{r}    
+
+stats
+
+```{r}
  
 #t0
 Chla_stats_T0<-Chla
@@ -4667,7 +3280,7 @@ cld(emm)
 pairs(emm)
 
 #mcap
-Chla_stats_T0.mcap<-subset(Chla_stats_T0, Species=="Montipora_capitata")
+Chla_stats_T0.mcap<-subset(Chla_stats_T0, Species=="Montipora capitata")
 Chla_T0_model.c<-lmer(ChlaSA_log~Clade+(1|Tank.num), Chla_stats_T0.mcap)
 anova(Chla_T0_model.c)  #species differ
 qqPlot(residuals(Chla_T0_model.c)) 
@@ -4676,7 +3289,7 @@ cld(emm)
 pairs(emm)
 
 #Pcomp
-Chla_stats_T0.pcomp<-subset(Chla_stats_T0, Species=="Porites_compressa")
+Chla_stats_T0.pcomp<-subset(Chla_stats_T0, Species=="Porites compressa")
 Chla_T0_model.c<-lmer(ChlaSA_log~Clade+(1|Tank.num), Chla_stats_T0.pcomp)
 anova(Chla_T0_model.c)  #species differ
 qqPlot(residuals(Chla_T0_model.c)) 
@@ -4685,7 +3298,7 @@ cld(emm)
 pairs(emm)
 
 #pvar
-Chla_stats_T0.pvar<-subset(Chla_stats_T0, Species=="Pavona_varians")
+Chla_stats_T0.pvar<-subset(Chla_stats_T0, Species=="Pavona varians")
 Chla_T0_model.c<-lmer(ChlaSA_log~Clade+(1|Tank.num), Chla_stats_T0.pvar)
 anova(Chla_T0_model.c)  #species differ
 qqPlot(residuals(Chla_T0_model.c)) 
@@ -4694,7 +3307,7 @@ cld(emm)
 pairs(emm)
 
 #pacu
-Chla_stats_T0.pacu<-subset(Chla_stats_T0, Species=="Porites_compressa")
+Chla_stats_T0.pacu<-subset(Chla_stats_T0, Species=="Porites compressa")
 Chla_T0_model.c<-lmer(ChlaSA_log~Clade+(1|Tank.num), Chla_stats_T0.pacu)
 anova(Chla_T0_model.c)  #species differ
 qqPlot(residuals(Chla_T0_model.c)) 
@@ -4746,16 +3359,16 @@ qqPlot(residuals(Chla_model))
 
 
 # by Species df: Chla_stats_T1TF_Mcap, Chla_stats_T1TF_Pcomp, Chla_stats_T1TF_Pvar, Chla_stats_T1TF_Pacu
-Chla_stats_T1TF_Mcap<-subset(Chla_stats_T1TF, Species=="Montipora_capitata")
+Chla_stats_T1TF_Mcap<-subset(Chla_stats_T1TF, Species=="Montipora capitata")
   Chla_stats_T1TF_Mcap.C<-subset(Chla_stats_T1TF_Mcap, Clade=="C")
   Chla_stats_T1TF_Mcap.CD<-subset(Chla_stats_T1TF_Mcap, Clade=="CD")
-Chla_stats_T1TF_Pcomp<-subset(Chla_stats_T1TF, Species=="Porites_compressa")
+Chla_stats_T1TF_Pcomp<-subset(Chla_stats_T1TF, Species=="Porites compressa")
   Chla_stats_T1TF_Pcomp.C15cj<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15cj")
   Chla_stats_T1TF_Pcomp.C15n<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15n")
-Chla_stats_T1TF_Pvar<-subset(Chla_stats_T1TF, Species=="Pavona_varians")
+Chla_stats_T1TF_Pvar<-subset(Chla_stats_T1TF, Species=="Pavona varians")
   Chla_stats_T1TF_Pvar.C1<-subset(Chla_stats_T1TF_Pvar, Clade=="C1")
   Chla_stats_T1TF_Pvar.C27<-subset(Chla_stats_T1TF_Pvar, Clade=="C27")
-Chla_stats_T1TF_Pacu<-subset(Chla_stats_T1TF, Species=="Pocillopora_acuta")
+Chla_stats_T1TF_Pacu<-subset(Chla_stats_T1TF, Species=="Pocillopora acuta")
   Chla_stats_T1TF_Pacu.CCC<-subset(Chla_stats_T1TF_Pacu, Clade=="CCC")
   Chla_stats_T1TF_Pacu.C42<-subset(Chla_stats_T1TF_Pacu, Clade=="C42")
    
@@ -4981,9 +3594,9 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
 
 ```
 
+#PAM
 
-#PAM 
-```{r}       
+```{r}
 #Load PAM data
 Time0 <- read.csv("Data/PAM_20170320.csv", header=T) #load data
 Time0<-merge(Time0, meta)
@@ -5068,8 +3681,10 @@ PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
 
 
 ```
-Stats  
-```{r}         
+
+Stats
+
+```{r}
 #remove notes 
 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
@@ -5103,10 +3718,10 @@ pairs(emm)
 
 
 #t0 only by speices?
-PAM_stats_T0.mcap<-subset(PAM_stats_T0, Species=="Montipora_capitata")
-PAM_stats_T0.pcomp<-subset(PAM_stats_T0, Species=="Porites_compressa")
-PAM_stats_T0.pvar<-subset(PAM_stats_T0, Species=="Pavona_varians")
-PAM_stats_T0.pacu<-subset(PAM_stats_T0, Species=="Pocillopora_acuta")
+PAM_stats_T0.mcap<-subset(PAM_stats_T0, Species=="Montipora capitata")
+PAM_stats_T0.pcomp<-subset(PAM_stats_T0, Species=="Porites compressa")
+PAM_stats_T0.pvar<-subset(PAM_stats_T0, Species=="Pavona varians")
+PAM_stats_T0.pacu<-subset(PAM_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 PAM_T0_model<-lmer(Yield_cu~Clade+(1|Tank.num), PAM_stats_T0.mcap)
@@ -5159,31 +3774,31 @@ pairs(emm)
 
 #lmer
 
-PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora_capitata")
-PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites_compressa")
-PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona_varians")
-PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
+PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora capitata")
+PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites compressa")
+PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona varians")
+PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora acuta")
 
 # by Species df: PAMdata2_stats_Mcap, PAMdata2_stats_Pcomp, PAMdata2_stats_Pvar, PAMdata2_stats_Pacu
-PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora_capitata")
+PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora capitata")
   PAMdata2_stats_Mcap.C<-subset(PAMdata2_stats_Mcap, Clade=="C")
   PAMdata2_stats_Mcap.CD<-subset(PAMdata2_stats_Mcap, Clade=="CD")
     PAMdata2_stats_Mcap.T1<-subset(PAMdata2_stats_Mcap, Days==24)
     PAMdata2_stats_Mcap.TF<-subset(PAMdata2_stats_Mcap, Days==52)
 
-PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites_compressa")
+PAMdata2_stats_Pcomp<-subset(PAMdata2_stats, Species=="Porites compressa")
   PAMdata2_stats_Pcomp.C15cj<-subset(PAMdata2_stats_Pcomp, Clade=="C15cj")
   PAMdata2_stats_Pcomp.C15n<-subset(PAMdata2_stats_Pcomp, Clade=="C15n")
     PAMdata2_stats_Pcomp.T1<-subset(PAMdata2_stats_Pcomp, Days==24)
     PAMdata2_stats_Pcomp.TF<-subset(PAMdata2_stats_Pcomp, Days==52)
     
-PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona_varians")
+PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona varians")
   PAMdata2_stats_Pvar.C1<-subset(PAMdata2_stats_Pvar, Clade=="C1")
   PAMdata2_stats_Pvar.C27<-subset(PAMdata2_stats_Pvar, Clade=="C27")
     PAMdata2_stats_Pvar.T1<-subset(PAMdata2_stats_Pvar, Days==24)
     PAMdata2_stats_Pvar.TF<-subset(PAMdata2_stats_Pvar, Days==52)
     
-PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora_acuta")
+PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora acuta")
   PAMdata2_stats_Pacu.CCC<-subset(PAMdata2_stats_Pacu, Clade=="CCC")
   PAMdata2_stats_Pacu.C42<-subset(PAMdata2_stats_Pacu, Clade=="C42")
     PAMdata2_stats_Pacu.T1<-subset(PAMdata2_stats_Pacu, Days==24)
@@ -5458,8 +4073,10 @@ PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
  
 
 ```
+
 Plots
-```{r}       
+
+```{r}
 PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise, 
                    N    = length(Yield[!is.na(Yield)]), 
                    mean = mean(Yield, na.rm=TRUE), 
@@ -5470,10 +4087,10 @@ PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise,
 PAMdata2_mean #display table
 
 # divide by Clade
-Mcap_PAM_mean<-subset(PAMdata2_mean, Species =="Montipora_capitata")
-Pcomp_PAM_mean<-subset(PAMdata2_mean, Species =="Porites_compressa")
-Pvar_PAM_mean<-subset(PAMdata2_mean, Species =="Pavona_varians")
-Pacu_PAM_mean<-subset(PAMdata2_mean, Species =="Pocillopora_acuta")
+Mcap_PAM_mean<-subset(PAMdata2_mean, Species =="Montipora capitata")
+Pcomp_PAM_mean<-subset(PAMdata2_mean, Species =="Porites compressa")
+Pvar_PAM_mean<-subset(PAMdata2_mean, Species =="Pavona varians")
+Pacu_PAM_mean<-subset(PAMdata2_mean, Species =="Pocillopora acuta")
 
 
 PAMdata2_meanClade <- ddply(PAMdata2, c("Treatment", "Species", "Days","Clade"), summarise, 
@@ -5486,10 +4103,10 @@ PAMdata2_meanClade <- ddply(PAMdata2, c("Treatment", "Species", "Days","Clade"),
 PAMdata2_meanClade #display table
 
 # divide by clade
-Mcap_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Montipora_capitata")
-Pcomp_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Porites_compressa")
-Pvar_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pavona_varians")
-Pacu_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pocillopora_acuta")
+Mcap_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Montipora capitata")
+Pcomp_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Porites compressa")
+Pvar_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pavona varians")
+Pacu_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pocillopora acuta")
 
 
 #just T0 ####
@@ -5856,7 +4473,9 @@ Pacu_PAM_plot<-ggplot(data=Pacu_PAM_mean.clade, aes(x=Days, y=mean, group = Code
 
 
 ```
+
 Plots together
+
 ```{r}
 ###### All plots together
 Mcap_PAM_plot<-Mcap_PAM_plot+ theme(legend.position = "none") #remove legend
@@ -5868,7 +4487,8 @@ grid.arrange(Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot, nrow = 
 ```
 
 #Protein
-```{r}      
+
+```{r}
 Protein <- read.csv("Data/Protein_TT17_20190214.csv")
 prottest<-merge(meta, Protein, all=T)
 keepPr<-c("Frag.ID", "mg.prot.ml") #keep cols you need
@@ -5919,8 +4539,10 @@ hist(Protein$mg.mm2_sqrt) #better
 
  
 ```
+
 Stats
-```{r}     
+
+```{r}
  
 #t0
 Prot_stats_T0<-subset(Protein, Time.Point=="T0")
@@ -5935,10 +4557,10 @@ cld(emm)
 pairs(emm)
 
 #t0 only by speices?
-Prot_stats_T0.mcap<-subset(Prot_stats_T0, Species=="Montipora_capitata")
-Prot_stats_T0.pcomp<-subset(Prot_stats_T0, Species=="Porites_compressa")
-Prot_stats_T0.pvar<-subset(Prot_stats_T0, Species=="Pavona_varians")
-Prot_stats_T0.pacu<-subset(Prot_stats_T0, Species=="Pocillopora_acuta")
+Prot_stats_T0.mcap<-subset(Prot_stats_T0, Species=="Montipora capitata")
+Prot_stats_T0.pcomp<-subset(Prot_stats_T0, Species=="Porites compressa")
+Prot_stats_T0.pvar<-subset(Prot_stats_T0, Species=="Pavona varians")
+Prot_stats_T0.pacu<-subset(Prot_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 Prot_T0_model<-lmer(mg.mm2_sqrt~Clade+(1|Tank.num), Prot_stats_T0.mcap)
@@ -6002,16 +4624,16 @@ pairs(emm)
 
 
 # by Species df: Prot_stats_T1TF_Mcap, Prot_stats_T1TF_Pcomp, Prot_stats_T1TF_Pvar, Prot_stats_T1TF_Pacu
-Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF, Species=="Montipora_capitata")
+Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF, Species=="Montipora capitata")
   Prot_stats_T1TF_Mcap.C<-subset(Prot_stats_T1TF_Mcap, Clade=="C")
   Prot_stats_T1TF_Mcap.CD<-subset(Prot_stats_T1TF_Mcap, Clade=="CD")
-Prot_stats_T1TF_Pcomp<-subset(Prot_stats_T1TF, Species=="Porites_compressa")
+Prot_stats_T1TF_Pcomp<-subset(Prot_stats_T1TF, Species=="Porites compressa")
   Prot_stats_T1TF_Pcomp.C15cj<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15cj")
   Prot_stats_T1TF_Pcomp.C15n<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15n")
-Prot_stats_T1TF_Pvar<-subset(Prot_stats_T1TF, Species=="Pavona_varians")
+Prot_stats_T1TF_Pvar<-subset(Prot_stats_T1TF, Species=="Pavona varians")
   Prot_stats_T1TF_Pvar.C1<-subset(Prot_stats_T1TF_Pvar, Clade=="C1")
   Prot_stats_T1TF_Pvar.C27<-subset(Prot_stats_T1TF_Pvar, Clade=="C27")
-Prot_stats_T1TF_Pacu<-subset(Prot_stats_T1TF, Species=="Pocillopora_acuta")
+Prot_stats_T1TF_Pacu<-subset(Prot_stats_T1TF, Species=="Pocillopora acuta")
   Prot_stats_T1TF_Pacu.CCC<-subset(Prot_stats_T1TF_Pacu, Clade=="CCC")
   Prot_stats_T1TF_Pacu.C42<-subset(Prot_stats_T1TF_Pacu, Clade=="C42")
   
@@ -6228,8 +4850,10 @@ Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
     pairs(emm)
     
 ```
+
 plots
-```{r}  
+
+```{r}
 
 #just T0 #### 
 Protein_T0_mean <- ddply(Prot_stats_T0, c( "Species"), summarise, 
@@ -6354,10 +4978,10 @@ All_Chla_plot<-ggplot(data=Chla_TFH_mean, aes(x=Species, y=mean, group = Species
 
 
 #### by species ####
-Mcap_Protein_mean<-subset(Protein_mean, Species=="Montipora_capitata")
-Pcomp_Protein_mean<-subset(Protein_mean, Species=="Porites_compressa")
-Pvar_Protein_mean<-subset(Protein_mean, Species=="Pavona_varians")
-Pacu_Protein_mean<-subset(Protein_mean, Species=="Pocillopora_acuta")
+Mcap_Protein_mean<-subset(Protein_mean, Species=="Montipora capitata")
+Pcomp_Protein_mean<-subset(Protein_mean, Species=="Porites compressa")
+Pvar_Protein_mean<-subset(Protein_mean, Species=="Pavona varians")
+Pacu_Protein_mean<-subset(Protein_mean, Species=="Pocillopora acuta")
 
   
 #Mcap
@@ -6390,7 +5014,7 @@ Mcap_Protein_plot<-ggplot(data=Mcap_Protein_mean, aes(x=Time.Point, y=mean, grou
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Protein_plot
 
 #Mcap by clade
-Protein_meanCLADE.Mcap<-subset(Protein_meanCLADE, Species=="Montipora_capitata")
+Protein_meanCLADE.Mcap<-subset(Protein_meanCLADE, Species=="Montipora capitata")
 Protein_meanCLADE.Mcap$Code<-paste(Protein_meanCLADE.Mcap$Treatment,Protein_meanCLADE.Mcap$Clade)
 
 Mcap_Protein_plot<-ggplot(data=Protein_meanCLADE.Mcap, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6450,7 +5074,7 @@ Pcomp_Protein_plot<-ggplot(data=Pcomp_Protein_mean, aes(x=Time.Point, y=mean, gr
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Protein_plot
 
 #Pcomp by clade
-Protein_meanCLADE.Pcomp<-subset(Protein_meanCLADE, Species=="Porites_compressa")
+Protein_meanCLADE.Pcomp<-subset(Protein_meanCLADE, Species=="Porites compressa")
 Protein_meanCLADE.Pcomp$Code<-paste(Protein_meanCLADE.Pcomp$Treatment,Protein_meanCLADE.Pcomp$Clade)
 
 Pcomp_Protein_plot<-ggplot(data=Protein_meanCLADE.Pcomp, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6511,7 +5135,7 @@ Pvar_Protein_plot<-ggplot(data=Pvar_Protein_mean, aes(x=Time.Point, y=mean, grou
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Protein_plot
 
 #Pvar by clade
-Protein_meanCLADE.Pvar<-subset(Protein_meanCLADE, Species=="Pavona_varians")
+Protein_meanCLADE.Pvar<-subset(Protein_meanCLADE, Species=="Pavona varians")
 Protein_meanCLADE.Pvar$Code<-paste(Protein_meanCLADE.Pvar$Treatment,Protein_meanCLADE.Pvar$Clade)
 
 Pvar_Protein_plot<-ggplot(data=Protein_meanCLADE.Pvar, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6571,7 +5195,7 @@ Pacu_Protein_plot<-ggplot(data=Pacu_Protein_mean, aes(x=Time.Point, y=mean, grou
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Protein_plot
 
 #Pacu by clade
-Protein_meanCLADE.Pacu<-subset(Protein_meanCLADE, Species=="Pocillopora_acuta")
+Protein_meanCLADE.Pacu<-subset(Protein_meanCLADE, Species=="Pocillopora acuta")
 Protein_meanCLADE.Pacu$Code<-paste(Protein_meanCLADE.Pacu$Treatment,Protein_meanCLADE.Pacu$Clade)
 
 Pacu_Protein_plot<-ggplot(data=Protein_meanCLADE.Pacu, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6619,15 +5243,9 @@ Pacu_Protein_plot<-Pacu_Protein_plot+ theme(legend.position = "none") #remove le
 grid.arrange(Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot, nrow = 1)
 ```
 
-
-
-
-
-
-
-
 #Resp:photosynthesis
-```{r}      
+
+```{r}
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed_Final.csv")
 #PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
@@ -6705,17 +5323,18 @@ PR.df_B$GrossP<-PR.df_B$Photo+PR.df_B$RespPos
 PR.df_B$PR_real<-PR.df_B$GrossP/PR.df_B$RespPos
 
 
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
 
 
 
 ```
-Plots
-Photosynthesis
-```{r}       
+
+Plots Photosynthesis
+
+```{r}
 GrossP_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
                    N    = length(GrossP[!is.na(GrossP)]), 
                    mean = mean(GrossP, na.rm=TRUE), 
@@ -6824,10 +5443,10 @@ GrossP_TFH_plot<-ggplot(data=GrossP_TFH_mean, aes(x=Species, y=mean, group = Spe
 
 
 # divide by species ####
-Mcap_GrossP_mean<-subset(GrossP_mean, Species =="Montipora_capitata")
-Pcomp_GrossP_mean<-subset(GrossP_mean, Species =="Porites_compressa")
-Pvar_GrossP_mean<-subset(GrossP_mean, Species =="Pavona_varians")
-Pacu_GrossP_mean<-subset(GrossP_mean, Species =="Pocillopora_acuta")
+Mcap_GrossP_mean<-subset(GrossP_mean, Species =="Montipora capitata")
+Pcomp_GrossP_mean<-subset(GrossP_mean, Species =="Porites compressa")
+Pvar_GrossP_mean<-subset(GrossP_mean, Species =="Pavona varians")
+Pacu_GrossP_mean<-subset(GrossP_mean, Species =="Pocillopora acuta")
 
 #Mcap plot
 
@@ -6891,7 +5510,7 @@ Pcomp_GrossP_plot<-ggplot(data=Pcomp_GrossP_mean, aes(x=Time.Point, y=mean, grou
 
 
 #pcomp clade GrossP_meanCLADE
-GrossP_meanCLADE.pcomp<-subset(Photo_meanCLADE, Species=="Porites_compressa")
+GrossP_meanCLADE.pcomp<-subset(Photo_meanCLADE, Species=="Porites compressa")
 GrossP_meanCLADE.pcomp$Code<-paste(GrossP_meanCLADE.pcomp$Treatment,GrossP_meanCLADE.pcomp$Clade)
 
 Pcomp_GrossP_plot<-ggplot(data=GrossP_meanCLADE.pcomp, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
@@ -6982,8 +5601,10 @@ Pacu_GrossP_plot<-ggplot(data=Pacu_GrossP_mean, aes(x=Time.Point, y=mean, group 
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot
 
 ```
+
 P Plots together
-```{r} 
+
+```{r}
 ###### All plots together
 Mcap_GrossP_plot<-Mcap_GrossP_plot+ theme(legend.position = "none") #remove legend
 Pcomp_GrossP_plot<-Pcomp_GrossP_plot+ theme(legend.position = "none") #remove legend
@@ -6994,8 +5615,10 @@ grid.arrange(Mcap_GrossP_plot, Pcomp_GrossP_plot, Pvar_GrossP_plot,Pacu_GrossP_p
 library(gridExtra)
 
 ```
-Plots by Clades 
-```{r}  
+
+Plots by Clades
+
+```{r}
 #Mcap 
 GrossP_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
                    N    = length(GrossP[!is.na(GrossP)]), 
@@ -7007,13 +5630,13 @@ GrossP_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clad
 GrossP_mean.Clade #display table
 
 # divide by species
-Mcap_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Montipora_capitata")
+Mcap_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Montipora capitata")
   Mcap_GrossP_mean.Clade$Code<-paste(Mcap_GrossP_mean.Clade$Clade, Mcap_GrossP_mean.Clade$Treatment)
-Pcomp_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Porites_compressa")
+Pcomp_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Porites compressa")
   Pcomp_GrossP_mean.Clade$Code<-paste(Pcomp_GrossP_mean.Clade$Clade, Pcomp_GrossP_mean.Clade$Treatment)
-Pvar_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pavona_varians")
+Pvar_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pavona varians")
   Pvar_GrossP_mean.Clade$Code<-paste(Pvar_GrossP_mean.Clade$Clade, Pvar_GrossP_mean.Clade$Treatment)
-Pacu_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pocillopora_acuta")
+Pacu_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pocillopora acuta")
   Pacu_GrossP_mean.Clade$Code<-paste(Pacu_GrossP_mean.Clade$Clade, Pacu_GrossP_mean.Clade$Treatment)
 
 
@@ -7143,8 +5766,9 @@ grid.arrange(Mcap_GrossP_plot.Clade, Pcomp_GrossP_plot.Clade, Pvar_GrossP_plot.C
 
 ```
 
-GrossPsynthesis stats 
-```{r}        
+GrossPsynthesis stats
+
+```{r}
 #df PR.df_B, use all time points bc repeated measures 
 
 hist(PR.df_B$GrossP) #so normal
@@ -7166,10 +5790,10 @@ pairs(emm)
  
 
 #t0 only by speices?
-GrossP_stats_T0.mcap<-subset(GrossP_stats_T0, Species=="Montipora_capitata")
-GrossP_stats_T0.pcomp<-subset(GrossP_stats_T0, Species=="Porites_compressa")
-GrossP_stats_T0.pvar<-subset(GrossP_stats_T0, Species=="Pavona_varians")
-GrossP_stats_T0.pacu<-subset(GrossP_stats_T0, Species=="Pocillopora_acuta")
+GrossP_stats_T0.mcap<-subset(GrossP_stats_T0, Species=="Montipora capitata")
+GrossP_stats_T0.pcomp<-subset(GrossP_stats_T0, Species=="Porites compressa")
+GrossP_stats_T0.pvar<-subset(GrossP_stats_T0, Species=="Pavona varians")
+GrossP_stats_T0.pacu<-subset(GrossP_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 GrossP_T0_model<-lmer(GrossP~Clade+(1|Tank.num), GrossP_stats_T0.mcap)
@@ -7217,16 +5841,16 @@ emm<-emmeans(GrossP_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey"
  pairs(emm)
 
 # by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
   PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
   PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
   PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
   PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
   PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
   PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
   PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
   PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
   
@@ -7456,8 +6080,10 @@ GrossP_Pacu_model<-lmer(GrossP~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+
     
     
 ```
+
 Respiration plots
-```{r}      
+
+```{r}
 #Respiration (absolute)
 
 #T0
@@ -7520,10 +6146,10 @@ RespPos_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summaris
 RespPos_mean #display table
  
 # divide by species
-Mcap_RespPos_mean<-subset(RespPos_mean, Species =="Montipora_capitata")
-Pcomp_RespPos_mean<-subset(RespPos_mean, Species =="Porites_compressa")
-Pvar_RespPos_mean<-subset(RespPos_mean, Species =="Pavona_varians")
-Pacu_RespPos_mean<-subset(RespPos_mean, Species =="Pocillopora_acuta")
+Mcap_RespPos_mean<-subset(RespPos_mean, Species =="Montipora capitata")
+Pcomp_RespPos_mean<-subset(RespPos_mean, Species =="Porites compressa")
+Pvar_RespPos_mean<-subset(RespPos_mean, Species =="Pavona varians")
+Pacu_RespPos_mean<-subset(RespPos_mean, Species =="Pocillopora acuta")
 
 #Mcap plot
 
@@ -7647,6 +6273,7 @@ Pacu_RespPos_plot<-ggplot(data=Pacu_RespPos_mean, aes(x=Time.Point, y=mean, grou
 ```
 
 Plots by Clades
+
 ```{r}
 #t0 only
 PR.df_BPR.df_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
@@ -7748,13 +6375,13 @@ RespPos_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Cla
 RespPos_mean.Clade #display table
 
 # divide by species
-Mcap_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Montipora_capitata")
+Mcap_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Montipora capitata")
   Mcap_RespPos_mean.Clade$Code<-paste(Mcap_RespPos_mean.Clade$Clade, Mcap_RespPos_mean.Clade$Treatment)
-Pcomp_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Porites_compressa")
+Pcomp_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Porites compressa")
   Pcomp_RespPos_mean.Clade$Code<-paste(Pcomp_RespPos_mean.Clade$Clade, Pcomp_RespPos_mean.Clade$Treatment)
-Pvar_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pavona_varians")
+Pvar_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pavona varians")
   Pvar_RespPos_mean.Clade$Code<-paste(Pvar_RespPos_mean.Clade$Clade, Pvar_RespPos_mean.Clade$Treatment)
-Pacu_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pocillopora_acuta")
+Pacu_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pocillopora acuta")
   Pacu_RespPos_mean.Clade$Code<-paste(Pacu_RespPos_mean.Clade$Clade, Pacu_RespPos_mean.Clade$Treatment)
 
 
@@ -7880,8 +6507,10 @@ grid.arrange(Mcap_RespPos_plot.Clade, Pcomp_RespPos_plot.Clade, Pvar_RespPos_plo
 
 
 ```
-R Plots together 
-```{r}  
+
+R Plots together
+
+```{r}
 ###### All plots together
 Mcap_RespPos_plot<-Mcap_RespPos_plot+ theme(legend.position = "none") #remove legend
 Pcomp_RespPos_plot<-Pcomp_RespPos_plot+ theme(legend.position = "none") #remove legend
@@ -7891,8 +6520,10 @@ Pacu_RespPos_plot<-Pacu_RespPos_plot+ theme(legend.position = "none") #remove le
 grid.arrange(Mcap_RespPos_plot, Pcomp_RespPos_plot, Pvar_RespPos_plot,Pacu_RespPos_plot, nrow = 1)
 
 ```
+
 Resp stats
-```{r}  
+
+```{r}
 #df PR.df_B 
  
 hist(PR.df_B$Resp) #normal
@@ -7911,10 +6542,10 @@ pairs(emm)
 
 
 #t0 only by speices?
-Resp_stats_T0.mcap<-subset(Resp_stats_T0, Species=="Montipora_capitata")
-Resp_stats_T0.pcomp<-subset(Resp_stats_T0, Species=="Porites_compressa")
-Resp_stats_T0.pvar<-subset(Resp_stats_T0, Species=="Pavona_varians")
-Resp_stats_T0.pacu<-subset(Resp_stats_T0, Species=="Pocillopora_acuta")
+Resp_stats_T0.mcap<-subset(Resp_stats_T0, Species=="Montipora capitata")
+Resp_stats_T0.pcomp<-subset(Resp_stats_T0, Species=="Porites compressa")
+Resp_stats_T0.pvar<-subset(Resp_stats_T0, Species=="Pavona varians")
+Resp_stats_T0.pacu<-subset(Resp_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 Resp_T0_model<-lmer(Resp~Clade+(1|Tank.num), Resp_stats_T0.mcap)
@@ -8178,7 +6809,8 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num)
 ```
 
 P:R plots
-```{r}      
+
+```{r}
 
 #t0 only
 PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
@@ -8337,10 +6969,10 @@ PR_mean <-  ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise,
 PR_mean #display table
 
 # divide by species
-Mcap_PR_mean<-subset(PR_mean, Species =="Montipora_capitata")
-Pcomp_PR_mean<-subset(PR_mean, Species =="Porites_compressa")
-Pvar_PR_mean<-subset(PR_mean, Species =="Pavona_varians")
-Pacu_PR_mean<-subset(PR_mean, Species =="Pocillopora_acuta")
+Mcap_PR_mean<-subset(PR_mean, Species =="Montipora capitata")
+Pcomp_PR_mean<-subset(PR_mean, Species =="Porites compressa")
+Pvar_PR_mean<-subset(PR_mean, Species =="Pavona varians")
+Pacu_PR_mean<-subset(PR_mean, Species =="Pocillopora acuta")
 
 #Mcap plot
 
@@ -8466,7 +7098,9 @@ Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatm
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
  
 ```
+
 PR Plots together
+
 ```{r}
 ###### All plots together
 Mcap_PR_plot<-Mcap_PR_plot+ theme(legend.position = "none") #remove legend
@@ -8477,8 +7111,10 @@ Pacu_PR_plot<-Pacu_PR_plot+ theme(legend.position = "none") #remove legend
 grid.arrange(Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 1)
 
 ```
+
 Plots by Clades
-```{r} 
+
+```{r}
 #Mcap 
 PR_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
                    N    = length(PR_real[!is.na(PR_real)]), 
@@ -8490,13 +7126,13 @@ PR_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"),
 PR_mean.Clade #display table
 
 # divide by species
-Mcap_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Montipora_capitata")
+Mcap_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Montipora capitata")
   Mcap_PR_mean.Clade$Code<-paste(Mcap_PR_mean.Clade$Clade, Mcap_PR_mean.Clade$Treatment)
-Pcomp_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Porites_compressa")
+Pcomp_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Porites compressa")
   Pcomp_PR_mean.Clade$Code<-paste(Pcomp_PR_mean.Clade$Clade, Pcomp_PR_mean.Clade$Treatment)
-Pvar_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pavona_varians")
+Pvar_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pavona varians")
   Pvar_PR_mean.Clade$Code<-paste(Pvar_PR_mean.Clade$Clade, Pvar_PR_mean.Clade$Treatment)
-Pacu_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pocillopora_acuta")
+Pacu_PR_mean.Clade<-subset(PR_mean.Clade, Species =="Pocillopora acuta")
   Pacu_PR_mean.Clade$Code<-paste(Pacu_PR_mean.Clade$Clade, Pacu_PR_mean.Clade$Treatment)
 
 
@@ -8627,8 +7263,9 @@ grid.arrange(Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR
 
 ```
 
-PR stats 
-```{r}    
+PR stats
+
+```{r}
 #df PR.df_B 
 
 hist(PR.df_B$PR_real) #good
@@ -8650,10 +7287,10 @@ pairs(emm)
  
 
 #t0 only by speices?
-PR_stats_T0.mcap<-subset(PR_stats_T0, Species=="Montipora_capitata")
-PR_stats_T0.pcomp<-subset(PR_stats_T0, Species=="Porites_compressa")
-PR_stats_T0.pvar<-subset(PR_stats_T0, Species=="Pavona_varians")
-PR_stats_T0.pacu<-subset(PR_stats_T0, Species=="Pocillopora_acuta")
+PR_stats_T0.mcap<-subset(PR_stats_T0, Species=="Montipora capitata")
+PR_stats_T0.pcomp<-subset(PR_stats_T0, Species=="Porites compressa")
+PR_stats_T0.pvar<-subset(PR_stats_T0, Species=="Pavona varians")
+PR_stats_T0.pacu<-subset(PR_stats_T0, Species=="Pocillopora acuta")
 
 #mcap
 PR_T0_model<-lmer(PR_real~Clade+(1|Tank.num), PR_stats_T0.mcap)
@@ -8690,22 +7327,22 @@ pairs(emm)
 
 
 
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
 
 # by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora_capitata")
+PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
   PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
   PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites_compressa")
+PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
   PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
   PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona_varians")
+PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
   PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
   PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora_acuta")
+PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
   PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
   PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
 
@@ -8970,8 +7607,10 @@ PR_Pacu_model<-lmer(PR_real~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|
     
      
 ```
+
 All P, R, PR plots
-```{r} 
+
+```{r}
 grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 3)
 
  
@@ -8980,9 +7619,8 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 
 ```
 
-
-
 # all physio figure
+
 ```{r}
 
 
@@ -9025,10 +7663,9 @@ PR_T0_mean_plot,
 
 ```
 
+#COMBINE all physio dfs Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
 
-#COMBINE all physio dfs
-Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
-```{r}       
+```{r}
 #prep metadata for by Parent.ID df for ordinations
 metaPhysio<-subset(meta, select= -X)#remove X from df
 metaPhysio<-subset(metaPhysio, select= -Tank.num)#remove tank from df
@@ -9240,8 +7877,10 @@ PR_psy<-PR.df_B
      PRPR_psy<-merge(PRPR_psy,P_R_psy, all = T)   
  
 ```
-#merging full physio 
-```{r}     
+
+#merging full physio
+
+```{r}
 #merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
  
 
@@ -9282,8 +7921,9 @@ write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
 
 ```
 
-#nMDS of physio, PhysioData df, by Parent.ID, all data <- no reason to do nmds for physio. 
-```{r}      
+#nMDS of physio, PhysioData df, by Parent.ID, all data \<- no reason to do nmds for physio.
+
+```{r}
   
 
 #make a copy
@@ -9335,7 +7975,7 @@ Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scor
 Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
 
 
-Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+Sp.colors <- c("Montipora capitata"= "#D43F3AFF","Porites compressa"="#EEA236FF","Pavona varians"="#5CB85CFF","Pocillopora acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
 
 
 ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) + 
@@ -9531,14 +8171,17 @@ ggplot(Phy_nmds.MDS.T0.scores, aes(x = NMDS1, y = NMDS2)) +
 
 write.csv(Phy_nmds.MDS.T0,"Phy_nmds.MDS.T0.csv") #for gauntlet figure
  
-``` 
-#### By SPECIES. Make a NEW ordination for each species. 
+```
+
+#### By SPECIES. Make a NEW ordination for each species.
+
 Mcap phys
-```{r}  
+
+```{r}
 Phy_nmds_Mcap<-pData.T1TF
   
 
-Phy_nmds_Mcap<-subset(Phy_nmds_Mcap, Species=="Montipora_capitata")
+Phy_nmds_Mcap<-subset(Phy_nmds_Mcap, Species=="Montipora capitata")
 
 set.seed(30)
 
@@ -9640,8 +8283,10 @@ ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 ```
+
 pcomp phys
-```{r}  
+
+```{r}
 
 #colors
 ## create palette for parent.ID and treatments
@@ -9652,7 +8297,7 @@ pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppi
  
 
 Phy_nmds_pcomp<-pData.T1TF
-Phy_nmds_pcomp<-subset(Phy_nmds_pcomp, Species=="Porites_compressa")
+Phy_nmds_pcomp<-subset(Phy_nmds_pcomp, Species=="Porites compressa")
 
 set.seed(30)
 
@@ -9751,8 +8396,10 @@ ggplot(ord.pcomp.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 ```
+
 pvar phys
-```{r}  
+
+```{r}
 pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppink4", "358" = "orange", "361" = "green1","354" = "gold",  "351"= "hotpink", "355" ="darkslateblue", "357" = "cyan", "359" = "darkorange","360" ="darkorchid1", "362" = "lightblue", 
                        "Ambient" = "dodgerblue", "High" = "darkred",
                         "C1 Ambient"="#DDCC77","C1 High"="#999933", "C27 Ambient"="#44AA99", "C27 High"="#117733", 
@@ -9761,7 +8408,7 @@ pvar.Parent.colors <- c("325" = "green4",  "353" = "firebrick3", "356" ="deeppin
 Phy_nmds_pvar<-pData.T1TF
   
 
-Phy_nmds_pvar<-subset(Phy_nmds_pvar, Species=="Pavona_varians")
+Phy_nmds_pvar<-subset(Phy_nmds_pvar, Species=="Pavona varians")
 
 set.seed(30)
 
@@ -9858,7 +8505,8 @@ ggplot(ord.pvar.TF.df, aes(x = NMDS1, y = NMDS2)) +
 ```
 
 pacu phys
-```{r}   
+
+```{r}
 ## create palette for parent.ID and treatments
 pacu.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppink4", "311" = "orange", "301" = "green1","302" = "gold",  "308"= "hotpink", "310" ="darkslateblue", "312" = "cyan", "303" = "darkorange","304" ="darkorchid1", "306" = "lightblue", 
                         "Ambient" = "dodgerblue", "High" = "darkred",
@@ -9868,7 +8516,7 @@ pacu.Parent.colors <- c("305" = "green4",  "307" = "firebrick3", "309" ="deeppin
 
 
 Phy_nmds_pacu<-pData.T1TF
-Phy_nmds_pacu<-subset(Phy_nmds_pacu, Species=="Pocillopora_acuta")
+Phy_nmds_pacu<-subset(Phy_nmds_pacu, Species=="Pocillopora acuta")
 
 set.seed(30)
 
@@ -9963,14 +8611,9 @@ ggplot(ord.pacu.TF.df, aes(x = NMDS1, y = NMDS2)) +
 
 ```
 
-
-
-
-
-
 #PERMANOVA on physio only
 
-```{r}         
+```{r}
   
 #ALL THE DATA T1TF
 
@@ -10001,9 +8644,9 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 
 ```
 
-
 ##By SPECIES
-```{r}      
+
+```{r}
 #Mcap, Phy_nmds_Mcap
 phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [8:16], method="bray") #make dist matrix
 phy_Mcap.div <- adonis2(Phy_nmds_Mcap [8:16] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:7], permutations = 999, method="bray")
@@ -10043,16 +8686,9 @@ phy_Pacu.div #view, all is significant
 
 ```
 
-
-
-
-
-
-
-
-
 # Physio PCA THIS IS THE WAY df= PhysioData
-```{r}    
+
+```{r}
 library(ggbiplot)
 
 apData<-PhysioData #make a copy
@@ -10296,7 +8932,7 @@ anova(corrModel, type=2)
 correlation<-PhysioData4
 correlation<-correlation[complete.cases(correlation), ] #only full data (2 samps no chla)
 
-correlation_Mcap<-subset(correlation, Species=="Montipora_capitata")
+correlation_Mcap<-subset(correlation, Species=="Montipora capitata")
 correlation_Mcap_T1<-subset(correlation_Mcap, Time.Point=="T1")
 
 #not workin
@@ -10354,10 +8990,9 @@ corrplot.mixed(cor.res, tl.cex = 0.7, tl.col = "black", addCoefasPercent = TRUE)
  
 ```
 
-
-
 PCA hannah use physio data
-```{r} 
+
+```{r}
 ##PCA with imputation using PPCA (Probabilistic PCA, can handle ~15% missing data)
 
 ##Use the pcaMethods package for imputing
@@ -10438,7 +9073,7 @@ Miss_scores_TF_plot<-Miss_scores_TF_plot+ theme(legend.position = "none") #remov
 grid.arrange(Miss_scores_T0_plot, Miss_scores_T1_plot, Miss_scores_TF_plot, nrow = 1)
 
 #Subset MCAP
-Miss_scores_Mcap<-subset(Miss_scores, species=="Montipora_capitata")
+Miss_scores_Mcap<-subset(Miss_scores, species=="Montipora capitata")
 
 Miss_Mcap_pca<-ggplot(Miss_scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+ 
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
@@ -10446,21 +9081,21 @@ Miss_Mcap_pca<-ggplot(Miss_scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(c
   theme_classic();Miss_Mcap_pca
 
 #Subset Pcomp
-Miss_scores_Pcomp<-subset(Miss_scores, species=="Porites_compressa")
+Miss_scores_Pcomp<-subset(Miss_scores, species=="Porites compressa")
 Miss_Pcomp_pca<-ggplot(Miss_scores_Pcomp, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
       ggtitle("Pcomp") +
   theme_classic();Miss_Pcomp_pca
 
 #Subset Pvar
-Miss_scores_Pvar<-subset(Miss_scores, species=="Pavona_varians")
+Miss_scores_Pvar<-subset(Miss_scores, species=="Pavona varians")
 Miss_Pvar_pca<-ggplot(Miss_scores_Pvar, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
     ggtitle("Pvar") +
   theme_classic();Miss_Pvar_pca
 
 #Subset Pacu
-Miss_scores_Pacu<-subset(Miss_scores, species=="Pocillopora_acuta")
+Miss_scores_Pacu<-subset(Miss_scores, species=="Pocillopora acuta")
 Miss_Pacu_pca<-ggplot(Miss_scores_Pacu, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
   ggtitle("Pacuta") +
@@ -10476,8 +9111,8 @@ grid.arrange(Miss_Mcap_pca, Miss_Pcomp_pca, Miss_Pvar_pca,Miss_Pacu_pca, nrow = 
 
 ```
 
-
 PCA not alive measurements' not PAM.BW
+
 ```{r}
 #PhysioData5 
 
@@ -10528,7 +9163,7 @@ grid.arrange(scores_T0_plot, scores_T1_plot, scores_TF_plot, nrow = 1)
 
 
 #Subset MCAP
-scores_Mcap<-subset(scores, species=="Montipora_capitata")
+scores_Mcap<-subset(scores, species=="Montipora capitata")
 
 Mcap_pca<-ggplot(scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+ 
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
@@ -10536,21 +9171,21 @@ Mcap_pca<-ggplot(scores_Mcap, aes(x = PC1, y= PC2)) + geom_point(aes(colour = tr
   theme_classic();Mcap_pca
 
 #Subset Pcomp
-scores_Pcomp<-subset(scores, species=="Porites_compressa")
+scores_Pcomp<-subset(scores, species=="Porites compressa")
 Pcomp_pca<-ggplot(scores_Pcomp, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
       ggtitle("Pcomp") +
   theme_classic();Pcomp_pca
 
 #Subset Pvar
-scores_Pvar<-subset(scores, species=="Pavona_varians")
+scores_Pvar<-subset(scores, species=="Pavona varians")
 Pvar_pca<-ggplot(scores_Pvar, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
     ggtitle("Pvar") +
   theme_classic();Pvar_pca
 
 #Subset Pacu
-scores_Pacu<-subset(scores, species=="Pocillopora_acuta")
+scores_Pacu<-subset(scores, species=="Pocillopora acuta")
 Pacu_pca<-ggplot(scores_Pacu, aes(x = PC1, y= PC2)) + geom_point(aes(colour = treatment, shape = time.point), size = 4)+
   stat_ellipse(aes(x = PC1, y = PC2, colour = treatTime), linetype = 2, level=.25) +
   ggtitle("Pacuta") +
@@ -10564,8 +9199,10 @@ Pacu_pca<-Pacu_pca+ theme(legend.position = "none") #remove legend
 
 grid.arrange(Mcap_pca, Pcomp_pca, Pvar_pca,Pacu_pca, nrow = 2)
 ```
-Lets try the PCA by Parent.ID, collapse the df by parent. 
-```{r} 
+
+Lets try the PCA by Parent.ID, collapse the df by parent.
+
+```{r}
  PhysioData6<-PhysioData #make a copy
 
 
@@ -10581,10 +9218,8 @@ Testing <- cbind(
 
 ```
 
-
-
-
 # % change plots for defense
+
 ```{r}
  
 #cell counts ####  
@@ -11186,22 +9821,22 @@ PchangeDF_T1TF$Trait <- ordered(c("P:R","Respiration","Gross Photosynthesis","Pr
 PchangeDF_T1TF$Trait <- factor(PchangeDF_T1TF$Trait, levels = c("P:R","Respiration","Gross Photosynthesis","Protein", "Biomass", "Chl a", "Fv/Fm", "Calcification","CellCounts"))
 
 #mcap
-PchangeDF_T1TF_mcap<-subset(PchangeDF_T1TF, Species=="Montipora_capitata")
+PchangeDF_T1TF_mcap<-subset(PchangeDF_T1TF, Species=="Montipora capitata")
 PchangeDF_T1_mcap<-subset(PchangeDF_T1TF_mcap, Time.Point=="T1")
 PchangeDF_TF_mcap<-subset(PchangeDF_T1TF_mcap, Time.Point=="TF")
 
 #pcomp
-PchangeDF_T1TF_pcomp<-subset(PchangeDF_T1TF, Species=="Porites_compressa")
+PchangeDF_T1TF_pcomp<-subset(PchangeDF_T1TF, Species=="Porites compressa")
 PchangeDF_T1_pcomp<-subset(PchangeDF_T1TF_pcomp, Time.Point=="T1")
 PchangeDF_TF_pcomp<-subset(PchangeDF_T1TF_pcomp, Time.Point=="TF")
 
 #pvar
-PchangeDF_T1TF_pvar<-subset(PchangeDF_T1TF, Species=="Pavona_varians")
+PchangeDF_T1TF_pvar<-subset(PchangeDF_T1TF, Species=="Pavona varians")
 PchangeDF_T1_pvar<-subset(PchangeDF_T1TF_pvar, Time.Point=="T1")
 PchangeDF_TF_pvar<-subset(PchangeDF_T1TF_pvar, Time.Point=="TF")
 
 #pacu
-PchangeDF_T1TF_pacu<-subset(PchangeDF_T1TF, Species=="Pocillopora_acuta")
+PchangeDF_T1TF_pacu<-subset(PchangeDF_T1TF, Species=="Pocillopora acuta")
 PchangeDF_T1_pacu<-subset(PchangeDF_T1TF_pacu, Time.Point=="T1")
 PchangeDF_TF_pacu<-subset(PchangeDF_T1TF_pacu, Time.Point=="TF")
 
@@ -11461,14 +10096,9 @@ ggsave("pacu_TF_plot.pdf",pacu_TF_plot, height = 11, width = 7)
 grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 ```
 
-
-
-
-
-
-
 #Plot mean ordi
-```{r} 
+
+```{r}
  
 ## load packages
 library(lmerTest)
@@ -11509,9 +10139,10 @@ library(vegan)
 #library("mixOmics")
 library(RVAideMemoire)
 ```
+
 why did you do nmds for physio. not right. but euclidian is right
 
-```{r} 
+```{r}
 AA_PhysioData<-PhysioData #copy df
 AA_PhysioData$Respiration<-AA_PhysioData$Respiration*-1
 AA_PhysioData<-AA_PhysioData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
@@ -11557,7 +10188,7 @@ NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$SpTrTi), mean) # mean
 ############### All groups NMDS
 fullNMDS$SpTrTi<-droplevels(fullNMDS$SpTrTi)
 groups<-fullNMDS$SpTrTi
-groups2<-c("Montipora_capitata.Ambient.T1", "Montipora_capitata.Ambient.TF", "Montipora_capitata.High.T1","Montipora_capitata.High.TF", "Porites_compressa.Ambient.T1", "Porites_compressa.Ambient.TF", "Porites_compressa.High.T1","Porites_compressa.High.TF","Pavona_varians.Ambient.T1", "Pavona_varians.Ambient.TF", "Pavona_varians.High.T1","Pavona_varians.High.TF","Pocillopora_acuta.Ambient.T1", "Pocillopora_acuta.Ambient.TF", "Pocillopora_acutaa.High.T1","Pocillopora_acuta.High.TF")
+groups2<-c("Montipora capitata.Ambient.T1", "Montipora capitata.Ambient.TF", "Montipora capitata.High.T1","Montipora capitata.High.TF", "Porites compressa.Ambient.T1", "Porites compressa.Ambient.TF", "Porites compressa.High.T1","Porites compressa.High.TF","Pavona varians.Ambient.T1", "Pavona varians.Ambient.TF", "Pavona varians.High.T1","Pavona varians.High.TF","Pocillopora acuta.Ambient.T1", "Pocillopora acuta.Ambient.TF", "Pocillopora acutaa.High.T1","Pocillopora acuta.High.TF")
 colors=c(
   "#F8766D", #Mcap 
   "#C77CFF", #Porites
@@ -11673,7 +10304,7 @@ NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$Species), mean) # mea
 ############### All groups NMDS
 T0NMDS$Species<-droplevels(T0NMDS$Species)
 groups<-T0NMDS$Species
-groups2<-c("Montipora_capitata", "Porites_compressa","Pavona_varians","Pocillopora_acuta")
+groups2<-c("Montipora capitata", "Porites compressa","Pavona varians","Pocillopora acuta")
 colors=c(
   "#F8766D", #Mcap 
   "#C77CFF", #Porites
@@ -11728,4 +10359,3 @@ legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.inters
 dev.copy(pdf, "PhysioNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
 dev.off() 
 ```
-
