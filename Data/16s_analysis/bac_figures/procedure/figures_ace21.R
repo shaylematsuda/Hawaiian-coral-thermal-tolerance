@@ -205,9 +205,9 @@ candidates.core <- list("Montipora capitata" = mcap.list.core, "Porites compress
 overlap <- calculate.overlap(candidates.core)
 names(overlap) <- c("a1234", "a123", "a124", "a134", "a234", "a12", "a13", "a14", "a23", "a24", "a34", "a1", "a2", "a3", "a4")
 View(overlap)
-#Still callenging to know which quandrant is which. 1, 2, 3, 4 refers to each group but unclear which
-#group they are... 
-#a1234 is the one that overlaps in all of them. a123 is all that overlap in 3 of the groups (minus the one overlapping in all)
+##the numbers 1,2,3,4 refer to each of the four lists in order
+#meaning that 1 = M. cap, 2 = P. comp, 3 = P. var and 4 = P. acu
+#e.g., "a1234" = all four together, "a134" = M cap, P. var and P. acu
 
 venn <- venn.diagram(x = candidates.core, filename = NULL, fill = c("#E69F00", "#56B4E9", "#CC79A7","#009E73"), alpha = 0.5)
 grid.draw(venn)
