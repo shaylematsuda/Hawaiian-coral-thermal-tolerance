@@ -9,7 +9,7 @@ library(microbiome)
 #Set working directory & bring in RData
 #source the ANCOM functions R script
 setwd("~/Documents/OSUDocs/Projects/ACE21/Hawaiian-coral-thermal-tolerance/Data/16s_analysis/")
-load("16s_phyloseq4HE.RData")
+load("../../16s_phyloseq4HE.RData")
 
 #subset to just experimental samples
 bac.exp <- subset_samples(Bac.seq, Type == "sample")
@@ -195,4 +195,82 @@ p.pacu$data$Sample <- factor(p.pacu$data$Sample, levels = list)
 print(p.pacu)
 ggsave("core_microbiome/output/pacu_core_bubble.pdf")
 
+#######Trial core taxa for each species at only T0 and draw venn diagrams
 
+#1. Montipora capitata
+
+#First up M. capitata
+##Here we are using a prevlance of 65% to get 5 "core" taxa - top most shared 
+mcap <- subset_samples(bac.exp, Species == "Montipora_capitata")
+mcap.T0 <- subset_samples(mcap, Time.Point == "T0")
+mcap.T0.ra <- transform_sample_counts(mcap.T0, function(x) x/ sum(x))
+mcap.T0.core <- core(mcap.T0.ra, detection = 0.0001, prevalence = 0.65)
+mcap.T0.core.taxa <- tax_table(mcap.T0.core)
+View(as.data.frame(mcap.T0.core.taxa))
+mcap.T0.core.melt <- psmelt(mcap.T0.core)
+mcap.T0.core.melt$top.group <- "core"
+write.csv(mcap.T0.core.melt, "../../core_microbiome/output/mcap_T0_core.csv")
+
+#2. Porites compressa
+#75% prevalence to get 5 "core" taxa 
+pcomp <- subset_samples(bac.exp, Species == "Porites_compressa")
+pcomp.T0 <- subset_samples(pcomp, Time.Point == "T0")
+pcomp.T0.ra <- transform_sample_counts(pcomp.T0, function(x) x/ sum(x))
+pcomp.T0.core <- core(pcomp.T0.ra, detection = 0.0001, prevalence = 0.75)
+pcomp.T0.core.taxa <- tax_table(pcomp.T0.core)
+View(as.data.frame(pcomp.T0.core.taxa))
+pcomp.T0.core.melt <- psmelt(pcomp.T0.core)
+pcomp.T0.core.melt$top.group <- "core"
+write.csv(pcomp.T0.core.melt, "../../core_microbiome/output/pcomp_T0_core.csv")
+
+
+#3. Pavona varians
+#60% to get 5 "core"taxa
+pvar <- subset_samples(bac.exp, Species == "Pavona_varians")
+pvar.T0 <- subset_samples(pvar, Time.Point == "T0")
+pvar.T0.ra <- transform_sample_counts(pvar.T0, function(x) x/ sum(x))
+pvar.T0.core <- core(pvar.T0.ra, detection = 0.0001, prevalence = 0.6)
+pvar.T0.core.taxa <- tax_table(pvar.T0.core)
+View(as.data.frame(pvar.T0.core.taxa))
+pvar.T0.core.melt <- psmelt(pvar.T0.core)
+pvar.T0.core.melt$top.group <- "core"
+write.csv(pvar.T0.core.melt, "../../core_microbiome/output/pvar_T0_core.csv")
+
+
+#4. Pocillopora acuta
+#74% gives us 6 "core" taxa, but literally can't go higher or they all disappear
+pacu <- subset_samples(bac.exp, Species == "Pocillopora_acuta")
+pacu.T0 <- subset_samples(pacu, Time.Point == "T0")
+pacu.T0.ra <- transform_sample_counts(pacu.T0, function(x) x/ sum(x))
+pacu.T0.core <- core(pacu.T0.ra, detection = 0.0001, prevalence = 0.74)
+pacu.T0.core.taxa <- tax_table(pacu.T0.core)
+View(as.data.frame(pacu.T0.core.taxa))
+pacu.T0.core.melt <- psmelt(pacu.T0.core)
+pacu.T0.core.melt$top.group <- "core"
+write.csv(pacu.T0.core.melt, "../../core_microbiome/output/pacu_T0_core.csv")
+View(pacu.T0.core.melt)
+#No species has a core taxon that is present in ALL fragments. 
+#But we can get at least 5 "core" taxa for each species in 60% or over of the fragments. 
+
+##Can we draw a venn diagram?
+library(tidyverse)
+mcap.T0.core.melt <- mcap.T0.core.melt %>% unite(OTU, Genus, col='otu_genus',sep='-')
+mcap.list <- unique(mcap.T0.core.melt$otu_genus)
+pcomp.T0.core.melt <- pcomp.T0.core.melt %>% unite(OTU, Genus, col='otu_genus',sep='-')
+pcomp.list <- unique(pcomp.T0.core.melt$otu_genus)
+pvar.T0.core.melt <- pvar.T0.core.melt %>% unite(OTU, Genus, col='otu_genus',sep='-')
+pvar.list <- unique(pvar.T0.core.melt$otu_genus)
+pacu.T0.core.melt <- pacu.T0.core.melt %>% unite(OTU, Genus, col='otu_genus',sep='-')
+pacu.list <- unique(pacu.T0.core.melt$otu_genus)
+
+candidates <- list("Montipora capitata" = mcap.list, "Porites compressa" = pcomp.list,
+                   "Pavona varians" = pvar.list, "Pocillopora acuta" = pacu.list)
+library(VennDiagram)
+venn <- venn.diagram(x = candidates, filename = NULL, fill = c("#E69F00", "#56B4E9", "#CC79A7","#009E73"), alpha = 0.5)
+pdf(file = "../output/venn_core_T0.pdf")
+grid.draw(venn)
+dev.off()
+overlap <- calculate.overlap(candidates)
+names(overlap) <- c("mcap pcomp pvar pacu", "mcap pcomp pvar", "mcap pcomp pacu", "mcap pvar pacu", "pcomp pvar pacu", "mcap pcomp", "mcap pvar ", 
+                    "mcap pacu", "pcomp pvar", "pcomp  pacu", "pvar pacu", "mcap", "pcomp", "pvar", "pacu")
+View(overlap)
