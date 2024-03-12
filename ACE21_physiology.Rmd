@@ -54,7 +54,9 @@ meta<-meta %>%
 meta<-meta[!(meta$X=="REMOVE"),]
 meta<- meta[!(meta$Frag.ID == "3149"),] # dup
 meta$Species<-as.factor(meta$Species)
+meta$Species<-as.factor(meta$Species)
 meta$Species <- factor(meta$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
+
 
 meta$Parent.ID<-as.factor(meta$Parent.ID)
 meta$Frag.ID<-as.factor(meta$Frag.ID)
@@ -63,7 +65,6 @@ meta$Treatment<-as.factor(meta$Treatment)
 meta$Tank.num<-as.factor(meta$Tank.num)
 
 #add new col for Clades
-# EDIT sample data
  #Pcomp
   meta$Clade[meta$Parent.ID==314]<-"C15cj"
   meta$Clade[meta$Parent.ID==317]<-"C15cj"
@@ -121,6 +122,8 @@ meta$Tank.num<-as.factor(meta$Tank.num)
   meta$Clade[meta$Parent.ID==374]<-"C31D4"
 
 meta$Clade<-as.factor(meta$Clade)
+meta$Clade <- factor(meta$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+
 
 #add tissue thickness, transmission mode, 
   meta$Tissue[meta$Species=="Montipora capitata"]<-"thick"
@@ -582,6 +585,7 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
 ```
 
 PLOTS
+
 ```{r}
 #t0 only#### 
 biomass_T0<-subset(biomass2, Time.Point=="T0") 
@@ -594,7 +598,7 @@ biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise,
 )
 biomass_T0_mean
 
-#redo 2/16/24 boxplot ####
+#2/16/24 boxplot ####
 #T0 only
   ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
@@ -608,10 +612,11 @@ biomass_T0_mean
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       geom_boxplot(show.legend = FALSE)
+ggsave("Biomass_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Clade, group=interaction(Species, Clade))) + 
-      scale_fill_manual(values=c("darkorange3", "pink1","powderblue","#0072B2" ,"firebrick","darkgreen",    "palegreen2","goldenrod1"))+
+  ggplot(biomass_T0, aes(x=interaction(Clade, Species), y=AFDWmg.cm2, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
       theme(axis.text.y = element_text(size=14))+
@@ -621,8 +626,11 @@ biomass_T0_mean
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Ash-free Dry Weight by Algal Profile")+
-      geom_boxplot( show.legend = FALSE)
-
+      geom_boxplot( show.legend = FALSE)+
+      scale_x_discrete(guide = "axis_nested")
+  
+ggsave("Biomass_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+  
 #all species ####
 #Subset by time 1 or F only 
 biomass_T1<-subset(biomass2, Time.Point=="T1") 
@@ -801,6 +809,7 @@ plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_p
 ggsave("AFDW_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
+
 # Flow cytometry cell counts
 
 ```{r}
@@ -911,9 +920,21 @@ Pvar_FC$zoox.AFDWmg.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$AFDWmg.cm2
 Pacu_FC$zoox.AFDWmg.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$AFDWmg.cm2
 
 FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
+
+```
+```{r}
+FC_Data$Species<-as.factor(FC_Data$Species)
+FC_Data$Species <- factor(FC_Data$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
+FC_Data$Clade <- factor(FC_Data$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+
+
+
+
+
 ```
 
 Stats
+
 ```{r}
 
 #T0 only
@@ -1264,6 +1285,7 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 ```
 
 Plots - FC standardized by Surface Area
+
 ```{r}
 #just T0 ####  
 FC_Data_T0<-subset(FC_Data, Time.Point=="T0")
@@ -1291,18 +1313,20 @@ FC_T0_mean <- ddply(FC_Data_T0, c( "Species"), summarise,
 ggsave("FC_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Clade, group=interaction(Species, Clade))) + 
-      scale_fill_manual(values=c("darkorange3", "pink1","powderblue","#0072B2" ,"firebrick","darkgreen",    "palegreen2","goldenrod1"))+
+ggplot(FC_Data_T0, aes(x=interaction(factor(Species, levels=unique(Species)), Clade), y=zoox.cm2, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
       theme(axis.text.y = element_text(size=14))+
       theme(axis.title.y = element_text(size=14, face="bold"))+
       ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
       theme(plot.title = element_text(size=16, face="bold"))+
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       ggtitle("Symbiodiniaceae Cell Density by Algal Profile")+
-      geom_boxplot( show.legend = FALSE)
+      geom_boxplot( show.legend = FALSE)+
+    scale_x_discrete(guide = "axis_nested")
+  
 ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #Subset by time 1 or F only 
@@ -1322,6 +1346,7 @@ ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       geom_boxplot(show.legend = FALSE)
+
 ggsave("FC_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot
@@ -1485,6 +1510,7 @@ ggsave("FC_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", wi
 ```
 
 #Buoyant Weight/Calcification
+
 ```{r}
 #calibration
 BWCalData <- read.csv('Data/Bouyant_weight_calibration_curve.csv')
@@ -1515,6 +1541,7 @@ StandardFreshModel$coef
 ```
 
 Analysis
+
 ```{r}
 #load coral weight data
 BW.data <-read.csv('Data/BWdata_Final.csv') # this is a file I compiled with all dates
@@ -1542,6 +1569,7 @@ Temp_Pacu <- Pacu_BW$Temp.C
 ```
 
 Montipora capitata
+
 ```{r}
 BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   #Parameters---------------------------------------------------------------
@@ -1594,11 +1622,14 @@ boxplot(Mcap_BW$Dry.Weigh.g) #examine data
 Mcap_BW <- Mcap_BW[!(Mcap_BW$Frag.ID == "797"),] # remove sample 797, error in BW record (impossible value)
 
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
-data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment","Clade"), direction="wide")
+data_McapBW <- reshape(Mcap_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "Time.Point","X"), idvar=c("Frag.ID", "Treatment","Clade","Parent.ID", "Species", "Tank.num"), direction="wide")
 
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0 and then divides by number of days , times 100
 data_McapBW$time1.growth <- (((data_McapBW$Dry.Weigh.g.Time1 - data_McapBW$Dry.Weigh.g.Time0)/data_McapBW$Dry.Weigh.g.Time0)*100)/data_McapBW$Days.Time1 #calculate growth rate for time1
 data_McapBW$time2.growth <- (((data_McapBW$Dry.Weigh.g.Time2 - data_McapBW$Dry.Weigh.g.Time1)/data_McapBW$Dry.Weigh.g.Time1)*100)/data_McapBW$Days.Time2 #calculate growth rate for time2
+
+#### Delete ####
+
 
 # mean, standard dev, and sem
 time1_McapBW <-ddply(data_McapBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -1627,11 +1658,13 @@ G_Mcap <- within(G_Mcap, newtime <- factor(newtime, levels = c("Post-Stress", "P
 ```
 
 Porites compressa P lobata, 1.5 scoffin 1992, prachet 2015, low and barnes 1992
+
 ```{r}
 #     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
   StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
   StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
+  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
   StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
   SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
   CoralWeight <- BW_Pcomp/(1-(SWDensity/CoralDensity))
@@ -1639,10 +1672,10 @@ BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
 }
 
 Pcomp_BW$Dry.Weigh.g <- BWCalc_Pcomp(BW=BW_Pcomp, Temp=Temp_Pcomp) 
-boxplot(Pcomp_BW$Dry.Weigh.g_log) #examine data
+#boxplot(Pcomp_BW$Dry.Weigh.g_log) #examine data
 
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
-data_PcompBW <- reshape(Pcomp_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X", "Time.Point", "Parent.ID", "Species", "Tank.num"), idvar=c("Frag.ID", "Treatment","Clade"), direction="wide")
+data_PcompBW <- reshape(Pcomp_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank","Time.Point", "X"), idvar=c("Frag.ID", "Treatment","Clade","Parent.ID", "Species", "Tank.num"), direction="wide")
 
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
 data_PcompBW$time1.growth <- (((data_PcompBW$Dry.Weigh.g.Time1 - data_PcompBW$Dry.Weigh.g.Time0)/data_PcompBW$Dry.Weigh.g.Time0)*100)/data_PcompBW$Days.Time1 #calculate growth rate for time1
@@ -1651,7 +1684,7 @@ data_PcompBW$time2.growth <- (((data_PcompBW$Dry.Weigh.g.Time2 - data_PcompBW$Dr
 data_PcompBW$time1.growth[data_PcompBW$time1.growth < 0] <- 0 
 data_PcompBW$time2.growth[data_PcompBW$time2.growth < 0] <- 0 
 
-
+#### DELETE ####
 ##calc BW for Pcomp in general (T0-T1 ambient only) 
 #data_PcompBW.amb<-subset(data_PcompBW, Treatment=="Ambient")
 #write.csv(data_PcompBW.amb,"data_PcompBW.amb.csv")
@@ -1763,7 +1796,8 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
 
 ```
 
-#old plot code mcap
+old plot code mcap
+
 ```{r}
 #df data_McapBW
 
@@ -1849,54 +1883,18 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
 
 ```
 
-
-
 Pavona varians
 
 ```{r}
 BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
-  #Parameters---------------------------------------------------------------
-  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
-  # Temp is the temperature of the water during the coral measurement
-  # BW is the buoywant weight of the coral
-  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
-  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
-  
-  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
-  
-  # below: Medellin-Maldonado et al 2016
-  # Pavona varians 1.04 +-0.07
-  # panama 8.5380° N, 80.7821° W, 
-  # coasta rica 9.7489° N, 83.7534° W
-  # mexico la entrega 15.7424° N, 96.1282° W
-  # hawaii 19.8968° N, 155.5828° W
-  # Pocillopora 1.78 +- 0.31
-  
-  
-  # You can change the density to literatrue values for the specific coral species of interest in the function. 
-  
-  #Calculation------------------------------------------------------------
-  #Step 1: correct the Standard weights for temperature
-  # StandardFresh is the weight of the Standard in  fresh water at temp x
-  # StandardSalt is the weight of the Standard in salt water at temp x
-  
-  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
+   # Pavona varians 1.04 +-0.07
   StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
   StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
-  
-  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
-  # the density of the Standard (Davies eq. 4)
-  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+  FreshDensity <- 1 
   StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
-  
-  # Step 3: Calculate the density of seawater using the density of the Standard
-  # (Spencer Davies eq. 3)
   SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
-  
-  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
   CoralWeight <- BW_Pvar/(1-(SWDensity/CoralDensity))
-  
-  return(CoralWeight) #returns coral dry weights in g
+  return(CoralWeight) 
 }
 
 Pvar_BW$Dry.Weigh.g <- BWCalc_Pvar(BW=BW_Pvar, Temp=Temp_Pvar) #use function to calculate dry weight
@@ -1906,9 +1904,8 @@ boxplot(Pvar_BW$Dry.Weigh.g) #examine data
 # Pvar_BW$Dry.Weigh.g_log<-log10(Pvar_BW$Dry.Weigh.g+1)
 # hist(Pvar_BW$Dry.Weigh.g_log) #not normal
 
-
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
-data_PvarBW <- reshape(Pvar_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment","Clade"), direction="wide")
+data_PvarBW <- reshape(Pvar_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "Time.Point","X"), idvar=c("Frag.ID", "Treatment","Clade","Parent.ID", "Species", "Tank.num"), direction="wide")
 
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
 data_PvarBW$time1.growth <- (((data_PvarBW$Dry.Weigh.g.Time1 - data_PvarBW$Dry.Weigh.g.Time0)/data_PvarBW$Dry.Weigh.g.Time0)*100)/data_PvarBW$Days.Time1 #calculate growth rate for time1
@@ -1917,13 +1914,13 @@ data_PvarBW$time2.growth <- (((data_PvarBW$Dry.Weigh.g.Time2 - data_PvarBW$Dry.W
 data_PvarBW$time1.growth[data_PvarBW$time1.growth < 0] <- 0 # neg values to 0 (chipped frags)
 data_PvarBW$time2.growth[data_PvarBW$time2.growth < 0] <- 0 
 
-
+#DELETE ####
 ##calc BW for Pvar in general (T0-T1 ambient only) 
 #data_PvarBW.amb<-subset(data_PvarBW, Treatment=="Ambient")
 #write.csv(data_PvarBW.amb,"data_PvarBW.amb.csv")
 
 
-# mean, standard dev, and sem
+# mean, standard dev, and sem ####
 time1_PvarBW <-ddply(data_PvarBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
               N=length(na.omit(time1.growth)), # the sample size of the light column summarized by Tank number
               mean = (mean(time1.growth, na.rm=TRUE)) ,  #take the average of the light column summarized by Tank number
@@ -2032,48 +2029,14 @@ P acuta manzello 2010 2.01, Marshalln 2000 1.72, manzello 2010 2.05
 
 ```{r}
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
-  #Parameters---------------------------------------------------------------
-  # StandardAir is the weight of the Standard in air (Default set at 39.092 grams weighed on balance)
-  # Temp is the temperature of the water during the coral measurement
-  # BW is the buoywant weight of the coral
-  # CoralDensity <- 2.03 #g cm-3, set aragonite density for Montipora from literature 
-  # Montipora Arag = 2.03 g cm-3 average from table 2 in Anthony 2003 Functional Ecology 17:246-259
-  
-  # Porites asteroides (T Hughes 1987 1.69 at 5m) (KB got 1.82)
-  
-  # below: Medellin-Maldonado et al 2016
-  # Pavona varians 1.04 +-0.07
-  # panama 8.5380° N, 80.7821° W, 
-  # coasta rica 9.7489° N, 83.7534° W
-  # mexico la entrega 15.7424° N, 96.1282° W
-  # hawaii 19.8968° N, 155.5828° W
   # Pocillopora 1.78 +- 0.31
-  
-  
-  # You can change the density to literatrue values for the specific coral species of interest in the function. 
-  
-  #Calculation------------------------------------------------------------
-  #Step 1: correct the Standard weights for temperature
-  # StandardFresh is the weight of the Standard in  fresh water at temp x
-  # StandardSalt is the weight of the Standard in salt water at temp x
-  
-  # This is based on a calibration curve for Standards weighed in fresh and salt water at many temps
   StandardFresh <- StandardFreshModel$coef[-1]*Temp + StandardFreshModel$coef[1] 
   StandardSalt <- StandardSaltModel$coef[-1]*Temp + StandardSaltModel$coef[1] 
-  
-  # Step 2: Use weight in air and freshwater of the glass Standard to calculate
-  # the density of the Standard (Davies eq. 4)
-  FreshDensity <- 1 #Fresh water has a density of 1 g/cm3
+  FreshDensity <- 1 
   StandardDensity <- FreshDensity/(1-(StandardFresh/StandardAir)) 
-  
-  # Step 3: Calculate the density of seawater using the density of the Standard
-  # (Spencer Davies eq. 3)
   SWDensity <- StandardDensity*(1-(StandardSalt/StandardAir))
-  
-  # Step 4: Calculate the dry weight of the coral (Davies eq. 1)
   CoralWeight <- BW_Pacu/(1-(SWDensity/CoralDensity))
-  
-  return(CoralWeight) #returns coral dry weights in g
+  return(CoralWeight) 
 }
 
 Pacu_BW$Dry.Weigh.g <- BWCalc_Pacu(BW=BW_Pacu, Temp=Temp_Pacu) #use function to calculate dry weight
@@ -2083,7 +2046,7 @@ Pacu_BW$Dry.Weigh.g <- BWCalc_Pacu(BW=BW_Pacu, Temp=Temp_Pacu) #use function to 
 boxplot(Pacu_BW$Dry.Weigh.g) #examine data
 
 # below, we are getting rid of columns we don't need anymore, and reorganizing the data by Fragment and clade/color and treatment. This way our time points wil be in the same row)
-data_PacuBW <- reshape(Pacu_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Tank", "X",  "Parent.ID", "Species","Time.Point", "Tank.num"), idvar=c("Frag.ID", "Treatment","Clade"), direction="wide")
+data_PacuBW <- reshape(Pacu_BW, timevar = "TimePoint", drop = c("Mass.g","Temp.C", "Date","Time.Point","Tank", "X"), idvar=c("Frag.ID", "Treatment","Clade","Parent.ID", "Species", "Tank.num"), direction="wide")
 
 # This calculates the growth rate, if you look it takes Timepoint1 subtracts timepoint0 and divides by timepoint 0, times 100
 data_PacuBW$time1.growth <- (((data_PacuBW$Dry.Weigh.g.Time1 - data_PacuBW$Dry.Weigh.g.Time0)/data_PacuBW$Dry.Weigh.g.Time0)*100)/data_PacuBW$Days.Time1 #calculate growth rate for time1
@@ -2091,7 +2054,7 @@ data_PacuBW$time2.growth <- (((data_PacuBW$Dry.Weigh.g.Time2 - data_PacuBW$Dry.W
 data_PacuBW$time1.growth[data_PacuBW$time1.growth < 0] <- 0 # neg values to 0 (chipped frags)
 data_PacuBW$time2.growth[data_PacuBW$time2.growth < 0] <- 0 
 
-
+#DELETE ####
 
 # mean, standard dev, and sem
 time1_PacuBW <-ddply(data_PacuBW, .( Treatment), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
@@ -2201,93 +2164,294 @@ Pacu_BW_plot.c<-ggplot(data=G_Pacu.c, aes(x=Time, y=mean, group = Code, color=Co
 
 ```
 
-Plots together
+Make DF with all coral species:
 
 ```{r}
-###### All plots together 
-Mcap_BW_plot<-Mcap_BW_plot+ theme(legend.position = "none") #remove legend
-Pcomp_BW_plot<-Pcomp_BW_plot+ theme(legend.position = "none") #remove legend
-Pvar_BW_plot<-Pvar_BW_plot+ theme(legend.position = "none") #remove legend
-Pacu_BW_plot<-Pacu_BW_plot+ theme(legend.position = "none") #remove legend
+# data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW
+# bind all these dataframes
 
-grid.arrange(Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot, nrow = 1)
+BW_df<-bind_rows(data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW)
+BW_df2<-BW_df[,c(1:6, 16:17)]
+BW_df3<-melt(BW_df2, id.vars = c("Frag.ID", "Treatment","Clade", "Parent.ID","Species","Tank.num"))
+BW_df4<-na.omit(BW_df3)
 
+#this isn't joined with meta data so add back in the clades
+#add new col for Clades
+ #Pcomp
+  BW_df4$Clade[BW_df4$Parent.ID==314]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==317]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==319]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==320]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==321]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==322]<-"C15cj"
+  BW_df4$Clade[BW_df4$Parent.ID==313]<-"C15n"
+  BW_df4$Clade[BW_df4$Parent.ID==315]<-"C15n"
+  BW_df4$Clade[BW_df4$Parent.ID==316]<-"C15n"
+  BW_df4$Clade[BW_df4$Parent.ID==318]<-"C15n"
+  BW_df4$Clade[BW_df4$Parent.ID==323]<-"C15n"
+  BW_df4$Clade[BW_df4$Parent.ID==324]<-"C15n"
+  
+  #Pvar
+  BW_df4$Clade[BW_df4$Parent.ID==353]<-"C1"
+  BW_df4$Clade[BW_df4$Parent.ID==358]<-"C1"
+  BW_df4$Clade[BW_df4$Parent.ID==361]<-"C1"
+  BW_df4$Clade[BW_df4$Parent.ID==325]<-"C1"
+  BW_df4$Clade[BW_df4$Parent.ID==356]<-"C1"
+  BW_df4$Clade[BW_df4$Parent.ID==351]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==354]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==355]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==357]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==359]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==360]<-"C27"
+  BW_df4$Clade[BW_df4$Parent.ID==362]<-"C27"
+  
+#Pacu
+  BW_df4$Clade[BW_df4$Parent.ID==311]<-"C42_2"
+  BW_df4$Clade[BW_df4$Parent.ID==301]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==304]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==306]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==303]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==307]<-"C42_2"
+  BW_df4$Clade[BW_df4$Parent.ID==308]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==310]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==312]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==302]<-"C1d"
+  BW_df4$Clade[BW_df4$Parent.ID==305]<-"C42_2"
+  BW_df4$Clade[BW_df4$Parent.ID==309]<-"C42_2"
 
-# plots by clade
-Mcap_BW_plot.c<-Mcap_BW_plot.c+ theme(legend.position = "none") #remove legend
-Pcomp_BW_plot.c<-Pcomp_BW_plot.c+ theme(legend.position = "none") #remove legend
-Pvar_BW_plot.c<-Pvar_BW_plot.c+ theme(legend.position = "none") #remove legend
-Pacu_BW_plot.c<-Pacu_BW_plot.c+ theme(legend.position = "none") #remove legend
+#Mcap
+  BW_df4$Clade[BW_df4$Parent.ID==363]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==364]<-"C31D4"
+  BW_df4$Clade[BW_df4$Parent.ID==365]<-"C31D4"
+  BW_df4$Clade[BW_df4$Parent.ID==366]<-"C31D4"
+  BW_df4$Clade[BW_df4$Parent.ID==367]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==368]<-"C31D4"
+  BW_df4$Clade[BW_df4$Parent.ID==369]<-"C31D4"
+  BW_df4$Clade[BW_df4$Parent.ID==370]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==371]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==372]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==373]<-"C31"
+  BW_df4$Clade[BW_df4$Parent.ID==374]<-"C31D4"
+BW_df4$Clade<-as.factor(BW_df4$Clade)
+BW_df4$Clade <- factor(BW_df4$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+BW_df4$Species <- factor(BW_df4$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
 
-grid.arrange(Mcap_BW_plot.c, Pcomp_BW_plot.c, Pvar_BW_plot.c, Pacu_BW_plot.c, nrow = 1)
+```
 
+Plots (2024) BW_df3
 
+```{r}
+BW_df4_T1_amb<-subset(BW_df4, variable=="time1.growth")
+BW_df4_T1_amb<-subset(BW_df4_T1_amb, Treatment=="Ambient")
 
+#T0 only ####
+  ggplot(BW_df4_T1_amb, aes(x=Species, y=value, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Buoyant Weight - Ambient")+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("BW_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#T0 only - by algal profile
+  ggplot(BW_df4_T1_amb, aes(x=interaction(Clade, Species), y=value, fill=Clade))+ 
+     scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle("Growth Rate - Ambient by ITS2 Profile")+
+      geom_boxplot( show.legend = FALSE)+
+      scale_x_discrete(guide = "axis_nested")
+ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-G_Mcap$Species<-"Montipora capitata"
-G_Pcomp$Species<-"Porites compressa"
-G_Pvar$Species<-"Pavona varians"
-G_Pacu$Species<-"Pocillopora acuta"
+#Subset by time 1 or F only  ####
+BW_df4_T1<-subset(BW_df4, variable=="time1.growth") 
+BW_df4_TF<-subset(BW_df4, variable=="time2.growth") 
 
-T1Growth<-rbind(G_Mcap, G_Pcomp,G_Pvar,G_Pacu)
+#T1 - by species  ####
+ggplot(BW_df4_T1, aes(x=Species, y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Growth Rate Post-Elevated Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("BW_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#T1 - by species and algal profile - make for each species and then cowplot
+BW_T1_mcap<-subset(BW_df4_T1, Species=="Montipora capitata") 
+BW_T1_pcomp<-subset(BW_df4_T1, Species=="Porites compressa") 
+BW_T1_pvar<-subset(BW_df4_T1, Species=="Pavona varians") 
+BW_T1_pacu<-subset(BW_df4_T1, Species=="Pocillopora acuta") 
 
+#Mcap
+BW_Mcap_plot<- 
+  ggplot(BW_T1_mcap, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");BW_Mcap_plot
+  
+#Pcomp
+BW_Pcomp_plot<- ggplot(BW_T1_pcomp, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pcomp_plot
 
-#all at t1
-Growth_mean.T1<-subset(T1Growth, Time=="Time1")
-# Notched box plot
-T1.Growth.plot<-ggplot(Growth_mean.T1, aes(x=Species, y=mean, color=Treatment)) + 
-  scale_color_manual(values=c("blue", "red"))+
-     # coord_cartesian(ylim = c(0, 10))+
-   theme_classic()+
-  ggtitle("Calcification T1")+
- theme(legend.position="none") +# Remove legend
-  geom_boxplot(notch=TRUE);T1.Growth.plot
+#Pvar
+BW_Pvar_plot<- ggplot(BW_T1_pvar, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pvar_plot
 
+#Pacu
+BW_Pacu_plot<- ggplot(BW_T1_pacu, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pacu_plot
 
-#all at tF
-Growth_mean.TF<-subset(T1Growth, Time=="Time2")
-# Notched box plot
-TF.Growth.plot<-ggplot(Growth_mean.TF, aes(x=Species, y=mean, color=Treatment)) + 
-  scale_color_manual(values=c("blue", "red"))+
-     # coord_cartesian(ylim = c(0, 10))+
-   theme_classic()+
-  ggtitle("Calcification TF")+
- theme(legend.position="none") +# Remove legend
-  geom_boxplot(notch=TRUE);TF.Growth.plot
+plot_row<-plot_grid(BW_Mcap_plot, BW_Pcomp_plot, BW_Pvar_plot, BW_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Growth Rate - After Stress by ITS2 Profile", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
-#T0 (T0-T1 abm)
-T0Growth<-rbind(G_Mcap, G_Pcomp, G_Pvar, G_Pacu)
-T0Growth<-subset(T0Growth,Time=="Time1")
-T0Growth<-subset(T0Growth,Treatment=="Ambient")
+ggsave("BW_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-grow_T0_mean_plot<-ggplot(data=T0Growth, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-sem, ymax=mean+sem),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("% change"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));grow_T0_mean_plot
+#TF ####
+      ggplot(BW_df4_TF, aes(x=Species, y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Symbiodiniaceae Cell Density Post-Recovery")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("BW_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#TF - by species and algal profile - make for each species and then cowplot####
+BW_TF_mcap<-subset(BW_df4_TF, Species=="Montipora capitata") 
+BW_TF_pcomp<-subset(BW_df4_TF, Species=="Porites compressa") 
+BW_TF_pvar<-subset(BW_df4_TF, Species=="Pavona varians") 
+BW_TF_pacu<-subset(BW_df4_TF, Species=="Pocillopora acuta") 
+
+#Mcap 
+BW_Mcap_plot<- 
+  ggplot(BW_TF_mcap, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");BW_Mcap_plot
+  
+#Pcomp
+BW_Pcomp_plot<- ggplot(BW_TF_pcomp, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pcomp_plot
+
+#Pvar
+BW_Pvar_plot<- ggplot(BW_TF_pvar, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pvar_plot
+
+#Pacu
+BW_Pacu_plot<- ggplot(BW_TF_pacu, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);BW_Pacu_plot
+
+plot_row<-plot_grid(BW_Mcap_plot, BW_Pcomp_plot, BW_Pvar_plot, BW_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Growth Rate - After Recovery by ITS2 Profile", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  BW_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));BW_profilesTF
+
+ggsave("BW_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
 stats
@@ -2657,14 +2821,11 @@ Growth.Percent.day<-merge(Growth, meta, all=T)
 ```
 
 #Chl-a\
-dfs: Slurry=airbrush, SA=wax dip, SHOULD YOU STANDARDIZE TO CELLS INSTEAD?
+dfs: Slurry=airbrush, SA=wax dip
 
 ```{r}
- 
- # Plate 1
-
+# Plate 1
 Chla_plate1<- read.csv("Data/Chla_plate1.csv")
-
 #merge 
 ChlaData1 <- merge(meta, Chla_plate1)
 ChlaData1 <- merge(ChlaData1, Slurry)
@@ -2672,20 +2833,15 @@ ChlaData1 <- merge(ChlaData1, SA)
 ChlaData1$Parent.ID<-as.factor(as.character(ChlaData1$Parent.ID))
 ChlaData1$Tank.num<-as.factor(as.character(ChlaData1$Tank.num))
 ChlaData1$Surface.area<-as.numeric(as.character(ChlaData1$Surface.area))
-
-
 ChlaData1$totChla1<-ChlaData1$Rep1*ChlaData1$TotalVolume
 ChlaData1$chlaSA1 <- ChlaData1$totChla1/ChlaData1$Surface.area
-
 ChlaData1$totChla2<-ChlaData1$Rep2*ChlaData1$TotalVolume
 ChlaData1$chlaSA2 <- ChlaData1$totChla2/ChlaData1$Surface.area
-
 plate1<-plot(ChlaData1$chlaSA1,ChlaData1$chlaSA2)
 ChlaData1<-ChlaData1[!(ChlaData1$Frag.ID=="314"),] #redid plate 8
 
 # Plate 2
 Chla_plate2<- read.csv("Data/Chla_plate2.csv")
-
 #merge 
 ChlaData2 <- merge(meta, Chla_plate2)
 ChlaData2 <- merge(ChlaData2, Slurry)
@@ -2693,20 +2849,16 @@ ChlaData2 <- merge(ChlaData2, SA)
 ChlaData2$Parent.ID<-as.factor(as.character(ChlaData2$Parent.ID))
 ChlaData2$Tank.num<-as.factor(as.character(ChlaData2$Tank.num))
 ChlaData2$Surface.area<-as.numeric(as.character(ChlaData2$Surface.area))
-
 ChlaData2$totChla1<-ChlaData2$Rep1*ChlaData2$TotalVolume
 ChlaData2$chlaSA1 <- ChlaData2$totChla1/ChlaData2$Surface.area
-
 ChlaData2$totChla2<-ChlaData2$Rep2*ChlaData2$TotalVolume
 ChlaData2$chlaSA2 <- ChlaData2$totChla2/ChlaData2$Surface.area
-
 plate2<-plot(ChlaData2$chlaSA1,ChlaData2$chlaSA2)
 ChlaData2<-ChlaData2[!(ChlaData2$Frag.ID=="3476"),] #redid plate 8
 ChlaData2<-ChlaData2[!(ChlaData2$Frag.ID=="N211"),] #redid plate 8
 
 # Plate 3
 Chla_plate3<- read.csv("Data/Chla_plate3.csv")
-
 #merge 
 ChlaData3 <- merge(meta, Chla_plate3)
 ChlaData3 <- merge(ChlaData3, Slurry)
@@ -2714,10 +2866,8 @@ ChlaData3 <- merge(ChlaData3, SA)
 ChlaData3$Parent.ID<-as.factor(as.character(ChlaData3$Parent.ID))
 ChlaData3$Tank.num<-as.factor(as.character(ChlaData3$Tank.num))
 ChlaData3$Surface.area<-as.numeric(as.character(ChlaData3$Surface.area))
-
 ChlaData3$totChla1<-ChlaData3$Rep1*ChlaData3$TotalVolume
 ChlaData3$chlaSA1 <- ChlaData3$totChla1/ChlaData3$Surface.area
-
 ChlaData3$totChla2<-ChlaData3$Rep2*ChlaData3$TotalVolume
 ChlaData3$chlaSA2 <- ChlaData3$totChla2/ChlaData3$Surface.area
 
@@ -2725,8 +2875,7 @@ plate3<-plot(ChlaData3$chlaSA1,ChlaData3$chlaSA2) #check
 ChlaData3<-ChlaData3[!(ChlaData3$Frag.ID=="N158"),] #redid plate 8
 
 # Plate 4 
-Chla_plate4<- read.csv("Data/test_plate4.csv")
-
+Chla_plate4<- read.csv("Data/plate4.csv")
 #merge 
 ChlaData4 <- merge(meta, Chla_plate4)
 ChlaData4 <- merge(ChlaData4, Slurry)
@@ -2734,14 +2883,10 @@ ChlaData4 <- merge(ChlaData4, SA)
 ChlaData4$Parent.ID<-as.factor(as.character(ChlaData4$Parent.ID))
 ChlaData4$Tank.num<-as.factor(as.character(ChlaData4$Tank.num))
 ChlaData4$Surface.area<-as.numeric(as.character(ChlaData4$Surface.area))
-
-
 ChlaData4$totChla1<-ChlaData4$Rep1*ChlaData4$TotalVolume
 ChlaData4$chlaSA1 <- ChlaData4$totChla1/ChlaData4$Surface.area
-
 ChlaData4$totChla2<-ChlaData4$Rep2*ChlaData4$TotalVolume
 ChlaData4$chlaSA2 <- ChlaData4$totChla2/ChlaData4$Surface.area
-
 plate4<-plot(ChlaData4$chlaSA1,ChlaData4$chlaSA2)
 ChlaData4<-ChlaData4[!(ChlaData4$Frag.ID=="N30"),] #redid plate 8
 
@@ -2755,21 +2900,14 @@ ChlaData5 <- merge(ChlaData5, SA)
 ChlaData5$Parent.ID<-as.factor(as.character(ChlaData5$Parent.ID))
 ChlaData5$Tank.num<-as.factor(as.character(ChlaData5$Tank.num))
 ChlaData5$Surface.area<-as.numeric(as.character(ChlaData5$Surface.area))
-
-
 ChlaData5$totChla1<-ChlaData5$Rep1*ChlaData5$TotalVolume
 ChlaData5$chlaSA1 <- ChlaData5$totChla1/ChlaData5$Surface.area
-
 ChlaData5$totChla2<-ChlaData5$Rep2*ChlaData5$TotalVolume
 ChlaData5$chlaSA2 <- ChlaData5$totChla2/ChlaData5$Surface.area
-
 plate5<-plot(ChlaData5$chlaSA1,ChlaData5$chlaSA2) #some not close, check 
-
-
 
 # Plate 6 20190321
 Chla_plate6<- read.csv("Data/Chla_plate6.csv")
-
 #merge 
 ChlaData6 <- merge(meta, Chla_plate6)
 ChlaData6 <- merge(ChlaData6, Slurry)
@@ -2788,7 +2926,7 @@ ChlaData6$chlaSA2 <- ChlaData6$totChla2/ChlaData6$Surface.area
 plate6<-plot(ChlaData6$chlaSA1,ChlaData6$chlaSA2) #some not close, check 
 ChlaData6<-ChlaData6[!(ChlaData6$Frag.ID=="3484"),] #redid plate 8
 
-# Plate 8 20190321
+# Plate 8 20190321 (original file deleted, replaced with AVG values)
 Chla_plate8<- read.csv("Data/Chla_plate8.csv")
 
 #merge 
@@ -2798,26 +2936,20 @@ ChlaData8 <- merge(ChlaData8, SA)
 ChlaData8$Parent.ID<-as.factor(as.character(ChlaData8$Parent.ID))
 ChlaData8$Tank.num<-as.factor(as.character(ChlaData8$Tank.num))
 ChlaData8$Surface.area<-as.numeric(as.character(ChlaData8$Surface.area))
-
  
-ChlaData8$totChla1<-ChlaData8$Rep1*ChlaData8$TotalVolume
-ChlaData8$chlaSA1 <- ChlaData8$totChla1/ChlaData8$Surface.area
+ChlaData8$totChla1<-ChlaData8$Rep1
+ChlaData8$chlaSA1 <- ChlaData8$Rep1
 
-ChlaData8$totChla2<-ChlaData8$Rep2*ChlaData8$TotalVolume
-ChlaData8$chlaSA2 <- ChlaData8$totChla2/ChlaData8$Surface.area
+ChlaData8$totChla2<-ChlaData8$Rep2
+ChlaData8$chlaSA2 <- ChlaData8$Rep2
 
-plate8<-plot(ChlaData8$chlaSA1,ChlaData8$chlaSA2) #some not close, check 
+#plate8<-plot(ChlaData8$chlaSA1,ChlaData8$chlaSA2) #some not close, check 
   
 Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6,ChlaData8)
-
-chlatest<-merge(meta, Chla, all = T) 
-  
 ```
 
 means for plots
-
 ```{r}
-    
 chlatest<-merge(meta, Chla, all.x = T)
 
 duplicated(Chla) #look for duplicate entries
@@ -2831,12 +2963,10 @@ duplicated(checkChla)
 
 #2285, 3491, N141 Remove sample where reps are >2 apart
 #Chla<-Chla[!(Chla$Frag.ID=="N138"),]
-
  
 #make slightly neg values 0 
 Chla$ChlaSA[Chla$ChlaSA < 0] <- 0 
-
-# 
+ 
 Chla_mean <- ddply(Chla, c("Treatment", "Species", "Time.Point"), summarise, 
                    N    = length(ChlaSA[!is.na(ChlaSA)]), 
                    mean = mean(ChlaSA, na.rm=TRUE), 
@@ -2866,8 +2996,11 @@ Mcap_chla.Clade<-subset(Chla_meanClade, Species =="Montipora capitata")
 Pcomp_chla.Clade<-subset(Chla_meanClade, Species =="Porites compressa")
 Pvar_chla.Clade<-subset(Chla_meanClade, Species =="Pavona varians")
 Pacu_chla.Clade<-subset(Chla_meanClade, Species =="Pocillopora acuta")
+```
 
-#just T0 ####
+Plots 
+```{r}
+#just T0 #  ylab(expression(paste("mg cm"^"-2"))) + 
 Chla_T0<-subset(Chla, Time.Point=="T0")
 Chla_T0_mean <- ddply(Chla_T0, c( "Species"), summarise, 
                  N    = length(ChlaSA[!is.na(ChlaSA)]), 
@@ -2875,383 +3008,226 @@ Chla_T0_mean <- ddply(Chla_T0, c( "Species"), summarise,
                  sd   = sd(ChlaSA, na.rm=TRUE), 
                  se   = sd / sqrt(N), 
                  max = max(ChlaSA, na.rm=TRUE) 
-)
-Chla_T0_mean
+);Chla_T0_mean
 
-#plot all
-Chla_T0_mean_plot<-ggplot(data=Chla_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("mg cm"^"-2"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));Chla_T0_mean_plot
+#T0 only
+  ggplot(Chla_T0, aes(x=Species, y=ChlaSA, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle(bquote("Chlorophyll-"*italic(alpha))) +
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Chla_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#T0 only - by algal profile
+  ggplot(Chla_T0, aes(x=interaction(Species,Clade), y=ChlaSA, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle(bquote("Chlorophyll-"*italic(alpha)* " by ITS2 Profile")) +
+      geom_boxplot( show.legend = FALSE)+
+              scale_x_discrete(guide = "axis_nested")
+ggsave("Chla_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#T0 by clade
-Chla_T0_mean.c <- ddply(Chla_T0, c( "Species","Clade"), summarise, 
-                 N    = length(ChlaSA[!is.na(ChlaSA)]), 
-                 mean = mean(ChlaSA, na.rm=TRUE), 
-                 sd   = sd(ChlaSA, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(ChlaSA, na.rm=TRUE) 
-)
-Chla_T0_mean.c$Code<-paste(Chla_T0_mean.c$Species, Chla_T0_mean.c$Clade)
+#Subset by time 1 or F only 
+Chla_T1<-subset(Chla, Time.Point=="T1") 
+Chla_TF<-subset(Chla, Time.Point=="TF") 
 
-#plot all
-Chla_T0_mean_plot<-ggplot(data=Chla_T0_mean.c, aes(x=Species, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+
-  geom_line(aes(color=Code), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Chl-a"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));Chla_T0_mean_plot
+#T1 - by species  ####
+ggplot(Chla_T1, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(bquote("Chlorophyll-"*italic(alpha))) +
+      xlab("") + #Label the X Axis
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Chla_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#T1 - by species and algal profile - make for each species and then cowplot
+Chla_T1_mcap<-subset(Chla_T1, Species=="Montipora capitata") 
+Chla_T1_pcomp<-subset(Chla_T1, Species=="Porites compressa") 
+Chla_T1_pvar<-subset(Chla_T1, Species=="Pavona varians") 
+Chla_T1_pacu<-subset(Chla_T1, Species=="Pocillopora acuta") 
 
+#Mcap
+Chla_Mcap_plot<- 
+  ggplot(Chla_T1_mcap, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");Chla_Mcap_plot
+  
+#Pcomp
+Chla_Pcomp_plot<- ggplot(Chla_T1_pcomp, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pcomp_plot
 
+#Pvar
+Chla_Pvar_plot<- ggplot(Chla_T1_pvar, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pvar_plot
 
+#Pacu
+Chla_Pacu_plot<- ggplot(Chla_T1_pacu, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pacu_plot
 
+plot_row<-plot_grid(Chla_Mcap_plot, Chla_Pcomp_plot, Chla_Pvar_plot, Chla_Pacu_plot, nrow=1,label_size = 12)
 
-#TFH only####
-Chla_TFH<-subset(Chla, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-Chla_TFH_mean <- ddply(Chla_TFH, c( "Species"), summarise, 
-                 N    = length(ChlaSA[!is.na(ChlaSA)]), 
-                 mean = mean(ChlaSA, na.rm=TRUE), 
-                 sd   = sd(ChlaSA, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(ChlaSA, na.rm=TRUE) 
-)
-Chla_TFH_mean
+label_expression <- expression(bold("Chlorophyll-" * italic(α) * " cm"^{-2}))
 
-
-#### all species#
-#plot all
-All_Chla_plot<-ggplot(data=Chla_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Chl-a"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));All_Chla_plot
-
-
-#Mcap plot ####
-
-Mcap_Chla_plot<-ggplot(data=Mcap_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot
-
-#clade Mcap_chla.Clade
-Mcap_chla.Clade$Code<-paste(Mcap_chla.Clade$Treatment,Mcap_chla.Clade$Clade)
-
-Mcap_Chla_plot.c<-ggplot(data=Mcap_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("M capitata")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_Chla_plot.c
+  title <- ggdraw() + 
+  draw_label(label = label_expression,x = 0, hjust = 0)+
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
 
-#Pcomp plot ####
+##### FIGURE OUT HOW TO GET THIS TO EXPORT WITH THE ALPHA#########
+ggsave("Chla_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-Pcomp_Chla_plot<-ggplot(data=Pcomp_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P compressa")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot
+#TF ####
+      ggplot(Chla_TF, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Chla_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#clade Pcomp_chla.Clade
-Pcomp_chla.Clade$Code<-paste(Pcomp_chla.Clade$Treatment,Pcomp_chla.Clade$Clade)
+#TF - by species and algal profile - make for each species and then cowplot####
+Chla_TF_mcap<-subset(Chla_TF, Species=="Montipora capitata") 
+Chla_TF_pcomp<-subset(Chla_TF, Species=="Porites compressa") 
+Chla_TF_pvar<-subset(Chla_TF, Species=="Pavona varians") 
+Chla_TF_pacu<-subset(Chla_TF, Species=="Pocillopora acuta") 
 
-Pcomp_Chla_plot.c<-ggplot(data=Pcomp_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P comp")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_Chla_plot.c
+#Mcap 
+Chla_Mcap_plot<- 
+  ggplot(Chla_TF_mcap, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");Chla_Mcap_plot
+  
+#Pcomp
+Chla_Pcomp_plot<- ggplot(Chla_TF_pcomp, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pcomp_plot
 
+#Pvar
+Chla_Pvar_plot<- ggplot(Chla_TF_pvar, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pvar_plot
 
-
-
-
-#Pvar plot ####
-
-Pvar_Chla_plot<-ggplot(data=Pvar_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot
-
-#pvar by clade Pvar_chla.Clade
-Pvar_chla.Clade$Code<-paste(Pvar_chla.Clade$Treatment, Pvar_chla.Clade$Clade)
-Pvar_Chla_plot.c<-ggplot(data=Pvar_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-     ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P varians")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_Chla_plot.c
+#Pacu
+Chla_Pacu_plot<- ggplot(Chla_TF_pacu, aes(x=interaction(Treatment,Clade), y=ChlaSA, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);Chla_Pacu_plot
 
 
-#Pacu plot ####
+plot_row<-plot_grid(Chla_Mcap_plot, Chla_Pcomp_plot, Chla_Pvar_plot, Chla_Pacu_plot, nrow=1,label_size = 12)
+  label_expression <- expression(bold("Chlorophyll-" * italic(α) * " cm"^{-2}))
 
-Pacu_Chla_plot<-ggplot(data=Pacu_chla, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P acuta")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot
-
-#clade Pvar_chla.Clade
-Pacu_chla.Clade$Code<-paste(Pacu_chla.Clade$Treatment,Pacu_chla.Clade$Clade)
-
-Pacu_Chla_plot.c<-ggplot(data=Pacu_chla.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-      ylim(0, 8)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("(µg chl-a cm" ^ "-2"*")"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ggtitle("P acu")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_Chla_plot.c
+  title <- ggdraw() + 
+  draw_label(label = label_expression,x = 0, hjust = 0)+
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
 
-
-
-
-
+ggsave("Chla_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
-
-Plots together
-
-```{r}
-###### All plots together
-Mcap_Chla_plot<-Mcap_Chla_plot+ theme(legend.position = "none") #remove legend
-Pcomp_Chla_plot<-Pcomp_Chla_plot+ theme(legend.position = "none") #remove legend
-Pvar_Chla_plot<-Pvar_Chla_plot+ theme(legend.position = "none") #remove legend
-Pacu_Chla_plot<-Pacu_Chla_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot, nrow = 1)
-
-###### All plots together CLADE
-Mcap_Chla_plot.c<-Mcap_Chla_plot.c+ theme(legend.position = "none") #remove legend
-Pcomp_Chla_plot.c<-Pcomp_Chla_plot.c+ theme(legend.position = "none") #remove legend
-Pvar_Chla_plot.c<-Pvar_Chla_plot.c+ theme(legend.position = "none") #remove legend
-Pacu_Chla_plot.c<-Pacu_Chla_plot.c+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_Chla_plot.c, Pcomp_Chla_plot.c, Pvar_Chla_plot.c,Pacu_Chla_plot.c, nrow = 1)
-```
-
 stats
 
 ```{r}
@@ -3636,7 +3612,6 @@ PAMdata$Date <- as.Date(PAMdata$Date, format="%e-%b-%y")
 PAMdata$Days <- as.numeric(PAMdata$Date - as.Date("2017-03-20"))
 PAMdata$Days[PAMdata$Days<4]<- 0  #If you want to make T0 all the same start time do this
 
-
 # make yield ratio
 PAMdata$Yield <- PAMdata$Yield/1000
 str(PAMdata) # check
@@ -3659,15 +3634,11 @@ PAMdata<-unique(PAMdata) #remove any duplicate entries
 # if NA in YIELD remove 
 PAMdata<-PAMdata[!is.na(PAMdata$Yield), ]
 
-
-
-
 # Many frags were too low to PAM (no signal) but corals were alive. Change fv.fm to 0.1, a minimum baseline to indicate the lack of photosynthetic yield. 0.1 is below the threshold of any PAM signal in a readable coral 
 
 LowSig<-read.csv("Data/PAM_lowSignalSamps.csv") #read in df with low sig samps
 
 #remove samples in 'extra;
-#testmer<-merge(meta, LowSig, all.y=T)
 LowSig$Date <- as.Date(LowSig$Date, format="%e-%b-%y") #update date
 LowSig<-LowSig[!(LowSig$REMOVE=="REMOVE"),] #remove the REMOVES
 
@@ -3678,7 +3649,8 @@ PAMdata2 <- within(PAMdata2, Yield[Low.Sig == 'Yes' ] <- '0.1')
 
 PAMdata2$Yield<-as.numeric(PAMdata2$Yield)
 PAMdata2$Parent.ID<-as.factor(as.character(PAMdata2$Parent.ID))
-
+PAMdata2$Clade <- factor(PAMdata2$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+PAMdata2$Species <- factor(PAMdata2$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
 
 ```
 
@@ -3686,7 +3658,6 @@ Stats
 
 ```{r}
 #remove notes 
-
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
 PAMdata2_stats$Days<-as.factor(as.character(PAMdata2_stats$Days))
 PAMdata2_stats$Yield<-as.numeric(PAMdata2_stats$Yield)
@@ -4086,11 +4057,11 @@ PAMdata2_mean <- ddply(PAMdata2, c("Treatment", "Species", "Days"), summarise,
 )
 PAMdata2_mean #display table
 
-# divide by Clade
-Mcap_PAM_mean<-subset(PAMdata2_mean, Species =="Montipora capitata")
-Pcomp_PAM_mean<-subset(PAMdata2_mean, Species =="Porites compressa")
-Pvar_PAM_mean<-subset(PAMdata2_mean, Species =="Pavona varians")
-Pacu_PAM_mean<-subset(PAMdata2_mean, Species =="Pocillopora acuta")
+
+Mcap_PAM<-subset(PAMdata2, Species =="Montipora capitata")
+Pcomp_PAM<-subset(PAMdata2, Species =="Porites compressa")
+Pvar_PAM<-subset(PAMdata2, Species =="Pavona varians")
+Pacu_PAM<-subset(PAMdata2, Species =="Pocillopora acuta")
 
 
 PAMdata2_meanClade <- ddply(PAMdata2, c("Treatment", "Species", "Days","Clade"), summarise, 
@@ -4109,97 +4080,67 @@ Pvar_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pavona varians")
 Pacu_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pocillopora acuta")
 
 
-#just T0 ####
+#T0 ####
 PAM_T0<-subset(PAMdata2, Days=="0")
-PAM_T0_mean <- ddply(PAM_T0, c( "Species"), summarise, 
-                 N    = length(Yield[!is.na(Yield)]), 
-                 mean = mean(Yield, na.rm=TRUE), 
-                  sd   = sd(Yield, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(Yield, na.rm=TRUE) 
-)
-PAM_T0_mean
 
-#plot all
-PAM_T0_mean_plot<-ggplot(data=PAM_T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("Fv/Fm"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));PAM_T0_mean_plot
+ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(bquote("fv/fm"))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle(bquote("Photosynthetic Quantum Yeild")) +
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("PAM_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#t0 by clade
-PAM_T0_mean.c <- ddply(PAM_T0, c( "Species","Clade"), summarise, 
-                 N    = length(Yield[!is.na(Yield)]), 
-                 mean = mean(Yield, na.rm=TRUE), 
-                  sd   = sd(Yield, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(Yield, na.rm=TRUE) 
-)
-PAM_T0_mean.c$Code<-paste(PAM_T0_mean.c$Species,PAM_T0_mean.c$Clade)
+#T0 only - by algal profile
+  ggplot(PAM_T0, aes(x=interaction(Clade, Species), y=Yield, fill=Clade)) + 
+         scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(bquote("fv/fm"))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle(bquote("Photosynthetic Quantum Yeild by ITS2 Profile")) +
+      geom_boxplot(show.legend = FALSE)+
+              scale_x_discrete(guide = "axis_nested")
 
-#plot all
-PAM_T0_mean_plot.c<-ggplot(data=PAM_T0_mean.c, aes(x=Species, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+
-  geom_line(aes(color=Code), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("fv/fm"))) +
-  ggtitle("Time 0")+
-  theme(plot.title = element_text(size=20, face = "italic"));PAM_T0_mean_plot.c
+ggsave("PAM_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-
-
-
+#plot all over time by species
 #Mcap plot ####
+ggplot(Mcap_PAM, aes(x=interaction(Days,Treatment), y=Yield, fill=Treatment)) + 
+  geom_errorbar(aes(ymin = summary_df_mcap$Yield.mean - summary_df_mcap$Yield.se, ymax = summary_df_mcap$Yield.mean + summary_df_mcap$Yield.se), width = 0.2) +
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(bquote("fv/fm"))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested")
 
-Mcap_PAM_plot<-ggplot(data=Mcap_PAM_mean, aes(x=Days, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
+summary_df_mcap <- aggregate(Yield ~ Treatment*Days, Mcap_PAM, function(x) c(mean = mean(x), se = sd(x) / sqrt(length(x))))
+
+Mcap_PAM_plot<-ggplot(data=Mcap_PAM, aes(x=Days, y=Yield, group = Treatment*Days, color=Treatment)) +
+  geom_errorbar(aes(ymin = summary_df_mcap$Yield.mean - summary_df_mcap$Yield.se, ymax = summary_df_mcap$Yield.mean + summary_df_mcap$Yield.se), width = 0.2) +
+  geom_line(data = summary_df_mcap, aes(y = summary_df_mcap$Yield.mean)) +
+  scale_color_manual(values=c("deepskyblue1", "orangered"))+
   xlab(" ") + #Label the X Axis
-      ylim(0, 1)+
+      #ylim(0, 1)+
     ylab(" ") + #Label the X Axis
-   scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
+   #scale_x_continuous(name="Days", breaks=c(0,10,20,30,40,50,60))+
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         axis.title=element_text(size=14,face="bold"), #Set axis format
