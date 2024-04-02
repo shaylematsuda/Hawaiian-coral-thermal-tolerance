@@ -4848,7 +4848,7 @@ ggsave("Protein_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf
 ```
 
 #Resp:photosynthesis
-####### Check the original data from Ford. compare to original plots and confirm!
+
 ```{r}
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed_Final.csv")
@@ -4944,6 +4944,9 @@ Plots Photosynthesis
 
 #just T0 #### 
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
+
+ tapply(PR.df_T0$GrossP, PR.df_T0$Species, mean)
+aggregate(GrossP ~ Species + Treatment, PR.df_T1, mean)
 
 #T0 only
   ggplot(PR.df_T0, aes(x=Species, y=GrossP, fill=Species)) + 
