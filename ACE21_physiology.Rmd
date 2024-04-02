@@ -4758,7 +4758,7 @@ plot_row<-plot_grid(Protein_Mcap_plot, Protein_Pcomp_plot, Protein_Pvar_plot, Pr
 
 ggsave("Protein_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-#TF
+#TF ####
       ggplot(Protein_TF, aes(x=Species, y=mg.mm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Total Soluable Protein Post-Recovery")+
@@ -4771,6 +4771,8 @@ ggsave("Protein_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       geom_boxplot(show.legend = FALSE)
+ggsave("Protein_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+
 
 #TF - by species and algal profile - make for each species and then cowplot####
 Protein_TF_mcap<-subset(Protein_TF, Species=="Montipora capitata") 
@@ -4846,12 +4848,12 @@ ggsave("Protein_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf
 ```
 
 #Resp:photosynthesis
-
+####### Check the original data from Ford. compare to original plots and confirm!
 ```{r}
 #load data respirometry_processed.csv
 PR  <- read.csv("Data/respirometry_processed_Final.csv")
 #PR<-PR[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days")] # keep only columns you need
-write.csv(PR, "PR.df.csv")
+#write.csv(PR, "PR.df.csv")
 
 #subset metadata for what you need 
 metaPR<-meta
@@ -4915,6 +4917,16 @@ PR.df_B$Photo<-PR.df_B$Photo * 1000 #change from umol to nanomol
 PR.df_B$Resp<-PR.df_B$Resp * 60 #change from per second to per min
 PR.df_B$Resp<-PR.df_B$Resp * 1000 #change from umol to nanomol
 
+
+###working on this. KB uses umol O2 cm-2 hr- and my numbers are seemingly a little diff.
+  #try umol and per hour
+  # PR.df$Photo_hr<-PR.df$Photo * 3600 #change from per second to per min to per hour
+  # 
+  # #PR.df_B$Photo<-PR.df_B$Photo * 1000 #change from umol to nanomol
+  # 
+  # PR.df$Resp_hr<-PR.df_B$Resp * 3600 #change from per second to per hr
+  # #PR.df_B$Resp<-PR.df_B$Resp * 1000 #change from umol to nanomol
+
 #change Respiration to positive by mulit * -1 for figures and Gross P calcs
 PR.df_B$RespPos<-PR.df_B$Resp*(-1)
 
@@ -4924,451 +4936,234 @@ PR.df_B$GrossP<-PR.df_B$Photo+PR.df_B$RespPos
 #calcualte PR ratio with gross (abs values)
 PR.df_B$PR_real<-PR.df_B$GrossP/PR.df_B$RespPos
 
-
-PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
-PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
-PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
-PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
-
-
-
 ```
 
 Plots Photosynthesis
 
 ```{r}
-GrossP_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
-                   N    = length(GrossP[!is.na(GrossP)]), 
-                   mean = mean(GrossP, na.rm=TRUE), 
-                   sd   = sd(GrossP, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(GrossP, na.rm=TRUE) 
-)
-GrossP_mean #display table
 
-GrossP_meanCLADE <- ddply(PR.df_BPR.df_B.T0, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
-                   N    = length(GrossP[!is.na(GrossP)]), 
-                   mean = mean(GrossP, na.rm=TRUE), 
-                   sd   = sd(GrossP, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(GrossP, na.rm=TRUE) 
-)
-GrossP_meanCLADE 
+#just T0 #### 
+PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
-#just T0 ####
-PR.df_BPR.df_B.T0<-subset(PR.df_B, Time.Point=="T0")
+#T0 only
+  ggplot(PR.df_T0, aes(x=Species, y=GrossP, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Gross Photosynthesis")+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("GrossPhoto_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-PR.df_BPR.df_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
-                 N    = length(GrossP[!is.na(GrossP)]), 
-                 mean = mean(GrossP, na.rm=TRUE), 
-                 sd   = sd(GrossP, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(GrossP, na.rm=TRUE) 
-)
-PR.df_BPR.df_B.T0_mean 
+#T0 only - by algal profile
+  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=GrossP, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle("Gross Photosynthesis by Algal Profile")+
+      geom_boxplot( show.legend = FALSE)+
+      scale_x_discrete(guide = "axis_nested")
+  
+ggsave("GrossPhoto_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+  
+#all species ####
+#Subset by time 1 or F only 
+PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
+PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
- 
-#plot all
-Photo_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol cm"^"-2 min"^"-"))) +
-  ggtitle("Gross Photosynthesis T0")+
-  theme(plot.title = element_text(size=20, face = "italic"));Photo_T0_mean_plot
+#T1 - by species
+ggplot(PR.df_T1, aes(x=Species, y=Photo, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Gross Photosynthesis Post-Elevated Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#T1 - by species and algal profile - make for each species and then cowplot####
+PR.df_T1_mcap<-subset(PR.df_T1, Species=="Montipora capitata") 
+PR.df_T1_pcomp<-subset(PR.df_T1, Species=="Porites compressa") 
+PR.df_T1_pvar<-subset(PR.df_T1, Species=="Pavona varians") 
+PR.df_T1_pacu<-subset(PR.df_T1, Species=="Pocillopora acuta") 
 
- 
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_T1_mcap, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste( "nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
 
-#TFH only####
-GrossP_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-GrossP_TFH_mean <- ddply(GrossP_TFH, c( "Species"), summarise, 
-                 N    = length(GrossP[!is.na(GrossP)]), 
-                 mean = mean(GrossP, na.rm=TRUE), 
-                 sd   = sd(GrossP, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(GrossP, na.rm=TRUE) 
-)
-GrossP_TFH_mean
+     # ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
 
-#plot all
-GrossP_TFH_plot<-ggplot(data=GrossP_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("mg.mm2") + #Label the X Axis
-  ylim(0, 30) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));GrossP_TFH_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_T1_pcomp, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_T1_pvar, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_T1_pacu, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Gross Photosynthesis T1", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
+ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#TF ####
+      ggplot(PR.df_TF, aes(x=Species, y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Gross Photosynthesis Post-Recovery")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste( "mol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("GrossPhoto_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#TF - by species and algal profile - make for each species and then cowplot####
+PR.df_TF_mcap<-subset(PR.df_TF, Species=="Montipora capitata") 
+PR.df_TF_pcomp<-subset(PR.df_TF, Species=="Porites compressa") 
+PR.df_TF_pvar<-subset(PR.df_TF, Species=="Pavona varians") 
+PR.df_TF_pacu<-subset(PR.df_TF, Species=="Pocillopora acuta") 
 
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_TF_mcap, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_TF_pcomp, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_TF_pvar, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
-# divide by species ####
-Mcap_GrossP_mean<-subset(GrossP_mean, Species =="Montipora capitata")
-Pcomp_GrossP_mean<-subset(GrossP_mean, Species =="Porites compressa")
-Pvar_GrossP_mean<-subset(GrossP_mean, Species =="Pavona varians")
-Pacu_GrossP_mean<-subset(GrossP_mean, Species =="Pocillopora acuta")
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_TF_pacu, aes(x=interaction(Treatment,Clade), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
-#Mcap plot
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Gross Photosynthesis TF", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  PR.df_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));PR.df_profilesTF
 
-Mcap_GrossP_plot<-ggplot(data=Mcap_GrossP_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-
-  ylim(0,30)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Mcap P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_GrossP_plot
-
-
-#Pcomp plot
-
-Pcomp_GrossP_plot<-ggplot(data=Pcomp_GrossP_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-    ylim(0,30)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # ggtitle("Pcomp P")+
-          theme(aspect.ratio=1)+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot
-
-
-#pcomp clade GrossP_meanCLADE
-GrossP_meanCLADE.pcomp<-subset(Photo_meanCLADE, Species=="Porites compressa")
-GrossP_meanCLADE.pcomp$Code<-paste(GrossP_meanCLADE.pcomp$Treatment,GrossP_meanCLADE.pcomp$Clade)
-
-Pcomp_GrossP_plot<-ggplot(data=GrossP_meanCLADE.pcomp, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+  
-  geom_line(aes(color=Code),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("Time Point") + #Label the X Axis
-    ylim(0,30)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=2))+
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Pcomp P")+
-          theme(aspect.ratio=1)+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot
-
-
-#Pvar plot
-
-Pvar_GrossP_plot<-ggplot(data=Pvar_GrossP_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  theme_bw() + #Set the background color
-    ylim(0,30)+
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-          theme(aspect.ratio=1)+
-  # ggtitle("Pvar P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_GrossP_plot
-
-#Pacu plot
-
-Pacu_GrossP_plot<-ggplot(data=Pacu_GrossP_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+ 
-    ylim(0,30)+
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-    # ggtitle("Pacu P")+
-   
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot
-
-```
-
-P Plots together
-
-```{r}
-###### All plots together
-Mcap_GrossP_plot<-Mcap_GrossP_plot+ theme(legend.position = "none") #remove legend
-Pcomp_GrossP_plot<-Pcomp_GrossP_plot+ theme(legend.position = "none") #remove legend
-Pvar_GrossP_plot<-Pvar_GrossP_plot+ theme(legend.position = "none") #remove legend
-Pacu_GrossP_plot<-Pacu_GrossP_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_GrossP_plot, Pcomp_GrossP_plot, Pvar_GrossP_plot,Pacu_GrossP_plot, nrow = 1)
-library(gridExtra)
-
-```
-
-Plots by Clades
-
-```{r}
-#Mcap 
-GrossP_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
-                   N    = length(GrossP[!is.na(GrossP)]), 
-                   mean = mean(GrossP, na.rm=TRUE), 
-                   sd   = sd(GrossP, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(GrossP, na.rm=TRUE) 
-)
-GrossP_mean.Clade #display table
-
-# divide by species
-Mcap_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Montipora capitata")
-  Mcap_GrossP_mean.Clade$Code<-paste(Mcap_GrossP_mean.Clade$Clade, Mcap_GrossP_mean.Clade$Treatment)
-Pcomp_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Porites compressa")
-  Pcomp_GrossP_mean.Clade$Code<-paste(Pcomp_GrossP_mean.Clade$Clade, Pcomp_GrossP_mean.Clade$Treatment)
-Pvar_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pavona varians")
-  Pvar_GrossP_mean.Clade$Code<-paste(Pvar_GrossP_mean.Clade$Clade, Pvar_GrossP_mean.Clade$Treatment)
-Pacu_GrossP_mean.Clade<-subset(GrossP_mean.Clade, Species =="Pocillopora acuta")
-  Pacu_GrossP_mean.Clade$Code<-paste(Pacu_GrossP_mean.Clade$Clade, Pacu_GrossP_mean.Clade$Treatment)
-
-
-library(RColorBrewer)
-
-#Mcap by clade
-Mcap_GrossP_mean.Clade$Code<-paste(Mcap_GrossP_mean.Clade$Treatment,Mcap_GrossP_mean.Clade$Clade)
-
-Mcap_GrossP_plot.Clade<-ggplot(data=Mcap_GrossP_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
-  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Mcap P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_GrossP_plot.Clade
-
-
-#Pcomp by clade
-Pcomp_GrossP_mean.Clade$Code<-paste(Pcomp_GrossP_mean.Clade$Treatment,Pcomp_GrossP_mean.Clade$Clade)
-
-Pcomp_GrossP_plot.Clade<-ggplot(data=Pcomp_GrossP_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pcomp P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_GrossP_plot.Clade
-
-#Pvar by clade
-Pvar_GrossP_mean.Clade$Code<-paste(Pvar_GrossP_mean.Clade$Treatment,Pvar_GrossP_mean.Clade$Clade)
-
-Pvar_GrossP_plot.Clade<-ggplot(data=Pvar_GrossP_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pvar P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_GrossP_plot.Clade
-
-#Pacu by clade
-Pacu_GrossP_mean.Clade$Code<-paste(Pacu_GrossP_mean.Clade$Treatment,Pacu_GrossP_mean.Clade$Clade)
-
-Pacu_GrossP_plot.Clade<-ggplot(data=Pacu_GrossP_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(aes(linetype=Clade, color=Code))+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pacu P")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_GrossP_plot.Clade
-
-Mcap_GrossP_plot.Clade<-Mcap_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
-Pcomp_GrossP_plot.Clade<-Pcomp_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
-Pvar_GrossP_plot.Clade<-Pvar_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
-Pacu_GrossP_plot.Clade<-Pacu_GrossP_plot.Clade+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_GrossP_plot.Clade, Pcomp_GrossP_plot.Clade, Pvar_GrossP_plot.Clade,Pacu_GrossP_plot.Clade, nrow = 1)
-
+ggsave("GrossPhoto_profile_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 
 ```
 
-GrossPsynthesis stats
+
+Gross Photosynthesis stats
 
 ```{r}
 #df PR.df_B, use all time points bc repeated measures 
@@ -5687,440 +5482,219 @@ Respiration plots
 
 ```{r}
 #Respiration (absolute)
+#just T0 #### 
+PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
-#T0
+#T0 only
+  ggplot(PR.df_T0, aes(x=Species, y=Resp, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Respiration")+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-#t0 only
-PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
-                 N    = length(RespPos[!is.na(RespPos)]), 
-                 mean = mean(RespPos, na.rm=TRUE), 
-                 sd   = sd(RespPos, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(RespPos, na.rm=TRUE) 
-)
-PR.df_PR_B.T0_mean 
+#T0 only - by algal profile
+  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=Resp, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle(" Respiration by Algal Profile")+
+      geom_boxplot( show.legend = FALSE)+
+      scale_x_discrete(guide = "axis_nested")
+  
+ggsave("Resp_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+  
+#all species ####
+#Subset by time 1 or F only 
+PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
+PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
+#T1 - by species
+ggplot(PR.df_T1, aes(x=Species, y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Respiration Post-Elevated Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Resp_T1_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-#plot all
-R_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  #xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol cm"^"-2 min"^"-"))) +
-  ggtitle("R T0")+
-  theme(plot.title = element_text(size=20, face = "italic"));R_T0_mean_plot
+#T1 - by species and algal profile - make for each species and then cowplot####
+PR.df_T1_mcap<-subset(PR.df_T1, Species=="Montipora capitata") 
+PR.df_T1_pcomp<-subset(PR.df_T1, Species=="Porites compressa") 
+PR.df_T1_pvar<-subset(PR.df_T1, Species=="Pavona varians") 
+PR.df_T1_pacu<-subset(PR.df_T1, Species=="Pocillopora acuta") 
 
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_T1_mcap, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_T1_pcomp, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_T1_pvar, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_T1_pacu, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Respiration T1", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
+ggsave("Resp_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#TF ####
+      ggplot(PR.df_TF, aes(x=Species, y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Respiration Post-Recovery")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("Resp_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#TF - by species and algal profile - make for each species and then cowplot####
+PR.df_TF_mcap<-subset(PR.df_TF, Species=="Montipora capitata") 
+PR.df_TF_pcomp<-subset(PR.df_TF, Species=="Porites compressa") 
+PR.df_TF_pvar<-subset(PR.df_TF, Species=="Pavona varians") 
+PR.df_TF_pacu<-subset(PR.df_TF, Species=="Pocillopora acuta") 
 
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_TF_mcap, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_TF_pcomp, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_TF_pvar, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_TF_pacu, aes(x=interaction(Treatment,Clade), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
-RespPos_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
-                   N    = length(RespPos[!is.na(RespPos)]), 
-                   mean = mean(RespPos, na.rm=TRUE), #calculate mean of RespPosonse variable, removing NA's
-                   sd   = sd(RespPos, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(RespPos, na.rm=TRUE) 
-)
-RespPos_mean #display table
- 
-# divide by species
-Mcap_RespPos_mean<-subset(RespPos_mean, Species =="Montipora capitata")
-Pcomp_RespPos_mean<-subset(RespPos_mean, Species =="Porites compressa")
-Pvar_RespPos_mean<-subset(RespPos_mean, Species =="Pavona varians")
-Pacu_RespPos_mean<-subset(RespPos_mean, Species =="Pocillopora acuta")
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("Respiration by Algal Profile Post Recovery", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  PR.df_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));PR.df_profilesTF
 
-#Mcap plot
-
-Mcap_RespPos_plot<-ggplot(data=Mcap_RespPos_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  ylim(0,12)+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Mcap RespPos")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_RespPos_plot
-
-
-#Pcomp plot
-
-Pcomp_RespPos_plot<-ggplot(data=Pcomp_RespPos_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-
-    ylim(0,12)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # ggtitle("Pcomp RespPos")+
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_RespPos_plot
-
-#Pvar plot
-
-Pvar_RespPos_plot<-ggplot(data=Pvar_RespPos_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-    ylim(0,12)+
-   geom_point(shape = 1,size = 4,colour = "black")+
- xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis  
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # ggtitle("Pvar RespPos")+
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_RespPos_plot
-
-#Pacu plot
-
-Pacu_RespPos_plot<-ggplot(data=Pacu_RespPos_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
- xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis    
-  ylim(0,12)+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  # ggtitle("Pacu RespPos")+
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_RespPos_plot
-
-```
-
-Plots by Clades
-
-```{r}
-#t0 only
-PR.df_BPR.df_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
-                 N    = length(RespPos[!is.na(RespPos)]), 
-                 mean = mean(RespPos, na.rm=TRUE), #calculate mean of RespPosonse variable, removing NA's
-                 sd   = sd(RespPos, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(RespPos, na.rm=TRUE) 
-)
-PR.df_BPR.df_B.T0_mean 
-
-
-#plot all
-RespPos_T0_mean_plot<-ggplot(data=PR.df_BPR.df_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("RespPosiration T0")+
-  theme(plot.title = element_text(size=20, face = "italic"));RespPos_T0_mean_plot
-
-
-#TFH only#### 
-RespPos_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-RespPos_TFH_mean <- ddply(RespPos_TFH, c( "Species"), summarise, 
-                 N    = length(RespPos[!is.na(RespPos)]), 
-                 mean = mean(RespPos, na.rm=TRUE), #calculate mean of RespPosonse variable, removing NA's
-                 sd   = sd(RespPos, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(RespPos, na.rm=TRUE) 
-)
-RespPos_TFH_mean
-
-#plot all
-RespPos_TFH_plot<-ggplot(data=RespPos_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));RespPos_TFH_plot
-
-
- RespPos_mean <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
-                   N    = length(RespPos[!is.na(RespPos)]), 
-                   mean = mean(RespPos, na.rm=TRUE), #calculate mean of RespPosonse variable, removing NA's
-                   sd   = sd(RespPos, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(RespPos, na.rm=TRUE) 
-)
-RespPos_mean#display table
-
-
-
-
-RespPos_mean.Clade <- ddply(PR.df_B, c("Treatment", "Species", "Time.Point","Clade"), summarise, 
-                   N    = length(RespPos[!is.na(RespPos)]), 
-                   mean = mean(RespPos, na.rm=TRUE), #calculate mean of RespPosonse variable, removing NA's
-                   sd   = sd(RespPos, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(RespPos, na.rm=TRUE) 
-)
-RespPos_mean.Clade #display table
-
-# divide by species
-Mcap_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Montipora capitata")
-  Mcap_RespPos_mean.Clade$Code<-paste(Mcap_RespPos_mean.Clade$Clade, Mcap_RespPos_mean.Clade$Treatment)
-Pcomp_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Porites compressa")
-  Pcomp_RespPos_mean.Clade$Code<-paste(Pcomp_RespPos_mean.Clade$Clade, Pcomp_RespPos_mean.Clade$Treatment)
-Pvar_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pavona varians")
-  Pvar_RespPos_mean.Clade$Code<-paste(Pvar_RespPos_mean.Clade$Clade, Pvar_RespPos_mean.Clade$Treatment)
-Pacu_RespPos_mean.Clade<-subset(RespPos_mean.Clade, Species =="Pocillopora acuta")
-  Pacu_RespPos_mean.Clade$Code<-paste(Pacu_RespPos_mean.Clade$Clade, Pacu_RespPos_mean.Clade$Treatment)
-
-
-library(RColorBrewer)
-
-#Mcap by clade
-Mcap_RespPos_mean.Clade$Code<-paste(Mcap_RespPos_mean.Clade$Treatment,Mcap_RespPos_mean.Clade$Clade)
-
-Mcap_RespPos_plot.Clade<-ggplot(data=Mcap_RespPos_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "blue","darkred","red"))+
-  # xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(), 
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Mcap RespPosiration")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_RespPos_plot.Clade
-
-
-#Pcomp by clade
-Pcomp_RespPos_mean.Clade$Code<-paste(Pcomp_RespPos_mean.Clade$Treatment,Pcomp_RespPos_mean.Clade$Clade)
-
-Pcomp_RespPos_plot.Clade<-ggplot(data=Pcomp_RespPos_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(linetype="dotted")+
-    scale_linetype_manual(values=c("twodash", "dotted"))+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  # xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pcomp RespPosiration")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_RespPos_plot.Clade
-
-#Pvar by clade
-Pvar_RespPos_mean.Clade$Code<-paste(Pvar_RespPos_mean.Clade$Treatment,Pvar_RespPos_mean.Clade$Clade)
-
-Pvar_RespPos_plot.Clade<-ggplot(data=Pvar_RespPos_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  # xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pvar RespPosiration")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_RespPos_plot.Clade
-
-#Pacu by clade
-Pacu_RespPos_mean.Clade$Code<-paste(Pacu_RespPos_mean.Clade$Treatment,Pacu_RespPos_mean.Clade$Clade)
-
-Pacu_RespPos_plot.Clade<-ggplot(data=Pacu_RespPos_mean.Clade, aes(x=Time.Point, y=mean, group = Code, color=Code)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-            width=0.1, show.legend = T)+
-  geom_point(aes(color=Code), size=4, show.legend = T)+ 
-  geom_line(linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3","blue", "darkred","red"))+
-  # xlab("Time Point") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#   ylab(expression(paste("nmol O2 cm-2 m-"))) +
-# theme(panel.grid.major = element_blank(), 
-#         panel.grid.minor = element_blank(),
-#         panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pacu RespPosiration")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_RespPos_plot.Clade
-
-Mcap_RespPos_plot.Clade<-Mcap_RespPos_plot.Clade+ theme(legend.position = "none") #remove legend
-Pcomp_RespPos_plot.Clade<-Pcomp_RespPos_plot.Clade+ theme(legend.position = "none") #remove legend
-Pvar_RespPos_plot.Clade<-Pvar_RespPos_plot.Clade+ theme(legend.position = "none") #remove legend
-Pacu_RespPos_plot.Clade<-Pacu_RespPos_plot.Clade+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_RespPos_plot.Clade, Pcomp_RespPos_plot.Clade, Pvar_RespPos_plot.Clade,Pacu_RespPos_plot.Clade, nrow = 1)
-
-
-
-```
-
-R Plots together
-
-```{r}
-###### All plots together
-Mcap_RespPos_plot<-Mcap_RespPos_plot+ theme(legend.position = "none") #remove legend
-Pcomp_RespPos_plot<-Pcomp_RespPos_plot+ theme(legend.position = "none") #remove legend
-Pvar_RespPos_plot<-Pvar_RespPos_plot+ theme(legend.position = "none") #remove legend
-Pacu_RespPos_plot<-Pacu_RespPos_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_RespPos_plot, Pcomp_RespPos_plot, Pvar_RespPos_plot,Pacu_RespPos_plot, nrow = 1)
-
+ggsave("Resp_profile_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
 Resp stats
@@ -6413,305 +5987,220 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num)
 P:R plots
 
 ```{r}
+#Respiration (absolute)
+#just T0 #### 
+PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
-#t0 only
-PR.df_PR_B.T0_mean <- ddply(PR.df_BPR.df_B.T0, c( "Species"), summarise, 
-                 N    = length(PR_real[!is.na(PR_real)]), 
-                 mean = mean(PR_real, na.rm=TRUE), 
-                 sd   = sd(PR_real, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(PR_real, na.rm=TRUE) 
-)
-PR.df_PR_B.T0_mean 
+#T0 only
+  ggplot(PR.df_T0, aes(x=Species, y=PR, fill=Species)) + 
+      scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ggtitle("Respiration")+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#T0 only - by algal profile
+  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=PR, fill=Clade)) + 
+      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
+      xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14, face="bold"))+
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      ggtitle(" PRiration by Algal Profile")+
+      geom_boxplot( show.legend = FALSE)+
+      scale_x_discrete(guide = "axis_nested")
+  
+ggsave("PR_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+  
+#all species ####
+#Subset by time 1 or F only 
+PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
+PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
-#plot all
-PR_T0_mean_plot<-ggplot(data=PR.df_PR_B.T0_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = F)+
-  geom_line(aes(color=Species), linetype=2, show.legend = F)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  #xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("nmol O2 cm"^"-2 min"^"- "))) +
-  ggtitle("PR T0")+
-  theme(plot.title = element_text(size=20, face = "italic"));PR_T0_mean_plot
+#T1 - by species
+ggplot(PR.df_T1, aes(x=Species, y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(" PRiration Post-Elevated Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("PR_T1_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#T1 - by species and algal profile - make for each species and then cowplot####
+PR.df_T1_mcap<-subset(PR.df_T1, Species=="Montipora capitata") 
+PR.df_T1_pcomp<-subset(PR.df_T1, Species=="Porites compressa") 
+PR.df_T1_pvar<-subset(PR.df_T1, Species=="Pavona varians") 
+PR.df_T1_pacu<-subset(PR.df_T1, Species=="Pocillopora acuta") 
 
-  #try AH plot BOX
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_T1_mcap, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_T1_pcomp, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
-Rplot1<-ggplot(data=PR.df_B, aes(x=Time.Point, y=PR_real, colour=Treatment, group=interaction(Time.Point, Treatment))) +
-  geom_boxplot(position=position_dodge(0.9), lwd=1)+
-  geom_jitter(shape=16, position=position_dodge(0.9), size=3)+
-  geom_hline(yintercept=0, linetype="dashed", color="black", size=0.75)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  #scale_y_continuous(limits=c(-0.1, 0.1), labels = scales::number_format(accuracy = 0.01, decimal.mark = '.'))+
-  xlab("Time Point")+
-  ylab(expression(bold(paste("P:R (nmol ", O[2], " cm"^-2, "min"^-1, ")")))) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));Rplot1
-Rplot2<-Rplot1+theme(legend.position="none")
-Rplot3<-Rplot1+facet_wrap(~Species);Rplot3
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_T1_pvar, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_T1_pacu, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
- #try scatter
-Treat.colors<-c("Ambient" = "dodgerblue3","High"="darkred")
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("PRiration T1", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
+ggsave("PR_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-Rplot1<-ggplot(data=PR.df_B, aes(x=Resp, y=GrossP, color=Treatment)) +
-  geom_point()+
-  stat_ellipse(geom = "polygon",alpha = 0.1, aes(fill=Treatment), size=0)+ #remove line
-  geom_hline(yintercept=0, linetype="dashed", color="black", size=0.75)+
-  geom_abline(intercept = 0, slope=1, size=0.75)+
-   scale_color_manual(values=c("dodgerblue3","darkred"))+
-     scale_fill_manual(values=c("dodgerblue3","darkred"))+
-   xlab(expression(bold(paste("Respiration (nmol ", O[2], " cm"^-2, "min"^-1, ")")))) +
-  ylab(expression(bold(paste("Gross Photosynthesis (nmol ", O[2], " cm"^-2, "min"^-1, ")")))) +
-  theme_classic() +
-  theme(text = element_text(size = 18, color="black"),
-        axis.text = element_text(size = 18, color="black"), 
-        legend.position = "top",
-        axis.title = element_text(size = 18, color="black", face="bold"), 
-        legend.title=element_blank(), 
-        legend.text = element_text(size=18), 
-        plot.margin=unit(c(1,1,1,1), "cm"), 
-        axis.title.y = element_text(margin = margin(t = 0, r = 1, b = 0, l = 1)), 
-        axis.title.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0)));Rplot1
-Rplot3<-Rplot1+facet_wrap(~Species*Time.Point, ncol=3)+theme(legend.position="none");Rplot3
-Rplot2<-Rplot1+theme(legend.position="none")
+#TF ####
+      ggplot(PR.df_TF, aes(x=Species, y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("PRiration Post-Recovery")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE)
+ggsave("PR_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
+#TF - by species and algal profile - make for each species and then cowplot####
+PR.df_TF_mcap<-subset(PR.df_TF, Species=="Montipora capitata") 
+PR.df_TF_pcomp<-subset(PR.df_TF, Species=="Porites compressa") 
+PR.df_TF_pvar<-subset(PR.df_TF, Species=="Pavona varians") 
+PR.df_TF_pacu<-subset(PR.df_TF, Species=="Pocillopora acuta") 
 
+#Mcap ####
+PR.df_Mcap_plot<- 
+  ggplot(PR.df_TF_mcap, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("M. capitata")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PR.df_Mcap_plot
+  
+#Pcomp ####
+PR.df_Pcomp_plot<- ggplot(PR.df_TF_pcomp, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. compressa")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pcomp_plot
 
+#Pvar ####
+PR.df_Pvar_plot<- ggplot(PR.df_TF_pvar, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. varians")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +           
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pvar_plot
 
+#Pacu ####
+PR.df_Pacu_plot<- ggplot(PR.df_TF_pacu, aes(x=interaction(Treatment,Clade), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + 
+      ylab("") + 
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +        
+      scale_x_discrete(guide = "axis_nested")+
+      geom_boxplot(show.legend = F);PR.df_Pacu_plot
 
+plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pacu_plot, nrow=1,label_size = 12)
+  title <- ggdraw() + 
+  draw_label("PRiration by Algal Profile Post Recovery", fontface = 'bold',x = 0, hjust = 0) +
+  theme(plot.margin = margin(0, 0, 0, 7))
+  PR.df_profilesTF<-plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1));PR.df_profilesTF
 
-
-
-
-
-
-
-
-
-
-
-
- 
-#TFH only####
-PR_TFH<-subset(PR.df_B, Time.Point=="TF"&Treatment=="High") #Subset Pvar
-PR_TFH_mean <- ddply(PR_TFH, c( "Species"), summarise, 
-                 N    = length(PR_real[!is.na(PR_real)]), 
-                 mean = mean(PR_real, na.rm=TRUE), #calculate mean of PRonse variable, removing NA's
-                 sd   = sd(PR_real, na.rm=TRUE), 
-                 se   = sd / sqrt(N), 
-                 max = max(PR_real, na.rm=TRUE) 
-)
-PR_TFH_mean
-
-#plot all
-PR_TFH_plot<-ggplot(data=PR_TFH_mean, aes(x=Species, y=mean, group = Species, color=Species)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Species), size=4, show.legend = T)+
-  geom_line(aes(color=Species), linetype=2, show.legend = T)+
-  #scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("mg.mm2") + #Label the X Axis
-  #ylim(0, 11) + #set Y limits
-  #scale_y_log10()+
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  ylab(expression(paste("PR"))) +
-  ggtitle("Time F, High only")+
-  theme(plot.title = element_text(size=20, face = "italic"));PR_TFH_plot
-
-
-
-### by speices ###
-PR_mean <-  ddply(PR.df_B, c("Treatment", "Species", "Time.Point"), summarise, 
-                    N    = length(PR_real[!is.na(PR_real)]), 
-                   mean = mean(PR_real, na.rm=TRUE), 
-                   sd   = sd(PR_real, na.rm=TRUE), 
-                   se   = sd / sqrt(N), 
-                   max = max(PR_real, na.rm=TRUE) 
-)
-PR_mean #display table
-
-# divide by species
-Mcap_PR_mean<-subset(PR_mean, Species =="Montipora capitata")
-Pcomp_PR_mean<-subset(PR_mean, Species =="Porites compressa")
-Pvar_PR_mean<-subset(PR_mean, Species =="Pavona varians")
-Pacu_PR_mean<-subset(PR_mean, Species =="Pocillopora acuta")
-
-#Mcap plot
-
-Mcap_PR_plot<-ggplot(data=Mcap_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-    ylim(0, 4)+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-#  ylab(expression(paste("nmol cm-2 m-"))) +
-  # ggtitle("Mcap PR")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Mcap_PR_plot
-
-
-
-
-
-
-
-#Pcomp plot
-
-Pcomp_PR_plot<-ggplot(data=Pcomp_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-    ylim(0, 4)+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis  
-   
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
- # ylab(expression(paste("umol/sec/cm2"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pcomp PR")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pcomp_PR_plot
-
-#Pvar plot
-
-Pvar_PR_plot<-ggplot(data=Pvar_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-    ylim(0, 4)+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-#  ylab(expression(paste("nmol cm-2 m-"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pvar PR")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pvar_PR_plot
-
-#Pacu plot
-
-Pacu_PR_plot<-ggplot(data=Pacu_PR_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = T)+
-  geom_point(aes(color=Treatment), size=4, show.legend = T)+  
-  geom_line(aes(color=Treatment),linetype="dotted")+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-   geom_point(shape = 1,size = 4,colour = "black")+
-  ylim(0, 4)+
-  xlab(" ") + #Label the X Axis
-    ylab(" ") + #Label the X Axis
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border 
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  #ylab(expression(paste("nmol cm-2 min-"))) +
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=2))+
-        theme(aspect.ratio=1)+
-  # ggtitle("Pacu PR")+
-  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Pacu_PR_plot
- 
-```
-
-PR Plots together
-
-```{r}
-###### All plots together
-Mcap_PR_plot<-Mcap_PR_plot+ theme(legend.position = "none") #remove legend
-Pcomp_PR_plot<-Pcomp_PR_plot+ theme(legend.position = "none") #remove legend
-Pvar_PR_plot<-Pvar_PR_plot+ theme(legend.position = "none") #remove legend
-Pacu_PR_plot<-Pacu_PR_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 1)
-
+ggsave("PR_profile_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
 Plots by Clades
