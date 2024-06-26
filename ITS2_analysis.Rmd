@@ -459,6 +459,20 @@ otu  = otu_table(coralDIV2_rare2)
  sd$Clade<-as.character(sd$Clade)
 
 # EDIT sample data
+ 
+ #Mcap
+  sd$Clade[sd$Parent.ID==363]<-"C31"
+  sd$Clade[sd$Parent.ID==364]<-"C31D4"
+  sd$Clade[sd$Parent.ID==365]<-"C31D4"
+  sd$Clade[sd$Parent.ID==366]<-"C31D4"
+  sd$Clade[sd$Parent.ID==367]<-"C31"
+  sd$Clade[sd$Parent.ID==368]<-"C31D4"
+  sd$Clade[sd$Parent.ID==369]<-"C31D4"
+  sd$Clade[sd$Parent.ID==370]<-"C31"
+  sd$Clade[sd$Parent.ID==371]<-"C31"
+  sd$Clade[sd$Parent.ID==372]<-"C31"
+  sd$Clade[sd$Parent.ID==373]<-"C31"
+  sd$Clade[sd$Parent.ID==374]<-"C31D4"
  #Pcomp
   sd$Clade[sd$Parent.ID==314]<-"C15cj"
   sd$Clade[sd$Parent.ID==317]<-"C15cj"
@@ -488,20 +502,21 @@ otu  = otu_table(coralDIV2_rare2)
   sd$Clade[sd$Parent.ID==362]<-"C27"
   
 #Pacu
-  sd$Clade[sd$Parent.ID==311]<-"C42"
-  sd$Clade[sd$Parent.ID==301]<-"CCC"
-  sd$Clade[sd$Parent.ID==304]<-"CCC"
-  sd$Clade[sd$Parent.ID==306]<-"CCC"
-  sd$Clade[sd$Parent.ID==303]<-"CCC"
-  sd$Clade[sd$Parent.ID==307]<-"CCC"
-  sd$Clade[sd$Parent.ID==308]<-"CCC"
-  sd$Clade[sd$Parent.ID==310]<-"CCC"
-  sd$Clade[sd$Parent.ID==312]<-"CCC"
-  sd$Clade[sd$Parent.ID==302]<-"CCC"
-  sd$Clade[sd$Parent.ID==305]<-"C42"
-  sd$Clade[sd$Parent.ID==309]<-"C42"
+  sd$Clade[sd$Parent.ID==311]<-"C42_2"
+  sd$Clade[sd$Parent.ID==301]<-"C1d"
+  sd$Clade[sd$Parent.ID==304]<-"C1d"
+  sd$Clade[sd$Parent.ID==306]<-"C1d"
+  sd$Clade[sd$Parent.ID==303]<-"C1d"
+  sd$Clade[sd$Parent.ID==307]<-"C1d"
+  sd$Clade[sd$Parent.ID==308]<-"C1d"
+  sd$Clade[sd$Parent.ID==310]<-"C1d"
+  sd$Clade[sd$Parent.ID==312]<-"C1d"
+  sd$Clade[sd$Parent.ID==302]<-"C1d"
+  sd$Clade[sd$Parent.ID==305]<-"C42_2"
+  sd$Clade[sd$Parent.ID==309]<-"C42_2"
   
-  sd$Clade<-as.factor(sd$Clade) #change to factor
+sd$Clade<-as.factor(sd$Clade)
+sd$Clade <- factor(sd$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
 
    coralDIV2_rare2<-merge_phyloseq(tax, otu, sd)
    coralDIV2_rare2
@@ -982,7 +997,29 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 
 ```
 
+Test just T0 for manuscript
+```{r}
+#try glom use raw counts its2.s2
+coralDIV2_rare2_T0<-subset_samples(coralDIV2_rare2, Time.Point=="T0") #use raw counts here
 
+T0_its2 <- coralDIV2_rare2_T0 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+T0_its2.melt <- psmelt(T0_its2)
+
+#nb.cols <- 400
+#mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = Clade)) +
+  geom_bar(stat = "identity") +
+  #scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
+ # theme(legend.position = "none");T0.p
+#T0.p +    facet_wrap(~ Species, nrow = 1, scales = "free_x") # Use scales = "free_x" to adjust x-axis per facet
+
+```
 
 
 #Ordination DIV_RelA <- you might not need this section, code below for each species  
@@ -1137,15 +1174,23 @@ ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()
 #ggsave("bc_all.pdf")
 
-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Species), size = 4, show.legend=F) +
-  #scale_color_manual(values=Sp.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2,show.legend=F) +
-  ggtitle("NMDS its2 Bray Curtis T0") +
-  theme_classic()
-#ggsave("bc_all.pdf")
+#manuscript figure 2 ####
+ellipse_colors <- c("Montipora_capitata" = "#E69F00", "Porites_compressa" = "#56B4E9", "Pavona_varians" = "#CC79A7", "Pocillopora_acuta" = "#009E73")
 
+point_colors <- c("C" = "goldenrod1", "CD" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1"="pink1", "C27"="firebrick", "CCC"="palegreen2", "C42"="darkgreen")  # Replace with actual colors
+
+library(cowplot)  # Make sure to install this package if not already installed
+
+# Create the combined plot
+combined_plot <- ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade), size = 4) +
+  stat_ellipse(aes(group = Species, colour = Species), linetype = 2) +
+  scale_color_manual(values = c(point_colors, ellipse_colors)) +  # Combine both color scales
+  ggtitle("NMDS - ITS2 Profile groups Bray Curtis T0") +
+  theme_classic()
+
+# Display the combined plot
+print(combined_plot)
 
 ###### its2 T0 nmds scores for physio gauntlet scores.ord.DIV_RelA_stats.T0 #####
 
