@@ -28,7 +28,7 @@ Symp_sub<-readxl::read_xlsx("Data/ITS2/ITS2_TT17_Matsuda_metadata_2020_update.xl
 
 Metadata<-read.csv("Data/ACE21_Metadata_Molec_20210317.csv")
 
-# EDIT sample data, add CLADE COL
+# EDIT sample data, add CLADE COL ####
   Metadata$Clade[Metadata$Parent.ID==363]<-"C"
   Metadata$Clade[Metadata$Parent.ID==364]<-"CD"
   Metadata$Clade[Metadata$Parent.ID==365]<-"CD"
@@ -250,11 +250,38 @@ save(coral_RELA, coralDIV_RELA, file = "Data/RELA_coral_phyloseq.RData")
 
 ```
 
-# coral profiles
-nmds to pull out single col for physio pca
+# Profile data only 
 ```{r}
-# 
-coral.profile <- subset_samples(coral2, host_genus == "montipora")
+
+##### ross's code
+
+sam0 <- Symp_sub_Meta
+sam1 <- as.matrix(sam0[, -1])
+rownames(sam1) <- sam0$sample_name
+sam <- sample_data(data.frame(sam1))
+
+tax0 <- read_tsv(
+  file = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt",
+  n_max = 6) %>%
+  dplyr::select(-2) %>% 
+  gather(UID, value, -1) %>% 
+  spread(1, value) %>%
+  clean_names()
+tax1 <- as.matrix(tax0[, -1], dimnames = list(tax0$uid, colnames(tax0[-1])))
+rownames(tax1) <- tax0$uid
+tax <- tax_table(tax1)
+
+otu0 <- read_tsv(
+  file = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt") %>% 
+  dplyr::rename(sample_name = `...2`) %>%
+  dplyr::select(-1) %>%
+  slice(7:n()) %>%
+  mutate_at(2:ncol(.), as.numeric)
+otu1 <- as.matrix(otu0[, -1])
+rownames(otu1) <- otu0$sample_name
+otu <- otu_table(otu1, taxa_are_rows = FALSE)
+
+profiles <- phyloseq(otu, tax, sam)
 
 ```
 
@@ -283,12 +310,19 @@ library(RColorBrewer)
 # Load data (see data_exploration.Rmd)
 load("data/Raw_coral_phyloseq.RData") #use RAW data
 ``` 
-Hey what does this do?
+get the dfs ready
 ```{r}     
 coral2 <- coral_RAW %>%
   subset_samples(!is.na(host_species))
 coralDIV2 <- coralDIV_RAW %>% 
   subset_samples(!is.na(host_species))
+
+
+coralPro <- profiles %>% 
+  subset_samples(!is.na(host_species))
+coralPro_rel <- transform_sample_counts(coralPro, function(x) 100 * x/sum(x))
+
+
 
 # USE IF YOU WANT TO MAKE RELA DATA ACTUALLY OUT OF 100%  
 # Transform to relative abundance 
@@ -1000,17 +1034,17 @@ Pacu.p +  facet_wrap(~ Code, nrow=2)
 Test just T0 for manuscript
 ```{r}
 #try glom use raw counts its2.s2
-coralDIV2_rare2_T0<-subset_samples(coralDIV2_rare2, Time.Point=="T0") #use raw counts here
+profiles_T0<-subset_samples(profiles, Time.Point=="T0") #use raw counts here
 
-T0_its2 <- coralDIV2_rare2_T0 %>% 
-  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+T0_its2 <- profiles_T0 %>% 
+  tax_glom(taxrank = "its2_type_profile", NArm = FALSE) %>% 
   transform_sample_counts(function(x) {x/sum(x)} ) 
 T0_its2.melt <- psmelt(T0_its2)
 
 #nb.cols <- 400
 #mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
 
-T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = Clade)) +
+T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = its2_type_profile)) +
   geom_bar(stat = "identity") +
   #scale_fill_manual(values=mycolors) +
   ylab("Relative Abundance") +
@@ -1018,7 +1052,12 @@ T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = Clade)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
  # theme(legend.position = "none");T0.p
 #T0.p +    facet_wrap(~ Species, nrow = 1, scales = "free_x") # Use scales = "free_x" to adjust x-axis per facet
-
+T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity") +
+  #scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
 ```
 
 

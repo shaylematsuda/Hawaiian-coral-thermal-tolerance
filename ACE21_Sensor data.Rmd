@@ -108,5 +108,36 @@ Tank1plot<-ggplot(data=Tank1, aes(x=Date2, y=Tmp.1)) +
   theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));Tank1plot
 
 ```
+Figure for Figure 1 Temp profiles overview
+
+```{r}
+tdat<-read.csv("data/methods_fig.csv")
+
+tdatplot<-ggplot(data=tdat, aes(x=Day, y=Temperature, color=treatment)) +
+  geom_line(size=1)+
+  scale_color_manual(values=c('blue','red'))+
+  xlab("Days") + #Label the X Axis
+    ylab("Temperature ºC") + #Label the X Axis
+    scale_y_continuous(limits = c(26, 32), breaks = seq(26, 32, by = 1)) + # Set y-axis scale
+  theme_bw() + #Set the background color
+      labs(color = NULL) +# Remove the legend title+
+    annotate("text", x = 5, y = 26.5, label = "Acclilmation", size = 5, color = "black", hjust = 0.5) +# Add text annotation
+   annotate("text", x = 18, y = 31.5, label = "Elevated Temperature", size = 5, color = "black", hjust = 0.5) +# Add text annotation
+   annotate("text", x = 48, y = 26.5, label = "Recovery", size = 5, color = "black", hjust = 0.5) +# Add text annotation
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border 
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        text = element_text(size=18),  # set element text
+        plot.background =element_blank(), #Set the plot background
+        legend.key = element_blank()) + #Set plot legend key
+  ggtitle("Experimental design")+
+    theme(legend.position = c(0.90, 0.4), legend.justification = c("right", "bottom"))+ # Move legend inside the plot
+  theme(plot.title = element_text(size=20, face = "italic", hjust=0.5));tdatplot
+
+
+
+```
 
 
