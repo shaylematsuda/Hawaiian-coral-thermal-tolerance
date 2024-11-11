@@ -162,7 +162,7 @@ sample_names(Bac.seq)[1:300] #samp names
 Load in your data
 ```{r}      
 # Load data (see data_exploration.Rmd)
-#load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
+load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
 rank_names(Bac.seq) #ranks are DIV and clade
 

@@ -7790,7 +7790,7 @@ phy_Pacu.div #view, all is significant
 ```
 
 # Physio PCA THIS IS THE WAY df= PhysioData
-
+This is the PCA plot for figure 2A
 ```{r}
 library(ggbiplot)
 
@@ -7937,6 +7937,14 @@ apDataT0<-subset(apDataT0, Time.Point=="T0") #
 #remove calcification
 apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcificaiton
 apDataT0<-na.omit(apDataT0)
+ 
+ apDataT0 <- apDataT0 %>%
+ dplyr:: rename(
+    Biomass = AFDWmg.cm2,
+    Symbiont_density = zoox.cm2_log,
+    Soluable_protein=Protein
+  )
+
 apDataT02 <- prcomp(apDataT0[c(5:12)], center = TRUE, scale = TRUE)
 summary(apDataT02)
 
@@ -7950,18 +7958,19 @@ scores$species <- apDataT0$Species
 # Scale loadings for better visualization
 scaling_factor <- 6
 loadings_scaled <- loadings * scaling_factor
-# Create the plot 
-ggplot(scores, aes(PC1, PC2, color = species)) +
-  geom_point(alpha = 1) +
+
+# Create the plot - FIGURE 2A
+plot<-ggplot(scores, aes(PC1, PC2, color = species)) +
+  geom_point(alpha = 1, size = 3) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#CC79A7", "#009E73")) + # Manually set colors for points
   stat_ellipse(aes(fill = species), geom = "polygon", level = 0.9, alpha = 0.2) +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#CC79A7", "#009E73")) + # Manually set colors for ellipses
   theme_classic() +
   geom_segment(data = loadings_scaled, aes(x = 0, y = 0, xend = PC1, yend = PC2),
                arrow = arrow(length = unit(0.2, "cm")), color = "black") +
   geom_text(data = loadings_scaled, aes(x = PC1, y = PC2, label = rownames(loadings_scaled)),
-            color = "black", vjust = 1.5)
-
-
-
+            color = "black", vjust = 1.5, size=6);plot
+ggsave("Figures/PCA_T0_physio.pdf", plot = plot, device = "pdf", width = 8, height = 6)
 
 
 
@@ -8567,6 +8576,8 @@ Chla_pc.2_mean_T1<-subset(Chla_pc.2_mean, Time.Point=="T1") #subset
 
 
 #plot 
+
+
 Chla_T1_plot<-ggplot(data=Chla_pc.2_mean_T1, aes(x=Species, y=PercentChange, color=Species)) +
   # geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
   #               width=0.1, show.legend = T)+
