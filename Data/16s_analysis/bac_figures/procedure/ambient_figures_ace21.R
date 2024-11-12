@@ -17,7 +17,7 @@ getwd()
 
 #Load 16S data in & extract the samples:
 
-load("16s_phyloseq4HE.RData")
+load("../../16s_phyloseq4HE.RData")
 bac.exp <- subset_samples(Bac.seq, Type == "sample")
 
 
@@ -90,13 +90,12 @@ alpha.amb <- merge(alpha.amb, bac.ambient.data, by = "sample_name.1")
 #Re-order the coral species so that it is M cap, P comp, P var, P acu
 alpha.amb$Species <- factor(alpha.amb$Species,
                        levels = c('Montipora_capitata','Porites_compressa', "Pavona_varians", "Pocillopora_acuta"),ordered = TRUE)
-#This means the order of colors should be: "#E69F00", "#009E73" ,"#56B4E9","#CC79A7"
 
-pdf(file = "bac_figures/output/organised_output/3_Richness_ambient.pdf")
+pdf(file = "../output/organised_output/3_Richness_ambient.pdf")
 ggplot(alpha.amb, aes(x = Species, y = Observed)) +
   geom_boxplot(aes(fill = Species)) +
-  scale_fill_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
-  scale_colour_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
+  scale_fill_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
+  scale_colour_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
   theme_classic() +
   theme(axis.text.x = element_blank()) +
   ylab("Microbial Richness") +
@@ -105,11 +104,11 @@ ggplot(alpha.amb, aes(x = Species, y = Observed)) +
 dev.off()
 
 
-pdf(file = "bac_figures/output/organised_output/4_Evenness_ambient.pdf")
+pdf(file = "../output/organised_output/4_Evenness_ambient.pdf")
 ggplot(alpha.amb, aes(x = Species, y = Evenness)) +
   geom_boxplot(aes(fill = Species)) +
-  scale_fill_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
-  scale_colour_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
+  scale_fill_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73" )) +
+  scale_colour_manual(values=c("#E69F00", "#56B4E9","#CC79A7", "#009E73")) +
   theme_classic() +
   theme(axis.text.x = element_blank()) +
   ylab("Microbial Community Evenness") +
