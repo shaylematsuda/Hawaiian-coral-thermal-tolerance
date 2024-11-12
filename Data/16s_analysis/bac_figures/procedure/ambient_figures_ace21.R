@@ -17,7 +17,7 @@ getwd()
 
 #Load 16S data in & extract the samples:
 
-load("16s_phyloseq4HE.RData")
+load("../../16s_phyloseq4HE.RData")
 bac.exp <- subset_samples(Bac.seq, Type == "sample")
 
 
@@ -43,12 +43,17 @@ disp.amb <- vegan::betadisper(bc.amb, bac.ambient.data$Species, type = "centroid
 disp.amb.data <- as.data.frame(disp.amb$distances)
 disp.amb.data$sample_name.1 <- rownames(disp.amb.data)
 disp.amb.data <- merge(disp.amb.data, bac.ambient.data, by = "sample_name.1")
+disp.amb.data$Species <- factor(disp.amb.data$Species,
+                           levels = c('Montipora_capitata','Porites_compressa', "Pavona_varians", "Pocillopora_acuta"),ordered = TRUE)
 
-pdf(file = "bac_figures/output/organised_output/2_Distance_to_Centroid_ambient.pdf")
+
+
+
+pdf(file = "../output/organised_output/2_Distance_to_Centroid_ambient.pdf")
 ggplot(disp.amb.data, aes(x = Species, y = `disp.amb$distances`)) +
   geom_boxplot(aes(color = Species)) +
-  scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73")) +
-  scale_colour_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73")) +
+  scale_fill_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
+  scale_colour_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
   theme_classic() +
   ylab("Distance to Centroid") +
   xlab("\nHost Species") +
@@ -64,11 +69,17 @@ nmds.scores <- as.data.frame(scores(ord.bc)$sites)
 nmds.scores$host <- bac.ambient.data$Species
 nmds.scores$symbiont <- bac.ambient.data$Clade
 
+nmds.scores$host <- factor(nmds.scores$host,
+                                levels = c('Montipora_capitata','Porites_compressa', "Pavona_varians", "Pocillopora_acuta"),ordered = TRUE)
+
+
+
 hull_nmds <- nmds.scores %>%
   group_by(host) %>%
   slice(chull(NMDS1, NMDS2))
 
-pdf(file = "bac_figures/output/organised_output/1_NMDS_bray_ambient.pdf")
+
+pdf(file = "../output/organised_output/1_NMDS_bray_ambient.pdf")
 ggplot(nmds.scores, aes(x = NMDS1, y= NMDS2)) + 
   geom_point(aes(colour = nmds.scores$host), size = 3) +
   geom_polygon(data = hull_nmds, aes(x=NMDS1,y=NMDS2,fill=host),alpha=0.30) +
@@ -90,13 +101,12 @@ alpha.amb <- merge(alpha.amb, bac.ambient.data, by = "sample_name.1")
 #Re-order the coral species so that it is M cap, P comp, P var, P acu
 alpha.amb$Species <- factor(alpha.amb$Species,
                        levels = c('Montipora_capitata','Porites_compressa', "Pavona_varians", "Pocillopora_acuta"),ordered = TRUE)
-#This means the order of colors should be: "#E69F00", "#009E73" ,"#56B4E9","#CC79A7"
 
-pdf(file = "bac_figures/output/organised_output/3_Richness_ambient.pdf")
+pdf(file = "../output/organised_output/3_Richness_ambient.pdf")
 ggplot(alpha.amb, aes(x = Species, y = Observed)) +
   geom_boxplot(aes(fill = Species)) +
-  scale_fill_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
-  scale_colour_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
+  scale_fill_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
+  scale_colour_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73")) +
   theme_classic() +
   theme(axis.text.x = element_blank()) +
   ylab("Microbial Richness") +
@@ -105,11 +115,11 @@ ggplot(alpha.amb, aes(x = Species, y = Observed)) +
 dev.off()
 
 
-pdf(file = "bac_figures/output/organised_output/4_Evenness_ambient.pdf")
+pdf(file = "../output/organised_output/4_Evenness_ambient.pdf")
 ggplot(alpha.amb, aes(x = Species, y = Evenness)) +
   geom_boxplot(aes(fill = Species)) +
-  scale_fill_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
-  scale_colour_manual(values=c("#E69F00", "#009E73" ,"#56B4E9","#CC79A7")) +
+  scale_fill_manual(values=c("#E69F00","#56B4E9","#CC79A7", "#009E73" )) +
+  scale_colour_manual(values=c("#E69F00", "#56B4E9","#CC79A7", "#009E73")) +
   theme_classic() +
   theme(axis.text.x = element_blank()) +
   ylab("Microbial Community Evenness") +
