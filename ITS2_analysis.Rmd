@@ -123,7 +123,7 @@ tax <- tax_table(tax1)
 
 otu0 <- read_tsv(
   file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt") %>% 
-  dplyr::rename(sample_name = 2) %>%
+  rename(sample_name = 2) %>%
   select(-1) %>%
   slice(7:n()) %>%
   mutate_at(2:ncol(.), as.numeric)
@@ -282,7 +282,6 @@ rownames(otu1) <- otu0$sample_name
 otu <- otu_table(otu1, taxa_are_rows = FALSE)
 
 profiles <- phyloseq(otu, tax, sam)
-save(profiles, file = "Data/profiles_phyloseq.RData")
 
 ```
 
@@ -310,8 +309,6 @@ library(RColorBrewer)
 
 # Load data (see data_exploration.Rmd)
 load("data/Raw_coral_phyloseq.RData") #use RAW data
-load("data/profiles_phyloseq.RData") #use RAW data
-
 ``` 
 get the dfs ready
 ```{r}     
@@ -320,12 +317,9 @@ coral2 <- coral_RAW %>%
 coralDIV2 <- coralDIV_RAW %>% 
   subset_samples(!is.na(host_species))
 
-
 coralPro <- profiles %>% 
   subset_samples(!is.na(host_species))
 coralPro_rel <- transform_sample_counts(coralPro, function(x) 100 * x/sum(x))
-
-
 
 # USE IF YOU WANT TO MAKE RELA DATA ACTUALLY OUT OF 100%  
 # Transform to relative abundance 
@@ -391,7 +385,7 @@ ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
 
 #Remove all samples with <5000 reads and create sample data
 #These data also useful for beta diversity analyses (non-rarefied)
-coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=7000, coralDIV2) # remove samps <5000, save as new obj
+coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=5000, coralDIV2) # remove samps <5000, save as new obj
 coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
 
 ##Sample filtering and rarefaction
@@ -561,8 +555,7 @@ coralDIV2_rare2.sd <- as(sample_data(coralDIV2_rare2), "data.frame") #create sam
 
 ```
 
-# DIV analysis and plots, use rarefied coralDIV2_rare2.
-## keep this for now, but the bar plots are ugly, skip to next chunk for nicer plots and delete for publication
+# DIV analysis and plots, use rarefied coralDIV2_rare2. keep this but the bar plots are ugly, skip to next chunk 
 ```{r}       
 #RELA 
 DIV_RelA  = transform_sample_counts(coralDIV2_rare2, function(x) x / sum(x) )  #save as RELA DIVs
