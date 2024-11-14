@@ -1,0 +1,839 @@
+---
+title: "ITS2  data analysis"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}   
+# rm(list=ls())
+
+library(tidyverse)
+library(readxl)
+library(phyloseq)
+library(janitor)
+library(tidyverse)
+library(janitor)
+library(phyloseq)  # source('http://bioconductor.org/biocLite.R'); biocLite('phyloseq')
+library(zoo)
+library(stringr)
+library(vegan)
+library(multcompView)
+library("ggpubr")
+library(dplyr)
+library(plyr)
+library(gridExtra)
+library(vegan)
+library(decontam)
+library(RColorBrewer)
+library(ggforce)
+library(tidyverse)
+```
+
+Load phyloseq objects (if starting at analysis)
+```{r}
+# Load phyloseq objects - not subsampled or relative abundance yet
+load("data/Raw_coral_phyloseq.RData") 
+load("data/profiles_phyloseq.RData") 
+```
+
+## Build phyloseq dataframes using Symportal outputs for Profiles and DIVs
+Read in coral ITS2 profiles: "coral_Profiles"
+```{r}    
+
+#add metadata to symportal submission data
+Symp_sub<-readxl::read_xlsx("Data/ITS2/ITS2_TT17_Matsuda_metadata_2020_update.xlsx", skip = 1)
+  Metadata<-read.csv("Data/ACE21_Metadata_Molec_20210317.csv")
+
+# EDIT sample data, add CLADE COL ####
+  #Mcap
+  Metadata$Clade[Metadata$Parent.ID==363]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==364]<-"C31D4"
+  Metadata$Clade[Metadata$Parent.ID==365]<-"C31D4"
+  Metadata$Clade[Metadata$Parent.ID==366]<-"C31D4"
+  Metadata$Clade[Metadata$Parent.ID==367]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==368]<-"C31D4"
+  Metadata$Clade[Metadata$Parent.ID==369]<-"C31D4"
+  Metadata$Clade[Metadata$Parent.ID==370]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==371]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==372]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==373]<-"C31"
+  Metadata$Clade[Metadata$Parent.ID==374]<-"C31D4"
+ #Pcomp
+  Metadata$Clade[Metadata$Parent.ID==314]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==317]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==319]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==320]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==321]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==322]<-"C15cj"
+  Metadata$Clade[Metadata$Parent.ID==313]<-"C15n"
+  Metadata$Clade[Metadata$Parent.ID==315]<-"C15n"
+  Metadata$Clade[Metadata$Parent.ID==316]<-"C15n"
+  Metadata$Clade[Metadata$Parent.ID==318]<-"C15n"
+  Metadata$Clade[Metadata$Parent.ID==323]<-"C15n"
+  Metadata$Clade[Metadata$Parent.ID==324]<-"C15n"
+  
+  #Pvar
+  Metadata$Clade[Metadata$Parent.ID==353]<-"C1"
+  Metadata$Clade[Metadata$Parent.ID==358]<-"C1"
+  Metadata$Clade[Metadata$Parent.ID==361]<-"C1"
+  Metadata$Clade[Metadata$Parent.ID==325]<-"C1"
+  Metadata$Clade[Metadata$Parent.ID==356]<-"C1"
+  Metadata$Clade[Metadata$Parent.ID==351]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==354]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==355]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==357]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==359]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==360]<-"C27"
+  Metadata$Clade[Metadata$Parent.ID==362]<-"C27"
+  
+#Pacu
+  Metadata$Clade[Metadata$Parent.ID==311]<-"C42_2"
+  Metadata$Clade[Metadata$Parent.ID==301]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==304]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==306]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==303]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==307]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==308]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==310]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==312]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==302]<-"C1d"
+  Metadata$Clade[Metadata$Parent.ID==305]<-"C42_2"
+  Metadata$Clade[Metadata$Parent.ID==309]<-"C42_2"
+  
+Metadata$Clade<-as.factor(Metadata$Clade)
+Metadata$Clade <- factor(Metadata$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+  
+# merge profile info
+ AsymportalPro<-read.csv("Data/Symportal_profile.csv")  
+  AsymportalPro2<-merge(Metadata,AsymportalPro, by="Frag.ID") 
+  #write.csv(AsymportalPro2,"AsymportalPro2.csv") 
+
+  names(Metadata)[names(Metadata) == "Frag.ID"] <- "sample_name" #change to same ID to merge
+Symp_sub_Meta<-left_join(Symp_sub, Metadata, by="sample_name") # merge
+Symp_sub_Meta$Parent.ID<-as.factor(as.character(Symp_sub_Meta$Parent.ID))
+
+#Phyloseq object
+sam0 <- Symp_sub_Meta
+sam1 <- as.matrix(sam0[, -1])
+rownames(sam1) <- sam0$sample_name
+sam <- sample_data(data.frame(sam1))
+
+tax0 <- read_tsv(
+  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt",
+  n_max = 6) %>%
+  dplyr::select(-2) %>% 
+  gather(UID, value, -1) %>% 
+  spread(1, value) %>%
+  clean_names()
+
+tax1 <- as.matrix(tax0[, -1], dimnames = list(tax0$uid, colnames(tax0[-1])))
+rownames(tax1) <- tax0$uid
+tax <- tax_table(tax1)
+
+otu0 <- read_tsv(
+  file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt") %>% 
+  dplyr::rename(sample_name = 2) %>%
+  select(-1) %>%
+  slice(7:n()) %>%
+  mutate_at(2:ncol(.), as.numeric)
+otu1 <- as.matrix(otu0[, -1])
+rownames(otu1) <- otu0$sample_name
+otu <- otu_table(otu1, taxa_are_rows = FALSE)
+
+coral_profile <- phyloseq(otu, tax, sam)
+```
+Read in coral post-QC sequence variants: "coralDIV_RELA"
+```{r}  
+sam0 <- Symp_sub_Meta
+sam0$Parent.ID<-as.factor(as.character(sam0$Parent.ID))
+sam <- sample_data(data.frame(sam0))
+rownames(sam) <- sam$sample_name
+
+taxnames <- read_tsv(file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_only.txt",
+  n_max = 0) %>%
+  select(-1) %>%
+  names(.)
+tax0 <- data_frame(
+  DIV = taxnames,
+  clade = str_extract(DIV, "[A-Z]")
+)
+tax1 <- as.matrix(tax0)
+rownames(tax1) <- tax0$DIV
+
+tax <- tax_table(tax1)
+otu0 <- read_tsv(
+  file  = "Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.abund_and_meta.txt") %>%
+  select(-1, -(3:33))
+otu1 <- as.matrix(otu0[, -1])
+rownames(otu1) <- otu0$sample_name
+otu <- otu_table(otu1, taxa_are_rows = FALSE)
+coralDIV <- phyloseq(otu, tax, sam)
+```
+Save phyloseq objects
+```{r}
+coral_profile <- coral_profile %>%
+  subset_samples(!is.na(host_species))
+
+coralDIV2 <- coralDIV %>% 
+  subset_samples(!is.na(host_species))
+
+save(coral_profile, coralDIV2, file = "Data/coral_phyloseq.RData")
+
+```
+
+#Quality Check
+Look at low sequence samples and duplicates
+```{r}    
+LowSamps<-readxl::read_xlsx("Data/ITS2/post_med_seqs/133_20201216_DBV_20201216T020209.seqs.absolute.meta_only.xlsx")
+LowSamps_dups<-merge(LowSamps, Metadata, all.x=T)
+LowSamps_dups2<-subset(LowSamps_dups, Notes=="Dup")
+LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs_log<-log10(LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs)
+hist(LowSamps$post_taxa_id_absolute_symbiodiniaceae_seqs_log, breaks=20)
+```
+Data wrangle: 
+Profiles
+```{r}
+# check out data coral_profile
+ntaxa(coral_profile)  #num taxa
+nsamples(coral_profile)   #num samples
+sample_names(coral_profile)[1:5] #samp names
+rank_names(coral_profile) #ranks are DIV and clade
+sample_variables(coral_profile) #all metadata cats
+
+# create df of sample data to view 
+sample.data <- as(sample_data(coral_profile), "data.frame") #create sample data frame to view
+sample.data$LibrarySize <- sample_sums(coral_profile)
+sample.data <- sample.data[order(sample.data$LibrarySize),]
+sample.data$Index <- seq(nrow(sample.data))
+ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
+  geom_point()
+
+##Sample filtering and rarefaction
+coral_profile2<-coral_profile #make copy
+#remove duplicates that failed
+coral_profile2 <- subset_samples(coral_profile2, ID != "S1110B")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S1166")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S1388b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S1857")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S3085")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S3149b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S3149")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S3477a")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S761b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S775b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "SN134")
+coral_profile2 <- subset_samples(coral_profile2, ID != "SN198b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "SN209b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S3085b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S1857")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S761b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S198b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "SN127")
+coral_profile2 <- subset_samples(coral_profile2, ID != "SN98b")
+coral_profile2 <- subset_samples(coral_profile2, ID != "S2893")
+
+saveRDS(coral_profile2, file = "coral_profile2_cleaned.RDS", compress = TRUE) #save!
+```
+DIVs: remove samples with under 7k, remove duplicated samples
+```{r}         
+## check out data
+ntaxa(coralDIV2)  #num taxa
+nsamples(coralDIV2)   #num samples
+sample_names(coralDIV2)[1:5] #samp names
+rank_names(coralDIV2) #ranks are DIV and clade
+sample_variables(coralDIV2) #all metadata cats
+
+# create df of sample data to view 
+sample.data <- as(sample_data(coralDIV2), "data.frame") #create sample data frame to view
+sample.data$LibrarySize <- sample_sums(coralDIV2)
+sample.data <- sample.data[order(sample.data$LibrarySize),]
+sample.data$Index <- seq(nrow(sample.data))
+ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
+  geom_point()
+
+#Remove all samples with <5000 reads and create sample data
+#These data also useful for beta diversity analyses (non-rarefied)
+coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=7000, coralDIV2) # remove samps <5000, save as new obj
+coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
+
+##Sample filtering and rarefaction
+#remove duplicates that failed
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1110B")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1166")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1388b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3477a")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S775b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN134")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN198b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN209b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S198b")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN127")
+coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN98b")
+coral_DIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S2893")
+coral_DIV2_data.nonrare <- as(sample_data(coral_DIV2_nonrare), "data.frame")
+
+saveRDS(coral_DIV2_nonrare, file = "coral_DIV2_nonrare.RDS", compress = TRUE)
+
+#Make a rarefied phyloseq object 
+coral_DIV2_rare <- rarefy_even_depth(coral_DIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
+sample_sums(coral_DIV2_rare) #Double check that the sub-sampling worked, this should report 7000 for each sample
+coral_DIV2rare_sd <- as(sample_data(coral_DIV2_rare), "data.frame")
+
+#Make relative abundance df
+coral_DIV2_rare_Rel <- transform_sample_counts(coral_DIV2_rare, function(x) 100 * x/sum(x))
+
+saveRDS(coral_DIV2_rare_Rel, file = "coral_DIV2_rare_Rel.RDS", compress = TRUE)
+```
+
+Data frames for analysis:
+coral_DIV2_nonrare: DIV, not subsampled
+coral_DIV2_rare: DIV, subsampled
+coral_DIV2rare_sd: sample data
+coral_DIV2_rare_Rel: DIV, subsampled, Relative Abundance
+coral_profile2: Profiles
+
+# Visualizations 
+DIVs
+Bar plots
+```{r}  
+ 
+#try glom use raw counts its2.s2
+Mcap_its2.s2<-subset_samples(coral_DIV2_rare, Species=="Montipora_capitata") #use raw counts here
+
+Mcap_its2 <- Mcap_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Mcap_its2.s2.melt <- psmelt(Mcap_its2)
+
+Mcap_its2.s2.melt$Code<-paste(Mcap_its2.s2.melt$Treatment, Mcap_its2.s2.melt$Time.Point)
+Mcap_its2.s2.melt$Parent.ID <- factor(Mcap_its2.s2.melt$Parent.ID, levels = c("363",  "372","373","371", "367","370","364",  "365","366","368",  "369","374"))
+Mcap_its2.s2.melt$Code <- factor(Mcap_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+mcap.p <- ggplot(Mcap_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+mcap.p +  facet_wrap(~ Code, nrow=2)
+
+
+#try glom use raw counts its2.s2
+Pcomp_its2.s2<-subset_samples(coral_DIV2_rare, Species=="Porites_compressa") #use raw counts here
+
+Pcomp_its2 <- Pcomp_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pcomp_its2.s2.melt <- psmelt(Pcomp_its2)
+
+Pcomp_its2.s2.melt$Code<-paste(Pcomp_its2.s2.melt$Treatment, Pcomp_its2.s2.melt$Time.Point)
+Pcomp_its2.s2.melt$Parent.ID <- factor(Pcomp_its2.s2.melt$Parent.ID, levels = c("313",  "314","315","316", "317","318","319",  "320", "322","323",  "324","321"))
+Pcomp_its2.s2.melt$Code <- factor(Pcomp_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pcomp.p <- ggplot(Pcomp_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+Pcomp.p +  facet_wrap(~ Code, nrow=2)
+
+#try glom use raw counts its2.s2
+Pvar_its2.s2<-subset_samples(coral_DIV2_rare, Species=="Pavona_varians") #use raw counts here
+
+Pvar_its2 <- Pvar_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pvar_its2.s2.melt <- psmelt(Pvar_its2)
+
+Pvar_its2.s2.melt$Code<-paste(Pvar_its2.s2.melt$Treatment, Pvar_its2.s2.melt$Time.Point)
+Pvar_its2.s2.melt$Parent.ID <- factor(Pvar_its2.s2.melt$Parent.ID, levels = c("361",  "358","353","356", "325","354",  "359", "357","362", "351", "355","360"))
+Pvar_its2.s2.melt$Code <- factor(Pvar_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pvar.p <- ggplot(Pvar_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+Pvar.p +  facet_wrap(~ Code, nrow=2)
+
+
+#try glom use raw counts its2.s2
+Pacu_its2.s2<-subset_samples(coral_DIV2_rare, Species=="Pocillopora_acuta") #use raw counts here
+
+Pacu_its2 <- Pacu_its2.s2 %>% 
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+Pacu_its2.s2.melt <- psmelt(Pacu_its2)
+
+Pacu_its2.s2.melt$Code<-paste(Pacu_its2.s2.melt$Treatment, Pacu_its2.s2.melt$Time.Point)
+Pacu_its2.s2.melt$Parent.ID <- factor(Pacu_its2.s2.melt$Parent.ID, levels = c("304",  "308","312","303", "306","302",  "310", "301","311", "307", "309","305"))
+Pacu_its2.s2.melt$Code <- factor(Pacu_its2.s2.melt$Code, levels = c("Ambient T0",  "Ambient T1",
+                                                                    "Ambient TF","High T0",  "High T1","High TF"))
+nb.cols <- 400
+mycolors <- colorRampPalette(brewer.pal(11, "RdYlBu"))(nb.cols)
+
+Pacu.p <- ggplot(Pacu_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("Sample Label") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(legend.position = "none")
+Pacu.p +  facet_wrap(~ Code, nrow=2)
+```
+
+#T0 only
+```{r}
+#PROFILES coral_profile2 df
+#try glom use raw counts 
+profiles_T0<-subset_samples(coral_profile2, Time.Point=="T0") #use raw counts df here
+
+T0_its2 <- profiles_T0 %>%  #make relative abundance
+  tax_glom(taxrank = "its2_type_profile", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+T0_its2.melt <- psmelt(T0_its2)
+
+#Change so all Cs are shades of Blue and all Ds are shades of orange
+# Define a color palette with 30 shades of blue
+blue_palette <- colorRampPalette(c("lightblue", "blue", "darkblue"))(30)
+orange_palette <- colorRampPalette(c("lightyellow", "orange", "darkorange"))(3)
+
+# Display the colors
+barplot(rep(1, 30), col = blue_palette, border = NA, space = 0, main = "30 Shades of Blue")
+barplot(rep(1, 3), col = orange_palette, border = NA, space = 0, main = "3 Shades of Orange")
+# Combine palettes
+mycolors <- c(blue_palette, orange_palette)
+
+# Arrange and create an ordered factor for Sample based on Clade within each Species
+T0_its2.melt1 <- T0_its2.melt %>%
+  arrange(Species, Clade, Sample) %>%
+  mutate(Sample = factor(Sample, levels = unique(Sample)))
+
+# Ensure colors are assigned based on Clade groups in `its2_type_profile`
+T0.p <- ggplot(T0_its2.melt1, aes(x = Sample, y = Abundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = mycolors) +
+  ylab("Relative Abundance") +
+  xlab("") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
+
+T0.p+facet_wrap(~Species,scales = "free_x") #plot by sample 
+
+#by relative abundance by species
+# Calculate relative abundance within each Species
+# Calculate relative abundance excluding zero values
+T0_its2.melt2 <- T0_its2.melt %>%
+  filter(Abundance > 0) %>%  # Exclude rows with zero abundance
+  group_by(Species) %>%
+  mutate(RelativeAbundance = Abundance / sum(Abundance) * 100) %>%
+  ungroup()
+
+print(T0_its2.melt2 %>% group_by(Species) %>% summarize(Total = sum(RelativeAbundance)))
+
+# Plot with relative abundance as percentage (100% stacked bars) This is showing up as 12 total samples, which I can't get to turn into Relative abundance !!!!!!!!!!!
+
+#####################################################################################
+T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = mycolors) +
+  ylab("Relative Abundance (%)") +
+  xlab("") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
+
+```
+
+#Beta Diversity - All Species
+coral_DIV2_rare_Rel df
+```{r}              
+Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+
+DIV_RelA_stats<- coral_DIV2_rare_Rel #make a copy
+otu_table(DIV_RelA_stats)[1:5, 1:5] #check rela worked
+
+#bray curtis presence-absense and abundance
+ 
+
+
+#### T0 only ######
+
+DIV_RelA_stats.T0<-subset_samples(DIV_RelA_stats, Time.Point=="T0")
+  DIV_RelA_stats.T0 = prune_taxa(taxa_sums(DIV_RelA_stats.T0) > 0, DIV_RelA_stats.T0) #this removes any OTU with 0s
+
+  #save as object for mantel test in the 16s rmd
+  saveRDS(DIV_RelA_stats.T0,"ITS2_T0_phyloseq.rds")
+  
+#bray curtis presence-absense and abundance
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all.T0 <- phyloseq::distance(DIV_RelA_stats.T0, method = "bray")
+  samp.df.T0 <- as(sample_data(DIV_RelA_stats.T0), "data.frame") #sample df
+#adonis test
+adonis2(bc.all.T0 ~ Species, data = samp.df.T0)
+    
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all.T0, samp.df.T0$Species)
+perm<-permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats.T0 <- ordinate(DIV_RelA_stats.T0, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats.T0)
+scores.ord.DIV_RelA_stats.T0 <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.T0, display="sites"))) #make df
+scores.ord.DIV_RelA_stats.T0$Treatment <- samp.df.T0$Treatment
+scores.ord.DIV_RelA_stats.T0$Species <- samp.df.T0$Species
+scores.ord.DIV_RelA_stats.T0$Clade <- samp.df.T0$Clade
+scores.ord.DIV_RelA_stats.T0$Code <- paste(samp.df.T0$Species,samp.df.T0$Clade)
+
+#manuscript figure 2 ####
+ellipse_colors <- c("Montipora_capitata" = "#E69F00", "Porites_compressa" = "#56B4E9", "Pavona_varians" = "#CC79A7", "Pocillopora_acuta" = "#009E73")
+
+#point_colors <- c("C" = "goldenrod1", "CD" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1"="pink1", "C27"="firebrick", "CCC"="palegreen2", "C42"="darkgreen")  # Replace with actual colors
+
+library(cowplot)  # Make sure to install this package if not already installed
+
+
+#FIGURE 2B ITS2 T0 - by speices only 
+# Define your colors
+point_colors <- c("#E69F00", "#56B4E9","#CC79A7", "#009E73")  # Adjust these as needed
+
+its2plot<-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2, color = Species)) + 
+  geom_point(size = 2) +
+    stat_ellipse(aes(fill = Species), level = 0.95, alpha = 0.2, linetype = 1, size = 0.5, geom = "polygon") + 
+  scale_color_manual(values = point_colors) +  # Set colors for points
+  scale_fill_manual(values = point_colors) +  # Set fill colors for ellipses
+   xlim(-3, 3) +  # Set lower bound of x-axis to -2.5
+    ylim(-3, 3) +  # Set lower bound of x-axis to -2.5
+  ggtitle("NMDS - Algal Symbiont Communities") +
+   theme_classic() +
+  theme(
+    axis.text = element_text(size = 9),        # Axis text size
+    axis.title = element_text(size = 9),       # Axis labels size
+    legend.position = "none",                   # Remove legend
+    plot.title = element_text(size = 12)        # Title size
+  )+
+  coord_fixed(ratio = 1);its2plot  # Ensure x and y axes have the same scaling
+
+ggsave("Figures/NMDS_ITS2_T0species.pdf", plot = its2plot, device = "pdf", width = 4, height = 3)
+
+#FIGURE 2B ITS2 T0 - shown by Profile group  
+
+its2plot<-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2, color = Code)) + 
+  geom_point(size = 2) +
+ #geom_mark_ellipse(aes(fill = Code), alpha = 0.2, linetype = 1, size=.5) + # Use geom_mark_ellipse for both fill and border
+    stat_ellipse(aes(fill = Code), level = 0.95, alpha = 0.2, linetype = 1, size = 0.5, geom = "polygon") + 
+scale_color_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen")) +  # Set colors for points
+   scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+   
+  xlim(-3, 3) +  # Set lower bound of x-axis to -2.5
+    ylim(-3, 3) +  # Set lower bound of x-axis to -2.5
+  ggtitle("NMDS - Algal Symbiont Communities") +
+   theme_classic() +
+  theme(
+    axis.text = element_text(size = 9),        # Axis text size
+    axis.title = element_text(size = 9),       # Axis labels size
+    legend.position = "none",                   # Remove legend
+    plot.title = element_text(size = 12)        # Title size
+  )+
+  coord_fixed(ratio = 1);its2plot  # Ensure x and y axes have the same scaling
+
+ggsave("Figures/NMDS_ITS2_Tclade.pdf", plot = its2plot, device = "pdf", width = 4, height = 3)
+
+
+###### its2 T0 nmds scores for physio gauntlet scores.ord.DIV_RelA_stats.T0 #####
+
+ITS2_T0_nmds.scores<-scores.ord.DIV_RelA_stats.T0
+#write.csv(ITS2_T0_nmds.scores,"ITS2_T0_nmds.scores.csv")
+
+
+# T0 T1 and TF for defense ####
+   DIV_RelA_statsD = prune_taxa(taxa_sums(DIV_RelA_stats) > 0, DIV_RelA_stats) #this removes any OTU with 0s
+
+#bray curtis presence-absense and abundance
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all.Tall <- phyloseq::distance(DIV_RelA_statsD, method = "bray")
+  samp.df.Tall <- as(sample_data(DIV_RelA_statsD), "data.frame") #sample df
+#adonis test
+adonis2(bc.all.Tall ~ Species, data = samp.df.Tall)
+    
+
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all.Tall, samp.df.Tall$Species)
+perm<-permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats.Tall <- ordinate(DIV_RelA_statsD, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats.Tall)
+scores.ord.DIV_RelA_stats.Tall <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.Tall, display="sites"))) #make df
+scores.ord.DIV_RelA_stats.Tall$Treatment <- samp.df.Tall$Treatment
+scores.ord.DIV_RelA_stats.Tall$Species <- samp.df.Tall$Species
+scores.ord.DIV_RelA_stats.Tall$Clade <- samp.df.Tall$Clade
+scores.ord.DIV_RelA_stats.Tall$Code <- paste(samp.df.Tall$Species,samp.df.Tall$Clade)
+
+ggplot(scores.ord.DIV_RelA_stats.Tall, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Code), size = 4,show.legend=F) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2,show.legend=F) +
+  ggtitle("NMDS its2 Bray Curtis all clade") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+ggplot(scores.ord.DIV_RelA_stats.Tall, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4, show.legend=F) +
+  #scale_color_manual(values=Sp.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2,show.legend=F) +
+  ggtitle("NMDS its2 Bray Curtis Tall") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+ 
+#T1TF #### 
+## REMOVE T0 for models
+DIV_RelA_stats.T1F<-subset_samples(DIV_RelA_stats, Time.Point=="T1"|Time.Point=="TF")
+  DIV_RelA_stats.T1F = prune_taxa(taxa_sums(DIV_RelA_stats.T1F) > 0, DIV_RelA_stats.T1F) #this removes any OTU with 0s
+
+  #save as object for mantel test in the 16s rmd
+  saveRDS(DIV_RelA_stats.T1F,"ITS2_T1TF_phyloseq.rds")
+
+  
+#bray curtis presence-absense and abundance
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all <- phyloseq::distance(DIV_RelA_stats, method = "bray")
+  samp.df <- as(sample_data(DIV_RelA_stats), "data.frame") #sample df
+#adonis test
+adonis(bc.all ~ Species*Time.Point*Treatment, data = samp.df)
+    
+
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all, samp.df$Species)
+permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats <- ordinate(DIV_RelA_stats, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats)
+scores.ord.DIV_RelA_stats <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats, display="sites"))) #make df
+scores.ord.DIV_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.DIV_RelA_stats$Species <- samp.df$Species
+scores.ord.DIV_RelA_stats$Clade <- samp.df$Clade
+scores.ord.DIV_RelA_stats$Time.Point <- samp.df$Time.Point
+scores.ord.DIV_RelA_stats$Code<-paste(samp.df$Species,samp.df$Treatment, samp.df$Time.Point)
+
+ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Species), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+
+#T1 only
+
+DIV_RelA_stats.T1<-subset_samples(DIV_RelA_stats, Time.Point=="T1")
+  DIV_RelA_stats.T1 = prune_taxa(taxa_sums(DIV_RelA_stats.T1) > 0, DIV_RelA_stats.T1) #this removes any OTU with 0s
+
+#bray curtis presence-absense and abundance
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all <- phyloseq::distance(DIV_RelA_stats.T1, method = "bray")
+  samp.df <- as(sample_data(DIV_RelA_stats.T1), "data.frame") #sample df
+#adonis test
+adonis(bc.all ~ Species*Treatment, data = samp.df)
+    
+
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all, samp.df$Species)
+permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats.T1 <- ordinate(DIV_RelA_stats.T1, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats.T1)
+scores.ord.DIV_RelA_statsT1 <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.T1, display="sites"))) #make df
+scores.ord.DIV_RelA_statsT1$Treatment <- samp.df$Treatment
+scores.ord.DIV_RelA_statsT1$Species <- samp.df$Species
+scores.ord.DIV_RelA_statsT1$Clade <- samp.df$Clade
+scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
+scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
+
+
+ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, color=Species, group=Code3,lty = Code3)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+#for defense
+ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(color=Species, fill=4, alpha=0.25)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+
+ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
+  geom_point(aes(shape=Treatment), size=4) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code3), 
+               alpha = 0.25)+
+    theme_classic()
+
+ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Clade, shape=Treatment), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(color=Clade, fill=4, alpha=0.25)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS its2 Bray Curtis") +
+  theme_classic()
+
+
+
+
+scores.ord.DIV_RelA_statsT1$Code4<-paste(scores.ord.DIV_RelA_statsT1$Species, scores.ord.DIV_RelA_statsT1$Clade, scores.ord.DIV_RelA_statsT1$Treatment)
+
+ p<-ggplot(scores.ord.DIV_RelA_statsT1, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
+  geom_point(aes(shape=Treatment), size=4) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code4), 
+               alpha = 0.25)+
+    theme_classic()
+p+facet_wrap(~Species)
+
+#TF only
+
+DIV_RelA_stats.TF<-subset_samples(DIV_RelA_stats, Time.Point=="TF")
+  DIV_RelA_stats.TF = prune_taxa(taxa_sums(DIV_RelA_stats.TF) > 0, DIV_RelA_stats.TF) #this removes any OTU with 0s
+
+#bray curtis presence-absense and abundance
+
+#all speices
+set.seed(30)
+
+#make bray curtis data matrix
+bc.all <- phyloseq::distance(DIV_RelA_stats.TF, method = "bray")
+  samp.df <- as(sample_data(DIV_RelA_stats.TF), "data.frame") #sample df
+#adonis test
+adonis(bc.all ~ Species*Treatment, data = samp.df)
+    
+
+# Homogeneity of dispersion test
+betaAll <- betadisper(bc.all, samp.df$Species)
+permutest(betaAll, pairwise = T) 
+(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
+plot(bc.all.HSD)
+
+
+#Ordination NMDS for all species
+set.seed(30)
+ord.DIV_RelA_stats.TF <- ordinate(DIV_RelA_stats.TF, "NMDS", "bray", trymax = 100) 
+stressplot(ord.DIV_RelA_stats.TF)
+scores.ord.DIV_RelA_stats <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.TF, display="sites"))) #make df
+scores.ord.DIV_RelA_stats$Treatment <- samp.df$Treatment
+scores.ord.DIV_RelA_stats$Species <- samp.df$Species
+scores.ord.DIV_RelA_stats$Clade <- samp.df$Clade
+scores.ord.DIV_RelA_stats$Code3<-paste(scores.ord.DIV_RelA_stats$Species,scores.ord.DIV_RelA_stats$Treatment)
+
+ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species, shape=Treatment), size = 4) +
+  #scale_color_manual(values=Mcap.Parent.colors)+
+  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, color=Species, group=Code3,lty = Code3)) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS its2 Bray Curtis TF") +
+  theme_classic()
+#ggsave("bc_all.pdf")
+
+#for defense
+
+ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
+  geom_point(aes(shape=Treatment), size=4) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code3), 
+               alpha = 0.25)+
+    theme_classic()
+
+scores.ord.DIV_RelA_stats$Code4<-paste(scores.ord.DIV_RelA_stats$Species, scores.ord.DIV_RelA_stats$Clade, scores.ord.DIV_RelA_stats$Treatment)
+
+ p<-ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
+  geom_point(aes(shape=Treatment), size=4) +
+  stat_ellipse(geom = "polygon",
+               aes(fill = Code4), 
+               alpha = 0.25)+
+    theme_classic()
+p+facet_wrap(~Species)
+
+```
+
+
