@@ -350,8 +350,8 @@ pairs(emm)
 
 # by Species df: biomass_stats_T1TF_Mcap, biomass_stats_T1TF_Pcomp, biomass_stats_T1TF_Pvar, biomass_stats_T1TF_Pacu ####
 biomass_stats_T1TF_Mcap<-subset(biomass_stats_T1TF, Species=="Montipora capitata")
-  biomass_stats_T1TF_Mcap.C<-subset(biomass_stats_T1TF_Mcap, Clade=="C")
-  biomass_stats_T1TF_Mcap.CD<-subset(biomass_stats_T1TF_Mcap, Clade=="CD")
+  biomass_stats_T1TF_Mcap.C<-subset(biomass_stats_T1TF_Mcap, Clade=="C31")
+  biomass_stats_T1TF_Mcap.CD<-subset(biomass_stats_T1TF_Mcap, Clade=="C31D4")
 biomass_stats_T1TF_Pcomp<-subset(biomass_stats_T1TF, Species=="Porites compressa")
   biomass_stats_T1TF_Pcomp.C15cj<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15cj")
   biomass_stats_T1TF_Pcomp.C15n<-subset(biomass_stats_T1TF_Pcomp, Clade=="C15n")
@@ -359,8 +359,8 @@ biomass_stats_T1TF_Pvar<-subset(biomass_stats_T1TF, Species=="Pavona varians")
   biomass_stats_T1TF_Pvar.C1<-subset(biomass_stats_T1TF_Pvar, Clade=="C1")
   biomass_stats_T1TF_Pvar.C27<-subset(biomass_stats_T1TF_Pvar, Clade=="C27")
 biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora acuta")
-  biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="CCC")
-  biomass_stats_T1TF_Pacu.C42<-subset(biomass_stats_T1TF_Pacu, Clade=="C42")
+  biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="C1D")
+  biomass_stats_T1TF_Pacu.C42<-subset(biomass_stats_T1TF_Pacu, Clade=="C42_2")
   
 #mcap by algal profile####
 Biomass_Mcap_model<-lmer(AFDWmg.cm2~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Mcap)
@@ -922,6 +922,7 @@ Pacu_FC$zoox.AFDWmg.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$AFDWmg.cm2
 FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
 
 ```
+
 ```{r}
 FC_Data$Species<-as.factor(FC_Data$Species)
 FC_Data$Species <- factor(FC_Data$Species, levels = c("Montipora capitata", "Porites compressa", "Pavona varians","Pocillopora acuta"))
@@ -951,7 +952,7 @@ cld(emm)
 pairs(emm)
 
 
-#t0 only by speices?
+#t0 only by species?
 FC_stats_T0.mcap<-subset(FC_stats_T0, Species=="Montipora capitata")
 FC_stats_T0.pcomp<-subset(FC_stats_T0, Species=="Porites compressa")
 FC_stats_T0.pvar<-subset(FC_stats_T0, Species=="Pavona varians")
@@ -1006,12 +1007,9 @@ hist(FC_Data$zoox.cm2)
 FC_Data$zoox.cm2_log<-log10(FC_Data$zoox.cm2+1)
 hist(FC_Data$zoox.cm2_log) #normal (use)
 
-
-
 FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 
-
-#test adding traits
+#test adding traits - not running 20250204
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Montipora capitata"] <- "thick"  
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Porites compressa"] <- "thick"  
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona varians"] <- "thin"  
@@ -1021,9 +1019,7 @@ FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Montipora capitata"] <- "porous
 FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Porites compressa"] <- "porous"  
 FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona varians"] <- "porous"  
 FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "nonporous"  
- FC_stats_T1TF$skeleton<-as.factor(FC_stats_T1TF$skeleton)
-
-
+FC_stats_T1TF$skeleton<-as.factor(FC_stats_T1TF$skeleton)
 
 CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species*skeleton+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
 anova(CellCount_model) 
@@ -1048,8 +1044,8 @@ anova(CellCount_model)
 
 # by Species df: FC_stats_T1TF_Mcap, FC_stats_T1TF_Pcomp, FC_stats_T1TF_Pvar, FC_stats_T1TF_Pacu
 FC_stats_T1TF_Mcap<-subset(FC_stats_T1TF, Species=="Montipora capitata")
-  FC_stats_T1TF_Mcap.C<-subset(FC_stats_T1TF_Mcap, Clade=="C")
-  FC_stats_T1TF_Mcap.CD<-subset(FC_stats_T1TF_Mcap, Clade=="CD")
+  FC_stats_T1TF_Mcap.C<-subset(FC_stats_T1TF_Mcap, Clade=="C31")
+  FC_stats_T1TF_Mcap.CD<-subset(FC_stats_T1TF_Mcap, Clade=="C31D4")
 FC_stats_T1TF_Pcomp<-subset(FC_stats_T1TF, Species=="Porites compressa")
   FC_stats_T1TF_Pcomp.C15cj<-subset(FC_stats_T1TF_Pcomp, Clade=="C15cj")
   FC_stats_T1TF_Pcomp.C15n<-subset(FC_stats_T1TF_Pcomp, Clade=="C15n")
@@ -1057,8 +1053,8 @@ FC_stats_T1TF_Pvar<-subset(FC_stats_T1TF, Species=="Pavona varians")
   FC_stats_T1TF_Pvar.C1<-subset(FC_stats_T1TF_Pvar, Clade=="C1")
   FC_stats_T1TF_Pvar.C27<-subset(FC_stats_T1TF_Pvar, Clade=="C27")
 FC_stats_T1TF_Pacu<-subset(FC_stats_T1TF, Species=="Pocillopora acuta")
-  FC_stats_T1TF_Pacu.CCC<-subset(FC_stats_T1TF_Pacu, Clade=="CCC")
-  FC_stats_T1TF_Pacu.C42<-subset(FC_stats_T1TF_Pacu, Clade=="C42")
+  FC_stats_T1TF_Pacu.CCC<-subset(FC_stats_T1TF_Pacu, Clade=="C1d")
+  FC_stats_T1TF_Pacu.C42<-subset(FC_stats_T1TF_Pacu, Clade=="C42_2")
   
 #mcap ####
 #lmer
@@ -2556,8 +2552,8 @@ anova(BW_model)
 
 # by Species df: Growth3_Mcap, Growth3_Pcomp, Growth3_Pvar, Growth3_Pacu
 Growth3_Mcap<-subset(Growth3, Species=="Montipora capitata")
-  Growth3_Mcap.C<-subset(Growth3_Mcap, Clade=="C")
-  Growth3_Mcap.CD<-subset(Growth3_Mcap, Clade=="CD")
+  Growth3_Mcap.C<-subset(Growth3_Mcap, Clade=="C31")
+  Growth3_Mcap.CD<-subset(Growth3_Mcap, Clade=="C31D4")
     Growth3_Mcap.T1<-subset(Growth3_Mcap, Time.point=="time1.growth")
     Growth3_Mcap.TF<-subset(Growth3_Mcap, Time.point=="time2.growth")
 
@@ -2574,22 +2570,22 @@ Growth3_Pvar<-subset(Growth3, Species=="Pavona varians")
     Growth3_Pvar.TF<-subset(Growth3_Pvar, Time.point=="time2.growth")
     
 Growth3_Pacu<-subset(Growth3, Species=="Pocillopora acuta")
-  Growth3_Pacu.CCC<-subset(Growth3_Pacu, Clade=="CCC")
-  Growth3_Pacu.C42<-subset(Growth3_Pacu, Clade=="C42")
+  Growth3_Pacu.CCC<-subset(Growth3_Pacu, Clade=="C1d")
+  Growth3_Pacu.C42<-subset(Growth3_Pacu, Clade=="C42_2") 
     Growth3_Pacu.T1<-subset(Growth3_Pacu, Time.point=="time1.growth")
     Growth3_Pacu.TF<-subset(Growth3_Pacu, Time.point=="time2.growth")
 
 
 
 #lmer
-percent.change_stats_model<-lmer(percent.change_sqrt~Time.Point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
+percent.change_stats_model<-lmer(percent.change_sqrt~Time.point*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
 anova(percent.change_stats_model) 
 qqPlot(residuals(percent.change_stats_model)) 
 
-percent.change_sqrt_stats_modelC<-lmer(percent.change_sqrt~Time.Point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
+percent.change_sqrt_stats_modelC<-lmer(percent.change_sqrt~Time.point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
 anova(percent.change_sqrt_stats_modelC) 
 
-emm<-emmeans(percent.change_sqrt_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+emm<-emmeans(percent.change_sqrt_stats_model,  ~ Days*Treatment|Species, adjust="Tukey") #not running
  cld(emm)
  pairs(emm)
   
@@ -2607,8 +2603,12 @@ percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
 
   #T1 only 
      Biomass_Mcap_model.T1<-lmer(percent.change_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.T1)
+          Biomass_Mcap_model.T1<-lmer(percent.change_sqrt~Treatment+(1|Parent.ID), Growth3_Mcap.T1) #removing tank removes singularity error
+
   anova(Biomass_Mcap_model.T1) 
     Biomass_Mcap_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.T1)
+        Biomass_Mcap_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID), Growth3_Mcap.T1)#removing tank removes singularity, does not change anything
+
   anova(Biomass_Mcap_model.T1) 
   qqPlot(residuals(Biomass_Mcap_model.T1)) 
   emm<-emmeans(Biomass_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
@@ -2794,29 +2794,9 @@ percent.change_sqrt_Pacu_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
     
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # make DF for BW for Physio, Cast so 2 columns 
 
-Growth.Percent.day<-merge(Growth, meta, all=T)
+Growth.Percent.day<-merge(Growth3, meta, all=T)
 
 ```
 
@@ -2839,6 +2819,9 @@ ChlaData1$totChla2<-ChlaData1$Rep2*ChlaData1$TotalVolume
 ChlaData1$chlaSA2 <- ChlaData1$totChla2/ChlaData1$Surface.area
 plate1<-plot(ChlaData1$chlaSA1,ChlaData1$chlaSA2)
 ChlaData1<-ChlaData1[!(ChlaData1$Frag.ID=="314"),] #redid plate 8
+ChlaData1<-ChlaData1[!(ChlaData1$Frag.ID=="N198"),] #redid plate 3
+
+
 
 # Plate 2
 Chla_plate2<- read.csv("Data/Chla_plate2.csv")
@@ -2889,6 +2872,15 @@ ChlaData4$totChla2<-ChlaData4$Rep2*ChlaData4$TotalVolume
 ChlaData4$chlaSA2 <- ChlaData4$totChla2/ChlaData4$Surface.area
 plate4<-plot(ChlaData4$chlaSA1,ChlaData4$chlaSA2)
 ChlaData4<-ChlaData4[!(ChlaData4$Frag.ID=="N30"),] #redid plate 8
+ChlaData4<-ChlaData4[!(ChlaData4$Frag.ID=="N49"),] #accidental dup (plate1)
+ChlaData4 <- ChlaData4 %>%
+  group_by(Frag.ID) %>%
+  mutate(
+    Rep1 = ifelse(Frag.ID == "N184", mean(Rep1, na.rm = TRUE), Rep1),
+    Rep2 = ifelse(Frag.ID == "N184", mean(Rep2, na.rm = TRUE), Rep2)
+  ) %>%
+  ungroup() %>%
+  distinct(Frag.ID, .keep_all = TRUE)  # Keep only one row per Frag.ID
 
 # Plate 5 20190319
 Chla_plate5<- read.csv("Data/Chla_20190319_plate5.csv")
@@ -2946,6 +2938,7 @@ ChlaData8$chlaSA2 <- ChlaData8$Rep2
 #plate8<-plot(ChlaData8$chlaSA1,ChlaData8$chlaSA2) #some not close, check 
   
 Chla<-rbind(ChlaData1, ChlaData2, ChlaData3, ChlaData4, ChlaData5, ChlaData6,ChlaData8)
+
 ```
 
 means for plots
@@ -3330,14 +3323,10 @@ Chla_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Species*Clade+(1|Parent.ID)+(
 anova(Chla_model) 
 qqPlot(residuals(Chla_model)) 
 
-
-
-
-
 # by Species df: Chla_stats_T1TF_Mcap, Chla_stats_T1TF_Pcomp, Chla_stats_T1TF_Pvar, Chla_stats_T1TF_Pacu
 Chla_stats_T1TF_Mcap<-subset(Chla_stats_T1TF, Species=="Montipora capitata")
-  Chla_stats_T1TF_Mcap.C<-subset(Chla_stats_T1TF_Mcap, Clade=="C")
-  Chla_stats_T1TF_Mcap.CD<-subset(Chla_stats_T1TF_Mcap, Clade=="CD")
+  Chla_stats_T1TF_Mcap.C<-subset(Chla_stats_T1TF_Mcap, Clade=="C31")
+  Chla_stats_T1TF_Mcap.CD<-subset(Chla_stats_T1TF_Mcap, Clade=="C31D4")
 Chla_stats_T1TF_Pcomp<-subset(Chla_stats_T1TF, Species=="Porites compressa")
   Chla_stats_T1TF_Pcomp.C15cj<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15cj")
   Chla_stats_T1TF_Pcomp.C15n<-subset(Chla_stats_T1TF_Pcomp, Clade=="C15n")
@@ -3345,8 +3334,8 @@ Chla_stats_T1TF_Pvar<-subset(Chla_stats_T1TF, Species=="Pavona varians")
   Chla_stats_T1TF_Pvar.C1<-subset(Chla_stats_T1TF_Pvar, Clade=="C1")
   Chla_stats_T1TF_Pvar.C27<-subset(Chla_stats_T1TF_Pvar, Clade=="C27")
 Chla_stats_T1TF_Pacu<-subset(Chla_stats_T1TF, Species=="Pocillopora acuta")
-  Chla_stats_T1TF_Pacu.CCC<-subset(Chla_stats_T1TF_Pacu, Clade=="CCC")
-  Chla_stats_T1TF_Pacu.C42<-subset(Chla_stats_T1TF_Pacu, Clade=="C42")
+  Chla_stats_T1TF_Pacu.CCC<-subset(Chla_stats_T1TF_Pacu, Clade=="C1d")
+  Chla_stats_T1TF_Pacu.C42<-subset(Chla_stats_T1TF_Pacu, Clade=="C42_2")
    
 #mcap ####
 #lmer
@@ -3704,7 +3693,10 @@ cld(emm)
 pairs(emm)
 
 #pcomp
-PAM_T0_model<-lmer(Yield_cu~Clade+(1|Tank.num), PAM_stats_T0.pcomp)
+PAM_T0_model<-lmer(Yield_cu~Clade+(1|Tank.num), PAM_stats_T0.pcomp) #singularity
+PAM_T0_model<-lmer(Yield_cu~Clade+(1|Parent.ID), PAM_stats_T0.pcomp)#singularity
+PAM_T0_model<-lm(Yield_cu~Clade, PAM_stats_T0.pcomp)#THIS GIVES SAME OUTCOME ( to do update the rest 20250204)
+
 anova(PAM_T0_model)  #species differ
 qqPlot(residuals(PAM_T0_model)) 
 emm<-emmeans(PAM_T0_model,  ~ Clade, adjust="Tukey")
@@ -3753,8 +3745,8 @@ PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora acuta")
 
 # by Species df: PAMdata2_stats_Mcap, PAMdata2_stats_Pcomp, PAMdata2_stats_Pvar, PAMdata2_stats_Pacu
 PAMdata2_stats_Mcap<-subset(PAMdata2_stats, Species=="Montipora capitata")
-  PAMdata2_stats_Mcap.C<-subset(PAMdata2_stats_Mcap, Clade=="C")
-  PAMdata2_stats_Mcap.CD<-subset(PAMdata2_stats_Mcap, Clade=="CD")
+  PAMdata2_stats_Mcap.C<-subset(PAMdata2_stats_Mcap, Clade=="C31")
+  PAMdata2_stats_Mcap.CD<-subset(PAMdata2_stats_Mcap, Clade=="C31D4")
     PAMdata2_stats_Mcap.T1<-subset(PAMdata2_stats_Mcap, Days==24)
     PAMdata2_stats_Mcap.TF<-subset(PAMdata2_stats_Mcap, Days==52)
 
@@ -3771,14 +3763,12 @@ PAMdata2_stats_Pvar<-subset(PAMdata2_stats, Species=="Pavona varians")
     PAMdata2_stats_Pvar.TF<-subset(PAMdata2_stats_Pvar, Days==52)
     
 PAMdata2_stats_Pacu<-subset(PAMdata2_stats, Species=="Pocillopora acuta")
-  PAMdata2_stats_Pacu.CCC<-subset(PAMdata2_stats_Pacu, Clade=="CCC")
-  PAMdata2_stats_Pacu.C42<-subset(PAMdata2_stats_Pacu, Clade=="C42")
+  PAMdata2_stats_Pacu.CCC<-subset(PAMdata2_stats_Pacu, Clade=="C1d")
+  PAMdata2_stats_Pacu.C42<-subset(PAMdata2_stats_Pacu, Clade=="C42_2")
     PAMdata2_stats_Pacu.T1<-subset(PAMdata2_stats_Pacu, Days==24)
     PAMdata2_stats_Pacu.TF<-subset(PAMdata2_stats_Pacu, Days==52)
 
-
-
-#lmer
+    #lmer
 Yield_cu_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
 anova(Yield_cu_stats_model) 
 qqPlot(residuals(Yield_cu_stats_model)) 
@@ -6713,7 +6703,7 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 
 ```
 
-# all physio figure
+# all physio figure (dont need)
 
 ```{r}
 
@@ -6806,14 +6796,15 @@ CellCounts_psy<- FC_Data[,c("Frag.ID","Parent.ID" ,"Species","Treatment","Tank.n
   CellCounts_psy$Code<-paste(CellCounts_psy$Species,CellCounts_psy$Treatment,CellCounts_psy$Parent.ID, CellCounts_psy$Time.Point)
 
   CellCounts_psy<- CellCounts_psy[,c("Code" ,"zoox.cm2_log")] # keep only columns you need
-names(Chla_psy)[names(Chla_psy) == "zoox.cm2_log"] <- "Zoox Density"
+names(CellCounts_psy)[names(CellCounts_psy) == "zoox.cm2_log"] <- "Zoox Density"
   duplicated(CellCounts_psy)
   CellCounts_psy<-unique(CellCounts_psy) #keep uniques
 
 
 #Chla Chla df ChlaSA_quart
-Chla_psy<- Chla[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA_quart")] # keep only columns you need
-names(Chla_psy)[names(Chla_psy) == "ChlaSA_quart"] <- "Chl a"
+ Chla_psy<- Chla 
+Chla_psy<- Chla_psy[,c("Parent.ID" ,"Species","Treatment","Time.Point","ChlaSA")] # keep only columns you need
+names(Chla_psy)[names(Chla_psy) == "ChlaSA"] <- "Chl a"
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
 #   Chla_psyT0<-Chla_psy #copy
@@ -6856,7 +6847,12 @@ duplicated(Protein_psy)
 #Repeate measures ####
 #Calcification, Growth and percent.change_log do for each time point ####
 
-Calcification_psy<- Growth3 #copy df
+Calcification_psy<- Growth.Percent.day #copy df
+
+Calcification_psy <- Calcification_psy %>%
+  mutate(percent.change = ifelse(Time.Point == "T0", 0, percent.change))
+(Calcification_psy <- Calcification_psy %>%
+  drop_na() )
 Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point)
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time1.growth"] <- "T1" #change 
 Calcification_psy$Time.point[Calcification_psy$Time.point == "time2.growth"] <- "TF" #change 
@@ -6866,6 +6862,8 @@ Calcification_psy$Time.point<-as.factor(Calcification_psy$Time.point)
 Calcification_psy$Code<-paste(Calcification_psy$Species,Calcification_psy$Treatment,Calcification_psy$Parent.ID,Calcification_psy$Time.Point) #make code
 
 Calcification_psy<- Calcification_psy[,c("Code","percent.change","Parent.ID", "Treatment","Species","Time.Point")] # keep only columns you need
+
+
 
 # Calcification_psy<-Calcification_psy %>% group_by(Code) %>% mutate(mean=mean(percent.change_sqrt)) # mean by code, this worked
 # names(Calcification_psy)[names(Calcification_psy) == "mean"] <- "calc.percentchange" #change name
@@ -6877,11 +6875,12 @@ Calcification_psy<- Calcification_psy[,c("Code","percent.change","Parent.ID", "T
         names(Calcification_psy)[names(Calcification_psy) == "x"] <- "Calcification" #change name
         names(Calcification_psy)[names(Calcification_psy) == "Group.1"] <- "Code" #change name
 
-
 Calcification_psy<-merge(metaPhysio, Calcification_psy, all.x = T)
-Calcification_psy$calc.percentchange[is.na(Calcification_psy$Calcification)] <- 0 #change T0 growth to 0s
-Calcification_psy<- Calcification_psy[,c("Code","Calcification")] # keep only columns you need
 
+Calcification_psy$Calcification[is.na(Calcification_psy$Calcification) & Calcification_psy$Time.Point == "T0"] <- 0 #for Time 0
+Calcification_psy<- Calcification_psy[,c("Code","Calcification")] # keep only columns you need
+Calcification_psy <- Calcification_psy %>%
+  drop_na()
  
 #PAM df PAMdata_stats make for T0, T1, TF ####
 PAM_psy<- PAMdata2_stats 
@@ -7010,7 +7009,7 @@ PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 # PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
 
-write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
+#write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
 
 
 ```
@@ -7018,8 +7017,6 @@ write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
 #nMDS of physio, PhysioData df, by Parent.ID, all data \<- no reason to do nmds for physio.
 
 ```{r}
-  
-
 #make a copy
 pData<-PhysioData
 

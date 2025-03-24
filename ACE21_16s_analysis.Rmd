@@ -10,7 +10,7 @@ chunk_output_type: console
 editor_options: 
   chunk_output_type: console
 ---
-Last updated: 27 may 2021
+Last updated: 24 March 2025
 
 
 16s data analysis
@@ -57,6 +57,7 @@ library(ade4)
 MetaData16<-read.csv("Data/Meta16s_3k.csv") #run in physio script first
 MetaData16$Parent.ID<-as.factor(as.character(MetaData16$Parent.ID))
 MetaData16$Tank.num<-as.factor(as.character(MetaData16$Tank.num))
+MetaData16$sample_name <- gsub("^S", "", MetaData16$sample_name)
 
 sam0 <- MetaData16
 sam1 <- as.matrix(sam0[, -1])
@@ -65,17 +66,53 @@ sam <- sample_data(data.frame(sam1))
 
 #load in OUT:raw_abundanceTable_100.shared
 
-OTU3k<-read.table("Data/TT17_3000_summer_16S-pipeline_outputs/abundance_table_100_shared.csv", sep=',', header=T)
+# Read the OTU table (keep characters as characters, avoid factors)
+OTU3k <- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/Results/main/details/abundance_table_100.shared.csv",
+                  stringsAsFactors = FALSE)
 
-#from its  
-#otu
-otu3k1 <- as.matrix(OTU3k[, -1])
-rownames(otu3k1) <- OTU3k$sample_name
+# Ensure the "Group" column (sample names) is treated as character
+OTU3k$Group <- as.character(OTU3k$Group)
+OTU3k <- OTU3k %>%
+  mutate(Group = gsub("_", ".", Group)) %>%  # Convert underscores to dots
+  mutate(Group = gsub("S\\d{2,3}\\.L001", "", Group)) %>%  # Remove "S###.L001" or "S##.L001"
+  mutate(Group = gsub("\\.$", "", Group))  # Remove any trailing dots
+
+#not all are being caught, do manually, N77.S3.L001, N49.S4.L001, 832.S2.L001, 775.S8.L001, 619.S7.L001, 2136.S6.L001, 1413.S9.L001, 
+
+OTU3k <- OTU3k %>%
+  mutate(Group = case_when(
+    Group == "1413.S9.L001" ~ "1413",  # Manually replace specific value
+    Group == "N77.S3.L001" ~ "N77",  # Add as many replacements as needed
+    Group == "N49.S4.L001" ~ "N49",  # Add as many replacements as needed
+    Group == "832.S2.L001" ~ "832",  # Add as many replacements as needed
+    Group == "775.S8.L001" ~ "775",  # Add as many replacements as needed
+    Group == "2136.S6.L001" ~ "2136",  # Add as many replacements as needed
+    Group == "1413.S9.L001" ~ "1413",  # Add as many replacements as needed
+    Group == "619.S7.L001" ~ "619",  # Add as many replacements as needed
+    Group == "306TG.1" ~ "306TF",  # Add as many replacements as needed
+    TRUE ~ Group  # Keep the other Group values unchanged
+  ))
+
+
+# Remove the "label" column before converting other columns to numeric
+OTU3k <- OTU3k[, !names(OTU3k) %in% "label"]
+OTU3k <- OTU3k[, !names(OTU3k) %in% "numOtus"]
+
+# Convert all remaining columns (except "Group") to numeric
+OTU3k[,-1] <- lapply(OTU3k[,-1], as.numeric)  
+
+# Convert to matrix (excluding the "Group" column)
+otu3k1 <- as.matrix(OTU3k[,-1])  
+
+# Assign row names from the "Group" column
+rownames(otu3k1) <- OTU3k$Group  
 otu <- otu_table(otu3k1, taxa_are_rows = FALSE)
 
+# Subset metadata to only include samples that are present in the OTU table
+sam <- sam[sample_names(otu), ]
 
 #tax table annotations_100.taxonomy.csv
-TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/annotations_100.taxonomy.csv", colClasses = "character")
+TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/Results/main/details/annotations_100.taxonomy.csv", colClasses = "character")
 tax1 <- as.matrix(TAX[, -1], dimnames = list(TAX$OTU, colnames(TAX[-1])))
 rownames(tax1) <- TAX$OTU
 tax <- tax_table(tax1)
@@ -94,7 +131,7 @@ treefile<- read.tree("Data/TT17_3000_summer_16S-pipeline_outputs/Results/postpro
 phy_tree(Bac.seq) <- treefile
 Bac.seq
 
-#save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
+save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
 
 
 
@@ -145,16 +182,16 @@ sample_names(Bac.seq)[1:300] #samp names
 
 # OK Now you need to do the steps in the pipeline. ONLY for >3K dfs
 #1 filter out taxa: get rid of unknown, mitochondria and chloroplast
-# Bac.seq<-subset_taxa(Bac.seq, Family !="Mitochondria")
-# Bac.seq<-subset_taxa(Bac.seq, Order !="Chloroplast")
-# Bac.seq<-subset_taxa(Bac.seq, Domain !="unknown")
-# Bac.seq<-subset_taxa(Bac.seq, Domain !="Archaea")
+ Bac.seq<-subset_taxa(Bac.seq, Family !="Mitochondria")
+ Bac.seq<-subset_taxa(Bac.seq, Order !="Chloroplast")
+ Bac.seq<-subset_taxa(Bac.seq, Domain !="unknown")
+ Bac.seq<-subset_taxa(Bac.seq, Domain !="Archaea")
 
 # now get rid of things not represnted 2x or more
 #Prune singletons (these are reads that are only found once)
-# Bac.seq.prune <- prune_taxa(taxa_sums(Bac.seq) > 2, Bac.seq)
-# 
-#   save(Bac.seq, file = "Data/Bac.seq.prune.RData")
+ Bac.seq.prune <- prune_taxa(taxa_sums(Bac.seq) > 2, Bac.seq)
+#
+   save(Bac.seq, file = "Data/Bac.seq.prune.RData")
   
 ```
 
@@ -165,8 +202,6 @@ Load in your data
 load("Data/Bac.seq_phyloseq.RData") #use RAW data that has been pruned. 
 # the df is Bac.seq
 rank_names(Bac.seq) #ranks are DIV and clade
-
-
 
 
 # #Bac.seq  not 3k use to check who you lose
@@ -203,13 +238,13 @@ TopNOTUsB = names(sort(taxa_sums(Dups), TRUE)[1:100])
 bac50 = prune_taxa(TopNOTUsB, Dups)
 bacBarPlot<-plot_bar(bac50,  fill="Phylum");bacBarPlot
 #ggsave("mMcapBarPlot_DIVrelARare.pdf", McapBarPlot, dpi=300, width=8)
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S1753b" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S208" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S3476" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "SN35b" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S3149" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S3149" )
-Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "S1240" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "1753b" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "208" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "3476" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "N35b" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "3149" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "3149" )
+Bac.seq <- subset_samples(Bac.seq, sample_name.1 != "1240" )
 #Bac.s <- subset_samples(Bac.s, sample_name.1 != "Field" )
 Bac.seq <- subset_samples(Bac.seq, Type != "extra" )
 Bac.seq <- subset_samples(Bac.seq, Type != " " )
@@ -5406,7 +5441,7 @@ grid.arrange(mcap_disp16_plot, pcomp_disp16_plot, pvar_disp16_plot,pacu_disp16_p
 
 #Unifrac NMDS
 ```{r}      
- Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+ Sp.colors <- c("Montipora_capitata"= "#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#CC79A7","Pocillopora_acuta"="#009E73", "High"="darkRed","Ambient"="navyBlue")
 
 #T0 only 
 Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
@@ -5422,16 +5457,17 @@ scores.ord.u_RelA_stats.T0$Species <- unifrac.all.sd.T0$Species
 scores.ord.u_RelA_stats.T0$Clade <- unifrac.all.sd.T0$Clade
 scores.ord.u_RelA_stats.T0$Code <- paste(scores.ord.u_RelA_stats.T0$Clade, scores.ord.u_RelA_stats.T0$Species)
 
-
-
+#plot
 ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
-  scale_color_manual(values=Sp.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
-  ggtitle("NMDS 16s bray T0") +
+  scale_color_manual(values = Sp.colors) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species, fill = Species), 
+               geom = "polygon", alpha = 0.1, linetype = 1) +  # Solid line and filled
+  scale_fill_manual(values = Sp.colors) +  # Fill ellipses with the same color as points
+  ggtitle("NMDS 16S TO") +
   theme_classic()
-#ggsave("bc_all.pdf")
+ggsave("16S_T0.pdf")
+
 
 
 ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 

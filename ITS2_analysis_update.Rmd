@@ -32,7 +32,15 @@ library(vegan)
 library(decontam)
 library(RColorBrewer)
 library(ggforce)
+library(cowplot)  
+library(ggplot2)
+library(grid)
 library(tidyverse)
+
+#set colors
+species_colors <- c("Montipora_capitata" = "#E69F00", "Porites_compressa" = "#56B4E9", "Pavona_varians" = "#CC79A7", "Pocillopora_acuta" = "#009E73")
+
+clade_colors <- c("C31" = "goldenrod1", "C31D4" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1"="pink1", "C27"="firebrick", "C1d"="palegreen2", "C42_2"="darkgreen")
 ```
 
 Load phyloseq objects (if starting at analysis)
@@ -410,7 +418,7 @@ Pacu.p <- ggplot(Pacu_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV
 Pacu.p +  facet_wrap(~ Code, nrow=2)
 ```
 
-#T0 only
+#T0 only bar plots
 ```{r}
 #PROFILES coral_profile2 df
 #try glom use raw counts 
@@ -432,10 +440,14 @@ barplot(rep(1, 3), col = orange_palette, border = NA, space = 0, main = "3 Shade
 # Combine palettes
 mycolors <- c(blue_palette, orange_palette)
 
+
 # Arrange and create an ordered factor for Sample based on Clade within each Species
 T0_its2.melt1 <- T0_its2.melt %>%
   arrange(Species, Clade, Sample) %>%
   mutate(Sample = factor(Sample, levels = unique(Sample)))
+
+T0_its2.melt1 <- T0_its2.melt1 %>%
+  mutate(Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")))  # Adjust order as needed
 
 # Ensure colors are assigned based on Clade groups in `its2_type_profile`
 T0.p <- ggplot(T0_its2.melt1, aes(x = Sample, y = Abundance, fill = its2_type_profile)) +
@@ -443,9 +455,141 @@ T0.p <- ggplot(T0_its2.melt1, aes(x = Sample, y = Abundance, fill = its2_type_pr
   scale_fill_manual(values = mycolors) +
   ylab("Relative Abundance") +
   xlab("") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
+  theme_minimal() +  # Apply minimal theme (white background, no grid)
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
+    panel.grid = element_blank(),  # Remove grid lines
+    plot.background = element_blank(),
+     # legend.position = "none" ,# Remove the outer background
+    axis.line = element_line(color = "black")  # Add black axis lines
+  )
 
-T0.p+facet_wrap(~Species,scales = "free_x") #plot by sample 
+T0_ITS2_samp <- T0.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
+T0_ITS2_samp
+
+ggsave("ITS2_T0_samp_leg.pdf", plot = T0_ITS2_samp, device = "pdf", width = 20, height = 6)
+
+T0_its2.melt1_mcap<-subset(T0_its2.melt1, T0_its2.melt1$Species=="Montipora_capitata")
+
+# Ensure colors are assigned based on Clade groups in `its2_type_profile`
+T0.pMcap <- ggplot(T0_its2.melt1_mcap, aes(x = Sample, y = Abundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = mycolors) +
+  ylab("Relative Abundance") +
+  xlab("") +
+  theme_minimal() +  # Apply minimal theme (white background, no grid)
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
+    panel.grid = element_blank(),  # Remove grid lines
+    plot.background = element_blank(),
+     # legend.position = "none" ,# Remove the outer background
+    axis.line = element_line(color = "black")  # Add black axis lines
+  );T0.pMcap
+
+T0_ITS2_samp <- T0.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
+T0_ITS2_samp
+
+
+
+
+#Make T0 with DIVs ####
+#try glom use raw counts 
+DIVs_T0<-subset_samples(coralDIV2, Time.Point=="T0") #use raw counts df here
+
+T0_its2DIV <- DIVs_T0 %>%  #make relative abundance
+  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
+  transform_sample_counts(function(x) {x/sum(x)} ) 
+T0_its2DIV.melt <- psmelt(T0_its2DIV)
+
+
+
+# # Arrange and create an ordered factor for Sample based on Clade within each Species
+# T0_its2DIV.melt <- T0_its2DIV.melt %>%
+#   arrange(Species, DIV, Sample) %>%
+#   mutate(Sample = factor(Sample, levels = unique(Sample)))
+
+
+# Extract the sample order (should now work) from Clade plot
+sample_order <- levels(T0_its2.melt$Sample)
+
+# Check if sample_order is not NULL
+print(sample_order)  # Should print a list of sample names in order
+T0_its2DIV.melt$Sample
+T0_its2DIV.melt <- T0_its2DIV.melt %>%
+  mutate(Sample = factor(Sample, levels = sample_order))
+
+
+
+T0_its2DIV.melt <- T0_its2DIV.melt %>%
+  mutate(Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")))  # Adjust order as needed
+
+# Ensure colors are assigned based on Clade groups in `its2_type_profile`
+T0DIV.p  <- ggplot(T0_its2DIV.melt, aes(x = Sample, y = Abundance, fill = DIV)) +
+  geom_bar(stat = "identity", color = "black", size = 0.2) +  # Add black outlines
+  ylab("Relative Abundance") +
+  xlab("") +
+  theme_minimal() +  # Apply minimal theme (white background, no grid)
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
+    panel.grid = element_blank(),  # Remove grid lines
+    plot.background = element_blank(),  # Remove the outer background
+    axis.line = element_line(color = "black"),  # Add black axis lines
+    legend.position = "none"  # Remove the legend
+  );T0DIV.p
+
+
+T0_ITS2_DIV_samp <- T0DIV.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
+T0_ITS2_DIV_samp
+
+ggsave("ITS2_T0_DIV_samp.pdf", plot = T0_ITS2_DIV_samp, device = "pdf", width = 20, height = 6)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#try 1 bar per species (i have no idea why this isn't working)
+T0_its2.melt1$its2_type_profile<-as.factor(T0_its2.melt1$its2_type_profile)
+
+T0_its2.melt1_avg <- T0_its2.melt1 %>%
+  group_by(Species, its2_type_profile) %>%
+  summarise(TotalAbundance = sum(Abundance, na.rm = TRUE), .groups = "drop")  # Use sum for total abundance
+
+T0_its2.melt1_avg %>%
+  count(Species, its2_type_profile) %>%
+  arrange(Species)
+
+table(T0_its2.melt1$Species, useNA = "ifany")
+
+T0_its2.melt1$Species <- as.character(T0_its2.melt1$Species)
+tidyverse::T0_its2.melt1 %>%
+  count(host_species, its2_type_profile)
+dplyr::count(T0_its2.melt1, Species, its2_type_profile)
+
+T0_its2.melt1 %>%
+  dplyr::group_by(Species, its2_type_profile) %>%
+  dplyr::summarise(Count = n(), .groups = "drop")  # Count rows within groups
+
+
+
+
 
 #by relative abundance by species
 # Calculate relative abundance within each Species
@@ -461,29 +605,71 @@ print(T0_its2.melt2 %>% group_by(Species) %>% summarize(Total = sum(RelativeAbun
 # Plot with relative abundance as percentage (100% stacked bars) This is showing up as 12 total samples, which I can't get to turn into Relative abundance !!!!!!!!!!!
 
 #####################################################################################
-T0.p <- ggplot(T0_its2.melt, aes(x = Species, y = Abundance, fill = its2_type_profile)) +
+Hannah code
+
+percent.phy <- bac.ambient.ra %>% 
+  tax_glom(taxrank = "Phylum") 
+perc.melt.phy <- psmelt(percent.phy)
+
+sum.phy <- ddply(perc.melt.phy, c("Phylum", "Species"), summarise,
+                 N = length(Abundance),
+                 mean = mean(Abundance),
+                 sd = sd(Abundance), 
+                 se = sd/sqrt(N)
+)
+
+ggplot(sum.phy, aes(x = Species, y = mean, fill = Phylum)) +
   geom_bar(stat = "identity") +
-  scale_fill_manual(values = mycolors) +
-  ylab("Relative Abundance (%)") +
-  xlab("") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p
+  ggtitle("Communities by Phyla at Ambient Temperatures (T0)") +
+  #guides(fill=NULL) +
+  xlab("/nHost Species") +
+  ylab("Mean Relative Abundance") +
+  theme_classic() +
+  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5))
+
+
+#######
+T0.p <- ggplot(T0_its2.melt, aes(x = host_species, y = Abundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity", position = "stack") +  # Ensure proper stacking
+  scale_fill_manual(values = mycolors) +  
+  ylab("Relative Abundance (%)") +  # Keep label since data is in proportions
+  xlab("Sample") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1));T0.p # Rotate x-axis labels
+
+t<-T0_its2.melt %>%
+  group_by(host_species) %>%
+  summarise(AverageAbundance = mean(Abundance, na.rm = TRUE))
+
+
+T0_its2.melt <- T0_its2.melt %>%
+  mutate(Species = as.factor(Species),
+         its2_type_profile = as.factor(its2_type_profile))
+
+T0_its2.melt_avg <- T0_its2.melt %>%
+  group_by(Species, its2_type_profile) %>%  # Group by Species and Profile
+  summarise(AverageAbundance = mean(Abundance, na.rm = TRUE))  # Compute mean
+
+# Now, create the bar plot
+T0.p <- ggplot(T0_its2.melt_avg, aes(x = Species, y = AverageAbundance, fill = its2_type_profile)) +
+  geom_bar(stat = "identity", position = "stack") +  # Stack within species
+  scale_fill_manual(values = mycolors) +  
+  ylab("Average Relative Abundance (%)") +
+  xlab("Species") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))  # Rotate x-axis labels
+
 
 ```
 
 #Beta Diversity - All Species
 coral_DIV2_rare_Rel df
 ```{r}              
-Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
-
 DIV_RelA_stats<- coral_DIV2_rare_Rel #make a copy
 otu_table(DIV_RelA_stats)[1:5, 1:5] #check rela worked
 
 #bray curtis presence-absense and abundance
- 
-
-
+```
 #### T0 only ######
-
+```{r}
 DIV_RelA_stats.T0<-subset_samples(DIV_RelA_stats, Time.Point=="T0")
   DIV_RelA_stats.T0 = prune_taxa(taxa_sums(DIV_RelA_stats.T0) > 0, DIV_RelA_stats.T0) #this removes any OTU with 0s
 
@@ -517,41 +703,62 @@ scores.ord.DIV_RelA_stats.T0$Clade <- samp.df.T0$Clade
 scores.ord.DIV_RelA_stats.T0$Code <- paste(samp.df.T0$Species,samp.df.T0$Clade)
 
 #manuscript figure 2 ####
-ellipse_colors <- c("Montipora_capitata" = "#E69F00", "Porites_compressa" = "#56B4E9", "Pavona_varians" = "#CC79A7", "Pocillopora_acuta" = "#009E73")
 
-#point_colors <- c("C" = "goldenrod1", "CD" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1"="pink1", "C27"="firebrick", "CCC"="palegreen2", "C42"="darkgreen")  # Replace with actual colors
+#FIGURE 2B ITS2 T0 - by species only (points colored by symbiont profile group)
 
-library(cowplot)  # Make sure to install this package if not already installed
-
-
-#FIGURE 2B ITS2 T0 - by speices only 
-# Define your colors
-point_colors <- c("#E69F00", "#56B4E9","#CC79A7", "#009E73")  # Adjust these as needed
-
-its2plot<-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2, color = Species)) + 
-  geom_point(size = 2) +
-    stat_ellipse(aes(fill = Species), level = 0.95, alpha = 0.2, linetype = 1, size = 0.5, geom = "polygon") + 
-  scale_color_manual(values = point_colors) +  # Set colors for points
-  scale_fill_manual(values = point_colors) +  # Set fill colors for ellipses
-   xlim(-3, 3) +  # Set lower bound of x-axis to -2.5
-    ylim(-3, 3) +  # Set lower bound of x-axis to -2.5
-  ggtitle("NMDS - Algal Symbiont Communities") +
-   theme_classic() +
+# Define Plot 1: Points colored by Clade
+plot_points <- ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(aes(color = Clade), size = 2) +
+  scale_color_manual(name = "Clade", values = clade_colors) +
+  scale_x_continuous(limits = c(-3, 3)) +  # Fix the x-axis limits
+  scale_y_continuous(limits = c(-3, 3)) +  # Fix the y-axis limits
+  theme_classic() +
   theme(
-    axis.text = element_text(size = 9),        # Axis text size
-    axis.title = element_text(size = 9),       # Axis labels size
-    legend.position = "none",                   # Remove legend
-    plot.title = element_text(size = 12)        # Title size
-  )+
-  coord_fixed(ratio = 1);its2plot  # Ensure x and y axes have the same scaling
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 9),  # Ensure axis titles are consistent
+    legend.position = "none",
+    plot.title = element_text(size = 12),
+    axis.line = element_line(color = "black"),  # Make sure axes are visible for consistency
+    axis.ticks = element_line(color = "black")  # Show ticks for alignment
+  ) +
+  coord_fixed(ratio = 1)
 
-ggsave("Figures/NMDS_ITS2_T0species.pdf", plot = its2plot, device = "pdf", width = 4, height = 3)
+# Define Plot 2: Ellipses colored by Species
+plot_ellipses <- ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
+  stat_ellipse(aes(fill = Species, color = Species), level = 0.95, alpha = 0.2, linetype = 1, size = 0.8, geom = "polygon") +
+  scale_fill_manual(name = "Species", values = species_colors) +
+  scale_color_manual(name = "Species", values = species_colors) +
+  scale_x_continuous(limits = c(-3, 3)) +  # Fix the x-axis limits
+  scale_y_continuous(limits = c(-3, 3)) +  # Fix the y-axis limits
+  theme_classic() +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(color = "black"),  # Ensure axes are visible for consistency
+    axis.ticks = element_line(color = "black"),  # Show ticks for alignment
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 9),  # Make axis text consistent
+    legend.position = "none"
+  ) +
+  coord_fixed(ratio = 1)
 
-#FIGURE 2B ITS2 T0 - shown by Profile group  
+# Convert plots to grobs (graphical objects)
+grob_points <- ggplotGrob(plot_points)
+grob_ellipses <- ggplotGrob(plot_ellipses)
+
+# Open PDF device to save the plot
+pdf("T0_ITS2_plot.pdf", width = 8, height = 6)  # Set the width and height of the PDF
+
+# Overlay the plots
+grid.newpage()
+grid.draw(grob_points) # Draw the points plot first
+grid.draw(grob_ellipses) # Overlay the ellipses plot
+dev.off()
+
+#FIGURE 2B ITS2 T0 - shown by Profile group  ####
 
 its2plot<-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2, color = Code)) + 
   geom_point(size = 2) +
- #geom_mark_ellipse(aes(fill = Code), alpha = 0.2, linetype = 1, size=.5) + # Use geom_mark_ellipse for both fill and border
     stat_ellipse(aes(fill = Code), level = 0.95, alpha = 0.2, linetype = 1, size = 0.5, geom = "polygon") + 
 scale_color_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen")) +  # Set colors for points
    scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+   
@@ -562,12 +769,12 @@ scale_color_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,
   theme(
     axis.text = element_text(size = 9),        # Axis text size
     axis.title = element_text(size = 9),       # Axis labels size
-    legend.position = "none",                   # Remove legend
+    #legend.position = "none",                   # Remove legend
     plot.title = element_text(size = 12)        # Title size
   )+
   coord_fixed(ratio = 1);its2plot  # Ensure x and y axes have the same scaling
 
-ggsave("Figures/NMDS_ITS2_Tclade.pdf", plot = its2plot, device = "pdf", width = 4, height = 3)
+ggsave("Figures/NMDS_ITS2_T0clade.pdf", plot = its2plot, device = "pdf")
 
 
 ###### its2 T0 nmds scores for physio gauntlet scores.ord.DIV_RelA_stats.T0 #####
@@ -575,60 +782,9 @@ ggsave("Figures/NMDS_ITS2_Tclade.pdf", plot = its2plot, device = "pdf", width = 
 ITS2_T0_nmds.scores<-scores.ord.DIV_RelA_stats.T0
 #write.csv(ITS2_T0_nmds.scores,"ITS2_T0_nmds.scores.csv")
 
-
-# T0 T1 and TF for defense ####
-   DIV_RelA_statsD = prune_taxa(taxa_sums(DIV_RelA_stats) > 0, DIV_RelA_stats) #this removes any OTU with 0s
-
-#bray curtis presence-absense and abundance
-
-#all speices
-set.seed(30)
-
-#make bray curtis data matrix
-bc.all.Tall <- phyloseq::distance(DIV_RelA_statsD, method = "bray")
-  samp.df.Tall <- as(sample_data(DIV_RelA_statsD), "data.frame") #sample df
-#adonis test
-adonis2(bc.all.Tall ~ Species, data = samp.df.Tall)
-    
-
-# Homogeneity of dispersion test
-betaAll <- betadisper(bc.all.Tall, samp.df.Tall$Species)
-perm<-permutest(betaAll, pairwise = T) 
-(bc.all.HSD <- TukeyHSD(betaAll)) #do you need?
-plot(bc.all.HSD)
-
-
-#Ordination NMDS for all species
-set.seed(30)
-ord.DIV_RelA_stats.Tall <- ordinate(DIV_RelA_statsD, "NMDS", "bray", trymax = 100) 
-stressplot(ord.DIV_RelA_stats.Tall)
-scores.ord.DIV_RelA_stats.Tall <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.Tall, display="sites"))) #make df
-scores.ord.DIV_RelA_stats.Tall$Treatment <- samp.df.Tall$Treatment
-scores.ord.DIV_RelA_stats.Tall$Species <- samp.df.Tall$Species
-scores.ord.DIV_RelA_stats.Tall$Clade <- samp.df.Tall$Clade
-scores.ord.DIV_RelA_stats.Tall$Code <- paste(samp.df.Tall$Species,samp.df.Tall$Clade)
-
-ggplot(scores.ord.DIV_RelA_stats.Tall, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Code), size = 4,show.legend=F) +
-  #scale_color_manual(values=Sp.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code), linetype = 2,show.legend=F) +
-  ggtitle("NMDS its2 Bray Curtis all clade") +
-  theme_classic()
-#ggsave("bc_all.pdf")
-
-ggplot(scores.ord.DIV_RelA_stats.Tall, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Species), size = 4, show.legend=F) +
-  #scale_color_manual(values=Sp.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2,show.legend=F) +
-  ggtitle("NMDS its2 Bray Curtis Tall") +
-  theme_classic()
-#ggsave("bc_all.pdf")
-
-
- 
+```
 #T1TF #### 
+```{r}
 ## REMOVE T0 for models
 DIV_RelA_stats.T1F<-subset_samples(DIV_RelA_stats, Time.Point=="T1"|Time.Point=="TF")
   DIV_RelA_stats.T1F = prune_taxa(taxa_sums(DIV_RelA_stats.T1F) > 0, DIV_RelA_stats.T1F) #this removes any OTU with 0s
