@@ -4936,7 +4936,7 @@ Plots Photosynthesis
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
  tapply(PR.df_T0$GrossP, PR.df_T0$Species, mean)
-aggregate(GrossP ~ Species + Treatment, PR.df_T1, mean)
+aggregate(GrossP ~ Species + Treatment, PR.df_T0, mean)
 
 #T0 only
   ggplot(PR.df_T0, aes(x=Species, y=GrossP, fill=Species)) + 
@@ -7016,47 +7016,52 @@ PhysioData<-unique(PhysioData) #this is the df.
 
 #nMDS of physio, PhysioData df, by Parent.ID, all data \<- no reason to do nmds for physio.
 
+New section - testing Gower which lets us keep missing data rows to see if it impacts the results
+```{r}
+library(cluster)
+
+# Compute Gower distance
+dist_matrix <- daisy(PhysioData, metric = "gower")
+
+# Run NMDS using the distance matrix
+nmds <- metaMDS(dist_matrix)
+plot(nmds)
+
+```
+
+
+
 ```{r}
 #make a copy
 pData<-PhysioData
 
 pData<-na.omit(pData) #remove anything without a value
 
-#deal with negatives by adding a constant (only P, R and P:R)
-pData$Photosynthesis<-pData$Photosynthesis+1
-pData$Respiration<-pData$Respiration+1
-pData$PR<-pData$PR+1
+#deal with negatives by adding multiplying by -1 to make these values positive while keeping distances the same
+pData$Respiration<-(pData$Respiration)*-1
 
-Phy_nmds<-pData
+Phy_nmds<-pData #new copy
 
 #make just for T1 and TF
 pData.T1TF<-subset(Phy_nmds, Time.Point=="T1"|Time.Point=="TF")
 
-#for t0 only
-pData<-PhysioData
-pData <- pData %>% dplyr::select(-Calcification)
-pData<-na.omit(pData) #remove anything without a value
-
-#deal with negatives by adding a constant (only P, R and P:R)
-pData$Photosynthesis<-pData$Photosynthesis+1
-pData$Respiration<-pData$Respiration+1
-pData$PR<-pData$PR+1
-pData.T0<-subset(Phy_nmds, Time.Point=="T0")
+#for T0 only
+pData.T0 <- pData %>% dplyr::select(-Calcification)
+pData.T0<-subset(pData.T0, Time.Point=="T0")
 
 
 
-
+## Create NMDS for T0, T1 and TFphysio ####
 #bray curtis presence-absense and abundance
-
 
 library(vegan)  #hannah code below, edited
 set.seed(30)
 
-Phy_nmds.MDS<-metaMDS(Phy_nmds[,8:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds.MDS<-metaMDS(Phy_nmds[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS)
 Phy_nmds.MDS
-Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS)) #make the nMDS scores into a dataframe
-Phy_nmds.MDS #get summary info, stress is 0.1 great
+Phy_nmds.MDS.scores <- as.data.frame(scores(Phy_nmds.MDS, "sites"))
+Phy_nmds.MDS #get summary info, stress is .22 great
 
 ##Add variables that you want to test to your scores data sheet
 Phy_nmds.MDS.scores$Parent.ID <- Phy_nmds$Parent.ID
@@ -7065,12 +7070,10 @@ Phy_nmds.MDS.scores$Species <- Phy_nmds$Species
 Phy_nmds.MDS.scores$transmission <- Phy_nmds$transmission
 Phy_nmds.MDS.scores$skeleton <- Phy_nmds$skeleton
 Phy_nmds.MDS.scores$Tissue <- Phy_nmds$Tissue
-
 Phy_nmds.MDS.scores$Time.Point <- Phy_nmds$Time.Point
 Phy_nmds.MDS.scores$Code <- Phy_nmds$Code # move the code 
 Phy_nmds.MDS.scores$Code2 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment,Phy_nmds.MDS.scores$Time.Point) # create new code species, time point treatment 
 Phy_nmds.MDS.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
-
 Phy_nmds.MDS.scores$Code3 <- paste(Phy_nmds.MDS.scores$Species,Phy_nmds.MDS.scores$Treatment) # create new code species, time point treatment 
 Phy_nmds.MDS.scores$Code3<-as.factor(Phy_nmds.MDS.scores$Code3)
 
@@ -7082,14 +7085,27 @@ ggplot(Phy_nmds.MDS.scores, aes(x = NMDS1, y = NMDS2)) +
   geom_point(aes(colour = Species), size = 4) +
   scale_color_manual(values=Sp.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  #stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2), linetype = 2) +
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 1) +
   ggtitle("NMDS phyio Bray Curtis") +
   theme_classic()
 #ggsave("bc_all.pdf")
 
 
+### T0 only
 
 
+
+Phy_nmds.MDS.scores_T0<-subset(Phy_nmds.MDS.scores, Time.Point=="T0")
+
+ggplot(Phy_nmds.MDS.scores_T0, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Species), size = 4) +
+  scale_color_manual(values=Sp.colors)+
+  #geom_text(aes(label=Parent.ID),hjust=-.5, vjust=-.5)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Species), linetype = 2) +
+scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
+  ggtitle("NMDS physio T0") +
+  theme_classic()
+#ggsave("bc_all.pdf")
 
 
 
@@ -7137,7 +7153,7 @@ ggplot(Phy_nmds.MDS.scores_TF, aes(x = NMDS1, y = NMDS2)) +
 ######### ok now do it by rerun T1 #### 
 Phy_nmds.T1<-subset(Phy_nmds, Time.Point=="T1")
   set.seed(30)
-Phy_nmds.MDS.T1<-metaMDS(Phy_nmds.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds.MDS.T1<-metaMDS(Phy_nmds.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS.T1)
 Phy_nmds.MDS.T1.scores <- as.data.frame(scores(Phy_nmds.MDS.T1)) #make the nMDS scores into a dataframe
 Phy_nmds.MDS.T1 #get summary info, stress is 0.096 great
@@ -7229,25 +7245,22 @@ scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
 
   set.seed(30)
 
-Phy_nmds.MDS.T0<-metaMDS(pData.T0[,(12:20)], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS"))
+Phy_nmds.MDS.T0<-metaMDS(pData.T0[,(12:19)], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS"))
 stressplot(Phy_nmds.MDS.T0)
-Phy_nmds.MDS.T0.scores <- as.data.frame(scores(Phy_nmds.MDS.T0)) #make the nMDS scores into a dataframe
+
+Phy_nmds.MDS.scores_T0 <- as.data.frame(scores(Phy_nmds.MDS.T0, "sites"))
+
 Phy_nmds.MDS.T0 #get summary info, stress .19
 
 ##Add variables that you want to test to your scores data sheet
-Phy_nmds.MDS.T0.scores$Parent.ID <- pData.T0$Parent.ID
-Phy_nmds.MDS.T0.scores$Treatment <- pData.T0$Treatment
-Phy_nmds.MDS.T0.scores$Species <- pData.T0$Species
-Phy_nmds.MDS.T0.scores$Time.Point <- pData.T0$Time.Point
-Phy_nmds.MDS.T0.scores$Code <- pData.T0$Code # move the code 
-Phy_nmds.MDS.T0.scores$Code2 <- paste(Phy_nmds.MDS.T0.scores$Species,Phy_nmds.MDS.T0.scores$Treatment) # create new code species, time point treatment 
-Phy_nmds.MDS.T0.scores$Code2<-as.factor(Phy_nmds.MDS.scores$Code2)
-
-Phy_nmds.MDS.T0.scores$Code3 <- paste(Phy_nmds.MDS.T0.scores$Species,Phy_nmds.MDS.T0.scores$Treatment) # create new code species, time point treatment 
-Phy_nmds.MDS.T0.scores$Code3<-as.factor(Phy_nmds.MDS.T0.scores$Code3)
+Phy_nmds.MDS.scores_T0$Parent.ID <- pData.T0$Parent.ID
+Phy_nmds.MDS.scores_T0$Treatment <- pData.T0$Treatment
+Phy_nmds.MDS.scores_T0$Species <- pData.T0$Species
+Phy_nmds.MDS.scores_T0$Time.Point <- pData.T0$Time.Point
+Phy_nmds.MDS.scores_T0$Code <- pData.T0$Code # move the code 
 
 #make loading vectors
-vec.spT0<-envfit(Phy_nmds.MDS.T0, pData.T0[,9:16], perm=1000)
+vec.spT0<-envfit(Phy_nmds.MDS.scores_T0, pData.T0[,12:19], perm=1000)
 vec.sp.dfT0<-as.data.frame(vec.spT0$vectors$arrows*sqrt(vec.spT0$vectors$r))
 vec.sp.dfT0$traits<-rownames(vec.sp.dfT0)
 
@@ -7791,11 +7804,13 @@ This is the PCA plot for figure 2A
 ```{r}
 library(ggbiplot)
 
+#for T0 only
+
 apData<-PhysioData #make a copy
 apData$Respiration<-apData$Respiration*-1 #make respiration all positive
 apData<-subset(apData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
 apData<-na.omit(apData) #remove NAs
-apData<-apData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order
+apData<-apData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR","Code")] #put cols in correct order
 
 apData2 <- prcomp(apData[c(5:13)], center = TRUE, scale = TRUE) #center and scale
 summary(apData2)
@@ -7855,7 +7870,7 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 apDataT0<-PhysioData #make a copy
 apDataT0<-subset(apDataT0, Time.Point=="T0") #
 apDataT0<-na.omit(apDataT0) #remove NAs
-apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Yield","Photosynthesis", "Respiration","PR")] #put cols in correct order
+apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR","Code")] #put cols in correct order
 
 apDataT02 <- prcomp(apDataT0[c(5:13)], center = TRUE, scale = TRUE) #center and scale
 summary(apData2)
