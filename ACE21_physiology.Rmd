@@ -637,7 +637,7 @@ biomass_T1<-subset(biomass2, Time.Point=="T1")
 biomass_TF<-subset(biomass2, Time.Point=="TF") 
 
 #T1 - by species
-ggplot(biomass_T1, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
+BiomassT1<-ggplot(biomass_T1, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Ash-free Dry Weight Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -737,6 +737,22 @@ ggsave("AFDW_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", 
       geom_boxplot(show.legend = FALSE)
 
 #TF - by species and algal profile - make for each species and then cowplot####
+      
+      #TF - by species
+BiomassTF<-ggplot(biomass_TF, aes(x=Species, y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      #ggtitle("Ash-free Dry Weight Post-Recovery Temperatures")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(face = "italic",size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+      geom_boxplot(show.legend = FALSE);BiomassTF
+      
+      
 biomass_TF_mcap<-subset(biomass_TF, Species=="Montipora capitata") 
 biomass_TF_pcomp<-subset(biomass_TF, Species=="Porites compressa") 
 biomass_TF_pvar<-subset(biomass_TF, Species=="Pavona varians") 
@@ -1330,18 +1346,21 @@ FC_T1<-subset(FC_Data, Time.Point=="T1")
 FC_TF<-subset(FC_Data, Time.Point=="TF") 
 
 #T1 - by species  ####
-ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
+FlowT1<-ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Symbiodiniaceae Cell Density Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
-      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2) ~ (log[10])))+
       theme(axis.text.x = element_text(face = "italic",size=14))+
       theme(axis.text.y = element_text(size=14))+
       theme(axis.title.y = element_text(size=14))+
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);FlowT1
+
+FlowT1<-FlowT1 + scale_y_log10();FlowT1 #to make more readble
+
 
 ggsave("FC_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
@@ -1351,7 +1370,7 @@ FC_T1_pcomp<-subset(FC_T1, Species=="Porites compressa")
 FC_T1_pvar<-subset(FC_T1, Species=="Pavona varians") 
 FC_T1_pacu<-subset(FC_T1, Species=="Pocillopora acuta") 
 
-#Mcap
+#Mcap ####
 FC_Mcap_plot<- 
   ggplot(FC_T1_mcap, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
@@ -1367,7 +1386,7 @@ FC_Mcap_plot<-
       geom_boxplot(show.legend = F)+
           scale_x_discrete(guide = "axis_nested");FC_Mcap_plot
   
-#Pcomp
+#Pcomp####
 FC_Pcomp_plot<- ggplot(FC_T1_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("P. compressa")+
@@ -1381,7 +1400,7 @@ FC_Pcomp_plot<- ggplot(FC_T1_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.c
       scale_x_discrete(guide = "axis_nested")+
       geom_boxplot(show.legend = F);FC_Pcomp_plot
 
-#Pvar
+#Pvar####
 FC_Pvar_plot<- ggplot(FC_T1_pvar, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("P. varians")+
@@ -1395,7 +1414,7 @@ FC_Pvar_plot<- ggplot(FC_T1_pvar, aes(x=interaction(Treatment,Clade), y=zoox.cm2
       scale_x_discrete(guide = "axis_nested")+
       geom_boxplot(show.legend = F);FC_Pvar_plot
 
-#Pacu
+#Pacu####
 FC_Pacu_plot<- ggplot(FC_T1_pacu, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("P. acuta")+
@@ -1418,18 +1437,21 @@ plot_row<-plot_grid(FC_Mcap_plot, FC_Pcomp_plot, FC_Pvar_plot, FC_Pacu_plot, nro
 ggsave("FC_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(FC_TF, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
+     FlowTF<- ggplot(FC_TF, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Symbiodiniaceae Cell Density Post-Recovery")+
-      xlab("") + #Label the X Axis
-      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      xlab("") + #Label the X Axis  
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2) ~ (log[10])))+
       theme(axis.text.x = element_text(face = "italic",size=14))+
       theme(axis.text.y = element_text(size=14))+
       theme(axis.title.y = element_text(size=14))+
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);FlowTF
+
+FlowTF<-FlowTF + scale_y_log10();FlowTF
+
 ggsave("FC_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
@@ -2276,7 +2298,7 @@ BW_df4_T1<-subset(BW_df4, variable=="time1.growth")
 BW_df4_TF<-subset(BW_df4, variable=="time2.growth") 
 
 #T1 - by species  ####
-ggplot(BW_df4_T1, aes(x=Species, y=value, fill=Treatment)) + 
+CalcT1<-ggplot(BW_df4_T1, aes(x=Species, y=value, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Growth Rate Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -2287,7 +2309,8 @@ ggplot(BW_df4_T1, aes(x=Species, y=value, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);CalcT1
+
 ggsave("BW_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot
@@ -2296,6 +2319,7 @@ BW_T1_pcomp<-subset(BW_df4_T1, Species=="Porites compressa")
 BW_T1_pvar<-subset(BW_df4_T1, Species=="Pavona varians") 
 BW_T1_pacu<-subset(BW_df4_T1, Species=="Pocillopora acuta") 
 
+#by species####
 #Mcap
 BW_Mcap_plot<- 
   ggplot(BW_T1_mcap, aes(x=interaction(Treatment,Clade), y=value, fill=Treatment)) + 
@@ -2363,7 +2387,7 @@ plot_row<-plot_grid(BW_Mcap_plot, BW_Pcomp_plot, BW_Pvar_plot, BW_Pacu_plot, nro
 ggsave("BW_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(BW_df4_TF, aes(x=Species, y=value, fill=Treatment)) + 
+   CalcTF<-   ggplot(BW_df4_TF, aes(x=Species, y=value, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Symbiodiniaceae Cell Density Post-Recovery")+
       xlab("") + #Label the X Axis
@@ -2374,7 +2398,7 @@ ggsave("BW_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", wi
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);CalcTF
 ggsave("BW_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
@@ -3003,7 +3027,7 @@ Chla_T0_mean <- ddply(Chla_T0, c( "Species"), summarise,
                  max = max(ChlaSA, na.rm=TRUE) 
 );Chla_T0_mean
 
-#T0 only
+#T0 only ####
   ggplot(Chla_T0, aes(x=Species, y=ChlaSA, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
@@ -3034,12 +3058,12 @@ ggsave("Chla_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, 
               scale_x_discrete(guide = "axis_nested")
 ggsave("Chla_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#Subset by time 1 or F only 
+#Subset by time 1 or F only  ####
 Chla_T1<-subset(Chla, Time.Point=="T1") 
 Chla_TF<-subset(Chla, Time.Point=="TF") 
 
 #T1 - by species  ####
-ggplot(Chla_T1, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
+ChlaT1<-ggplot(Chla_T1, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle(bquote("Chlorophyll-"*italic(alpha))) +
       xlab("") + #Label the X Axis
@@ -3050,9 +3074,11 @@ ggplot(Chla_T1, aes(x=Species, y=ChlaSA, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);ChlaT1
+
 ggsave("Chla_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+#by species ####
 #T1 - by species and algal profile - make for each species and then cowplot
 Chla_T1_mcap<-subset(Chla_T1, Species=="Montipora capitata") 
 Chla_T1_pcomp<-subset(Chla_T1, Species=="Porites compressa") 
@@ -3131,19 +3157,20 @@ label_expression <- expression(bold("Chlorophyll-" * italic(α) * " cm"^{-2}))
 ggsave("Chla_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(Chla_TF, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
+     ChlaTF<-ggplot(Chla_TF, aes(x=Species, y=ChlaSA, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
-      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
+      ggtitle(bquote("Chlorophyll-"*italic(alpha))) +
       xlab("") + #Label the X Axis
-      ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
+      ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
       theme(axis.text.x = element_text(face = "italic",size=14))+
       theme(axis.text.y = element_text(size=14))+
       theme(axis.title.y = element_text(size=14))+
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
-ggsave("Chla_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
+      geom_boxplot(show.legend = FALSE);ChlaTF
+
+  ggsave("Chla_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
 Chla_TF_mcap<-subset(Chla_TF, Species=="Montipora capitata") 
@@ -8357,6 +8384,410 @@ Testing <- cbind(
 
 ```
 
+
+# 20250404 Fig 2 Showing PCA of physio changing over time. 
+```{r}
+library(tidyverse)
+library(vegan)     # for PCA
+library(ggrepel)   # for better text labeling
+
+PhysioData2<-PhysioData #make a copy
+
+# Subset numeric physiological columns
+physio_vars <- PhysioData2 %>% 
+  dplyr::select( Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+
+# Filter for T0 and duplicate the rows for both Ambient and High
+T0_data_ambient <- PhysioData2 %>%
+  filter(Time.Point == "T0") %>%
+  mutate(Treatment = "Ambient")
+
+T0_data_high <- PhysioData2 %>%
+  filter(Time.Point == "T0") %>%
+  mutate(Treatment = "High")
+
+# Combine the two copies of T0 data (one for Ambient and one for High)
+T0_data <- bind_rows(T0_data_ambient, T0_data_high)
+
+# Remove the original T0 rows from the dataset
+PhysioData_no_T0 <- PhysioData2 %>%
+  filter(Time.Point != "T0")
+
+# Combine the updated T0 data with the rest of the data
+PhysioData_updated <- bind_rows(PhysioData_no_T0, T0_data)
+
+#change calcification T0 0s into the ambient at T1 values by parent (this is to ensure PCA isn't heavily impacted by these 0s)
+
+# First, create a lookup table of T1 Ambient calcification values by Parent.ID
+T1_ambient_lookup <- PhysioData_updated %>%
+  filter(Time.Point == "T1", Treatment == "Ambient") %>%
+  dplyr::select(Parent.ID, Calcification) %>%
+  dplyr::rename(Calcification_T1 = Calcification)
+
+# Now, update the T0 Calcification values
+PhysioData_updated2 <- PhysioData_updated %>%
+  left_join(T1_ambient_lookup, by = "Parent.ID") %>%
+  mutate(Calcification = ifelse(Time.Point == "T0" & Calcification == 0,
+                                Calcification_T1,
+                                Calcification)) %>%
+  dplyr::select(-Calcification_T1)  # remove the temporary column
+
+
+#select cols for the PCA
+PhysioData_updated3 <- PhysioData_updated2 %>%  
+  dplyr::select(Parent.ID, Treatment,Species, Time.Point, Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  #get rid of unused cols
+
+# Subset numeric physiological columns
+physio_vars <- PhysioData_updated3 %>% 
+  dplyr::select( Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+
+
+# you have missing values. Try two ways - 1 way remove rows with missing data. Then 2. try imputation
+
+#1
+Physio_for_pca_NA<-physio_vars %>% drop_na()
+PhysioData_updated3<-PhysioData_updated3 %>% drop_na()
+
+# Scale the data
+scaled_data <- scale(Physio_for_pca_NA)
+
+# Perform PCA
+pca <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+
+# Combine scores with metadata
+pca_scores <- as.data.frame(pca$x)
+pca_scores <- bind_cols(pca_scores, PhysioData_updated3 %>% dplyr::select(Species, Treatment, Time.Point, Parent.ID))
+
+# calc centroid
+centroids <- pca_scores %>%
+  group_by(Species, Treatment, Time.Point) %>%
+  summarise(PC1 = mean(PC1), PC2 = mean(PC2), .groups = "drop")
+
+# prepare arrows
+arrows <- centroids %>%
+  arrange(Species, Treatment, Time.Point) %>%
+  group_by(Species, Treatment) %>%
+  mutate(PC1_next = lead(PC1), PC2_next = lead(PC2)) %>%
+  filter(!is.na(PC1_next))
+
+plot<-ggplot() +
+  # Plot T0 Ambient circles first (more visible, higher alpha)
+  geom_point(data = pca_scores, aes(x = PC1, y = PC2, color = Treatment), alpha = 0.4) +
+
+  # Centroids (same treatment coloring)
+  geom_point(data = centroids, aes(x = PC1, y = PC2, color = Treatment), size = 4) +
+
+  # Arrows by Treatment
+  geom_segment(data = arrows, 
+               aes(x = PC1, y = PC2, xend = PC1_next, yend = PC2_next, 
+                   color = Treatment, linetype = Treatment), 
+               arrow = arrow(length = unit(0.3, "cm")), linewidth = 0.5) +
+
+  # Timepoint labels (optional: still colored by Species or change to Treatment if you want)
+  geom_text_repel(data = centroids, 
+                  aes(x = PC1, y = PC2, label = Time.Point, color = Treatment), size = 3.5) +
+
+  # Manual color and linetype scales for Treatment ", "
+  scale_color_manual(values = c("Ambient" = "deepskyblue1", "High" = "orangered")) +
+  scale_linetype_manual(values = c("Ambient" = "solid", "High" = "dashed")) +
+
+  theme_minimal() +
+  labs(title = "PCA of Physiological Measurements Over Time",
+       x = "PC1", y = "PC2") +
+  theme(legend.position = "right")
+
+#Facet by species
+plot+facet_wrap(~Species, scales = "free", nrow=1)+
+
+# Customize the facet titles (species names) with more specific styling
+  theme(
+    strip.text = element_text(face = "bold.italic", size = 14),  # Bold, italic, and larger size for all facet labels
+    strip.background = element_blank()  # Optionally remove background behind the facet labels
+  ) +
+  
+  theme_minimal() +
+  labs(title = "PCA of Physiological Measurements Over Time",
+       x = "PC1", y = "PC2") +
+  theme(legend.position = "right")
+
+# Save the plot to a PDF with 8x10 size
+ggsave("PhysPCAAarow_plot.pdf", 
+       plot = last_plot(), 
+       width = 10, 
+       height = 5, 
+       units = "in", 
+       device = "pdf")
+
+
+
+
+
+
+
+#### Try this again but with Calcification T0 as 0 and then just removed to see how big a visual different it makes ####
+# Subset numeric physiological columns
+physio_vars <- PhysioData2 %>% 
+  dplyr::select(  `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+
+# Filter for T0 and duplicate the rows for both Ambient and High
+T0_data_ambient <- PhysioData2 %>%
+  filter(Time.Point == "T0") %>%
+  mutate(Treatment = "Ambient")
+
+T0_data_high <- PhysioData2 %>%
+  filter(Time.Point == "T0") %>%
+  mutate(Treatment = "High")
+
+# Combine the two copies of T0 data (one for Ambient and one for High)
+T0_data <- bind_rows(T0_data_ambient, T0_data_high)
+
+# Remove the original T0 rows from the dataset
+PhysioData_no_T0 <- PhysioData2 %>%
+  filter(Time.Point != "T0")
+
+# Combine the updated T0 data with the rest of the data
+PhysioData_updated <- bind_rows(PhysioData_no_T0, T0_data)
+
+
+
+#select cols for the PCA
+PhysioData_updated3 <- PhysioData_updated %>%  
+  dplyr::select(Parent.ID, Treatment,Species, Time.Point, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  #get rid of unused cols
+
+# Subset numeric physiological columns
+physio_vars <- PhysioData_updated3 %>% 
+  dplyr::select(  `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+
+
+#1
+Physio_for_pca_NA<-physio_vars %>% drop_na()
+PhysioData_updated3<-PhysioData_updated3 %>% drop_na()
+
+# Scale the data
+scaled_data <- scale(Physio_for_pca_NA)
+
+# Perform PCA
+pca <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+
+# Combine scores with metadata
+pca_scores <- as.data.frame(pca$x)
+pca_scores <- bind_cols(pca_scores, PhysioData_updated3 %>% dplyr::select(Species, Treatment, Time.Point, Parent.ID))
+
+# calc centroid
+centroids <- pca_scores %>%
+  group_by(Species, Treatment, Time.Point) %>%
+  summarise(PC1 = mean(PC1), PC2 = mean(PC2), .groups = "drop")
+
+# prepare arrows
+arrows <- centroids %>%
+  arrange(Species, Treatment, Time.Point) %>%
+  group_by(Species, Treatment) %>%
+  mutate(PC1_next = lead(PC1), PC2_next = lead(PC2)) %>%
+  filter(!is.na(PC1_next))
+
+plot<-ggplot() +
+  # Plot T0 Ambient circles first (more visible, higher alpha)
+  geom_point(data = pca_scores, aes(x = PC1, y = PC2, color = Treatment), alpha = 0.4) +
+
+  # Centroids (same treatment coloring)
+  geom_point(data = centroids, aes(x = PC1, y = PC2, color = Treatment), size = 4) +
+
+  # Arrows by Treatment
+  geom_segment(data = arrows, 
+               aes(x = PC1, y = PC2, xend = PC1_next, yend = PC2_next, 
+                   color = Treatment, linetype = Treatment), 
+               arrow = arrow(length = unit(0.3, "cm")), linewidth = 0.5) +
+
+  # Timepoint labels (optional: still colored by Species or change to Treatment if you want)
+  geom_text_repel(data = centroids, 
+                  aes(x = PC1, y = PC2, label = Time.Point, color = Treatment), size = 3.5) +
+
+  # Manual color and linetype scales for Treatment ", "
+  scale_color_manual(values = c("Ambient" = "deepskyblue1", "High" = "orangered")) +
+  scale_linetype_manual(values = c("Ambient" = "solid", "High" = "dashed")) +
+
+  theme_minimal() +
+  labs(title = "PCA of Physiological Measurements Over Time",
+       x = "PC1", y = "PC2") +
+  theme(legend.position = "right")
+
+#Facet by species
+plot+facet_wrap(~Species, scales = "free", nrow=1)+
+
+# Customize the facet titles (species names) with more specific styling
+  theme(
+    strip.text = element_text(face = "bold.italic", size = 14),  # Bold, italic, and larger size for all facet labels
+    strip.background = element_blank()  # Optionally remove background behind the facet labels
+  ) +
+  
+  theme_minimal() +
+  labs(title = "PCA of Physiological Measurements Over Time",
+       x = "PC1", y = "PC2") +
+  theme(legend.position = "right")
+
+# Save the plot to a PDF with 8x10 size
+ggsave("PhysPCAAarow_NoCalc_plot.pdf", 
+       plot = last_plot(), 
+       width = 10, 
+       height = 5, 
+       units = "in", 
+       device = "pdf")
+
+```
+
+
+#editing for fig 4 main manuscript 20250407 see below for more
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+
+PhysioData_clean <- PhysioData %>%
+  dplyr::select(-Code, -Depth, -Clade, -Tissue,-transmission, -skeleton, -shape)
+
+# Step 1: Reshape to long format
+physio_long <- PhysioData_clean %>%
+  pivot_longer(cols = -c(Species, Treatment, Time.Point, Parent.ID),
+               names_to = "Variable",
+               values_to = "Value")
+
+physio_long <- physio_long[complete.cases(physio_long), ] #remove NAs
+
+
+# Step 2: Get T0 baseline values
+T0_vals <- physio_long %>%
+  filter(Time.Point == "T0") %>%
+  dplyr::rename(T0_Value = Value) %>%
+  dplyr::select(Species, Treatment, Parent.ID, Variable, T0_Value)
+
+# Step 3: Join T0 values back to all timepoints
+physio_pct_change <- physio_long %>%
+  left_join(T0_vals, by = c("Species", "Treatment", "Parent.ID", "Variable")) %>%
+  filter(Time.Point != "T0") %>%
+  mutate(PercentChange = ((Value - T0_Value) / T0_Value) * 100)
+
+# Summarize percent change by Species, Treatment, Time.Point, and Variable
+summary_data <- physio_pct_change %>%
+  group_by(Species, Treatment, Time.Point, Variable) %>%
+  summarise(
+    MeanChange = mean(PercentChange, na.rm = TRUE),
+    SE = sd(PercentChange, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+
+ggplot(summary_data, aes(x = Time.Point, y = MeanChange, color = Treatment)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_point(position = position_dodge(width = 0.5), size = 3) +
+  geom_errorbar(aes(ymin = MeanChange - SE, ymax = MeanChange + SE),
+                position = position_dodge(width = 0.5), width = 0.2) +
+  geom_line(aes(group = Treatment), position = position_dodge(width = 0.5)) +
+  facet_grid(Variable ~ Species, scales = "free_y") +
+  scale_color_manual(values = c("Ambient" = "blue", "High" = "red")) +
+  labs(y = "Percent Change from T0", x = "Time Point") +
+  theme_minimal() +
+  theme(strip.text.x = element_text(face = "italic", size = 12),
+        strip.text.y = element_text(face = "bold", size = 11))
+
+
+
+```
+# trying again with the focus between treatments at each time point
+```{r}
+
+PhysioData_clean <- PhysioData %>%
+  dplyr::select(-Code, -Depth, -Clade, -Tissue,-transmission, -skeleton, -shape)
+
+# Step 1: Reshape to long format
+physio_long <- PhysioData_clean %>%
+  pivot_longer(cols = -c(Species, Treatment, Time.Point, Parent.ID),
+               names_to = "Variable",
+               values_to = "Value")
+
+physio_long <- physio_long[complete.cases(physio_long), ] #remove NAs
+
+time_data <- physio_long %>%
+  filter(Time.Point %in% c("T1", "TF"))
+
+# Separate Ambient and High
+ambient <- time_data %>% filter(Treatment == "Ambient") %>% dplyr::rename(Ambient_Value = Value)
+high <- time_data %>% filter(Treatment == "High") %>% dplyr::rename(High_Value = Value)
+
+# Join and calculate percent difference
+treatment_diff <- left_join(ambient, high,
+                            by = c("Species", "Time.Point", "Parent.ID", "Variable")) %>%
+  mutate(PercentDiff = ((High_Value - Ambient_Value) / Ambient_Value) * 100)
+
+summary_diff <- treatment_diff %>%
+  group_by(Species, Variable, Time.Point) %>%
+  summarise(
+    MeanDiff = mean(PercentDiff, na.rm = TRUE),
+    SE = sd(PercentDiff, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(summary_diff, aes(x = Time.Point, y = MeanDiff, fill = Time.Point)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_errorbar(aes(ymin = MeanDiff - SE, ymax = MeanDiff + SE),
+                width = 0.2, position = position_dodge(width = 0.7)) +
+  facet_grid(Variable ~ Species, scales = "free_y") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  labs(y = "Percent Difference (High vs Ambient)", x = "Time Point") +
+  scale_fill_manual(values = c("T1" = "#D55E00", "TF" = "#009E73")) +
+  theme_minimal() +
+  theme(strip.text.x = element_text(face = "italic", size = 12),
+        strip.text.y = element_text(face = "bold", size = 11))
+
+# Save the plot as a PDF
+ggsave("percent_difference_plot.pdf", 
+       plot = last_plot(),    # Use the most recent plot
+       width = 8, height = 12, units = "in")
+
+```
+test
+```{r}
+# Step 1: Calculate average per Parent.ID for each timepoint and treatment
+avg_by_parent <- PhysioData_clean %>%
+  group_by(Species, Parent.ID, Treatment, Time.Point) %>%
+  summarize(across(starts_with("Var"), mean, na.rm = TRUE)) %>%  # Replace "Var" with actual physiological variables
+  ungroup()
+
+# Step 2: Reshape to long format
+physio_long_avg <- avg_by_parent %>%
+  pivot_longer(cols = starts_with("Var"),  # Replace with the names of your physiological variables
+               names_to = "Variable",
+               values_to = "Value")
+
+# Step 3: Get T0 baseline values (average per Parent.ID)
+T0_vals_avg <- physio_long_avg %>%
+  filter(Time.Point == "T0") %>%
+  rename(T0_Value = Value) %>%
+  select(Species, Parent.ID, Variable, T0_Value)
+
+# Step 4: Calculate Percent Change for T1 and TF based on T0 (averaged)
+physio_pct_change_avg <- physio_long_avg %>%
+  left_join(T0_vals_avg, by = c("Species", "Parent.ID", "Variable")) %>%
+  filter(Time.Point != "T0") %>%
+  mutate(PercentChange = ((Value - T0_Value) / T0_Value) * 100)
+
+# Step 5: Plot percent change by Species and Treatment
+ggplot(physio_pct_change_avg, aes(x = Time.Point, y = PercentChange, color = Treatment, group = Parent.ID)) +
+  geom_line(aes(linetype = Treatment), size = 1) +  # Lines to show the change over time
+  geom_point(size = 3) +  # Add points for each time point
+  facet_grid(Variable ~ Species, scales = "free_y") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  scale_color_manual(values = c("Ambient" = "blue", "High" = "red")) +  # Color treatments
+  scale_linetype_manual(values = c("Ambient" = "solid", "High" = "dashed")) +  # Line style
+  labs(y = "Percent Change (High - Ambient)", x = "Time Point") +
+  theme_minimal() +
+  theme(strip.text.x = element_text(face = "italic", size = 12),
+        strip.text.y = element_text(face = "bold", size = 11)) +
+  theme(legend.position = "top")
+
+```
+
+
 # % change plots for defense
 
 ```{r}
@@ -9241,7 +9672,7 @@ grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 
 ```{r}
  
-## load packages
+## load packagesx
 library(lmerTest)
 library(naniar)
 library(multcomp)
@@ -9286,7 +9717,7 @@ why did you do nmds for physio. not right. but euclidian is right
 ```{r}
 AA_PhysioData<-PhysioData #copy df
 AA_PhysioData$Respiration<-AA_PhysioData$Respiration*-1
-AA_PhysioData<-AA_PhysioData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
+AA_PhysioData<-AA_PhysioData[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] # keep only columns you need
 
 
 fullNMDS<-subset(AA_PhysioData, Time.Point=="T1"|Time.Point=="TF") #only T1 and TF
