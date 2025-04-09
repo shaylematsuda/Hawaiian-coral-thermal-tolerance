@@ -632,7 +632,28 @@ ggsave("Biomass_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=
 ggsave("Biomass_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
 #all species ####
-#Subset by time 1 or F only 
+
+#Plots T1 and TF
+biomass_T1TF<-subset(biomass2, Time.Point!="T0") 
+
+#T1TF - by species ####
+BiomassT1TF<- ggplot(biomass_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=AFDWmg.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Biomass")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");BiomassT1TF
+
+
+
+#Subset by time 1 or F only ####
 biomass_T1<-subset(biomass2, Time.Point=="T1") 
 biomass_TF<-subset(biomass2, Time.Point=="TF") 
 
@@ -1344,6 +1365,27 @@ ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", wid
 #Subset by time 1 or F only 
 FC_T1<-subset(FC_Data, Time.Point=="T1") 
 FC_TF<-subset(FC_Data, Time.Point=="TF") 
+
+
+#Plots T1 and TF
+flow_T1TF<-subset(FC_Data, Time.Point!="T0") 
+
+#T1TF - by species ####
+flowT1TF<- ggplot(flow_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=zoox.cm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Symbiodiniaceae Cell Density")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Symbiodiniaceae cells '(cm^-2) ~ (log[10])))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");flowT1TF
+
+FlowT1TF<-flowT1TF + scale_y_log10();FlowT1TF #to make more readble
 
 #T1 - by species  ####
 FlowT1<-ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
@@ -2293,6 +2335,26 @@ ggsave("BW_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, he
       scale_x_discrete(guide = "axis_nested")
 ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+
+
+#Plots T1 and TF
+
+#T1TF - by species ####
+bwT1TF<- ggplot(BW_df4, aes(x=interaction(Treatment,variable,Species), y=value, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Growth Rate")+
+      # xlab("") + #Label the X Axis
+      ylab(bquote('Growth Rate '(Percent~day^-1)))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");bwT1TF
+
+
 #Subset by time 1 or F only  ####
 BW_df4_T1<-subset(BW_df4, variable=="time1.growth") 
 BW_df4_TF<-subset(BW_df4, variable=="time2.growth") 
@@ -3057,6 +3119,27 @@ ggsave("Chla_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, 
       geom_boxplot( show.legend = FALSE)+
               scale_x_discrete(guide = "axis_nested")
 ggsave("Chla_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
+
+#Plots T1 and TF
+Chla_T1TF<-subset(Chla, Time.Point!="T0") 
+
+#T1TF - by species ####
+ChlaT1TF <- ggplot(Chla_T1TF, aes(x=interaction(Treatment, Time.Point, Species), y=ChlaSA, fill=Treatment)) + 
+  scale_fill_manual(values=c("deepskyblue1", "orangered")) +
+  ggtitle(expression(bold("Chlorophyll-" * alpha))) +  # Bold the plot title using expression() and bold()
+  xlab("") +  # Label the X Axis
+  ylab(expression("Chlorophyll-" * alpha * " " * plain(cm)^{-2})) +  # Keep the y-axis label as it is
+  theme(axis.text.y = element_text(size=14)) +  # Keep y-axis labels size as is
+  theme(axis.title.y = element_text(size=14)) +  # Keep y-axis title size as is
+  theme(plot.title = element_text(size=16)) +  # Keep the title size but without making it bold here
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_x_discrete(guide = "axis_nested");ChlaT1TF
+
+
+
+
 
 #Subset by time 1 or F only  ####
 Chla_T1<-subset(Chla, Time.Point=="T1") 
@@ -4132,6 +4215,50 @@ ggsave("PAM_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, h
 
 ggsave("PAM_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
+
+#Plots T1 and TF####
+FvFm_T1TF<-subset(PAMdata2, Time.Point!="T0") 
+
+#T1TF - by species ####
+FvFmT1TF<- ggplot(FvFm_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=Yield, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(bquote("Photosynthetic Quantum Yeild")) +
+      xlab("") + #Label the X Axis
+      ylab(bquote("Fv/Fm"))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");FvFmT1TF
+
+#Plots T1 and TF AGAIN with Pacuta non detectable removed ####
+FvFm_T1TF_ND<-FvFm_T1TF
+ #Remove rows where Yield is 0.100
+FvFm_T1TF_ND <- FvFm_T1TF_ND %>%
+  filter(Yield != 0.100)
+
+count_samples <- FvFm_T1TF_ND %>%
+ dplyr::filter(Species == "Pocillopora acuta", Days == "58", Treatment == "High") %>%
+  nrow()
+
+FvFm_T1TF_ND_D24D58<-subset(FvFm_T1TF_ND, Days==24|Days==58)
+#T1TF - by species ####
+FvFmT1TF_ND<- ggplot(FvFm_T1TF_ND_D24D58, aes(x=interaction(Treatment,Days,Species), y=Yield, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(bquote("Photosynthetic Quantum Yeild")) +
+      xlab("") + #Label the X Axis
+      ylab(bquote("Fv/Fm"))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");FvFmT1TF_ND
+
+
 #### mcap ####
 #plot all over time by species
 #Mcap plot ####
@@ -4683,13 +4810,30 @@ ggsave("Protein_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=
   
 ggsave("Protein_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
+#Plots T1 and TF####
+Protein_T1TF<-subset(Protein, Time.Point!="T0") 
+
+#T1TF - by species ####
+ProteinT1TF<- ggplot(Protein_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=mg.mm2, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Total Soluable Protein")+
+      xlab("") + #Label the X Axis
+      ylab(bquote('Total Soluable Protein '(mg~mm^2)))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");ProteinT1TF
+
 #all species ####
 #Subset by time 1 or F only 
 Protein_T1<-subset(Protein, Time.Point=="T1") 
 Protein_TF<-subset(Protein, Time.Point=="TF") 
 
 #T1 - by species
-ggplot(Protein_T1, aes(x=Species, y=mg.mm2, fill=Treatment)) + 
+ProteinT1<-ggplot(Protein_T1, aes(x=Species, y=mg.mm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Total Soluable Protein Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -4700,7 +4844,8 @@ ggplot(Protein_T1, aes(x=Species, y=mg.mm2, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);ProteinT1
+
 ggsave("Protein_T1_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot####
@@ -4776,7 +4921,7 @@ plot_row<-plot_grid(Protein_Mcap_plot, Protein_Pcomp_plot, Protein_Pvar_plot, Pr
 ggsave("Protein_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(Protein_TF, aes(x=Species, y=mg.mm2, fill=Treatment)) + 
+   ProteinTF<-   ggplot(Protein_TF, aes(x=Species, y=mg.mm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Total Soluable Protein Post-Recovery")+
       xlab("") + #Label the X Axis
@@ -4787,7 +4932,8 @@ ggsave("Protein_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);ProteinTF
+
 ggsave("Protein_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 
@@ -4980,7 +5126,7 @@ aggregate(GrossP ~ Species + Treatment, PR.df_T0, mean)
       geom_boxplot(show.legend = FALSE)
 ggsave("GrossPhoto_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
-#T0 only - by algal profile
+#T0 only - by algal profile ####
   ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=GrossP, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
@@ -4998,12 +5144,30 @@ ggsave("GrossPhoto_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", wid
 ggsave("GrossPhoto_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
 #all species ####
+
+#Plots T1 and TF####
+Photo_T1TF<-subset(PR.df_B, Time.Point!="T0") 
+
+#T1TF - by species ####
+PhotoT1TF<- ggplot(Photo_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=GrossP, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Gross Photosynthesis")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PhotoT1TF
+
 #Subset by time 1 or F only 
 PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
 PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
 #T1 - by species
-ggplot(PR.df_T1, aes(x=Species, y=Photo, fill=Treatment)) + 
+PhotoT1<-ggplot(PR.df_T1, aes(x=Species, y=Photo, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Gross Photosynthesis Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -5014,7 +5178,8 @@ ggplot(PR.df_T1, aes(x=Species, y=Photo, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PhotoT1
+
 ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot####
@@ -5093,7 +5258,7 @@ plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pa
 ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(PR.df_TF, aes(x=Species, y=GrossP, fill=Treatment)) + 
+    PhotoTF<-  ggplot(PR.df_TF, aes(x=Species, y=GrossP, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Gross Photosynthesis Post-Recovery")+
       xlab("") + #Label the X Axis
@@ -5104,7 +5269,8 @@ ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", wid
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PhotoTF
+
 ggsave("GrossPhoto_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
@@ -5537,13 +5703,31 @@ ggsave("Resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15,
   
 ggsave("Resp_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
+
+#Plots T1 and TF####
+Resp_T1TF<-subset(PR.df_B, Time.Point!="T0") 
+
+#T1TF - by species ####
+RespT1TF<- ggplot(Resp_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=Resp, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Respiration")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");RespT1TF
+
 #all species ####
 #Subset by time 1 or F only 
 PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
 PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
 #T1 - by species
-ggplot(PR.df_T1, aes(x=Species, y=Resp, fill=Treatment)) + 
+RespT1<-ggplot(PR.df_T1, aes(x=Species, y=Resp, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Respiration Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -5554,7 +5738,8 @@ ggplot(PR.df_T1, aes(x=Species, y=Resp, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);RespT1
+
 ggsave("Resp_T1_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot####
@@ -5630,7 +5815,7 @@ plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pa
 ggsave("Resp_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(PR.df_TF, aes(x=Species, y=Resp, fill=Treatment)) + 
+      RespTF<-ggplot(PR.df_TF, aes(x=Species, y=Resp, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Respiration Post-Recovery")+
       xlab("") + #Label the X Axis
@@ -5641,7 +5826,9 @@ ggsave("Resp_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", w
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);RespTF
+
+
 ggsave("Resp_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
@@ -6037,19 +6224,39 @@ ggsave("resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15,
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-      ggtitle(" PRiration by Algal Profile")+
+      ggtitle("Respiration by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
       scale_x_discrete(guide = "axis_nested")
   
 ggsave("PR_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
+
+
+
+#Plots T1 and TF####
+PR_T1TF<-subset(PR.df_B, Time.Point!="T0") 
+
+#T1TF - by species ####
+PRT1TF<- ggplot(PR_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=PR, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("PR")+
+      xlab("") + #Label the X Axis
+      ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");PRT1TF
+
 #all species ####
 #Subset by time 1 or F only 
 PR.df_T1<-subset(PR.df_B, Time.Point=="T1") 
 PR.df_TF<-subset(PR.df_B, Time.Point=="TF") 
 
 #T1 - by species
-ggplot(PR.df_T1, aes(x=Species, y=PR, fill=Treatment)) + 
+PRT1<-ggplot(PR.df_T1, aes(x=Species, y=PR, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle(" PRiration Post-Elevated Temperatures")+
       xlab("") + #Label the X Axis
@@ -6060,7 +6267,9 @@ ggplot(PR.df_T1, aes(x=Species, y=PR, fill=Treatment)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PRT1
+
+
 ggsave("PR_T1_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T1 - by species and algal profile - make for each species and then cowplot####
@@ -6136,7 +6345,7 @@ plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pa
 ggsave("PR_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
-      ggplot(PR.df_TF, aes(x=Species, y=PR, fill=Treatment)) + 
+     PRTF<- ggplot(PR.df_TF, aes(x=Species, y=PR, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("PRiration Post-Recovery")+
       xlab("") + #Label the X Axis
@@ -6147,7 +6356,8 @@ ggsave("PR_profile_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", wid
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PRTF
+
 ggsave("PR_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF - by species and algal profile - make for each species and then cowplot####
@@ -6730,49 +6940,110 @@ grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clad
 
 ```
 
-# all physio figure (dont need)
+# all physio figure T1 and TF boxplots Figure 4
 
 ```{r}
+library(patchwork)
+
+# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
+BiomassT1TF <- BiomassT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 9),
+        panel.spacing = unit(1, "lines"))
+
+bwT1TF <- bwT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+FlowT1TF <- FlowT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ChlaT1TF <- ChlaT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+FvFmT1TF <- FvFmT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ProteinT1TF <- ProteinT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PhotoT1TF <- PhotoT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+RespT1TF <- RespT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PRT1TF <- PRT1TF + 
+  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
+
+# Combine plots vertically using patchwork
+combined_plot <- BiomassT1TF / bwT1TF / FlowT1TF / ChlaT1TF / FvFmT1TF / 
+                 ProteinT1TF / PhotoT1TF / RespT1TF / PRT1TF +
+                 plot_layout(ncol = 1)
 
 
-grid.arrange(
-            Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot,
-            Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot,
-          Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot,
-            Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot,
-            Mcap_PAM_plot, Pcomp_PAM_plot, Pvar_PAM_plot,Pacu_PAM_plot,
-            Mcap_Protein_plot, Pcomp_Protein_plot, Pvar_Protein_plot,Pacu_Protein_plot,
-             Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,
-             Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,
-             Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 9)
 
-
-grid.arrange(
-            Mcap_biomass_plot, Pcomp_biomass_plot, Pvar_biomass_mean_plot,Pacu_biomass_mean_plot,
-            Mcap_FC_lineplot, Pcomp_FC_lineplot, Pvar_FC_lineplot,Pacu_FC_lineplot,
-          Mcap_BW_plot, Pcomp_BW_plot, Pvar_BW_plot,Pacu_BW_plot,
-            Mcap_Chla_plot, Pcomp_Chla_plot, Pvar_Chla_plot,Pacu_Chla_plot,
-           nrow = 4)
-
-#T0 all
-
-
-
-grid.arrange(
-  All_biomass_plot,
-FC_T0_mean_plot,
-grow_T0_mean_plot,
-Chla_T0_mean_plot,
-PAM_T0_mean_plot,
-prot_T0_mean_plot,
-R_T0_mean_plot,
-Photo_T0_mean_plot,
-PR_T0_mean_plot,
-
-           nrow = 3)
-
+pdf("CombinedPhysioPlots.pdf", width = 10, height = 18)
+print(combined_plot)
+dev.off()
 
 ```
+
+#same as above with FvFm for P.acuta 0s removed
+```{r}
+library(patchwork)
+
+FvFmT1TF <- FvFmT1TF +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Combine plots vertically using patchwork
+combined_plot <- BiomassT1TF / bwT1TF / FlowT1TF / ChlaT1TF / FvFmT1TF / 
+                 ProteinT1TF / PhotoT1TF / RespT1TF / PRT1TF +
+                 plot_layout(ncol = 1)
+
+
+
+pdf("CombinedPhysioPlots.pdf", width = 10, height = 18)
+print(combined_plot)
+dev.off()
+
+```
+
+
 
 #COMBINE all physio dfs Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps
 
