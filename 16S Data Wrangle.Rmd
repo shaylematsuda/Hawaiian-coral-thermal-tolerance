@@ -1,0 +1,130 @@
+---
+title: "16S_data_wrangle"
+output: html_document
+date: "2025-06-30"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#This is just the data wrangle for 16S
+
+16s data analysis
+#Data and libraries
+```{r}  
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+
+
+library(plyr) 
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(lmerTest)
+library(car)
+library(emmeans)
+library(gridExtra)
+library(multcomp)
+library(reshape)
+library(tidyverse)
+library(factoextra)
+library(reshape2)
+library(vegan) 
+library(pairwiseAdonis)
+library("scales")
+packageVersion("scales")
+library(RColorBrewer)
+library(colorRamps)
+library(devtools)
+library(phyloseq)
+library(readr)
+library(microbiome)
+library(vegan)
+
+library(geosphere)
+library(ade4)
+```
+
+#Load in data and get into phyloseq
+```{r}       
+#read in sample data: Meta16s_3k.csv
+MetaData16<-read.csv("Data/Meta16s_3k.csv") #run in physio script first
+MetaData16$Parent.ID<-as.factor(as.character(MetaData16$Parent.ID))
+MetaData16$Tank.num<-as.factor(as.character(MetaData16$Tank.num))
+MetaData16$sample_name <- gsub("^S", "", MetaData16$sample_name)
+
+sam0 <- MetaData16
+sam1 <- as.matrix(sam0[, -1])
+rownames(sam1) <- sam0$sample_name
+sam <- sample_data(data.frame(sam1))
+
+#load in OUT:raw_abundanceTable_100.shared
+# Read the OTU table
+OTU3k <- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/Results/main/details/abundance_table_100.shared.csv",
+                  stringsAsFactors = FALSE)
+
+# Ensure the "Group" column (sample names) is treated as character
+OTU3k$Group <- as.character(OTU3k$Group)
+OTU3k <- OTU3k %>%
+  mutate(Group = gsub("_", ".", Group)) %>%  # Convert underscores to dots
+  mutate(Group = gsub("S\\d{2,3}\\.L001", "", Group)) %>%  # Remove "S###.L001" or "S##.L001"
+  mutate(Group = gsub("\\.$", "", Group))  # Remove any trailing dots
+
+#Edit manually, N77.S3.L001, N49.S4.L001, 832.S2.L001, 775.S8.L001, 619.S7.L001, 2136.S6.L001, 1413.S9.L001, 
+OTU3k <- OTU3k %>%
+  mutate(Group = case_when(
+    Group == "1413.S9.L001" ~ "1413",  # Manually replace specific value
+    Group == "N77.S3.L001" ~ "N77",  # Add as many replacements as needed
+    Group == "N49.S4.L001" ~ "N49",  # Add as many replacements as needed
+    Group == "832.S2.L001" ~ "832",  # Add as many replacements as needed
+    Group == "775.S8.L001" ~ "775",  # Add as many replacements as needed
+    Group == "2136.S6.L001" ~ "2136",  # Add as many replacements as needed
+    Group == "1413.S9.L001" ~ "1413",  # Add as many replacements as needed
+    Group == "619.S7.L001" ~ "619",  # Add as many replacements as needed
+    Group == "306TG.1" ~ "306TF",  # Add as many replacements as needed
+    TRUE ~ Group  # Keep the other Group values unchanged
+  ))
+
+# Remove the "label" column before converting other columns to numeric
+OTU3k <- OTU3k[, !names(OTU3k) %in% "label"]
+OTU3k <- OTU3k[, !names(OTU3k) %in% "numOtus"]
+
+# Convert all remaining columns (except "Group") to numeric
+OTU3k[,-1] <- lapply(OTU3k[,-1], as.numeric)  
+
+# Convert to matrix (excluding the "Group" column)
+otu3k1 <- as.matrix(OTU3k[,-1])  
+
+# Assign row names from the "Group" column
+rownames(otu3k1) <- OTU3k$Group  
+otu <- otu_table(otu3k1, taxa_are_rows = FALSE)
+
+# Subset metadata to only include samples that are present in the OTU table
+sam <- sam[sample_names(otu), ]
+
+#tax table annotations_100.taxonomy.csv
+TAX<- read.csv("Data/TT17_3000_summer_16S-pipeline_outputs/Results/main/details/annotations_100.taxonomy.csv", colClasses = "character")
+tax1 <- as.matrix(TAX[, -1], dimnames = list(TAX$OTU, colnames(TAX[-1])))
+rownames(tax1) <- TAX$OTU
+tax <- tax_table(tax1)
+
+# Read the data into phyloseq
+Bac.seq = phyloseq(otu, tax,sam) #combine for phyloseq obj
+Bac.seq
+Bac.seq.df <- sample_data(Bac.seq) #look at df, samps 3149 and 1240 remove (no tissue)
+
+#load your .tre otu_repr_100.tre
+library(ape)
+treefile<- read.tree("Data/TT17_3000_summer_16S-pipeline_outputs/Results/postprocessing/unifrac/otu_repr_100.tre")
+phy_tree(Bac.seq) <- treefile
+Bac.seq
+    
+ntaxa(Bac.seq)  #num taxa
+nsamples(Bac.seq)   #num samples
+sample_names(Bac.seq)[1:300] #samp names
+
+save(Bac.seq, file = "Data/Bac.seq_phyloseq.RData")
+
+```

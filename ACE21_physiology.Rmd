@@ -1330,7 +1330,7 @@ FC_T0_mean <- ddply(FC_Data_T0, c( "Species"), summarise,
                  max = max(zoox.cm2, na.rm=TRUE) 
 );FC_T0_mean
 
-#T0 only
+#T0 only ####
   ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
@@ -1362,9 +1362,7 @@ ggplot(FC_Data_T0, aes(x=interaction(factor(Species, levels=unique(Species)), Cl
   
 ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
-#Subset by time 1 or F only 
-FC_T1<-subset(FC_Data, Time.Point=="T1") 
-FC_TF<-subset(FC_Data, Time.Point=="TF") 
+
 
 
 #Plots T1 and TF
@@ -1388,6 +1386,12 @@ flowT1TF<- ggplot(flow_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=
 FlowT1TF<-flowT1TF + scale_y_log10();FlowT1TF #to make more readble
 
 #T1 - by species  ####
+
+#Subset by time 1 or F only ####
+FC_T1<-subset(FC_Data, Time.Point=="T1") 
+FC_TF<-subset(FC_Data, Time.Point=="TF") 
+
+
 FlowT1<-ggplot(FC_T1, aes(x=Species, y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle("Symbiodiniaceae Cell Density Post-Elevated Temperatures")+
@@ -1429,9 +1433,10 @@ FC_Mcap_plot<-
           scale_x_discrete(guide = "axis_nested");FC_Mcap_plot
   
 #Pcomp####
-FC_Pcomp_plot<- ggplot(FC_T1_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
+flow_T1TF_pcomp<-subset(flow_T1TF, Species=="Porites compressa")
+FC_Pcomp_plot<- ggplot(flow_T1TF_pcomp, aes(x=interaction(Treatment,Clade, Time.Point), y=zoox.cm2, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
-      ggtitle("P. compressa")+
+      ggtitle("P. compressa: Cell counts")+
       xlab("") + 
       ylab("") + 
       theme(axis.text.y = element_text(size=14))+
@@ -1441,6 +1446,10 @@ FC_Pcomp_plot<- ggplot(FC_T1_pcomp, aes(x=interaction(Treatment,Clade), y=zoox.c
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       scale_x_discrete(guide = "axis_nested")+
       geom_boxplot(show.legend = F);FC_Pcomp_plot
+
+ggsave("FC_Pcomp_plot.pdf", plot=last_plot(), path="Figures",device = "pdf", width=7, height=4, units=c("in"), dpi=300)
+
+
 
 #Pvar####
 FC_Pvar_plot<- ggplot(FC_T1_pvar, aes(x=interaction(Treatment,Clade), y=zoox.cm2, fill=Treatment)) + 
@@ -3883,10 +3892,14 @@ Yield_cu_stats_model<-lmer(Yield_cu~Days*Treatment*Species+(1|Parent.ID:Frag.ID)
 anova(Yield_cu_stats_model) 
 qqPlot(residuals(Yield_cu_stats_model)) 
 
+emm<-emmeans(Yield_cu_stats_model,  ~ Treatment| Days*Species, adjust="Tukey")
+ cld(emm)
+ pairs(emm)
+
 Yield_cu_stats_modelC<-lmer(Yield_cu~Days*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), PAMdata2_stats)
 anova(Yield_cu_stats_modelC) 
 
-emm<-emmeans(Yield_cu_stats_model,  ~ Days*Treatment|Species, adjust="Tukey")
+emm<-emmeans(Yield_cu_stats_model,  ~ Treatment| Days*Species, adjust="Tukey")
  cld(emm)
  pairs(emm)
   
@@ -4217,10 +4230,10 @@ ggsave("PAM_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", wi
 
 
 #Plots T1 and TF####
-FvFm_T1TF<-subset(PAMdata2, Time.Point!="T0") 
+FvFm_T1TF_ND_D24D58<-subset(PAMdata2, Days==24|Days==58)
 
 #T1TF - by species ####
-FvFmT1TF<- ggplot(FvFm_T1TF, aes(x=interaction(Treatment,Time.Point,Species), y=Yield, fill=Treatment)) + 
+FvFmT1TF<- ggplot(FvFm_T1TF_ND_D24D58, aes(x=interaction(Treatment,Days,Species), y=Yield, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
       ggtitle(bquote("Photosynthetic Quantum Yeild")) +
       xlab("") + #Label the X Axis
@@ -4376,6 +4389,26 @@ PAM_Pacu<-ggplot(Pacu_PAM, aes(x=interaction(Days), y=Yield, fill=Treatment)) +
       geom_boxplot(show.legend = F) 
 
 ggsave("PAM_Pacu_all.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
+
+FvFm_T1TF_NDpacu<-subset(FvFm_T1TF_ND, Species=="Pocillopora acuta")
+PAM_Pacu<-ggplot(FvFm_T1TF_NDpacu, aes(x=interaction(Days), y=Yield, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("P. acuta")+
+      xlab("") + #Label the X Axis
+      ylab(bquote("fv/fm"))+
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F) 
+
+
+
+
+
+
 
 #by clade for Pacu
 
@@ -7019,7 +7052,7 @@ dev.off()
 
 ```
 
-#same as above with FvFm for P.acuta 0s removed
+#same as above with FvFm for P.acuta 0s removed _ We are not doing this
 ```{r}
 library(patchwork)
 
@@ -7307,7 +7340,7 @@ PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 # PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
 
-#write.csv(PhysioData,"PhysioData.csv") #export for gauntlet
+write.csv(PhysioData,"PhysioData.csv") #export
 
 
 ```
@@ -8666,7 +8699,7 @@ PhysioData2<-PhysioData #make a copy
 
 # Subset numeric physiological columns
 physio_vars <- PhysioData2 %>% 
-  dplyr::select( Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+  dplyr::select(  `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
 
 # Filter for T0 and duplicate the rows for both Ambient and High
 T0_data_ambient <- PhysioData2 %>%
@@ -8690,30 +8723,30 @@ PhysioData_updated <- bind_rows(PhysioData_no_T0, T0_data)
 #change calcification T0 0s into the ambient at T1 values by parent (this is to ensure PCA isn't heavily impacted by these 0s)
 
 # First, create a lookup table of T1 Ambient calcification values by Parent.ID
-T1_ambient_lookup <- PhysioData_updated %>%
-  filter(Time.Point == "T1", Treatment == "Ambient") %>%
-  dplyr::select(Parent.ID, Calcification) %>%
-  dplyr::rename(Calcification_T1 = Calcification)
+#T1_ambient_lookup <- PhysioData_updated %>%
+#  filter(Time.Point == "T1", Treatment == "Ambient") %>%
+#  dplyr::select(Parent.ID, Calcification) %>%
+#  dplyr::rename(Calcification_T1 = Calcification)
 
 # Now, update the T0 Calcification values
-PhysioData_updated2 <- PhysioData_updated %>%
-  left_join(T1_ambient_lookup, by = "Parent.ID") %>%
-  mutate(Calcification = ifelse(Time.Point == "T0" & Calcification == 0,
-                                Calcification_T1,
-                                Calcification)) %>%
-  dplyr::select(-Calcification_T1)  # remove the temporary column
+#PhysioData_updated2 <- PhysioData_updated %>%
+ # left_join(T1_ambient_lookup, by = "Parent.ID") %>%
+ # mutate(Calcification = ifelse(Time.Point == "T0" & Calcification == 0,
+##                                Calcification_T1,
+ #                               Calcification)) %>%
+ # dplyr::select(-Calcification_T1)  # remove the temporary column
 
 
-#select cols for the PCA
+#select cols for the PCA - Since no measured data for growth at T0 and it looks the same as making T0 the same as ambient T1, just do not include
 PhysioData_updated3 <- PhysioData_updated2 %>%  
-  dplyr::select(Parent.ID, Treatment,Species, Time.Point, Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  #get rid of unused cols
+  dplyr::select(Parent.ID, Treatment,Species, Time.Point, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  #get rid of unused cols
 
 # Subset numeric physiological columns
 physio_vars <- PhysioData_updated3 %>% 
-  dplyr::select( Calcification, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
+  dplyr::select( `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  # include all relevant physiological columns
 
 
-# you have missing values. Try two ways - 1 way remove rows with missing data. Then 2. try imputation
+# you have missing values - remove rows with missing data.
 
 #1
 Physio_for_pca_NA<-physio_vars %>% drop_na()
@@ -8729,15 +8762,18 @@ pca <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
 pca_scores <- as.data.frame(pca$x)
 pca_scores <- bind_cols(pca_scores, PhysioData_updated3 %>% dplyr::select(Species, Treatment, Time.Point, Parent.ID))
 
+pca_scores <- as_tibble(pca_scores)
+
+
 # calc centroid
 centroids <- pca_scores %>%
-  group_by(Species, Treatment, Time.Point) %>%
+  dplyr::group_by(Species, Treatment, Time.Point) %>%
   summarise(PC1 = mean(PC1), PC2 = mean(PC2), .groups = "drop")
 
 # prepare arrows
 arrows <- centroids %>%
-  arrange(Species, Treatment, Time.Point) %>%
-  group_by(Species, Treatment) %>%
+  dplyr::arrange(Species, Treatment, Time.Point) %>%
+  dplyr::group_by(Species, Treatment) %>%
   mutate(PC1_next = lead(PC1), PC2_next = lead(PC2)) %>%
   filter(!is.na(PC1_next))
 
@@ -8907,7 +8943,7 @@ ggsave("PhysPCAAarow_NoCalc_plot.pdf",
 ```
 
 
-#editing for fig 4 main manuscript 20250407 see below for more
+#editing for fig 4 main manuscript 20250407 see below for more <-i dont love this figure. can likely cut
 ```{r}
 library(dplyr)
 library(tidyr)
