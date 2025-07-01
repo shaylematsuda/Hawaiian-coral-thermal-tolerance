@@ -55,6 +55,66 @@ MetaData16$Parent.ID<-as.factor(as.character(MetaData16$Parent.ID))
 MetaData16$Tank.num<-as.factor(as.character(MetaData16$Tank.num))
 MetaData16$sample_name <- gsub("^S", "", MetaData16$sample_name)
 
+
+#EDIT sample data, add CLADE COL ####
+  #Mcap
+  MetaData16$Clade[MetaData16$Parent.ID==363]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==364]<-"C31D4"
+  MetaData16$Clade[MetaData16$Parent.ID==365]<-"C31D4"
+  MetaData16$Clade[MetaData16$Parent.ID==366]<-"C31D4"
+  MetaData16$Clade[MetaData16$Parent.ID==367]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==368]<-"C31D4"
+  MetaData16$Clade[MetaData16$Parent.ID==369]<-"C31D4"
+  MetaData16$Clade[MetaData16$Parent.ID==370]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==371]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==372]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==373]<-"C31"
+  MetaData16$Clade[MetaData16$Parent.ID==374]<-"C31D4"
+ #Pcomp
+  MetaData16$Clade[MetaData16$Parent.ID==314]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==317]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==319]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==320]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==321]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==322]<-"C15cj"
+  MetaData16$Clade[MetaData16$Parent.ID==313]<-"C15n"
+  MetaData16$Clade[MetaData16$Parent.ID==315]<-"C15n"
+  MetaData16$Clade[MetaData16$Parent.ID==316]<-"C15n"
+  MetaData16$Clade[MetaData16$Parent.ID==318]<-"C15n"
+  MetaData16$Clade[MetaData16$Parent.ID==323]<-"C15n"
+  MetaData16$Clade[MetaData16$Parent.ID==324]<-"C15n"
+  
+  #Pvar
+  MetaData16$Clade[MetaData16$Parent.ID==353]<-"C1"
+  MetaData16$Clade[MetaData16$Parent.ID==358]<-"C1"
+  MetaData16$Clade[MetaData16$Parent.ID==361]<-"C1"
+  MetaData16$Clade[MetaData16$Parent.ID==325]<-"C1"
+  MetaData16$Clade[MetaData16$Parent.ID==356]<-"C1"
+  MetaData16$Clade[MetaData16$Parent.ID==351]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==354]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==355]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==357]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==359]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==360]<-"C27"
+  MetaData16$Clade[MetaData16$Parent.ID==362]<-"C27"
+  
+#Pacu
+  MetaData16$Clade[MetaData16$Parent.ID==311]<-"C42_2"
+  MetaData16$Clade[MetaData16$Parent.ID==301]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==304]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==306]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==303]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==307]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==308]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==310]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==312]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==302]<-"C1d"
+  MetaData16$Clade[MetaData16$Parent.ID==305]<-"C42_2"
+  MetaData16$Clade[MetaData16$Parent.ID==309]<-"C42_2"
+  
+MetaData16$Clade<-as.factor(MetaData16$Clade)
+MetaData16$Clade <- factor(MetaData16$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
+  
 sam0 <- MetaData16
 sam1 <- as.matrix(sam0[, -1])
 rownames(sam1) <- sam0$sample_name
