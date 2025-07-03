@@ -1003,12 +1003,11 @@ FieldSamps.pacu <- phyloseq::distance(Bac.subset.pacu, method = "wunifrac")
 Use rarefied data, not relative abunances   
 df:Bac.s and
 ```{r}           
-Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+Sp.colors <- c("Montipora_capitata"="#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#009E73","Pocillopora_acuta"="#CC79A7", "High"="darkRed","Ambient"="navyBlue")
 
 Bac.al.alpha<-Bac.s #make a copy of df
 Bac.al.alpha2 <- prune_taxa(taxa_sums(Bac.al.alpha) > 0, Bac.al.alpha) #prune taxa 0s
 Bac.al.alpha2.sd <- as(sample_data(Bac.al.alpha2), "data.frame") #create sample data frame to view
-
 
 ##### microbiome package for evenness and alpha diversity. use raw counts ####
 erich.tab <-microbiome::alpha(Bac.al.alpha2, index = "all") # pull out: observed, diversity_shannon, evenness_pielou
@@ -1024,28 +1023,26 @@ erich.tab2<-erich.tab[-c(2:4,6:8,10:22)] #keep the cols you need
     erich.tab2$Tank.num <- Bac.al.alpha2.sd$Tank.num
 erich.tab2$Time.Point = factor(erich.tab2$Time.Point, levels = c("T0", "T1", "TF"))
 
-
 #all species - to show significance and to subset
-  erich.tab2T0 <- subset(erich.tab2, Time.Point=="T0")#make T0 to use below
-  erich.tab2 <- subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
+  erich.tab2T0 <- subset(erich.tab2, Time.Point=="T0") #T0 to use below
+  erich.tab2T0$Species <- factor(erich.tab2T0$Species,
+  levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta"))
 
-#ANOVA
+  erich.tab2 <- subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
+ erich.tab2$Species <- factor(erich.tab2$Species,
+  levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta"))
+
+ #ANOVA
 #shannon
   aov.shannon.species = aov(diversity_shannon ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.shannon.species) # sig diff between species
-  TukeyHSD(aov.shannon.species)
 #observed  
   aov.observed.species = aov(observed ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.observed.species) # sig diff between species
-  TukeyHSD(aov.observed.species)
 #evenness
   aov.evenness.species = aov(evenness_pielou ~ Species*Time.Point*Treatment, data=erich.tab2)
   summary(aov.evenness.species) # sig diff between species
   TukeyHSD(aov.evenness.species)  
-#Plot
-  boxplot(diversity_shannon ~ Species, data=erich.tab2, ylab="Shannon's diversity") 
-  boxplot(observed ~ Species, data=erich.tab2, ylab="Observed") 
-  boxplot(evenness_pielou ~ Species, data=erich.tab2, ylab="Evenness_pielou") 
 
 #violin plots
   # create a list of pairwise comaprisons
@@ -1089,95 +1086,12 @@ erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
 erich.tab2.pcomp<-subset(erich.tab2, Species=="Porites_compressa")
 erich.tab2.pvar<-subset(erich.tab2, Species=="Pavona_varians")
 erich.tab2.pacu<-subset(erich.tab2, Species=="Pocillopora_acuta")
-
-
-#look at data
-#observed
-hist(erich.tab2$observed)
-ggqqplot(erich.tab2$observed)
-hist(log(erich.tab2$observed))
-ggqqplot(log10(erich.tab2$observed))
-erich.tab2$observed_log<-log10(erich.tab2$observed)
-
-hist(erich.tab2.mcap$observed_log)
-ggqqplot(erich.tab2.mcap$observed_log)
- hist(erich.tab2.pcomp$observed_log)
-ggqqplot(erich.tab2.pcomp$observed_log)
-   hist(erich.tab2.pvar$observed_log)
-ggqqplot(erich.tab2.pvar$observed_log)
-        hist(erich.tab2.pacu$observed_log)
-ggqqplot(erich.tab2.pacu$observed_log)
-
-
-
-#shannon
-hist(erich.tab2$diversity_shannon)
-ggqqplot(erich.tab2$diversity_shannon)
-hist(log10(erich.tab2$diversity_shannon))
-ggqqplot(log10(erich.tab2$diversity_shannon))
-hist(sqrt(erich.tab2$diversity_shannon))
-ggqqplot(sqrt(erich.tab2$diversity_shannon))
-hist((erich.tab2$diversity_shannon)^(1/4))
-ggqqplot(sqrt(erich.tab2$diversity_shannon))
-
-
-#evenness
-hist(erich.tab2$evenness_pielou) #best
-ggqqplot(erich.tab2$evenness_pielou)
-hist(log10(erich.tab2$evenness_pielou))#worse
-ggqqplot(erich.tab2$evenness_pielou)
-erich.tab2$even.t<-sqrt(max(erich.tab2$evenness_pielou+1)-erich.tab2$evenness_pielou)
-hist(sqrt(max(erich.tab2$evenness_pielou+1)-erich.tab2$evenness_pielou))
-ggqqplot(sqrt(max(erich.tab2$evenness_pielou+1)-erich.tab2$evenness_pielou))
-
-hist(erich.tab2.mcap$evenness_pielou)
-ggqqplot(erich.tab2.mcap$evenness_pielou)
- hist(erich.tab2.pcomp$evenness_pielou)
-ggqqplot(erich.tab2.pcomp$evenness_pielou)
-   hist(erich.tab2.pvar$evenness_pielou)
-ggqqplot(erich.tab2.pvar$evenness_pielou)
-        hist(erich.tab2.pacu$evenness_pielou)
-ggqqplot(erich.tab2.pacu$evenness_pielou)
-
-hist(erich.tab2.mcap$even.t)
-ggqqplot(erich.tab2.mcap$even.t)
- hist(erich.tab2.pcomp$even.t)
-ggqqplot(erich.tab2.pcomp$even.t)
-   hist(erich.tab2.pvar$even.t)
-ggqqplot(erich.tab2.pvar$even.t)
-        hist(erich.tab2.pacu$even.t)
-ggqqplot(erich.tab2.pacu$even.t)
-
-
-
-
-
-
-#by species:
-erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
-erich.tab2.pcomp<-subset(erich.tab2, Species=="Porites_compressa")
-erich.tab2.pvar<-subset(erich.tab2, Species=="Pavona_varians")
-erich.tab2.pacu<-subset(erich.tab2, Species=="Pocillopora_acuta")
-
-hist(erich.tab2.mcap$observed_log)
-hist(erich.tab2.mcap$observed) #better
-hist(erich.tab2.pcomp$observed_log)#better
-hist(erich.tab2.pcomp$observed) 
-hist(erich.tab2.pvar$observed_log)#better
-hist(erich.tab2.pvar$observed) 
-hist(erich.tab2.pacu$observed_log)#better
-hist(erich.tab2.pacu$observed) 
-
-
-
-
-
 ```
 #Observed Richness 
+Tables: S7, S10, S19
 ```{r}      
-#observed    
- #log it
-#T0
+
+#T0 ####
 hist(erich.tab2T0$observed)
 ggqqplot(erich.tab2T0$observed)
 erich.tab2T0$observed_log<-log10(erich.tab2T0$observed)
@@ -1190,17 +1104,7 @@ set.seed(30)
   emm<-emmeans(observed_alpha_modT0,  ~ Species, adjust="Tukey")
   cld(emm)
   pairs(emm)
-  
-  observed_alpha_modT0<-lmer(observed_log ~ Species*Clade+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
-set.seed(30)
-  anova(observed_alpha_modT0) 
-  qqPlot(residuals(observed_alpha_modT0)) 
-  emm<-emmeans(observed_alpha_modT0,  ~ Species*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  
-  
+
 #Richness
 p1 <- ggviolin(erich.tab2T0, x = "Species", y = "observed",
    add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
@@ -1210,284 +1114,141 @@ p1 <- ggviolin(erich.tab2T0, x = "Species", y = "evenness_pielou",
    add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
   print(p1)
 
- 
- 
- 
- 
- erich.tab2.T1F<-subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
- 
- #T1TF
-observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.T1F) #adding tank is singularity
-set.seed(30)
-  anova(observed_alpha_mod) 
-  qqPlot(residuals(observed_alpha_mod)) 
-  emm<-emmeans(observed_alpha_mod,  ~ Species*Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  observed_alpha_mod<-lmer(observed_log ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.T1F) #adding tank is singularity
-  anova(observed_alpha_mod) 
-  qqPlot(residuals(observed_alpha_mod)) 
-  emm<-emmeans(observed_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#T1TF: Table S7 S12C ####
+  erich.tab2.T1F<-subset(erich.tab2, Time.Point=="T1"|Time.Point=="TF")
+  erich.tab2.T1F$observed_log<-log10(erich.tab2.T1F$observed)
+# By species
+  erich.tab2.mcapT1F<-subset(erich.tab2.T1F, Species=="Montipora_capitata")
+  erich.tab2.pcompT1F<-subset(erich.tab2.T1F, Species=="Porites_compressa")
+  erich.tab2.pvarT1F<-subset(erich.tab2.T1F, Species=="Pavona_varians")
+  erich.tab2.pacuT1F<-subset(erich.tab2.T1F, Species=="Pocillopora_acuta")
 
-
-
-################Mcap only
-  hist(erich.tab2.mcap$observed_log)
-ggqqplot(erich.tab2.mcap$observed_log)
+#Mcap ####
+  hist(erich.tab2.mcapT1F$observed_log)
+  ggqqplot(erich.tab2.mcapT1F$observed_log)
   
- #t1TF
-erich.tab2.mcap.T1F<-subset(erich.tab2.mcap, Time.Point=="T1"|Time.Point=="TF")
-  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1F) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  Mcap_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1F) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.mcap.T1<-subset(erich.tab2.mcap.T1F, Time.Point=="T1")
-
-  Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.mcap.TF<-subset(erich.tab2.mcap.T1F, Time.Point=="TF")
-
-   Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
- #t0
+ #T0 
   erich.tab2.mcap.T0<-subset(erich.tab2T0, Species=="Montipora_capitata")
 
   Mcap_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.mcap.T0) #adding tank is singularity
   anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod))
+  
+ #T1
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcapT1F, Time.Point=="T1")
+
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) 
+  anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
+  
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  
+  #TF
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcapT1F, Time.Point=="TF")
+
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  
+  Mcap_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
+  emm<-emmeans(Mcap_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
+#Pcomp ####
+  hist(erich.tab2.pcompT1F$observed_log)
+  ggqqplot(erich.tab2.pcompT1F$observed_log)
   
-  
-####### PCOMP only ####
-   erich.tab2.pcomp.T1F<-subset(erich.tab2.pcomp, Time.Point=="T1"|Time.Point=="TF")
-
-  #t1TF
-  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.T1F) 
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pcomp_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.T1F) 
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
-
-  pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
-
-   pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.TF) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
- #t0
+ #T0 
   erich.tab2.pcomp.T0<-subset(erich.tab2T0, Species=="Porites_compressa")
 
-  pcomp_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) #adding tank is singularity
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod))
   
-####### pvar only####
-   
-  #t1TF
-  pvar_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pvar_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.pvar.T1<-subset(erich.tab2.pvar, Time.Point=="T1")
+ #T1
+  erich.tab2.pcomp.T1<-subset(erich.tab2.pcompT1F, Time.Point=="T1")
 
-  pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
   
-  pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
   
-  #tf
-  erich.tab2.pvar.TF<-subset(erich.tab2.pvar, Time.Point=="TF")
+  #TF
+  erich.tab2.pcomp.TF<-subset(erich.tab2.pcompT1F, Time.Point=="TF")
 
-   pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar.TF) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
+  Pcomp_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.TF) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
+  
+  Pcomp_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
+  emm<-emmeans(Pcomp_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
+
+
+#Pvar ####
+  hist(erich.tab2.pvarT1F$observed_log)
+  ggqqplot(erich.tab2.pvarT1F$observed_log)
   
-  pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #t0
+ #T0 
   erich.tab2.pvar.T0<-subset(erich.tab2T0, Species=="Pavona_varians")
 
-  pvar_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod))
   
-  ####### pacu only####
+ #T1
+  erich.tab2.pvar.T1<-subset(erich.tab2.pvarT1F, Time.Point=="T1")
 
-  #t1TF
-  pacu_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
   
-  pacu_alpha_mod<-lmer(observed_log ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
   
- #t1
-  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
+  #TF
+  erich.tab2.pvar.TF<-subset(erich.tab2.pvarT1F, Time.Point=="TF")
 
-  pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.TF) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
   
-  pacu_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
+  Pvar_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
 
-   pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu.TF) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pacu_alpha_mod<-lmer(observed_log ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.TF) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #t0
-  erich.tab2.pacu.T0<-subset(erich.tab2T0, Species=="Pocilopora_acuta")
 
-  pacu_alpha_mod<-lmer(observed_log ~ Clade+(1|Tank.num), data=erich.tab2.pacu.T0) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pacu ####
+  hist(erich.tab2.pacuT1F$observed_log)
+  ggqqplot(erich.tab2.pacuT1F$observed_log)
   
+ #T1
+  erich.tab2.pacu.T1<-subset(erich.tab2.pacuT1F, Time.Point=="T1")
+
+  Pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) 
+  anova(Pacu_alpha_mod) 
+  qqPlot(residuals(Pacu_alpha_mod)) 
   
-  
+  #TF
+  erich.tab2.pacu.TF<-subset(erich.tab2.pacuT1F, Time.Point=="TF")
+
+  Pacu_alpha_mod<-lmer(observed_log ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.TF) 
+  anova(Pacu_alpha_mod) 
+  qqPlot(residuals(Pacu_alpha_mod)) 
 ```
-alpha Observed Plots, no clade
+Alpha Observed Plots, no clade (line plots not sure i need)
 ```{r}  
 #Means   
 observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
@@ -1632,31 +1393,41 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
  
 ```  
 
-alpha Observed Plots, clade  
+Alpha Diversity - Observed Richness Plots: Figures SX  
 ```{r}   
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
 
-#Means
-observed_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
-                 N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
-                 mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                 sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
-                 se   = sd / sqrt(N), #calculate standard error
-                 max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-observed_mean.C
-observed_mean.C$Code<-paste(observed_mean.C$Clade, observed_mean.C$Treatment)
+erich.tab2
 
-#Mcap 
-Mcap_observed_mean.C<-subset(observed_mean.C, Species=="Montipora_capitata") #Subset Mcap
-# Pcomp 
-Pcomp_observed_mean.C<-subset(observed_mean.C, Species=="Porites_compressa") #Subset Pcomp
-# Pacu 
-Pacu_observed_mean.C<-subset(observed_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
-# Pvar 
-Pvar_observed_mean.C<-subset(observed_mean.C, Species=="Pavona_varians") #Subset Pvar
+
+
+
+
+
+
+
+
+# #Means
+# observed_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
+#                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
+#                  mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
+#                  sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
+#                  se   = sd / sqrt(N), #calculate standard error
+#                  max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
+# )
+# observed_mean.C
+# observed_mean.C$Code<-paste(observed_mean.C$Clade, observed_mean.C$Treatment)
+
+# #Mcap 
+# Mcap_observed_mean.C<-subset(observed_mean.C, Species=="Montipora_capitata") #Subset Mcap
+# # Pcomp 
+# Pcomp_observed_mean.C<-subset(observed_mean.C, Species=="Porites_compressa") #Subset Pcomp
+# # Pacu 
+# Pacu_observed_mean.C<-subset(observed_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
+# # Pvar 
+# Pvar_observed_mean.C<-subset(observed_mean.C, Species=="Pavona_varians") #Subset Pvar
 
 #mcap plots
 #plot Mcap
@@ -2413,248 +2184,6 @@ grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evennes
 
 
 
-
-#Observed Richness OLD ANOVA CODE DELETE WHEN UPDATED ABOVE
-```{r}
-#observed  
-
-
-################Mcap only
-
-
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.mcap)
-  summary(aov.diversity_shannon.mcap) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.mcap)
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.mcap)
-  summary(aov.diversity_shannon.mcap) # sig diff between species
-  
-  #lmer
-shannon_Mcap_model<-lmer(diversity_shannon~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), erich.tab2.mcap)
-  anova(shannon_Mcap_model) 
-  qqPlot(residuals(shannon_Mcap_model)) 
-  emm<-emmeans(shannon_Mcap_model,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  
-  
-  
-  
- #t1
-  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
-
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment, data=erich.tab2.mcap.T1)
-  summary(aov.diversity_shannon.mcap) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.mcap)
-  
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.mcap.T1)
-  summary(aov.diversity_shannon.mcap) # sig diff between species 
-  
-  #tf
-  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
-
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment, data=erich.tab2.mcap.TF)
-  summary(aov.diversity_shannon.mcap) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.mcap)
-  
-  aov.diversity_shannon.mcap = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.mcap.TF)
-  summary(aov.diversity_shannon.mcap) # sig diff between species 
-
-  
-####### PCOMP only
- #t1TF
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.pcomp)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pcomp)
-  
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.pcomp)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species
-  
- #t1
-  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
-
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment, data=erich.tab2.pcomp.T1)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pcomp)
-  
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pcomp.T1)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species 
-  
-  #tf
-  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
-
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment, data=erich.tab2.pcomp.TF)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pcomp)
-  
-  aov.diversity_shannon.pcomp = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pcomp.TF)
-  summary(aov.diversity_shannon.pcomp) # sig diff between species 
-  
-################pacu only
- #t1TF
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Time.Point*Treatment, data=erich.tab2.pacu)
-  summary(aov.diversity_shannon.pacu) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pacu)
-  
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Time.Point*Treatment*Clade, data=erich.tab2.pacu)
-  summary(aov.diversity_shannon.pacu) # sig diff between species
-  
- #t1
-  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
-
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment, data=erich.tab2.pacu.T1)
-  summary(aov.diversity_shannon.pacu) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pacu)
-  
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pacu.T1)
-  summary(aov.diversity_shannon.pacu) # sig diff between species 
-  
-  #tf
-  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
-
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment, data=erich.tab2.pacu.TF)
-  summary(aov.diversity_shannon.pacu) # sig diff between species
-  TukeyHSD(aov.diversity_shannon.pacu)
-  
-  aov.diversity_shannon.pacu = aov(diversity_shannon ~ Treatment*Clade, data=erich.tab2.pacu.TF)
-  summary(aov.diversity_shannon.pacu) # sig diff between species 
-
-```
-OLDER alpha, delete when ready
-```{r}
-#### older alpha
-
-#########OK you are removing T0 here and then you need to make a new samp data frame and then do below. 
-
- 
-
-
-erich <- estimate_richness(Bac.r2.alpha2, measures = c("Observed", "Shannon")) #select which estimates and estimate
-  erich$Treatment <- Bac.r2.sd$Treatment       #add back in meta
-  erich$Time.Point <- Bac.r2.sd$Time.Point
-  erich$Parent.ID <- Bac.r2.sd$Parent.ID
-  erich$ID <- Bac.r2.sd$ID
-  erich$Species <- Bac.r2.sd$Species
-  erich$Time.Point = factor(erich$Time.Point, levels = c("T0", "T1", "TF"))
-
-  
-  
- 
-#stats ALL THE DATA
- library(ggpubr)
-  #look at data
-  
-#observed
-# hist(erich$Observed) 
-# ggqqplot(erich$Observed)
-# erich$Observed_log<-log10(erich$Observed)
-# hist(erich$Observed_log) 
-
-## subset by coral species for OBSERVED
-erich.mcap<-subset(erich, Species=="Montipora_capitata")
-  hist(erich.mcap$Observed) 
-  # hist(erich.mcap$Observed_log) 
-
-erich.pcomp<-subset(erich, Species=="Porites_compressa")
-  hist(erich.pcomp$Observed) #meh
-  #   hist(erich.pcomp$Observed_log) #Better 
-  # ggqqplot(erich.pcomp$Observed_log) 
- 
-erich.pvar<-subset(erich, Species=="Pavona_varians")
- hist(erich.pvar$Observed) #
- # hist(erich.pvar$Observed_log) #better
- #  ggqqplot(erich.pvar$Observed_log) #
-
-erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
- hist(erich.pacu$Observed) 
-  hist(erich.pacu$Observed_log) 
-  ggqqplot(erich.pacu$Observed_log) 
-
-  
-## subset for Shannon
-#shannon
-hist(erich$Shannon)
-ggqqplot(erich$Shannon)
-# erich$Shannon_log<-log10(erich$Shannon)
-# hist(erich$Shannon_log)
-# ggqqplot(erich$Shannon_log)
-# erich$Shannon_sq<-sqrt(erich$Shannon)
-# hist(erich$Shannon_sq)
-# ggqqplot(erich$Shannon_sq)
-
-
-erich.mcap<-subset(erich, Species=="Montipora_capitata")
-  hist(erich.mcap$Shannon) # 
-  ggqqplot(erich.mcap$Shannon) #
-  #   hist(erich.mcap$Shannon_log) # 
-  # ggqqplot(erich.mcap$Shannon) #
- 
-erich.pcomp<-subset(erich, Species=="Porites_compressa")
-  hist(erich.pcomp$Shannon) # normal 
-  ggqqplot(erich.pcomp$Shannon) 
-  # hist(erich.pcomp$Shannon_log) # normal 
-  # ggqqplot(erich.pcomp$Shannon) 
-
-erich.pvar<-subset(erich, Species=="Pavona_varians")
- hist(erich.pvar$Shannon) #not normal 
-  ggqqplot(erich.pvar$Shannon) #
-  
-erich.pacu<-subset(erich, Species=="Pocillopora_acuta")
- hist(erich.pacu$Shannon) #not awfuk 
-  ggqqplot(erich.pacu$Shannon) #not bad
-  
-
-### ALL SPECIES
-#Shannon
-#Run the ANOVA and save it as an object
-  aov.shannon.species = aov(Shannon ~ Species, data=erich)
-
-#Call for the summary of that ANOVA, which will include P-values
-  summary(aov.shannon.species) # sig diff between species
-  TukeyHSD(aov.shannon.species)
-
-#Plot
-  boxplot(Shannon ~ Species, data=erich, ylab="Shannon's diversity") 
-
-  
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.species = aov(Observed ~ Species*Treatment*Time.Point, data=erich)
-  #aov.observed.species = aov(Observed ~ Species, data=erich)
-
-#Call for the summary of that ANOVA, which will include P-values
-  summary(aov.observed.species) # sig diff between species
-  TukeyHSD(aov.observed.species)
-
-#Plot
-  boxplot(Observed ~ Species, data=erich, ylab="observed's diversity") 
-  
-#### LHK paper code
-  
-alphaplot <- plot_richness(Bac.r2.alpha, x="Species", measures=c("Observed","Shannon", "Simpson"), color="Time.Point") + 
-  labs(x="Genet") +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-  panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  theme(strip.text.x = element_text(size=10, face="bold"),
-        strip.background = element_rect(fill="#FFFFFF"))
-
-
-alphaplot
-
-
-#stats
-erich <- estimate_richness(Bac.r2.alpha, measures=c("Observed","Shannon", "Simpson"))
-#make dataframe
-SampleID <- row.names(erich) 
-# makes a new dataframe with the specified columnes
-alpha <- data.frame(SampleID, erich) 
-s <- data.frame(sample_data(Bac.r2.alpha)) 
-# Change first column title to SampleID to match distances dataframe
-colnames(s)[1] <- "SampleID" 
-# merges metadata df and distances df
-alphaGC <- merge(alpha, s, by = "SampleID") 
-
-```
 
 ### MCAP alpha, df: erich.tab2.mcap
 ```{r} 
