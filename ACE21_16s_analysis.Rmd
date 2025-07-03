@@ -1000,8 +1000,7 @@ FieldSamps.pacu <- phyloseq::distance(Bac.subset.pacu, method = "wunifrac")
 ``` 
 
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
-Use rarefied data, not relative abunances   
-df:Bac.s and
+Use rarefied data, not relative abundances   
 ```{r}           
 Sp.colors <- c("Montipora_capitata"="#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#009E73","Pocillopora_acuta"="#CC79A7", "High"="darkRed","Ambient"="navyBlue")
 
@@ -1044,50 +1043,13 @@ erich.tab2$Time.Point = factor(erich.tab2$Time.Point, levels = c("T0", "T1", "TF
   summary(aov.evenness.species) # sig diff between species
   TukeyHSD(aov.evenness.species)  
 
-#violin plots
-  # create a list of pairwise comaprisons
-al.species <- levels(erich.tab2$Species) # get the variables
-
-# make a pairwise list that we want to compare.
-  al.species.pairs <- combn(seq_along(al.species), 2, simplify = FALSE, FUN = function(i)al.species[i])
-  print(al.species.pairs)
-
- erich.tab2$Code<-paste(erich.tab2$Species,erich.tab2$Clade)
-  
-#observed
-p1 <- ggviolin(erich.tab2, x = "Species", y = "observed",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
-
-    p1 <- ggviolin(erich.tab2, x = "Code", y = "observed",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
-
-  #Shannon
-p1 <- ggviolin(erich.tab2, x = "Species", y = "diversity_shannon",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-  
-#Evenness
-p1 <- ggviolin(erich.tab2, x = "Species", y = "evenness_pielou",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.species.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-
-p1 <- ggviolin(erich.tab2, x = "Code", y = "evenness_pielou",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
-
 #by species:
 erich.tab2.mcap<-subset(erich.tab2, Species=="Montipora_capitata")
 erich.tab2.pcomp<-subset(erich.tab2, Species=="Porites_compressa")
 erich.tab2.pvar<-subset(erich.tab2, Species=="Pavona_varians")
 erich.tab2.pacu<-subset(erich.tab2, Species=="Pocillopora_acuta")
 ```
-#Observed Richness 
+#Observed Richness ANOVA
 Tables: S7, S10, S19
 ```{r}      
 
@@ -1248,367 +1210,56 @@ p1 <- ggviolin(erich.tab2T0, x = "Species", y = "evenness_pielou",
   anova(Pacu_alpha_mod) 
   qqPlot(residuals(Pacu_alpha_mod)) 
 ```
-Alpha Observed Plots, no clade (line plots not sure i need)
-```{r}  
-#Means   
-observed_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                 N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
-                 mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                 sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
-                 se   = sd / sqrt(N), #calculate standard error
-                 max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-observed_mean
 
-#Mcap 
-Mcap_observed_mean<-subset(observed_mean, Species=="Montipora_capitata") #Subset Mcap
-# Pcomp 
-Pcomp_observed_mean<-subset(observed_mean, Species=="Porites_compressa") #Subset Pcomp
-# Pacu 
-Pacu_observed_mean<-subset(observed_mean, Species=="Pocillopora_acuta") #Subset Pacu
-# Pvar 
-Pvar_observed_mean<-subset(observed_mean, Species=="Pavona_varians") #Subset Pvar
-
-#mcap plots
-#plot Mcap
-Mcap_observed_plot<-ggplot(data=Mcap_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Mcap Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
-
-
-#plot Pcomp
-Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pcomp Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
-
-#Pvar plots
-#plot Pvar
-Pvar_observed_plot<-ggplot(data=Pvar_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-    xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits
- # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pvar Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
-
-
-#Pacu plots
-#plot Pacu
-Pacu_observed_plot<-ggplot(data=Pacu_observed_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pacu Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
-
-###### All plots together
-Mcap_observed_plot<-Mcap_observed_plot+ theme(legend.position = "none") #remove legend
-Pcomp_observed_plot<-Pcomp_observed_plot+ theme(legend.position = "none") #remove legend
-Pvar_observed_plot<-Pvar_observed_plot+ theme(legend.position = "none") #remove legend
-Pacu_observed_plot<-Pacu_observed_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_observed_plot, nrow = 1)
- 
-```  
-
-Alpha Diversity - Observed Richness Plots: Figures SX  
+Alpha Diversity - Observed Richness Plots: Figures S17
 ```{r}   
 # color pal from eta mcap.g.Parent.colors
-alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
+alpha.colors <- c( "Ambient" = "deepskyblue1", "High" = "orangered",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
 
-erich.tab2
 
+# df erich.tab2
 
+RichnessT1TF<- ggplot(erich.tab2, aes(x=interaction(Treatment,Time.Point,Species), y=observed, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Observed Richness")+
+      xlab("") + #Label the X Axis
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");RichnessT1TF
+ggsave("16S_RichnessT1TF.pdf")
 
+#by algal symbiont lineage
+erich.tab2_noPacu<-subset(erich.tab2, Species!="Pocillopora_acuta")
 
+    RichnessT1TF_clade<- ggplot(erich.tab2_noPacu, aes(x=interaction(Treatment,Clade,Time.Point, Species), y=observed, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle("Observed Richness")+
+            xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");RichnessT1TF_clade
+    ggsave("16S_RichnessT1TF_clade.pdf", width=20, height=7)
 
-
-
-
-
-# #Means
-# observed_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
-#                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
-#                  mean = mean(observed, na.rm=TRUE), #calculate mean of response variable, removing NA's
-#                  sd   = sd(observed, na.rm=TRUE), #calculate standard deviation
-#                  se   = sd / sqrt(N), #calculate standard error
-#                  max = max(observed, na.rm=TRUE) #calculate max, could also calculate min () if desired
-# )
-# observed_mean.C
-# observed_mean.C$Code<-paste(observed_mean.C$Clade, observed_mean.C$Treatment)
-
-# #Mcap 
-# Mcap_observed_mean.C<-subset(observed_mean.C, Species=="Montipora_capitata") #Subset Mcap
-# # Pcomp 
-# Pcomp_observed_mean.C<-subset(observed_mean.C, Species=="Porites_compressa") #Subset Pcomp
-# # Pacu 
-# Pacu_observed_mean.C<-subset(observed_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
-# # Pvar 
-# Pvar_observed_mean.C<-subset(observed_mean.C, Species=="Pavona_varians") #Subset Pvar
-
-#mcap plots
-#plot Mcap
-Mcap_observed_plot<-ggplot(data=Mcap_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
-    xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  # ylim(0, 190) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Mcap Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_observed_plot
-
-#boxplot
-
-Rich16.plot<-ggplot(erich.tab2.mcap.T1, aes(x=Treatment, y=mean, color=Treatment)) + 
-  scale_color_manual(values=c("blue", "red"))+
-     # coord_cartesian(ylim = c(0, 10))+
-   theme_classic()+
- theme(legend.position="none") +# Remove legend
-  geom_boxplot(notch=F);Rich16.plot
-
-library(tidyverse)
-library(hrbrthemes)
-library(viridis)
-
-erich.tab2.mcap.T1$code2<-paste(erich.tab2.mcap.T1$Code, erich.tab2.mcap.T1$Treatment)
-
-
-erich.tab2.mcap.T1 %>%
-  ggplot( aes(x=code2, y=observed, fill=Treatment)) +
-    geom_boxplot() +
-    scale_color_manual(values=c("red", "blue"))+
-    # scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
-    # theme_ipsum() +
-    theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-    ggtitle("Mcap Rich T1 ") +
-    xlab("")
-
-#Pcomp plots
-#plot Pcomp
-Pcomp_observed_plot<-ggplot(data=Pcomp_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
-   xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits
- # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pcomp Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_observed_plot
-
-#Pvar plots
-#plot Pvar
-Pvar_observed_plot<-ggplot(data=Pvar_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
-   xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits
- # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pvar Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_observed_plot
-
-
-#plot Pacu
-Pacu_observed_plot<-ggplot(data=Pacu_observed_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 180) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pacu Richness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_observed_plot
-
-###### All plots together
-Mcap_observed_plot<-Mcap_observed_plot+ theme(legend.position = "none") #remove legend
-Pcomp_observed_plot<-Pcomp_observed_plot+ theme(legend.position = "none") #remove legend
-Pvar_observed_plot<-Pvar_observed_plot+ theme(legend.position = "none") #remove legend
-Pacu_observed_plot<-Pacu_observed_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_observed_plot, nrow = 1)
- 
 ```
  
-#evenness_pielou Richness 
+#Evenness_pielou 
+Tables: S7, S10, S19
 ```{r}   
 #evenness_pielou  
-#not transformeds
 
-evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2) #adding tank is singularity
-  anova(evenness_pielou_alpha_mod) 
-  qqPlot(residuals(evenness_pielou_alpha_mod)) 
-  emm<-emmeans(evenness_pielou_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  evenness_pielou_alpha_mod<-lmer(evenness_pielou ~ Species*Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2) #adding tank is singularity
-  anova(evenness_pielou_alpha_mod) 
-  qqPlot(residuals(evenness_pielou_alpha_mod)) 
-  emm<-emmeans(evenness_pielou_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-#T0
+#T0 ####
 hist(erich.tab2T0$evenness_pielou)
 ggqqplot(erich.tab2T0$evenness_pielou)
-
 
 observed_alpha_modT0<-lmer(evenness_pielou ~ Species+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
 set.seed(30)
@@ -1617,1535 +1268,169 @@ set.seed(30)
   emm<-emmeans(observed_alpha_modT0,  ~ Species, adjust="Tukey")
   cld(emm)
   pairs(emm)
-  
-  #this is nesting so not sure you can do this this way. 
-  observed_alpha_modT0<-lmer(evenness_pielou ~ Species*Clade+(1|Tank.num), data=erich.tab2T0) #adding tank is singularity
-set.seed(30)
-  anova(observed_alpha_modT0) 
-  qqPlot(residuals(observed_alpha_modT0)) 
-  emm<-emmeans(observed_alpha_modT0,  ~ Species*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
 
-################Mcap only
- #t1TF
-  Mcap_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Mcap ####
+  hist(erich.tab2.mcapT1F$evenness_pielou)
+  ggqqplot(erich.tab2.mcapT1F$evenness_pielou)
   
-  Mcap_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Time.Point*Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.mcap.T1<-subset(erich.tab2.mcap, Time.Point=="T1")
+ #T0 
+  erich.tab2.mcap.T0<-subset(erich.tab2T0, Species=="Montipora_capitata")
 
-  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.mcap.TF<-subset(erich.tab2.mcap, Time.Point=="TF")
-
-   Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) #adding tank is singularity
-  anova(Mcap_alpha_mod) 
-  qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-
-#T0
-  #t1
-  erich.tab2.mcap.T0<-subset(erich.tab2.mcap, Time.Point=="T0")
-hist(erich.tab2.mcap.T0$evenness_pielou)
   Mcap_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.mcap.T0) #adding tank is singularity
   anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod))
+  
+ #T1
+  erich.tab2.mcap.T1<-subset(erich.tab2.mcapT1F, Time.Point=="T1")
+
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.T1) 
+  anova(Mcap_alpha_mod) 
   qqPlot(residuals(Mcap_alpha_mod)) 
-  emm<-emmeans(Mcap_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
   
-####### PCOMP only
-  #t1TF
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.T1) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
   
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp) 
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.pcomp.T1<-subset(erich.tab2.pcomp, Time.Point=="T1")
+  #TF
+  erich.tab2.mcap.TF<-subset(erich.tab2.mcapT1F, Time.Point=="TF")
 
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.mcap.TF) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
   
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.pcomp.TF<-subset(erich.tab2.pcomp, Time.Point=="TF")
+  Mcap_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.mcap.TF) 
+  anova(Mcap_alpha_mod) 
+  qqPlot(residuals(Mcap_alpha_mod)) 
 
-   pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pcomp.TF) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pcomp ####
+  hist(erich.tab2.pcompT1F$evenness_pielou)
+  ggqqplot(erich.tab2.pcompT1F$evenness_pielou)
   
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+ #T0 
+  erich.tab2.pcomp.T0<-subset(erich.tab2T0, Species=="Porites_compressa")
 
-#t0
-  #t1
-  erich.tab2.pcomp.T0<-subset(erich.tab2.pcomp, Time.Point=="T0")
-hist(erich.tab2.pcomp.T0$evenness_pielou)
-  pcomp_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) #adding tank is singularity
-  anova(pcomp_alpha_mod) 
-  qqPlot(residuals(pcomp_alpha_mod)) 
-  emm<-emmeans(pcomp_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pcomp.T0) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod))
   
-####### pvar only
-  #t1TF
-  pvar_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pvar_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar) 
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.pvar.T1<-subset(erich.tab2.pvar, Time.Point=="T1")
+ #T1
+  erich.tab2.pcomp.T1<-subset(erich.tab2.pcompT1F, Time.Point=="T1")
 
-  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.T1) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
   
-  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.T1) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
   
-  #tf
-  erich.tab2.pvar.TF<-subset(erich.tab2.pvar, Time.Point=="TF")
+  #TF
+  erich.tab2.pcomp.TF<-subset(erich.tab2.pcompT1F, Time.Point=="TF")
 
-   pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pvar.TF) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pcomp.TF) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
   
-  pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
- 
-  
-    #t0
-  erich.tab2.pvar.T0<-subset(erich.tab2.pvar, Time.Point=="T0")
-hist(erich.tab2.pvar.T0$evenness_pielou)
-   pvar_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
-  anova(pvar_alpha_mod) 
-  qqPlot(residuals(pvar_alpha_mod)) 
-  emm<-emmeans(pvar_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- 
-  
-  ####### pacu only
-  #t1TF
-  pacu_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  pacu_alpha_mod<-lmer(evenness_pielou ~ Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu) 
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Time.Point*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
- #t1
-  erich.tab2.pacu.T1<-subset(erich.tab2.pacu, Time.Point=="T1")
+  Pcomp_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pcomp.TF) 
+  anova(Pcomp_alpha_mod) 
+  qqPlot(residuals(Pcomp_alpha_mod)) 
 
-  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+#Pvar ####
+  hist(erich.tab2.pvarT1F$evenness_pielou)
+  ggqqplot(erich.tab2.pvarT1F$evenness_pielou)
   
-  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.T1) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
-  
-  #tf
-  erich.tab2.pacu.TF<-subset(erich.tab2.pacu, Time.Point=="TF")
+ #T0 
+  erich.tab2.pvar.T0<-subset(erich.tab2T0, Species=="Pavona_varians")
 
-   pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID)+(1|Tank.num), data=erich.tab2.pacu.TF) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pvar.T0) #adding tank is singularity
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod))
   
-  pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pacu.TF) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+ #T1
+  erich.tab2.pvar.T1<-subset(erich.tab2.pvarT1F, Time.Point=="T1")
+
+  Pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.T1) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
   
-  #t0
-  erich.tab2.pacu.T0<-subset(erich.tab2.pacu, Time.Point=="T0")
-hist(erich.tab2.pacu.T0$evenness_pielou)#medium
-   pacu_alpha_mod<-lmer(evenness_pielou ~ Clade+(1|Tank.num), data=erich.tab2.pacu.T0) #adding tank is singularity
-  anova(pacu_alpha_mod) 
-  qqPlot(residuals(pacu_alpha_mod)) 
-  emm<-emmeans(pacu_alpha_mod,  ~ Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.T1) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
+  
+  #TF
+  erich.tab2.pvar.TF<-subset(erich.tab2.pvarT1F, Time.Point=="TF")
+
+  Pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pvar.TF) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
+  
+  Pvar_alpha_mod<-lmer(evenness_pielou ~ Treatment*Clade+(1|Parent.ID), data=erich.tab2.pvar.TF) 
+  anova(Pvar_alpha_mod) 
+  qqPlot(residuals(Pvar_alpha_mod)) 
+
+
+#Pacu ####
+  hist(erich.tab2.pacuT1F$evenness_pielou)
+  ggqqplot(erich.tab2.pacuT1F$evenness_pielou)
+  
+ #T1
+  erich.tab2.pacu.T1<-subset(erich.tab2.pacuT1F, Time.Point=="T1")
+
+  Pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.T1) 
+  anova(Pacu_alpha_mod) 
+  qqPlot(residuals(Pacu_alpha_mod)) 
+  
+  #TF
+  erich.tab2.pacu.TF<-subset(erich.tab2.pacuT1F, Time.Point=="TF")
+
+  Pacu_alpha_mod<-lmer(evenness_pielou ~ Treatment+(1|Parent.ID), data=erich.tab2.pacu.TF) 
+  anova(Pacu_alpha_mod) 
+  qqPlot(residuals(Pacu_alpha_mod)) 
+
 ```
-alpha evenness_pielou Plots, no clade
-```{r} 
-#Means
-evenness_pielou_mean <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
-                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
-                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
-                 se   = sd / sqrt(N), #calculate standard error
-                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-evenness_pielou_mean
-
-#Mcap 
-Mcap_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Montipora_capitata") #Subset Mcap
-# Pcomp 
-Pcomp_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Porites_compressa") #Subset Pcomp
-# Pacu 
-Pacu_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pocillopora_acuta") #Subset Pacu
-# Pvar 
-Pvar_evenness_pielou_mean<-subset(evenness_pielou_mean, Species=="Pavona_varians") #Subset Pvar
-
-#mcap plots
-#plot Mcap
-Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Mcap Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
-
-
-#plot Pcomp
-Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pcomp Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
-
-#Pvar plots
-#plot Pvar
-Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pvar Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
-
-
-#Pacu plots
-#plot Pacu
-Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean, aes(x=Time.Point, y=mean, group = Treatment, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment), size=4, show.legend = F)+
-  geom_line(aes(color=Treatment), linetype=2, show.legend = F)+
-  scale_color_manual(values=c("dodgerblue3", "darkred"))+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pacu Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
-
-###### All plots together
-Mcap_evenness_pielou_plot<-Mcap_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pcomp_evenness_pielou_plot<-Pcomp_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pvar_evenness_pielou_plot<-Pvar_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pacu_evenness_pielou_plot<-Pacu_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evenness_pielou_plot,Pacu_evenness_pielou_plot, nrow = 1)
- 
-```  
-
-alpha evenness_pielou Plots, clade  
-```{r}
-# color pal from eta mcap.g.Parent.colors
-alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
-                        "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
-
-#Means
-evenness_pielou_mean.C <- ddply(erich.tab2, c("Treatment", "Species", "Time.Point","Clade"), summarise, #summarize cell counts
-                 N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
-                 mean = mean(evenness_pielou, na.rm=TRUE), #calculate mean of response variable, removing NA's
-                 sd   = sd(evenness_pielou, na.rm=TRUE), #calculate standard deviation
-                 se   = sd / sqrt(N), #calculate standard error
-                 max = max(evenness_pielou, na.rm=TRUE) #calculate max, could also calculate min () if desired
-)
-evenness_pielou_mean.C
-evenness_pielou_mean.C$Code<-paste(evenness_pielou_mean.C$Clade, evenness_pielou_mean.C$Treatment)
-
-#Mcap 
-Mcap_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Montipora_capitata") #Subset Mcap
-# Pcomp 
-Pcomp_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Porites_compressa") #Subset Pcomp
-# Pacu 
-Pacu_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Pocillopora_acuta") #Subset Pacu
-# Pvar 
-Pvar_evenness_pielou_mean.C<-subset(evenness_pielou_mean.C, Species=="Pavona_varians") #Subset Pvar
-
-#mcap plots
-#plot Mcap
-Mcap_evenness_pielou_plot<-ggplot(data=Mcap_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
-  xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Mcap Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Mcap_evenness_pielou_plot
-
-#Pcomp plots
-#plot Pcomp
-Pcomp_evenness_pielou_plot<-ggplot(data=Pcomp_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
- xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pcomp Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pcomp_evenness_pielou_plot
-
-#Pvar plots
-#plot Pvar
-Pvar_evenness_pielou_plot<-ggplot(data=Pvar_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
- xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pvar Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pvar_evenness_pielou_plot
-
-
-#plot Pacu
-Pacu_evenness_pielou_plot<-ggplot(data=Pacu_evenness_pielou_mean.C, aes(x=Time.Point, y=mean, group = Code, color=Treatment)) +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
-                width=0.1, show.legend = F)+
-  geom_point(aes(color=Treatment, shape=Clade), size=4, show.legend = T)+
-  geom_line(aes(color=Treatment, linetype=Clade), show.legend = T)+
-  scale_color_manual(values=alpha.colors)+
- xlab("") + #Label the X Axis
-    ylab("") + #Label the X Axis
-  ylim(0, 1) + #set Y limits # ylim(0, 11) + #set Y limits # ylim(0, 11) + #set Y limits
-  theme_bw() + #Set the background color
-  theme(axis.line = element_line(color = 'black'), #Set the axes color
-        axis.title=element_text(size=14,face="bold"), #Set axis format
-        panel.border = element_blank(), #Set the border
-        panel.grid.major = element_blank(), #Set the major gridlines
-        panel.grid.minor = element_blank(), #Set the minor gridlines
-        text = element_text(size=18),  # set element text
-        plot.background =element_blank(), #Set the plot background
-        legend.key = element_blank()) + #Set plot legend key
-  # theme(panel.grid.major = element_blank(), 
-  #       panel.grid.minor = element_blank(),
-  #       panel.background = element_rect(colour = "black", size=1))+
-        theme(aspect.ratio=1)+
-  # ylab(expression(paste("Alpha Diversity"))) +
-  # ggtitle("Pacu Evenness")+
-  theme(plot.title = element_text(size=20, face = "italic"));Pacu_evenness_pielou_plot
-
-###### All plots together
-Mcap_evenness_pielou_plot<-Mcap_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pcomp_evenness_pielou_plot<-Pcomp_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pvar_evenness_pielou_plot<-Pvar_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-Pacu_evenness_pielou_plot<-Pacu_evenness_pielou_plot+ theme(legend.position = "none") #remove legend
-
-grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evenness_pielou_plot,Pacu_evenness_pielou_plot, nrow = 1)
- 
-```
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### MCAP alpha, df: erich.tab2.mcap
-```{r} 
-#ANOVA
-erich.tab2.mcap$treat.time<-paste(erich.tab2.mcap$Treatment,erich.tab2.mcap$Time.Point)
-erich.tab2.mcap$treat.time<-as.factor(erich.tab2.mcap$treat.time)
-
-#shannon
-  aov.shannon.treat.time = aov(diversity_shannon ~ treat.time, data=erich.tab2.mcap)
-  summary(aov.shannon.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.shannon.treat.time)
-#observed  
-  aov.observed.treat.time = aov(observed ~ treat.time, data=erich.tab2.mcap)
-  summary(aov.observed.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.observed.treat.time)
-#evenness
-  aov.evenness.treat.time = aov(evenness_pielou ~ treat.time, data=erich.tab2.mcap)
-  summary(aov.evenness.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.evenness.treat.time)  
-#Plot
-  boxplot(diversity_shannon ~ treat.time, data=erich.tab2.mcap, ylab="Shannon's diversity") 
-  boxplot(observed ~ treat.time, data=erich.tab2.mcap, ylab="Observed") 
-  boxplot(evenness_pielou ~ treat.time, data=erich.tab2.mcap, ylab="Evenness_pielou") 
-
-#violin plots
-  # create a list of pairwise comaprisons
-al.treat.time <- levels(erich.tab2.mcap$treat.time) # get the variables
-
-# make a pairwise list that we want to compare.
-  al.treat.time.pairs <- combn(seq_along(al.treat.time), 2, simplify = FALSE, FUN = function(i)al.treat.time[i])
-  print(al.treat.time.pairs)
-
-#observed
-p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "observed",
-   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-    
-#Shannon
-p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "diversity_shannon",
-   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-  
-#Evenness
-p1 <- ggviolin(erich.tab2.mcap, x = "treat.time", y = "evenness_pielou",
-   add = "boxplot", fill = "treat.time", palette = c(Mcap.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-
-
-
-
-
-
-#OLD
-
-#Shannon
-#Run the ANOVA and save it as an object
-  aov.shannon.speciesMcap = aov(Shannon ~ Treatment*Time.Point, data=erich.mcap)
-  summary(aov.shannon.speciesMcap) # sig diff between species
-  TukeyHSD(aov.shannon.speciesMcap)
-
-#Plot
-  boxplot(Shannon ~ Treatment*Time.Point, data=erich.mcap, ylab="Shannon's diversity") 
-
-  
-  
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.speciesMcap = aov(Observed ~ Treatment*Time.Point, data=erich.mcap)
-  summary(aov.observed.speciesMcap) # sig diff between species
-  TukeyHSD(aov.observed.speciesMcap)
-#Plot
-  boxplot(Observed ~ Treatment*Time.Point, data=erich.mcap, ylab="observed's diversity") 
-```
-#### Do by C and CD
-```{r}
-#mcap  erich.mcap
-
-
-  # by parent ID set clade dom
-  erich.mcap$Clade[erich.mcap$Parent.ID==363]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==364]<-"CD"
-  erich.mcap$Clade[erich.mcap$Parent.ID==365]<-"CD"
-  erich.mcap$Clade[erich.mcap$Parent.ID==366]<-"CD"
-  erich.mcap$Clade[erich.mcap$Parent.ID==367]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==368]<-"CD"
-  erich.mcap$Clade[erich.mcap$Parent.ID==369]<-"CD"
-  erich.mcap$Clade[erich.mcap$Parent.ID==370]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==371]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==372]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==373]<-"C"
-  erich.mcap$Clade[erich.mcap$Parent.ID==374]<-"CD"
-  erich.mcap$Clade<-as.factor(erich.mcap$Clade) #change to factor
-
-## let look at C vs CD
-  #Run the ANOVA and save it as an object
-  aov.shannon.speciesMcap_CCD = aov(Shannon ~ Clade*Treatment*Time.Point, data=erich.mcap)
-  summary(aov.shannon.speciesMcap_CCD) # sig diff between species
-  TukeyHSD(aov.shannon.speciesMcap_CCD)
-
-#Plot
-  boxplot(Shannon ~ Clade*Treatment*Time.Point, data=erich.mcap, ylab="Shannon's diversity") 
-
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.speciesMcap_CCD = aov(Observed ~ Clade*Treatment*Time.Point, data=erich.mcap)
-  summary(aov.observed.speciesMcap_CCD) # sig diff between species
-  TukeyHSD(aov.observed.speciesMcap_CCD)
-#Plot
-  boxplot(Observed ~ Clade*Treatment*Time.Point, data=erich.mcap, ylab="observed's diversity") 
-  
-``` 
-# Pcomp alpha
-```{r} 
-#ANOVA
-erich.tab2.pcomp$treat.time<-paste(erich.tab2.pcomp$Treatment,erich.tab2.pcomp$Time.Point)
-erich.tab2.pcomp$treat.time<-as.factor(erich.tab2.pcomp$treat.time)
-
-#shannon
-  aov.shannon.treat.time = aov(diversity_shannon ~ treat.time, data=erich.tab2.pcomp)
-  summary(aov.shannon.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.shannon.treat.time)
-#observed  
-  aov.observed.treat.time = aov(observed ~ treat.time, data=erich.tab2.pcomp)
-  summary(aov.observed.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.observed.treat.time)
-#evenness
-  aov.evenness.treat.time = aov(evenness_pielou ~ treat.time, data=erich.tab2.pcomp)
-  summary(aov.evenness.treat.time) # sig diff between treat.time
-  TukeyHSD(aov.evenness.treat.time)  
-#Plot
-  boxplot(diversity_shannon ~ treat.time, data=erich.tab2.pcomp, ylab="Shannon's diversity") 
-  boxplot(observed ~ treat.time, data=erich.tab2.pcomp, ylab="Observed") 
-  boxplot(evenness_pielou ~ treat.time, data=erich.tab2.pcomp, ylab="Evenness_pielou") 
-
-#violin plots
-  # create a list of pairwise comaprisons
-al.treat.time <- levels(erich.tab2.pcomp$treat.time) # get the variables
-
-# make a pairwise list that we want to compare.
-  al.treat.time.pairs <- combn(seq_along(al.treat.time), 2, simplify = FALSE, FUN = function(i)al.treat.time[i])
-  print(al.treat.time.pairs)
-
-#observed
-p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "observed",
-   add = "boxplot", fill = "treat.time", palette = c(Pcomp.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-    
-#Shannon
-p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "diversity_shannon",
-   add = "boxplot", fill = "treat.time", palette = c(pcomp.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-  
-#Evenness
-p1 <- ggviolin(erich.tab2.pcomp, x = "treat.time", y = "evenness_pielou",
-   add = "boxplot", fill = "treat.time", palette = c(pcomp.Parent.colors)) 
-  print(p1)
-p1 <- p1 + stat_compare_means(comparisons = al.treat.time.pairs) #non-parametric test (Wilcoxon test)
-  print(p1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#old
-#Shannon 
-#Run the ANOVA and save it as an object
-  aov.shannon.speciesPcomp = aov(Shannon ~ Treatment*Time.Point, data=erich.pcomp)
-  summary(aov.shannon.speciesPcomp) # sig diff between species
-  TukeyHSD(aov.shannon.speciesPcomp)
-  
- 
- 
-
-#Plot
-  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pcomp, ylab="Shannon's diversity") 
-
-#Pcomp  
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.speciesPcomp = aov(Observed ~ Treatment*Time.Point, data=erich.pcomp)
-  summary(aov.observed.speciesPcomp) # sig diff between species
-  TukeyHSD(aov.observed.speciesPcomp)
-  
-
-
-  
-#Plot
-  boxplot(Observed ~ Treatment*Time.Point, data=erich.pcomp, ylab="observed's diversity") 
-
-
-  
-``` 
-# Pvar
-```{r}
-#Shannon
-#Run the ANOVA and save it as an object
-  aov.shannon.speciesPvar = aov(Shannon ~ Treatment*Time.Point, data=erich.pvar)
-  summary(aov.shannon.speciesPvar) # sig diff between species
-  TukeyHSD(aov.shannon.speciesPvar)
-
-  
-
-#Plot
-  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pvar, ylab="Shannon's diversity") 
-  
- 
-  
-  
-  
-  
-  
-  
-
-#Pvar  
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.speciesPvar = aov(Observed ~ Treatment*Time.Point, data=erich.pvar)
-  summary(aov.observed.speciesPvar) # sig diff between species
-  TukeyHSD(aov.observed.speciesPvar)
-
-
-  
-#Plot
-  boxplot(log(Observed) ~ Treatment*Time.Point, data=erich.pvar, ylab="observed's diversity") 
-  
-  
-``` 
-
-# Pacu
-```{r}
-#Shannon
-#Run the ANOVA and save it as an object
-  aov.shannon.speciesPacu = aov(Shannon ~ Treatment*Time.Point, data=erich.pacu)
-  summary(aov.shannon.speciesPacu) # sig diff between species
-  TukeyHSD(aov.shannon.speciesPacu)
-
-
-#Plot
-  aov.shannon.speciesPacu$Time.Point = factor(aov.shannon.speciesPacu$Time.Point, levels = c("T0", "T1", "TF"))
-
-  boxplot(Shannon ~ Treatment*Time.Point, data=erich.pacu, ylab="Shannon's diversity") 
-  
- 
-  
-  
-  
-  
-  
-  
-
-#Pvar  
-#Observed
-#Run the ANOVA and save it as an object
-  aov.observed.speciesPacu = aov(Observed ~ Treatment*Time.Point, data=erich.pacu)
-  summary(aov.observed.speciesPacu) # sig diff between species
-  TukeyHSD(aov.observed.speciesPacu)
-
-
-  
-#Plot
-  boxplot(Observed ~ Treatment*Time.Point, data=erich.pacu, ylab="observed's diversity") 
-
-# Just T1
-  erich.pacuT1<-subset(erich.pacu, Time.Point=="T1")
-  hist(log10(erich.pacuT1$Observed))
-  aov.observed.speciesPacuT1 = aov(log10(Observed) ~ Treatment, data=erich.pacuT1)
-  summary(aov.observed.speciesPacuT1) # sig diff between species
-  TukeyHSD(aov.observed.speciesPacuT1)
-  
-  hist((erich.pacuT1$Shannon))
-  aov.shannon.speciesPacuT1 = aov(log10(Shannon) ~ Treatment, data=erich.pacuT1)
-  summary(aov.shannon.speciesPacuT1) # sig diff between species
-  TukeyHSD(aov.shannon.speciesPacuT1)
-  
-  
-``` 
- 
-
-
-
-
-
- 
-```{r}
-#for non normal Kruskal wallis rank sum  
-  kruskal.test(x ~ AgeGroup, data=meta)
-
-  
-#testing
-  
-  coral <- get_variable(coralDIV2_rare.alpha2, "host_genus") %in% c("montipora",  "pocillopora")
-sample_data(coralDIV2_rare.alpha2)$human <- factor(coral)
-
- #estimate_richness(coralDIV2_rare, "coral","host_genus", measures = c("Observed", "Shannon")) #select which estimates and estimate CANNOT GET TO WORK with X
-  
-## from tutorial can't get it to wokr in my code.   
-  GP <- prune_taxa(taxa_sums(GlobalPatterns) > 0, GlobalPatterns)
-
-human <- get_variable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
-sample_data(GP)$human <- factor(human)
-
-alpha_meas = c("Observed", "Shannon")
-(p <- plot_richness(GP, "human", "SampleType", measures=alpha_meas))
-
-
-
-
-
-
-##
-## make bar plot of rank abundance of all DIVs
-par(mar = c(10, 4, 4, 2) + 0.1) # make more room on bottom margin
-N <- 50
-barplot(sort(taxa_sums(coralDIV2_rare.alpha2), TRUE)[1:N]/nsamples(coralDIV2_rare.alpha2), las=2)
-
-sample_variables(coralDIV2_rare.alpha2) #check sample variables
-
-#plot_bar(coralDIV2_rare.alpha2, "Species", fill="DIV", facet_grid=~DIV)
-
-
-#make network - not helpful for ITS2 here
-
-ig <- make_network(coralDIV2_rare.alpha2, max.dist=0.3)
-plot_network(ig, coralDIV2_rare.alpha2, color="Parent.ID", shape="Species", line_weight=0.4, label=NULL)
-
-
-
-
-
+Evenness Plots: Figure S18
+```{r}   
+EvennessT1TF<- ggplot(erich.tab2, aes(x=interaction(Treatment,Time.Point,Species), y=evenness_pielou, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(" Evenness")+
+      xlab("") + #Label the X Axis
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");EvennessT1TF
+ggsave("16S_EvennessT1TF.pdf")
+
+#by algal symbiont lineage
+#no pacu
+erich.tab2_noPacu<-subset(erich.tab2, Species!="Pocillopora_acuta")
+    EvennessT1TF_clade<- ggplot(erich.tab2_noPacu, aes(x=interaction(Treatment,Clade,Time.Point, Species), y=evenness_pielou, fill=Treatment)) + 
+      scale_fill_manual(values=c("deepskyblue1", "orangered"))+
+      ggtitle(" Evenness")+
+            xlab("") + #Label the X Axis
+      theme(axis.text.x = element_text(size=14))+
+      theme(axis.text.y = element_text(size=14))+
+      theme(axis.title.y = element_text(size=14))+
+      theme(plot.title = element_text(size=16, face="bold.italic"))+
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+      geom_boxplot(show.legend = F)+
+          scale_x_discrete(guide = "axis_nested");EvennessT1TF_clade
+    ggsave("16S_EvennessT1TF_clade.pdf", width=20, height=7)
 
 ```
 
 
-
-
-
-
-# for defense NMDS
-```{r}
-AA_16S<-Bac.s.rel.u.T1F #copy df
-
-fullNMDS<-AA_16S
-fullNMDS = prune_taxa(taxa_sums(fullNMDS) > 0, fullNMDS) #this removes any OTU with 0s
-
-
-# extract OTU table with metadata. 
-
-# Extract abundance matrix from the phyloseq object< 
-#OK some of your samples now have zero taxa. 
-OTU.16S.v = as(otu_table(fullNMDS), "matrix")
-# transpose if necessary
-if(taxa_are_rows(fullNMDS)){OTU.16S.v <- t(OTU.16S.v)}
-# Coerce to data.frame
-OTU.16S.v.df = as.data.frame(OTU.16S.v)
-    sample_data<-rownames(OTU.16S.v.df)  #make row names a column
-  rownames(OTU.16S.v.df) <- NULL
-  OTU.16S.v.df2 <- cbind(sample_data,OTU.16S.v.df)
-
-
-
-#smash in meta in vegan, multivariate stats
-Asample.data16S <- as(sample_data(fullNMDS), "data.frame") #create sample data frame to view
-
-sample_data<-rownames(Asample.data16S)  #get meta organized, row names a column
-  rownames(Asample.data16S) <- NULL
-  Asample.data16S2 <- cbind(sample_data,Asample.data16S)
-  
-
-B16S.data<-merge(Asample.data16S2,OTU.16S.v.df2) #merge on the metadata to OTU table. Bam
-
-B16S.data<-subset(B16S.data, Time.Point=="T1"|Time.Point=="TF")
-#CW code
-# cleaned data for full dataframe NMDS (Site, Period, dom)
-
-B16S.data$SpTrTi<-interaction(B16S.data$Species, B16S.data$Treatment, B16S.data$Time.Point)
-
- fac.B16S.data<-B16S.data[,c("Treatment","Species", "Time.Point", "SpTrTi")] #  sans responses
-
-resp.B16S.data<-B16S.data[, 13:6461] # just responses
-
-# resp.B16S.data <- scale(resp.B16S.data, center = TRUE, scale = TRUE) 
-# 
-# ##  Run MANOVA 
-# # all.Manova<-adonis2(resp.B16S.data~Species*Treatment*Time.Point, data=B16S.data, permutations=1000,  method="euclidian")
-# # all.Manova
-# 
-
-allNMDS<-metaMDS(resp.B16S.data, distance='bray', k=3, trymax=300)
-# 
-# stressplot(allNMDS)
-# 
-# ##### next  ####
-# 
-allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
-                            Species=as.factor(fac.B16S.data[,2]),
-                            Treatment=as.factor(fac.B16S.data[,1]),
-                            Time.Point=as.factor(fac.B16S.data[,3]),
-                            SpTrTi=as.factor(fac.B16S.data[,4]))
-
-colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
-
-
-# scores.ord.B16S_RelA_stats  df from above nmds you can't get it to work here. 
-
-#centroid means scores.ord.B16S_RelA_stats
-NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$SpTrTi), mean) # mean by species*treatment*time
-
-############### All groups NMDS
-# B16S.data$Code<-droplevels(B16S.data$Code)
-groups<-B16S.data$Code
-groups2<-c("Montipora_capitata Ambient T1", 
-           "Montipora_capitata Ambient TF", 
-           "Montipora_capitata High T1",
-           "Montipora_capitata High TF", 
-           "Porites_compressa Ambient T1", 
-           "Porites_compressa Ambient TF", 
-           "Porites_compressa High T1",
-           "Porites_compressa High TF",
-           "Pavona_varians Ambient T1", 
-           "Pavona_varians Ambient TF", 
-           "Pavona_varians High T1",
-           "Pavona_varians High TF",
-           "Pocillopora_acuta Ambient T1", 
-           "Pocillopora_acuta Ambient TF", 
-           "Pocillopora_acutaa High T1",
-           "Pocillopora_acuta High TF")
-colors=c(
-  "#F8766D", #Mcap 
-  "#C77CFF", #Porites
-  "#7CAE00", # Pvar
-  "#00BFC4" # Pacu
-   ) 
-plot<-ordiplot(allNMDS, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
-axis(side = 1, labels = FALSE)
-abline(h = 0, lty = "dotted")
-abline(v = 0, lty = "dotted")
-ordihull(plot, groups=B16S.data$SpTrTi, draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
-
-# points for start and end
-with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], bg="white", col=colors[1], pch=21, cex=2, lwd=1)) #mcap T1 H
-with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3], col=colors[1], pch=16, cex=2, lwd=1)) # Mcap A T1
-with(plot, points(NMDS.mean[13,2], NMDS.mean[13,3], bg="white",col=colors[1], pch=24, cex=2, lwd=1)) #mcap TF H
-with(plot, points(NMDS.mean[9,2], NMDS.mean[9,3], col=colors[1], pch=17, cex=2, lwd=1)) # Mcap A TF
-
-with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], bg="white", col=colors[2], pch=21, cex=2, lwd=1)) # Pcomp H T1
-with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=2, lwd=1)) # Pcomp  A T1
-with(plot, points(NMDS.mean[16,2], NMDS.mean[16,3], bg="white", col=colors[2], pch=24, cex=2, lwd=1)) # Pcomp H TF
-with(plot, points(NMDS.mean[12,2], NMDS.mean[12,3], col=colors[2], pch=17, cex=2, lwd=1)) # PcompA TF
-
-with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], bg="white", col=colors[3], pch=21, cex=2, lwd=1)) # Pvar H T1
-with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=2, lwd=1)) # Pvar A T1
-with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], bg="white", col=colors[3], pch=24, cex=2, lwd=1)) # Pvar H TF
-with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=17, cex=2, lwd=1)) # Pvar A TF
-
-with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], bg="white", col=colors[4], pch=21, cex=2, lwd=1)) # Pacu H T1
-with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=2, lwd=1)) # Pac A Ta
-with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], bg="white", col=colors[4], pch=24, cex=2, lwd=1)) # Pacu H TF
-with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[4], pch=17, cex=2, lwd=1)) # Pac A TF
-
-
-
-# # points for others (if want)
-# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-
-# # lines for start and end
-# with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
-# with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
-# with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
-# with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
-# with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
-# with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
-# with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
-# with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
-
-# add labels
-# text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
-# text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
-# text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
-# text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
-
-text(-3, -1.8, "2D Stress = 0.15", cex=0.8, col="black")
-legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
-
-dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
-dev.off() 
-
-```
-
-
-#try again with weighted unifrac _ You are stucks....
-```{r}
-Bac.s.rel.u.T1TF2<-subset_samples(Bac.s.rel.u, Time.Point=="T1"|Time.Point=="TF")
-    Bac.s.rel.u.T1TF2 = prune_taxa(taxa_sums(Bac.s.rel.u.T1TF2) > 0, Bac.s.rel.u.T1TF2) #this removes any OTU with 0s
-
-unifrac.all.T1TF <- ordinate(Bac.s.rel.u.T1TF2, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
-stressplot(unifrac.all.T1TF)
-scores.ord.unifrac.all.T1TF<-as.data.frame(cbind(vegan::scores(unifrac.all.T1TF, display="sites"))) #  
-     sd.unifrac.T1TF2 <- as(sample_data(Bac.s.rel.u.T1TF2), "data.frame") #sample df
-
-scores.ord.unifrac.all.T1TF$Treatment <- sd.unifrac.T1TF2$Treatment
-scores.ord.unifrac.all.T1TF$Species <- sd.unifrac.T1TF2$Species
-scores.ord.unifrac.all.T1TF$Clade <- sd.unifrac.T1TF2$Clade
-scores.ord.unifrac.all.T1TF$Time.Point <- sd.unifrac.T1TF2$Time.Point
-scores.ord.unifrac.all.T1TF$Code <- paste(sd.unifrac.T1TF2$Species, sd.unifrac.T1TF2$Treatment,sd.unifrac.T1TF2$Time.Point)
-
-
-
-OTU.16.v = as(otu_table(Bac.s.rel.u.T1TF2), "matrix")
-# transpose if necessary
-if(taxa_are_rows(Bac.s.rel.u.T1TF2)){OTU.16.v <- t(OTU.16.v)}
-# Coerce to data.frame
-OTU.16.v.df = as.data.frame(OTU.16.v)
-    sample_data16<-rownames(OTU.16.v.df)  #make row names a column
-  rownames(OTU.16.v.df) <- NULL
-  OTU.16.v.df2 <- cbind(sample_data16,OTU.16.v.df)
-
-
-
-#smash in meta in vegan, multivariate stats
-Asample.data16 <- as(sample_data(Bac.s.rel.u.T1TF2), "data.frame") #create sample data frame to view
-
-sample_data<-rownames(Asample.data16)  #get meta organized, row names a column
-  rownames(Asample.data16) <- NULL
-  Asample.data162 <- cbind(sample_data,Asample.data16)
-  
-
-B16S.data<-merge(Asample.data162,OTU.16.v.df2) #merge on the metadata to OTU table. Bam
-
-B16S.data<-subset(B16S.data, Time.Point=="T1"|Time.Point=="TF")
-#CW code
-# cleaned data for full dataframe NMDS (Site, Period, dom)
-
-B16S.data$SpTrTi<-interaction(B16S.data$Species, B16S.data$Treatment, B16S.data$Time.Point)
-
-
-
-
-# ##### next  ####
-# 
-# allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
-#                             Species=as.factor(fac.B16S.data[,2]),
-#                             Treatment=as.factor(fac.B16S.data[,1]),
-#                             Time.Point=as.factor(fac.B16S.data[,3]),
-#                             SpTrTi=as.factor(fac.B16S.data[,4]))
-
-# colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
-
-
-# scores.ord.B16S_RelA_stats  df from above nmds you can't get it to work here. 
-#centroid means scores.ord.B16S_RelA_stats
-NMDS.mean=aggregate(scores.ord.unifrac.all.T1TF[,1:2],list(group=B16S.data$Code), mean) # mean by species*treatment*time
-
-############### All groups NMDS
-# B16S.data$Code<-droplevels(B16S.data$Code)
-groups<-B16S.data$Code
-groups2<-c("Montipora_capitata Ambient T1", 
-           "Montipora_capitata Ambient TF", 
-           "Montipora_capitata High T1",
-           "Montipora_capitata High TF", 
-           "Porites_compressa Ambient T1", 
-           "Porites_compressa Ambient TF", 
-           "Porites_compressa High T1",
-           "Porites_compressa High TF",
-           "Pavona_varians Ambient T1", 
-           "Pavona_varians Ambient TF", 
-           "Pavona_varians High T1",
-           "Pavona_varians High TF",
-           "Pocillopora_acuta Ambient T1", 
-           "Pocillopora_acuta Ambient TF", 
-           "Pocillopora_acutaa High T1",
-           "Pocillopora_acuta High TF")
-colors=c(
-  "#F8766D", #Mcap 
-  "#C77CFF", #Porites
-  "#7CAE00", # Pvar
-  "#00BFC4" # Pacu
-   ) 
-plot<-ordiplot(unifrac.all.T1TF, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
-axis(side = 1, labels = FALSE)
-abline(h = 0, lty = "dotted")
-abline(v = 0, lty = "dotted")
-ordihull(plot, groups=unifrac.all.T1TF$Code, draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
-
-# points for start and end
-with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], bg="white", col=colors[1], pch=21, cex=2, lwd=1)) #mcap T1 H
-with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3], col=colors[1], pch=16, cex=2, lwd=1)) # Mcap A T1
-with(plot, points(NMDS.mean[13,2], NMDS.mean[13,3], bg="white",col=colors[1], pch=24, cex=2, lwd=1)) #mcap TF H
-with(plot, points(NMDS.mean[9,2], NMDS.mean[9,3], col=colors[1], pch=17, cex=2, lwd=1)) # Mcap A TF
-
-with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], bg="white", col=colors[2], pch=21, cex=2, lwd=1)) # Pcomp H T1
-with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=2, lwd=1)) # Pcomp  A T1
-with(plot, points(NMDS.mean[16,2], NMDS.mean[16,3], bg="white", col=colors[2], pch=24, cex=2, lwd=1)) # Pcomp H TF
-with(plot, points(NMDS.mean[12,2], NMDS.mean[12,3], col=colors[2], pch=17, cex=2, lwd=1)) # PcompA TF
-
-with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], bg="white", col=colors[3], pch=21, cex=2, lwd=1)) # Pvar H T1
-with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=2, lwd=1)) # Pvar A T1
-with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], bg="white", col=colors[3], pch=24, cex=2, lwd=1)) # Pvar H TF
-with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=17, cex=2, lwd=1)) # Pvar A TF
-
-with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], bg="white", col=colors[4], pch=21, cex=2, lwd=1)) # Pacu H T1
-with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=2, lwd=1)) # Pac A Ta
-with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], bg="white", col=colors[4], pch=24, cex=2, lwd=1)) # Pacu H TF
-with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[4], pch=17, cex=2, lwd=1)) # Pac A TF
-
-
-
-# # points for others (if want)
-# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-
-# lines for start and end
-with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
-with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
-with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
-with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
-with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
-with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
-with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
-with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
-
-# add labels
-# text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
-# text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
-# text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
-# text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
-
-text(-30, -22, "2D Stress = 0.15", cex=0.8, col="black")
-legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
-
-dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
-dev.off() 
-
-```
-
-```{r}
-Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
-    Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
-
-unifrac.all.T0 <- ordinate(Bac.s.rel.u.T0, method="NMDS", "unifrac",weighted=TRUE, set.seed(30)) 
-stressplot(unifrac.all.T0)
-scores.ord.unifrac.all.T0<-as.data.frame(cbind(vegan::scores(unifrac.all.T0, display="sites"))) #  
-     sd.unifrac.T0 <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #sample df
-
-scores.ord.unifrac.all.T0$Treatment <- sd.unifrac.T0$Treatment
-scores.ord.unifrac.all.T0$Species <- sd.unifrac.T0$Species
-scores.ord.unifrac.all.T0$Clade <- sd.unifrac.T0$Clade
-scores.ord.unifrac.all.T0$Time.Point <- sd.unifrac.T0$Time.Point
-scores.ord.unifrac.all.T0$Code <- paste(sd.unifrac.T0$Species, sd.unifrac.T0$Treatment,sd.unifrac.T0$Time.Point)
-
-
-
-OTU.16.v = as(otu_table(Bac.s.rel.u.T0), "matrix")
-# transpose if necessary
-if(taxa_are_rows(Bac.s.rel.u.T0)){OTU.16.v <- t(OTU.16.v)}
-# Coerce to data.frame
-OTU.16.v.df = as.data.frame(OTU.16.v)
-    sample_data16<-rownames(OTU.16.v.df)  #make row names a column
-  rownames(OTU.16.v.df) <- NULL
-  OTU.16.v.df2 <- cbind(sample_data16,OTU.16.v.df)
-
-
-
-#smash in meta in vegan, multivariate stats
-Asample.data16 <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #create sample data frame to view
-
-sample_data<-rownames(Asample.data16)  #get meta organized, row names a column
-  rownames(Asample.data16) <- NULL
-  Asample.data162 <- cbind(sample_data,Asample.data16)
-  
-
-B16S.data<-merge(Asample.data162,OTU.16.v.df2) #merge on the metadata to OTU table. Bam
-
-B16S.data<-subset(B16S.data, Time.Point=="T1"|Time.Point=="TF")
-#CW code
-# cleaned data for full dataframe NMDS (Site, Period, dom)
-
-B16S.data$SpTrTi<-interaction(B16S.data$Species, B16S.data$Treatment, B16S.data$Time.Point)
-
-
-
-
-# ##### next  ####
-# 
-# allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
-#                             Species=as.factor(fac.B16S.data[,2]),
-#                             Treatment=as.factor(fac.B16S.data[,1]),
-#                             Time.Point=as.factor(fac.B16S.data[,3]),
-#                             SpTrTi=as.factor(fac.B16S.data[,4]))
-
-# colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
-
-
-# scores.ord.B16S_RelA_stats  df from above nmds you can't get it to work here. 
-#centroid means scores.ord.B16S_RelA_stats
-NMDS.mean=aggregate(scores.ord.unifrac.all.T0[,1:2],list(group=B16S.data$Code), mean) # mean by species*treatment*time
-
-############### All groups NMDS
-# B16S.data$Code<-droplevels(B16S.data$Code)
-groups<-B16S.data$Code
-groups2<-c("Montipora_capitata Ambient T1", 
-           "Montipora_capitata Ambient TF", 
-           "Montipora_capitata High T1",
-           "Montipora_capitata High TF", 
-           "Porites_compressa Ambient T1", 
-           "Porites_compressa Ambient TF", 
-           "Porites_compressa High T1",
-           "Porites_compressa High TF",
-           "Pavona_varians Ambient T1", 
-           "Pavona_varians Ambient TF", 
-           "Pavona_varians High T1",
-           "Pavona_varians High TF",
-           "Pocillopora_acuta Ambient T1", 
-           "Pocillopora_acuta Ambient TF", 
-           "Pocillopora_acutaa High T1",
-           "Pocillopora_acuta High TF")
-colors=c(
-  "#F8766D", #Mcap 
-  "#C77CFF", #Porites
-  "#7CAE00", # Pvar
-  "#00BFC4" # Pacu
-   ) 
-plot<-ordiplot(unifrac.all.T0, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
-axis(side = 1, labels = FALSE)
-abline(h = 0, lty = "dotted")
-abline(v = 0, lty = "dotted")
-ordihull(plot, groups=unifrac.all.T0$Code, draw="polygon", alpha=20, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
-
-# points for start and end
-with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], bg="white", col=colors[1], pch=21, cex=2, lwd=1)) #mcap T1 H
-with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3], col=colors[1], pch=16, cex=2, lwd=1)) # Mcap A T1
-with(plot, points(NMDS.mean[13,2], NMDS.mean[13,3], bg="white",col=colors[1], pch=24, cex=2, lwd=1)) #mcap TF H
-with(plot, points(NMDS.mean[9,2], NMDS.mean[9,3], col=colors[1], pch=17, cex=2, lwd=1)) # Mcap A TF
-
-with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], bg="white", col=colors[2], pch=21, cex=2, lwd=1)) # Pcomp H T1
-with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=16, cex=2, lwd=1)) # Pcomp  A T1
-with(plot, points(NMDS.mean[16,2], NMDS.mean[16,3], bg="white", col=colors[2], pch=24, cex=2, lwd=1)) # Pcomp H TF
-with(plot, points(NMDS.mean[12,2], NMDS.mean[12,3], col=colors[2], pch=17, cex=2, lwd=1)) # PcompA TF
-
-with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], bg="white", col=colors[3], pch=21, cex=2, lwd=1)) # Pvar H T1
-with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=16, cex=2, lwd=1)) # Pvar A T1
-with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], bg="white", col=colors[3], pch=24, cex=2, lwd=1)) # Pvar H TF
-with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=17, cex=2, lwd=1)) # Pvar A TF
-
-with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], bg="white", col=colors[4], pch=21, cex=2, lwd=1)) # Pacu H T1
-with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[4], pch=16, cex=2, lwd=1)) # Pac A Ta
-with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], bg="white", col=colors[4], pch=24, cex=2, lwd=1)) # Pacu H TF
-with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[4], pch=17, cex=2, lwd=1)) # Pac A TF
-
-
-
-# # points for others (if want)
-# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-
-# lines for start and end
-with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
-with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
-with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
-with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
-with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
-with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
-with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
-with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
-
-# add labels
-# text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
-# text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
-# text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
-# text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
-
-text(-30, -22, "2D Stress = 0.15", cex=0.8, col="black")
-legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
-
-dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
-dev.off() 
-
-```
-
-
-T0 bray bc it works
-```{r}
-AA_16ST0<-Bac.s.rel.u.T0 #copy df
-
-fullNMDS<-AA_16ST0
-fullNMDS = prune_taxa(taxa_sums(fullNMDS) > 0, fullNMDS) #this removes any OTU with 0s
-
-
-# extract OTU table with metadata. 
-
-# Extract abundance matrix from the phyloseq object< 
-#OK some of your samples now have zero taxa. 
-OTU.16S.v = as(otu_table(fullNMDS), "matrix")
-# transpose if necessary
-if(taxa_are_rows(fullNMDS)){OTU.16S.v <- t(OTU.16S.v)}
-# Coerce to data.frame
-OTU.16S.v.df = as.data.frame(OTU.16S.v)
-    sample_data<-rownames(OTU.16S.v.df)  #make row names a column
-  rownames(OTU.16S.v.df) <- NULL
-  OTU.16S.v.df2 <- cbind(sample_data,OTU.16S.v.df)
-
-
-
-#smash in meta in vegan, multivariate stats
-Asample.data16S <- as(sample_data(fullNMDS), "data.frame") #create sample data frame to view
-
-sample_data<-rownames(Asample.data16S)  #get meta organized, row names a column
-  rownames(Asample.data16S) <- NULL
-  Asample.data16S2 <- cbind(sample_data,Asample.data16S)
-  
-
-B16S.data<-merge(Asample.data16S2,OTU.16S.v.df2) #merge on the metadata to OTU table. Bam
-
-B16S.data<-subset(B16S.data, Time.Point=="T0")
-#CW code
-# cleaned data for full dataframe NMDS (Site, Period, dom)
-
-
- fac.B16S.data<-B16S.data[,c("Species","Clade")] #  sans responses
-
-resp.B16S.data<-B16S.data[, 13:2449] # just responses
-
-# resp.B16S.data <- scale(resp.B16S.data, center = TRUE, scale = TRUE) 
-# 
-# ##  Run MANOVA 
-# # all.Manova<-adonis2(resp.B16S.data~Species*Treatment*Time.Point, data=B16S.data, permutations=1000,  method="euclidian")
-# # all.Manova
-# 
- 
-allNMDS<-metaMDS(resp.B16S.data, distance='bray', k=3, trymax=300)
-# 
-# stressplot(allNMDS)
-# 
-# ##### next  #### 
-# 
-allNMDS.df<-data.frame(x=allNMDS$point[,1], y=allNMDS$point[,2],
-                            Species=as.factor(fac.B16S.data[,2]))
-
-colnames(allNMDS.df)[1:2]<-c("MDS1", "MDS2")
-
-
-# scores.ord.B16S_RelA_stats  df from above nmds you can't get it to work here. 
-
-#centroid means scores.ord.B16S_RelA_stats
-NMDS.mean=aggregate(allNMDS.df[,1:2],list(group=allNMDS.df$Species), mean) # mean by species*treatment*time
-
-############### All groups NMDS
-# B16S.data$Code<-droplevels(B16S.data$Code)
-groups<-B16S.data$Species
-groups2<-c("Montipora_capitata",
-           "Porites_compressa",
-           "Pavona_varians", 
-           "Pocillopora_acuta")
-colors=c(
-  "#F8766D", #Mcap 
-  "#C77CFF", #Porites
-  "#7CAE00", # Pvar
-  "#00BFC4" # Pacu
-   ) 
-plot<-ordiplot(allNMDS, type="n", cex.main=1, display="sites", cex.lab=0.8, cex.axis=0.8) #ylim=c(-0.3, 0.3))
-axis(side = 1, labels = FALSE)
-abline(h = 0, lty = "dotted")
-abline(v = 0, lty = "dotted")
-ordihull(plot, groups=B16S.data$Species, draw="polygon", alpha=40, col=c("#F8766D", "#7CAE00","#00BFC4","#C77CFF"), border=F)
-
-# points for start and end
-with(plot, points(NMDS.mean[1,2], NMDS.mean[1,3],  col=colors[1], pch=18, cex=6, lwd=1)) #mcap C
-with(plot, points(NMDS.mean[8,2], NMDS.mean[8,3], col=colors[1], pch=23, cex=5, lwd=2)) # McapCD
-with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[3], pch=18, cex=6, lwd=1)) #pvar c1
-with(plot, points(NMDS.mean[5,2], NMDS.mean[5,3], col=colors[3], pch=23, cex=5, lwd=2)) # pvar c27
-
-with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3],  col=colors[2], pch=18, cex=6, lwd=1)) # pcomp cj
-with(plot, points(NMDS.mean[4,2], NMDS.mean[4,3], col=colors[2], pch=23, cex=5, lwd=2)) # Pcomp  n
-with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3],  col=colors[4], pch=18, cex=6, lwd=1)) # pacu c42
-with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[4], pch=23, cex=5, lwd=2)) # Pacu ccc
-
-
-
-
-# # points for others (if want)
-# with(plot, points(NMDS.mean[2,2], NMDS.mean[2,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[3,2], NMDS.mean[3,3], col=colors[1], pch=16, cex=1, lwd=1)) # Lil C
-# with(plot, points(NMDS.mean[6,2], NMDS.mean[6,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[7,2], NMDS.mean[7,3], col=colors[2], pch=16, cex=1, lwd=1)) # R14 C
-# with(plot, points(NMDS.mean[10,2], NMDS.mean[10,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[11,2], NMDS.mean[11,3], col=colors[3], pch=16, cex=1, lwd=1)) # Lil D
-# with(plot, points(NMDS.mean[14,2], NMDS.mean[14,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-# with(plot, points(NMDS.mean[15,2], NMDS.mean[15,3], col=colors[4], pch=16, cex=1, lwd=1)) # R14 D
-
-# # lines for start and end
-# with(plot, lines(NMDS.mean[c(1,9),2], NMDS.mean[c(1,9),3], lwd=1.5, col =colors[1], lty=1))# Mcap A
-# with(plot, lines(NMDS.mean[c(5,13),2], NMDS.mean[c(5,13),3], lwd=1.5, col =colors[1], lty=2))# Mcap H
-# with(plot, lines(NMDS.mean[c(8,16),2], NMDS.mean[c(8,16),3], lwd=1.5, col =colors[2], lty=2))# Pcomp H
-# with(plot, lines(NMDS.mean[c(4,12),2], NMDS.mean[c(4,12),3], lwd=1.5, col =colors[2], lty=1))# Pcomp A
-# with(plot, lines(NMDS.mean[c(6, 14),2], NMDS.mean[c(6,14),3], lwd=1.5, col =colors[3], lty=2))# Pvar H
-# with(plot, lines(NMDS.mean[c(2,10),2], NMDS.mean[c(2,10),3], lwd=1.5, col =colors[3], lty=1))# Pvar A
-# with(plot, lines(NMDS.mean[c(7,15),2], NMDS.mean[c(7,15),3], lwd=1.5, col =colors[4], lty=2))# Pacu H
-# with(plot, lines(NMDS.mean[c(3,11),2], NMDS.mean[c(3,11),3], lwd=1.5, col =colors[4], lty=1))# Pacu A
-
-# add labels
-# text(0, -4, "Montipora capitata", cex=0.8, col=colors[1])
-# text(-5, -3, "Porites compressa", cex=0.8, col=colors[2])
-# text(4, -3, "Pavona varians", cex=0.8, col=colors[3])
-# text(4, 2, "Pocillopora acuta", cex=0.8, col=colors[4])
-
-text(-3, -1.8, "2D Stress = 0.15", cex=0.8, col="black")
-legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.intersp=0.9, cex=0.7, pch=16, col=colors, lty=c(1,3,1,3), seg.len=2, pt.cex=1, bty="n")
-
-dev.copy(pdf, "ITSNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
-dev.off() 
-
-```
- 
 #Mantel Test
-import the its2 matrix from the ITS script
-
 T0 only
 ```{r}
-# figure out which samples are represented in the its2 and 16s dfs
+# Identify which samples are represented in the its2 and 16s dfs
 
 # T0 only  #####
-
 #set up 16s
-    Bac.s.rel.u.T0<-subset_samples(Bac.s.rel.u, Time.Point=="T0")
+    Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
     Bac.s.rel.u.T0 = prune_taxa(taxa_sums(Bac.s.rel.u.T0) > 0, Bac.s.rel.u.T0) #this removes any OTU with 0s
   # look at sample names
     bac.T0.sd <- as(sample_data(Bac.s.rel.u.T0), "data.frame") #sample df
@@ -3153,7 +1438,7 @@ T0 only
       bac.T0.sd.samps<-bac.T0.sd[['sample_name.1']]
 
 #set up ITS2 T0, import  (already pruned)
-    ITS2_T0_mantel <- readRDS("ITS2_T0_phyloseq.rds")
+    ITS2_T0_mantel <- readRDS("Data/ITS2_T0_phyloseq.rds")
   # look at sample names
     ITS.T0.sd <- as(sample_data(ITS2_T0_mantel), "data.frame") #sample df
   #save just sample names
@@ -3323,7 +1608,7 @@ T1 High only
 #high only 
 
 #set up 16s
-    Bac.s.rel.u.T1<-subset_samples(Bac.s.rel.u, Time.Point=="T1")
+    Bac.s.rel.u.T1<-subset_samples(Bac.s.rel, Time.Point=="T1")
     Bac.s.rel.u.T1.High<-subset_samples(Bac.s.rel.u.T1, Treatment=="High")
 
     Bac.s.rel.u.T1.High = prune_taxa(taxa_sums(Bac.s.rel.u.T1.High) > 0, Bac.s.rel.u.T1.High) #this removes any OTU with 0s
@@ -3333,12 +1618,12 @@ T1 High only
       bac.T1.High.sd.samps<-bac.T1.sd[['sample_name.1']]
 
 #set up ITS2 T1, import  T1TF
-    ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds") 
+    ITS2_T1TF_mantel <- readRDS("Data/ITS2_T1TF_phyloseq.rds") 
+
      ITS2_T1_mantel<-subset_samples(ITS2_T1TF_mantel, Time.Point=="T1")
     ITS2_T1_mantel.High<-subset_samples(ITS2_T1_mantel, Treatment=="High")
       ITS2_T1_mantel.High = prune_taxa(taxa_sums(ITS2_T1_mantel.High) > 0, ITS2_T1_mantel.High) #this removes any OTU with 0s
 
-    
   # look at sample names
     ITS.T1.High.sd <- as(sample_data(ITS2_T1_mantel.High), "data.frame") #sample df
   #save just sample names
@@ -3507,7 +1792,6 @@ T1 Ambient only
       bac.T1.Ambient.sd.samps<-bac.T1.sd[['sample_name.1']]
 
 #set up ITS2 T1, import  T1TF
-    ITS2_T1TF_mantel <- readRDS("ITS2_T1TF_phyloseq.rds") 
      ITS2_T1_mantel<-subset_samples(ITS2_T1TF_mantel, Time.Point=="T1")
     ITS2_T1_mantel.Ambient<-subset_samples(ITS2_T1_mantel, Treatment=="Ambient")
       ITS2_T1_mantel.Ambient = prune_taxa(taxa_sums(ITS2_T1_mantel.Ambient) > 0, ITS2_T1_mantel.Ambient) #this removes any OTU with 0s
