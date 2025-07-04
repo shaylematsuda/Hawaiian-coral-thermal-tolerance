@@ -1000,7 +1000,6 @@ FieldSamps.pacu <- phyloseq::distance(Bac.subset.pacu, method = "wunifrac")
 ``` 
 
 #Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
-Use rarefied data, not relative abundances   
 ```{r}           
 Sp.colors <- c("Montipora_capitata"="#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#009E73","Pocillopora_acuta"="#CC79A7", "High"="darkRed","Ambient"="navyBlue")
 
@@ -1210,8 +1209,7 @@ p1 <- ggviolin(erich.tab2T0, x = "Species", y = "evenness_pielou",
   anova(Pacu_alpha_mod) 
   qqPlot(residuals(Pacu_alpha_mod)) 
 ```
-
-Alpha Diversity - Observed Richness Plots: Figures S17
+#Alpha Diversity - Observed Richness Plots: Figures S17
 ```{r}   
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "deepskyblue1", "High" = "orangered",

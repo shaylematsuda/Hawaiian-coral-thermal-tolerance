@@ -288,7 +288,7 @@ profiles <- phyloseq(otu, tax, sam)
 
 
 
-# START HERE Analysis (RCunning Script edited) REL Abundance -  
+# START HERE Analysis REL Abundance -  
 ```{r}    
 library(tidyverse)
 library(janitor)
@@ -312,12 +312,10 @@ load("data/Raw_coral_phyloseq.RData") #use RAW data
 ``` 
 get the dfs ready
 ```{r}     
-coral2 <- coral_RAW %>%
-  subset_samples(!is.na(host_species))
-coralDIV2 <- coralDIV_RAW %>% 
+coralDIV2 <- coralDIV %>% 
   subset_samples(!is.na(host_species))
 
-coralPro <- profiles %>% 
+coralPro <- coral_profile %>% 
   subset_samples(!is.na(host_species))
 coralPro_rel <- transform_sample_counts(coralPro, function(x) 100 * x/sum(x))
 
@@ -416,7 +414,7 @@ coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
 #saveRDS(coralDIV2_nonrare, file = "coralDIV2_nonrare.RDS", compress = TRUE) #s
 
 #Make a rarefied phyloseq object for alpha diversity analyses
-coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 7000, rngseed = 711)   #this removed 17 DIVs
+coralDIV2_rare <- rarefy_even_depth(coralDIV2_nonrare, sample.size = 5000, rngseed = 711)   #this removed 17 DIVs
 sample_sums(coralDIV2_rare) #Double check that the sub-sampling worked, this should report 7000 for each sample
 coralDIV2.rare <- as(sample_data(coralDIV2_rare), "data.frame")
 coralDIV2_rare
@@ -1976,7 +1974,7 @@ bc.mcap.T0 <- phyloseq::distance(mcap.RelRare.T0, method = "bray")
       mcap.DIV.samp.df.T0 <- as(sample_data(mcap.RelRare.T0), "data.frame") 
             mcap.DIV.samp.df.T0$Code<-paste(mcap.DIV.samp.df.T0$Treatment,mcap.DIV.samp.df.T0$Clade)    
     set.seed(30)
-    adonis(bc.mcap.T0 ~ Clade, data = mcap.DIV.samp.df.T0) #adonis test no clade
+    adonis2(bc.mcap.T0 ~ Clade, data = mcap.DIV.samp.df.T0) #adonis test no clade
     
      set.seed(30)
     permutest(betadisper(bc.mcap.T0, mcap.DIV.samp.df.T0$Clade, type = "centroid")) #put in distance matrix
@@ -1990,7 +1988,7 @@ bc.Pcomp.T0 <- phyloseq::distance(Pcomp.RelRare.T0, method = "bray")
       Pcomp.DIV.samp.df.T0 <- as(sample_data(Pcomp.RelRare.T0), "data.frame") 
             Pcomp.DIV.samp.df.T0$Code<-paste(Pcomp.DIV.samp.df.T0$Treatment,Pcomp.DIV.samp.df.T0$Clade)    
     set.seed(30)
-    adonis(bc.Pcomp.T0 ~ Clade, data = Pcomp.DIV.samp.df.T0) #adonis test no clade
+    adonis2(bc.Pcomp.T0 ~ Clade, data = Pcomp.DIV.samp.df.T0) #adonis test no clade
     
      set.seed(30)
     permutest(betadisper(bc.Pcomp.T0, Pcomp.DIV.samp.df.T0$Clade, type = "centroid")) #put in distance matrix  

@@ -45,7 +45,6 @@ library(ggh4x)
 ```
 
 Load meta
-
 ```{r}
 meta  <- read.csv("Data/Master_Metadata_20190402.csv")
 meta<-meta %>%
@@ -192,7 +191,6 @@ testAFDW<-merge(AFDW, meta, all=T)
 ```
 
 #Biomass (AFDW and SA)
-
 ```{r}
 SA<-WaxDipping 
 SA<- SA[,c("Frag.ID","Surface.area")] # keep only columns you need
@@ -269,7 +267,6 @@ Pvar_biomass_meanClade<-subset(biomass2_meanClade, Species=="Pavona varians") #S
 ```
 
 Stats - T0 is n=6, not n=12. T1 and TF
-
 ```{r}
 Biomass_stats<-biomass2
 biomass_stats_T1TF<-biomass2
@@ -585,7 +582,6 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
 ```
 
 PLOTS
-
 ```{r}
 #t0 only#### 
 biomass_T0<-subset(biomass2, Time.Point=="T0") 
@@ -600,7 +596,7 @@ biomass_T0_mean
 
 #2/16/24 boxplot ####
 #T0 only
-  ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Species)) + 
+ Biomass_T0<- ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote('Ash-free Dry Weight '(mg~cm^2)))+
@@ -611,11 +607,11 @@ biomass_T0_mean
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);Biomass_T0
 ggsave("Biomass_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(biomass_T0, aes(x=interaction(Clade, Species), y=AFDWmg.cm2, fill=Clade)) + 
+Biomass_T0_clade <- ggplot(biomass_T0, aes(x=interaction(Clade, Species), y=AFDWmg.cm2, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -627,7 +623,7 @@ ggsave("Biomass_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Ash-free Dry Weight by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested");Biomass_T0_clade
   
 ggsave("Biomass_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
@@ -846,9 +842,7 @@ plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_p
 ggsave("AFDW_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
-
 # Flow cytometry cell counts
-
 ```{r}
 #import data
 Std.curve <- read.csv("Data/standard_curve_fcm20181312.csv")
@@ -970,9 +964,7 @@ FC_Data$Clade <- factor(FC_Data$Clade, levels = c("C31", "C31D4", "C15cj","C15n"
 
 
 ```
-
 Stats
-
 ```{r}
 
 #T0 only
@@ -1318,7 +1310,6 @@ FC_Pacu_model.TF<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID)+(1|Tank.num), FC_sta
 ```
 
 Plots - FC standardized by Surface Area
-
 ```{r}
 #just T0 ####  
 FC_Data_T0<-subset(FC_Data, Time.Point=="T0")
@@ -1331,7 +1322,7 @@ FC_T0_mean <- ddply(FC_Data_T0, c( "Species"), summarise,
 );FC_T0_mean
 
 #T0 only ####
-  ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Species)) + 
+FC_T0<-  ggplot(FC_Data_T0, aes(x=Species, y=zoox.cm2, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote('Symbiodiniaceae cells '(cm^-2)))+
@@ -1342,11 +1333,11 @@ FC_T0_mean <- ddply(FC_Data_T0, c( "Species"), summarise,
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);FC_T0
 ggsave("FC_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-ggplot(FC_Data_T0, aes(x=interaction(factor(Species, levels=unique(Species)), Clade), y=zoox.cm2, fill=Clade)) + 
+FC_T0_clade<-ggplot(FC_Data_T0, aes(x=interaction(factor(Species, levels=unique(Species)), Clade), y=zoox.cm2, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -1358,7 +1349,7 @@ ggplot(FC_Data_T0, aes(x=interaction(factor(Species, levels=unique(Species)), Cl
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
       ggtitle("Symbiodiniaceae Cell Density by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-    scale_x_discrete(guide = "axis_nested")
+    scale_x_discrete(guide = "axis_nested");FC_T0_clade
   
 ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
@@ -1610,7 +1601,6 @@ StandardFreshModel$coef
 ```
 
 Analysis
-
 ```{r}
 #load coral weight data
 BW.data <-read.csv('Data/BWdata_Final.csv') # this is a file I compiled with all dates
@@ -1638,7 +1628,6 @@ Temp_Pacu <- Pacu_BW$Temp.C
 ```
 
 Montipora capitata
-
 ```{r}
 BWCalc_Mcap <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 2.03){
   #Parameters---------------------------------------------------------------
@@ -1727,7 +1716,6 @@ G_Mcap <- within(G_Mcap, newtime <- factor(newtime, levels = c("Post-Stress", "P
 ```
 
 Porites compressa P lobata, 1.5 scoffin 1992, prachet 2015, low and barnes 1992
-
 ```{r}
 #     PORITES COMPRESSA
 BWCalc_Pcomp <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.82){
@@ -1866,7 +1854,6 @@ Pcomp_BW_plot.c<-ggplot(data=G_Pcomp.c, aes(x=Time, y=mean, group = Code, color=
 ```
 
 old plot code mcap
-
 ```{r}
 #df data_McapBW
 
@@ -1953,7 +1940,6 @@ Mcap_BW_plot.c<-ggplot(data=G_Mcap.c, aes(x=Time, y=mean, group = Code, color=Co
 ```
 
 Pavona varians
-
 ```{r}
 BWCalc_Pvar <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.04){
    # Pavona varians 1.04 +-0.07
@@ -2095,7 +2081,6 @@ Pvar_BW_plot.c<-ggplot(data=G_Pvar.c, aes(x=Time, y=mean, group = Code, color=Co
 ```
 
 P acuta manzello 2010 2.01, Marshalln 2000 1.72, manzello 2010 2.05
-
 ```{r}
 BWCalc_Pacu <- function(StandardAir= 39.092, Temp, BW, CoralDensity = 1.78){
   # Pocillopora 1.78 +- 0.31
@@ -2234,7 +2219,6 @@ Pacu_BW_plot.c<-ggplot(data=G_Pacu.c, aes(x=Time, y=mean, group = Code, color=Co
 ```
 
 Make DF with all coral species:
-
 ```{r}
 # data_McapBW, data_PcompBW, data_PvarBW, data_PacuBW
 # bind all these dataframes
@@ -2308,13 +2292,12 @@ BW_df4$Species <- factor(BW_df4$Species, levels = c("Montipora capitata", "Porit
 ```
 
 Plots (2024) BW_df3
-
 ```{r}
 BW_df4_T1_amb<-subset(BW_df4, variable=="time1.growth")
 BW_df4_T1_amb<-subset(BW_df4_T1_amb, Treatment=="Ambient")
 
 #T0 only ####
-  ggplot(BW_df4_T1_amb, aes(x=Species, y=value, fill=Species)) + 
+BW_T0<-  ggplot(BW_df4_T1_amb, aes(x=Species, y=value, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote('Growth Rate '(Percent~day^-1)))+
@@ -2325,11 +2308,11 @@ BW_df4_T1_amb<-subset(BW_df4_T1_amb, Treatment=="Ambient")
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);BW_T0
 ggsave("BW_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(BW_df4_T1_amb, aes(x=interaction(Clade, Species), y=value, fill=Clade))+ 
+BW_T0_clade<-  ggplot(BW_df4_T1_amb, aes(x=interaction(Clade, Species), y=value, fill=Clade))+ 
      scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -2341,7 +2324,7 @@ ggsave("BW_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, he
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Growth Rate - Ambient by ITS2 Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested"); BW_T0_clade
 ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 
@@ -3099,7 +3082,7 @@ Chla_T0_mean <- ddply(Chla_T0, c( "Species"), summarise,
 );Chla_T0_mean
 
 #T0 only ####
-  ggplot(Chla_T0, aes(x=Species, y=ChlaSA, fill=Species)) + 
+ Chl_T0<- ggplot(Chla_T0, aes(x=Species, y=ChlaSA, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote("Chlorophyll-"*italic(alpha)*" "*plain(cm)^{-2}))+
@@ -3110,11 +3093,11 @@ Chla_T0_mean <- ddply(Chla_T0, c( "Species"), summarise,
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);Chl_T0
 ggsave("Chla_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(Chla_T0, aes(x=interaction(Species,Clade), y=ChlaSA, fill=Clade)) + 
+Chl_T0_clade<-  ggplot(Chla_T0, aes(x=interaction(Species,Clade), y=ChlaSA, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -3126,7 +3109,7 @@ ggsave("Chla_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, 
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle(bquote("Chlorophyll-"*italic(alpha)* " by ITS2 Profile")) +
       geom_boxplot( show.legend = FALSE)+
-              scale_x_discrete(guide = "axis_nested")
+              scale_x_discrete(guide = "axis_nested");Chl_T0_clade
 ggsave("Chla_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #Plots T1 and TF
@@ -4197,7 +4180,7 @@ Pacu_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pocillopora acuta")
 #T0 ####
 PAM_T0<-subset(PAMdata2, Days=="0")
 
-ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) + 
+PAM_T0<-ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote("fv/fm"))+
@@ -4208,11 +4191,11 @@ ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) +
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PAM_T0
 ggsave("PAM_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(PAM_T0, aes(x=interaction(Clade, Species), y=Yield, fill=Clade)) + 
+ PAM_T0_clade<- ggplot(PAM_T0, aes(x=interaction(Clade, Species), y=Yield, fill=Clade)) + 
          scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -4224,7 +4207,7 @@ ggsave("PAM_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, h
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle(bquote("Photosynthetic Quantum Yeild by ITS2 Profile")) +
       geom_boxplot(show.legend = FALSE)+
-              scale_x_discrete(guide = "axis_nested")
+              scale_x_discrete(guide = "axis_nested");PAM_T0_clade
 
 ggsave("PAM_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
@@ -4812,7 +4795,7 @@ plots
 Protein_T0<-subset(Protein, Time.Point=="T0")
 
 #T0 only
-  ggplot(Protein_T0, aes(x=Species, y=mg.mm2, fill=Species)) + 
+Prot_T0<-  ggplot(Protein_T0, aes(x=Species, y=mg.mm2, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote('Total Soluble Protein '(mg~mm^2)))+
@@ -4823,11 +4806,11 @@ Protein_T0<-subset(Protein, Time.Point=="T0")
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);Prot_T0
 ggsave("Protein_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(Protein_T0, aes(x=interaction(Clade, Species), y=mg.mm2, fill=Clade)) + 
+Prot_T0_clade<-  ggplot(Protein_T0, aes(x=interaction(Clade, Species), y=mg.mm2, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -4839,7 +4822,7 @@ ggsave("Protein_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Total Soluable Protein by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested");Prot_T0_clade
   
 ggsave("Protein_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
@@ -5145,7 +5128,7 @@ PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 aggregate(GrossP ~ Species + Treatment, PR.df_T0, mean)
 
 #T0 only
-  ggplot(PR.df_T0, aes(x=Species, y=GrossP, fill=Species)) + 
+ Photo_T0<- ggplot(PR.df_T0, aes(x=Species, y=GrossP, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(expression(paste("nmol ", O[2], " cm"^"-2 ", plain(min)^"-1")))+
@@ -5156,11 +5139,11 @@ aggregate(GrossP ~ Species + Treatment, PR.df_T0, mean)
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);Photo_T0
 ggsave("GrossPhoto_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile ####
-  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=GrossP, fill=Clade)) + 
+ Photo_T0_clade<- ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=GrossP, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -5172,7 +5155,7 @@ ggsave("GrossPhoto_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", wid
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Gross Photosynthesis by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested");Photo_T0_clade
   
 ggsave("GrossPhoto_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
@@ -5705,7 +5688,7 @@ Respiration plots
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
 #T0 only
-  ggplot(PR.df_T0, aes(x=Species, y=Resp, fill=Species)) + 
+ Resp_T0<- ggplot(PR.df_T0, aes(x=Species, y=Resp, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
@@ -5716,11 +5699,11 @@ PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);Resp_T0
 ggsave("Resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=Resp, fill=Clade)) + 
+Resp_T0_clade<-  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=Resp, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -5732,7 +5715,7 @@ ggsave("Resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15,
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle(" Respiration by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested");Resp_T0_clade
   
 ggsave("Resp_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
@@ -6232,7 +6215,7 @@ P:R plots
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
 
 #T0 only
-  ggplot(PR.df_T0, aes(x=Species, y=PR, fill=Species)) + 
+PR_T0<-  ggplot(PR.df_T0, aes(x=Species, y=PR, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(expression(paste(plain("\u03bc"), "mol ", O[2], " cm"^"-2 ", plain(m)^"-1")))+
@@ -6243,11 +6226,11 @@ PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
       theme(plot.title = element_text(size=16, face="bold"))+
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-      geom_boxplot(show.legend = FALSE)
+      geom_boxplot(show.legend = FALSE);PR_T0
 ggsave("resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
-  ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=PR, fill=Clade)) + 
+ PR_T0_clade<- ggplot(PR.df_T0, aes(x=interaction(Clade, Species), y=PR, fill=Clade)) + 
       scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -6259,7 +6242,7 @@ ggsave("resp_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15,
       panel.background = element_blank(), axis.line = element_line(colour = "black")) +
       ggtitle("Respiration by Algal Profile")+
       geom_boxplot( show.legend = FALSE)+
-      scale_x_discrete(guide = "axis_nested")
+      scale_x_discrete(guide = "axis_nested");PR_T0_clade
   
 ggsave("PR_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
   
@@ -7074,6 +7057,158 @@ pdf("CombinedPhysioPlots.pdf", width = 10, height = 18)
 print(combined_plot)
 dev.off()
 
+```
+
+#T0 all physio
+```{r}
+# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
+BiomassT0 <- Biomass_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 9),
+        panel.spacing = unit(1, "lines"))
+
+BWT0 <- BW_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+FlowT0 <- FC_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ChlT0 <- Chl_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PAMT0 <- PAM_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ProtT0 <- Prot_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PhotoT0 <- Photo_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+RespT0 <- Resp_T0 +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PRT0 <- PR_T0 + 
+  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
+
+# Combine plots vertically using patchwork
+combined_plot <- BiomassT0 / BWT0 / FlowT0 / ChlT0 / PAMT0 / 
+                 ProtT0 / PhotoT0 / RespT0 / PRT0 +
+                 plot_layout(ncol = 1)
+
+
+
+pdf("CombinedPhysioPlots_T0.pdf", width = 10, height = 18)
+print(combined_plot)
+dev.off()
+```
+
+
+
+#T0 all physio by algal symbiont lineage
+```{r}
+# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
+BiomassT0_clade <- Biomass_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 9),
+        panel.spacing = unit(1, "lines"))
+
+BWT0_clade <- BW_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+FlowT0_clade <- FC_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ChlT0_clade <- Chl_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PAMT0_clade <- PAM_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+ProtT0_clade <- Prot_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PhotoT0_clade <- Photo_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+RespT0_clade <- Resp_T0_clade +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 9),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank())
+
+PRT0_clade <- PR_T0_clade + 
+  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
+
+# Combine plots vertically using patchwork
+combined_plot <- BiomassT0_clade / BWT0_clade / FlowT0_clade / ChlT0_clade / PAMT0_clade / 
+                 ProtT0_clade / PhotoT0_clade / RespT0_clade / PRT0_clade +
+                 plot_layout(ncol = 1)
+
+
+
+pdf("CombinedPhysioPlots_T0_clade.pdf", width = 10, height = 18)
+print(combined_plot)
+dev.off()
 ```
 
 
