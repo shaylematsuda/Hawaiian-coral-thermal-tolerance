@@ -9,6 +9,8 @@ Use this one. other one for code pull refs.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+
 ```
 #Load library
 ```{r}   
@@ -275,7 +277,7 @@ sample.data$Index <- seq(nrow(sample.data))
 ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
   geom_point()
 
-#Remove all samples with <5000 reads and create sample data
+#Remove all samples with <7000 reads and create sample data
 #These data also useful for beta diversity analyses (non-rarefied)
 coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=7000, coralDIV2) # remove samps <7000, save as new obj
 coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
@@ -314,8 +316,20 @@ coral_DIV2rare_sd <- as(sample_data(coral_DIV2_rare), "data.frame")
 #Make relative abundance df
 coral_DIV2_rare_Rel <- transform_sample_counts(coral_DIV2_rare, function(x) 100 * x/sum(x))
 
+
 saveRDS(coral_DIV2_rare_Rel, file = "coral_DIV2_rare_Rel.RDS", compress = TRUE)
 ```
+
+Load RDS
+```{r}
+
+coral_profile2 <- readRDS("coral_profile2_cleaned.RDS")
+coral_DIV2_nonrare <- readRDS("coral_DIV2_nonrare.RDS")
+coral_DIV2_rare_Rel <- readRDS("coral_DIV2_rare_Rel.RDS")
+
+```
+
+
 
 Data frames for analysis:
 coral_DIV2_nonrare: DIV, not subsampled
@@ -519,43 +533,6 @@ T0_ITS2_DIV_samp
 
 #ggsave("ITS2_T0_DIV_samp.pdf", plot = T0_ITS2_DIV_samp, device = "pdf", width = 20, height = 6)
 
-
-#by relative abundance by species
-# Calculate relative abundance within each Species
-# Calculate relative abundance excluding zero values
-T0_its2.melt2 <- T0_its2.melt %>%
-  filter(Abundance > 0) %>%  # Exclude rows with zero abundance
-  group_by(Species) %>%
-  mutate(RelativeAbundance = Abundance / sum(Abundance) * 100) %>%
-  ungroup()
-
-print(T0_its2.melt2 %>% group_by(Species) %>% summarize(Total = sum(RelativeAbundance)))
-
-# Plot with relative abundance as percentage (100% stacked bars) This is showing up as 12 total samples, which I can't get to turn into Relative abundance !!!!!!!!!!!
-
-#####################################################################################
-Hannah code
-
-percent.phy <- bac.ambient.ra %>% 
-  tax_glom(taxrank = "Phylum") 
-perc.melt.phy <- psmelt(percent.phy)
-
-sum.phy <- ddply(perc.melt.phy, c("Phylum", "Species"), summarise,
-                 N = length(Abundance),
-                 mean = mean(Abundance),
-                 sd = sd(Abundance), 
-                 se = sd/sqrt(N)
-)
-
-ggplot(sum.phy, aes(x = Species, y = mean, fill = Phylum)) +
-  geom_bar(stat = "identity") +
-  ggtitle("Communities by Phyla at Ambient Temperatures (T0)") +
-  #guides(fill=NULL) +
-  xlab("/nHost Species") +
-  ylab("Mean Relative Abundance") +
-  theme_classic() +
-  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5))
-
 ```
 
 #Beta Diversity - All Species
@@ -573,7 +550,7 @@ DIV_RelA_stats.T0<-subset_samples(DIV_RelA_stats, Time.Point=="T0")
   DIV_RelA_stats.T0 = prune_taxa(taxa_sums(DIV_RelA_stats.T0) > 0, DIV_RelA_stats.T0) #this removes any OTU with 0s
 
   #save as object for mantel test in the 16s rmd
-  saveRDS(DIV_RelA_stats.T0,"ITS2_T0_phyloseq.rds")
+  #saveRDS(DIV_RelA_stats.T0,"ITS2_T0_phyloseq.rds")
   
 #bray curtis presence-absense and abundance
 #all speices
@@ -624,7 +601,7 @@ scale_color_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,
 ```
 #T1TF #### 
 ```{r}
-## REMOVE T0 for models
+# Subset T1 TF for models
 DIV_RelA_stats.T1F<-subset_samples(DIV_RelA_stats, Time.Point=="T1"|Time.Point=="TF")
   DIV_RelA_stats.T1F = prune_taxa(taxa_sums(DIV_RelA_stats.T1F) > 0, DIV_RelA_stats.T1F) #this removes any OTU with 0s
 
@@ -770,12 +747,9 @@ bc.Pacu.T0 <- phyloseq::distance(Pacu.RelRare.T0, method = "bray")
      set.seed(30)
     permutest(betadisper(bc.Pacu.T0, Pacu.DIV.samp.df.T0$Clade, type = "centroid")) #put in distance matrix   
 ```
-#Beta T1, TF, by treatment
+#Beta T1, TF, by treatment: 
+Table S9
 Montipora
-
-
-
-
 
 ```{r}       
 #DIV_RelA_stats.T1F ####
