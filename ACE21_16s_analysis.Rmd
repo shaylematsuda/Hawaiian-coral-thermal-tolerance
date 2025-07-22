@@ -653,7 +653,7 @@ ggplot(scores.ord.u_RelA_stats.T1, aes(x = NMDS1, y = NMDS2)) +
   theme_classic() +
   facet_wrap(~Species)
 
-ggsave("16S T1 by lineage.pdf")
+#ggsave("16S T1 by lineage.pdf")
 
 
 # ADD PCOMP ONLY T1 AMB/HIGH ####

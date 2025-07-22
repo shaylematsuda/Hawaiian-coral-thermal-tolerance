@@ -15,7 +15,7 @@ rm(list = ls())
 #Load library
 ```{r}   
 # rm(list=ls())
-
+library(car)
 library(readxl)
 library(phyloseq)
 library(janitor)
@@ -29,7 +29,7 @@ library(dplyr)
 library(plyr)
 library(gridExtra)
 library(vegan)
-library(decontam)
+#library(decontam)
 library(RColorBrewer)
 library(ggforce)
 library(cowplot)  
@@ -840,6 +840,7 @@ scores.mcap.samp.df <- as.data.frame(cbind(vegan::scores(ord.mcap, display="site
 scores.mcap.samp.df$Time.Point <- mcap.RelRare.T1F.samp.df$Time.Point
 scores.mcap.samp.df$Parent.ID <- mcap.RelRare.T1F.samp.df$Parent.ID
 scores.mcap.samp.df$Treatment <- mcap.RelRare.T1F.samp.df$Treatment
+scores.mcap.samp.df$ID <- mcap.RelRare.T1F.samp.df$ID
 scores.mcap.samp.df$Clade <- mcap.RelRare.T1F.samp.df$Clade
 scores.mcap.samp.df$Code <- paste(mcap.RelRare.T1F.samp.df$Parent.ID,mcap.RelRare.T1F.samp.df$Time.Point)
 scores.mcap.samp.df$Code2 <- paste(mcap.RelRare.T1F.samp.df$Treatment,mcap.RelRare.T1F.samp.df$Time.Point)
@@ -856,51 +857,16 @@ McapITS2_T1TF<-ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) +
   facet_wrap(~Time.Point);McapITS2_T1TF
 #ggsave("McapT1its2.pdf")
 
-#T1 only  mcap.samp.df.T1 ### dont' use but cool
-set.seed(30)
-ord.mcapT1 <- ordinate(mcap.RelRare.T1, "NMDS", "bray", trymax = 100) 
-stressplot(ord.mcapT1)
+#NMDS Mcap T1 and TF
+ 
+ McapITS2_T1TFplot<-ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Treatment, shape = Treatment), size = 4) +
+  scale_color_manual(values=Pcomp.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle(expression(italic("M. capitata")~"ITS2")) +
+  theme_classic()+
+  facet_wrap(~Time.Point);McapITS2_T1TFplot
 
-scores.mcapT1<-as.data.frame(cbind(vegan::scores(ord.mcapT1, display="sites")))
-
-scores.mcapT1$Treatment <- mcap.RelRare.T1.samp.df$Treatment
-scores.mcapT1$Parent.ID <- mcap.RelRare.T1.samp.df$Parent.ID
-scores.mcapT1$Clade <- mcap.RelRare.T1.samp.df$Clade
-scores.mcapT1$CladeTreat <- as.factor(paste(mcap.RelRare.T1.samp.df$Clade,mcap.RelRare.T1.samp.df$Treatment))
-
-ggplot(scores.mcapT1, aes(x = NMDS1, y = NMDS2)) + 
- geom_point(aes(stroke=1.5, colour = Parent.ID, size = 4) )+
-    geom_point(aes(colour = Treatment, shape=Clade), size = 4) +
-  scale_color_manual(values=Mcap.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-     # geom_line(aes(group = Parent.ID), color = "black") + 
-  ggtitle("M. capitata T1 Bray Curtis") +
-  theme_classic()
-#ggsave("McapT1_its2_nmds_Poutline.pdf")
-
-#TF only  mcap.samp.df.TF ####
-set.seed(30)
-ord.mcapTF <- ordinate(mcap.RelRare.TF, "NMDS", "bray", trymax = 100) 
-stressplot(ord.mcapTF)
-
-scores.mcapTF<-as.data.frame(cbind(vegan::scores(ord.mcapTF, display="sites")))
-
-scores.mcapTF$Treatment <- mcap.RelRare.TF.samp.df$Treatment
-scores.mcapTF$Parent.ID <- mcap.RelRare.TF.samp.df$Parent.ID
-scores.mcapTF$Clade <- mcap.RelRare.TF.samp.df$Clade
-scores.mcapTF$CladeTreat <- as.factor(paste(mcap.RelRare.TF.samp.df$Clade,mcap.RelRare.TF.samp.df$Treatment))
-
-ggplot(scores.mcapTF, aes(x = NMDS1, y = NMDS2)) + 
- geom_point(aes(stroke=1.5, colour = Parent.ID, size = 4) )+
-    geom_point(aes(colour = Treatment, shape=Clade), size = 4) +
-  scale_color_manual(values=Mcap.Parent.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
-  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = CladeTreat), linetype = 2) +
-     # geom_line(aes(group = Parent.ID), color = "black") + 
-  ggtitle("M. capitata TF Bray Curtis") +
-  theme_classic()
-#ggsave("McapT1_its2_nmds_Poutline.pdf")
 ```
 Porites compressa
 ```{r}       
@@ -987,6 +953,15 @@ PcompITS2_T1TF<-ggplot(scores.pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) +
   facet_wrap(~Time.Point);PcompITS2_T1TF
 #ggsave("PcompT1its2.pdf")
 
+PcompITS2_T1TFplot<-ggplot(scores.pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Treatment, shape = Treatment), size = 4) +
+  scale_color_manual(values=Pcomp.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle(expression(italic("P. compressa")~"ITS2")) +
+  theme_classic()+
+  facet_wrap(~Time.Point);PcompITS2_T1TFplot
+
+#ggsave("PcompT1its2.pdf")
 
 ```
 Pavona varians
@@ -1072,6 +1047,17 @@ PvarITS2_T1TF<-ggplot(scores.pvar.samp.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle(expression(italic("P. varians")~"ITS2")) +
   theme_classic()+
   facet_wrap(~Time.Point);PvarITS2_T1TF
+
+PvarITS2_T1TFplot<-ggplot(scores.pvar.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Treatment, shape = Treatment), size = 4) +
+  scale_color_manual(values=Pvar.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle(expression(italic("P. varians")~"ITS2")) +
+  theme_classic()+
+  facet_wrap(~Time.Point);PvarITS2_T1TFplot
+
+
+
 #ggsave("PvarT1its2.pdf")
 ```
 Pocillopora acuta
@@ -1159,11 +1145,26 @@ PacuITS2_T1TF<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) +
   facet_wrap(~Time.Point);PacuITS2_T1TF
 #ggsave("PacuT1its2.pdf")
 
+PacuITS2_T1TFplot<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = Treatment), size = 4) +
+  scale_color_manual(values=Pacu.Parent.colors)+
+  stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment), linetype = 2) +
+  ggtitle(expression(italic("P. acuta")~"ITS2")) +
+  theme_classic()+
+  facet_wrap(~Time.Point);PacuITS2_T1TFplot
+#ggsave("PacuT1its2.pdf")
+
 ```
-All plots: Figure S19
+All plots by lineage: Figure S19
 ```{r}
 p<-grid.arrange(McapITS2_T1TF, PcompITS2_T1TF, PvarITS2_T1TF,PacuITS2_T1TF, nrow = 1)
 ggsave( "ITS2_T1_TF_NMDS.pdf", plot= p, width=16, height=7, units="in")
+
+```
+All plots: Figure S15
+```{r}
+p<-grid.arrange(McapITS2_T1TFplot, PcompITS2_T1TFplot, PvarITS2_T1TFplot,PacuITS2_T1TFplot, nrow = 4)
+ggsave( "ITS2_T1_TF_NMDS_FigS15.pdf", plot= p, width=7, height=16, units="in")
 
 ```
 
@@ -2541,36 +2542,3 @@ grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evennes
  
 ```
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
