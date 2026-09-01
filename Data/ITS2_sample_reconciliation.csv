@@ -1,0 +1,22 @@
+recorded_id,canonical_id,action,reason
+SN49,S49,keep,Community profile confirms Porites compressa C15cj assignment
+SN49b,SN49,keep,Community profile confirms Montipora capitata C31 assignment despite sequencing duplicate suffix
+S1240,S1688,exclude,Duplicate or mislabeled record of the same genotype and treatment; retain S1688 because it has complete molecular and physiology metadata
+S1110B,S1110,exclude,Failed duplicate identified in original ITS2 workflow
+S1166,S1166,exclude,Failed duplicate identified in original ITS2 workflow
+S1388b,S1388,exclude,Failed duplicate identified in original ITS2 workflow
+S1857,S1857,exclude,Failed duplicate identified in original ITS2 workflow
+S3085,S3085,exclude,Failed duplicate identified in original ITS2 workflow
+S3149b,S3149,exclude,Failed duplicate identified in original ITS2 workflow
+S3149,S3149,exclude,Failed duplicate identified in original ITS2 workflow
+S3477a,S3477,exclude,Failed duplicate identified in original ITS2 workflow
+S761b,S761,exclude,Failed duplicate identified in original ITS2 workflow
+S775b,S775,exclude,Failed duplicate identified in original ITS2 workflow
+SN134,SN134,exclude,Failed duplicate identified in original ITS2 workflow
+SN198b,SN198,exclude,Failed duplicate identified in original ITS2 workflow
+SN209b,SN209,exclude,Failed duplicate identified in original ITS2 workflow
+S3085b,S3085,exclude,Failed duplicate identified in original ITS2 workflow
+S198b,S198,review,Original exclusion ID is absent from metadata and may have meant SN198b
+SN127,SN127,exclude,Metadata Notes field marks sample REMOVE
+SN98b,SN98,exclude,Manually excluded in original ITS2 workflow
+S2893,S2893,exclude,ITS2 identity mismatch: recorded as Pocillopora acuta parent 311 with expected C42 profile but dominated by a Porites-associated C15 profile; retain in physiology and 16S datasets

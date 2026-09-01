@@ -10373,3 +10373,86 @@ legend("topright", legend=groups2, inset=c(0.03, -0.01), x.intersp=0.6, y.inters
 dev.copy(pdf, "PhysioNMDS.pdf", height=5.5, width=6, useDingbats=FALSE)
 dev.off() 
 ```
+
+# Figure 4 physiology significance summary
+
+This plot summarizes treatment-effect p-values by physiology trait, host species, and experimental time point.
+
+```{r}
+phys_fig4 <- read.csv(
+  "ACE21_physio_for_figure.csv",
+  fileEncoding = "UTF-8-BOM",
+  check.names = FALSE
+)
+
+names(phys_fig4) <- trimws(names(phys_fig4))
+phys_fig4 <- phys_fig4 %>%
+  mutate(
+    `Physiology trait` = na_if(`Physiology trait`, ""),
+    `Host species` = na_if(`Host species`, "")
+  ) %>%
+  tidyr::fill(`Physiology trait`, `Host species`)
+
+trait_order <- c(
+  "Biomass",
+  "Protein",
+  "Calcification",
+  "Algal Cell Counts",
+  "Chl-a",
+  "Quantum yield",
+  "Photosynthesis",
+  "Respiration",
+  "Metabolic Rate"
+)
+species_order <- c("M. capitata", "P. compressa", "P. varians", "P. acuta")
+
+phys_fig4 <- phys_fig4 %>%
+  mutate(
+    `Physiology trait` = factor(`Physiology trait`, levels = rev(trait_order)),
+    `Host species` = factor(`Host species`, levels = species_order),
+    `Time pt` = factor(`Time pt`, levels = c("T1", "TF")),
+    p_numeric = as.numeric(str_remove(str_remove_all(as.character(p), "\\*"), "^<")),
+    significant = str_detect(as.character(p), "\\*") | p_numeric < 0.05,
+    fill_category = if_else(significant, as.character(`Host species`), "Not significant"),
+    p_label = as.character(p)
+  )
+
+figure4_colors <- c(
+  "M. capitata" = "#E69F00",
+  "P. compressa" = "#56B4E9",
+  "P. varians" = "#CC79A7",
+  "P. acuta" = "#009E73",
+  "Not significant" = "azure3"
+)
+
+physiology_figure4 <- ggplot(
+  phys_fig4,
+  aes(x = `Time pt`, y = `Physiology trait`, fill = fill_category)
+) +
+  geom_tile(color = "#2B2B2B", linewidth = 0.6, width = 0.95, height = 0.98) +
+  geom_text(aes(label = p_label), size = 3.4, fontface = "bold") +
+  facet_grid(. ~ `Host species`, switch = "x") +
+  scale_fill_manual(values = figure4_colors) +
+  scale_x_discrete(position = "top") +
+  labs(x = NULL, y = NULL) +
+  theme_void() +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "white", color = "black"),
+    plot.background = element_rect(fill = "white", color = "black"),
+    strip.background = element_rect(fill = "white", color = "black"),
+    strip.text.x = element_text(
+      color = "black",
+      face = "italic",
+      size = 10,
+      margin = margin(b = 8)
+    ),
+    axis.text.x = element_text(color = "black", face = "bold", size = 11),
+    axis.text.y = element_text(color = "black", size = 10, hjust = 1),
+    panel.spacing.x = unit(1.2, "lines"),
+    plot.margin = margin(20, 20, 20, 20)
+  )
+
+physiology_figure4
+# ggsave("Figures/ACE21_Figure4_physiology_summary.pdf", physiology_figure4)
+```

@@ -51,10 +51,12 @@ clade_colors <- c("C31" = "goldenrod1", "C31D4" = "darkorange3", "C15cj" = "powd
 Load phyloseq objects (if starting at analysis)
 ```{r}
 # Load phyloseq objects - not subsampled or relative abundance yet
-load("data/Raw_coral_phyloseq.RData") #coral_profile and coralDIV
+load("Data/Raw_coral_phyloseq.RData") #coral_profile and coralDIV
 ```
 
 ## Data Wrangle - Build phyloseq dataframes using Symportal outputs for Profiles and DIVs
+
+Do not run this section unless the phyloseq objects need to be rebuilt from the SymPortal outputs.
 Read in coral ITS2 profiles: "coral_Profiles"
 ```{r}    
 library(janitor)
@@ -137,6 +139,23 @@ Metadata$Clade<-as.factor(Metadata$Clade)
 Metadata$Clade <- factor(Metadata$Clade, levels = c("C31", "C31D4", "C15cj","C15n","C1","C27","C1d","C42_2"))
   Metadata$Species <- factor(Metadata$Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians","Pocillopora_acuta"))
 
+# Auditable sample reconciliation. recorded_id is the SymPortal/Frag.ID label;
+# canonical_id documents the biological sample relationship without renaming data.
+sample_reconciliation <- read.csv(
+  "Data/ITS2_sample_reconciliation.csv",
+  stringsAsFactors = FALSE
+)
+excluded_sample_ids <- unique(
+  sample_reconciliation$recorded_id[sample_reconciliation$action == "exclude"]
+)
+
+filter_its2_samples <- function(ps, minimum_reads = NULL) {
+  if (!is.null(minimum_reads)) {
+    ps <- prune_samples(sample_sums(ps) >= minimum_reads, ps)
+  }
+  prune_samples(!(sample_names(ps) %in% excluded_sample_ids), ps)
+}
+
 # merge profile info
  AsymportalPro<-read.csv("Data/Symportal_profile.csv")  
   AsymportalPro2<-merge(Metadata,AsymportalPro, by="Frag.ID") 
@@ -146,11 +165,11 @@ Metadata$Clade <- factor(Metadata$Clade, levels = c("C31", "C31D4", "C15cj","C15
 Symp_sub_Meta<-left_join(Symp_sub, Metadata, by="sample_name") # merge
 Symp_sub_Meta$Parent.ID<-as.factor(as.character(Symp_sub_Meta$Parent.ID))
 
-#Phyloseq object
-sam0 <- Symp_sub_Meta
-sam1 <- as.matrix(sam0[, -1])
-rownames(sam1) <- sam0$sample_name
-sam <- sample_data(data.frame(sam1))
+# Phyloseq accepts a data.frame directly. Keeping it as a data.frame preserves
+# numeric and factor types that would be coerced to character by as.matrix().
+sam0 <- as.data.frame(Symp_sub_Meta)
+rownames(sam0) <- sam0$sample_name
+sam <- sample_data(sam0[, setdiff(names(sam0), "sample_name"), drop = FALSE])
 
 tax0 <- read_tsv(
   file  = "Data/ITS2/its2_type_profiles/133_20201216_DBV_20201216T020209.profiles.absolute.abund_and_meta.txt",
@@ -241,29 +260,8 @@ sample.data$Index <- seq(nrow(sample.data))
 ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
   geom_point()
 
-##Sample filtering and rarefaction
-coral_profile2<-coral_profile #make copy
-#remove duplicates that failed
-coral_profile2 <- subset_samples(coral_profile2, ID != "S1110B")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S1166")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S1388b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S1857")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S3085")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S3149b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S3149")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S3477a")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S761b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S775b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "SN134")
-coral_profile2 <- subset_samples(coral_profile2, ID != "SN198b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "SN209b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S3085b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S1857")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S761b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S198b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "SN127")
-coral_profile2 <- subset_samples(coral_profile2, ID != "SN98b")
-coral_profile2 <- subset_samples(coral_profile2, ID != "S2893")
+# Apply the reconciliation table once to the profile object.
+coral_profile2 <- filter_its2_samples(coral_profile)
 
 saveRDS(coral_profile2, file = "coral_profile2_cleaned.RDS", compress = TRUE) #save!
 ```
@@ -284,33 +282,9 @@ sample.data$Index <- seq(nrow(sample.data))
 ggplot(data = sample.data, aes(x=Index, y=LibrarySize, color = sample_type)) +
   geom_point()
 
-#Remove all samples with <7000 reads and create sample data
-#These data also useful for beta diversity analyses (non-rarefied)
-coralDIV2_nonrare <- prune_samples(sample_sums(coralDIV2)>=7000, coralDIV2) # remove samps <7000, save as new obj
-coralDIV2_data.nonrare <- as(sample_data(coralDIV2_nonrare), "data.frame")
-
-##Sample filtering and rarefaction
-#remove duplicates that failed
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1110B")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1166")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1388b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3149")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3477a")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S775b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN134")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN198b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN209b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S3085b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S1857")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S761b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S198b")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN127")
-coralDIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "SN98b")
-coral_DIV2_nonrare <- subset_samples(coralDIV2_nonrare, ID != "S2893")
+# Apply the read threshold and reconciliation table to one consistently named
+# non-rarefied object. This correctly excludes S2893 before rarefaction.
+coral_DIV2_nonrare <- filter_its2_samples(coralDIV2, minimum_reads = 7000)
 coral_DIV2_data.nonrare <- as(sample_data(coral_DIV2_nonrare), "data.frame")
 
 
@@ -497,12 +471,12 @@ T0.p <- ggplot(T0_its2.melt1, aes(x = Sample, y = Abundance, fill = its2_type_pr
 T0_ITS2_samp <- T0.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
 T0_ITS2_samp
 
-#ggsave("ITS2_T0_samp_leg.pdf", plot = T0_ITS2_samp, device = "pdf", width = 20, height = 6)
+#ggsave("Figures/ITS2_T0_samp_leg.pdf", plot = T0_ITS2_samp, device = "pdf", width = 20, height = 6)
 
 
 #Make T0 with DIVs ####
 #try glom use raw counts 
-DIVs_T0<-subset_samples(coralDIV2, Time.Point=="T0") #use raw counts df here
+DIVs_T0<-subset_samples(coral_DIV2_rare, Time.Point=="T0") #filtered rarefied counts
 
 T0_its2DIV <- DIVs_T0 %>%  #make relative abundance
   tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
@@ -536,10 +510,10 @@ T0DIV.p  <- ggplot(T0_its2DIV.melt, aes(x = Sample, y = Abundance, fill = DIV)) 
   );T0DIV.p
 
 
-T0_ITS2_DIV_samp <- T0DIV.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
+T0_ITS2_DIV_samp <- T0DIV.p + facet_wrap(~Species * Clade, scales = "free_x", nrow = 1)
 T0_ITS2_DIV_samp
 
-#ggsave("ITS2_T0_DIV_samp.pdf", plot = T0_ITS2_DIV_samp, device = "pdf", width = 20, height = 6)
+#ggsave("Figures/ITS2_T0_DIV_samp.pdf", plot = T0_ITS2_DIV_samp, device = "pdf", width = 20, height = 6)
 
 ```
 
@@ -559,11 +533,77 @@ meta[] <- lapply(meta, function(x) if (is.character(x)) as.factor(x) else x)
 # Reassign
 sample_data(DIV_RelA_stats) <- meta
 
+ordination_scores_with_metadata <- function(ordination, ps) {
+  scores <- as.data.frame(vegan::scores(ordination, display = "sites"))
+  scores$recorded_id <- rownames(scores)
+  metadata <- as(sample_data(ps), "data.frame")
+  metadata$recorded_id <- rownames(metadata)
 
+  stopifnot(!anyDuplicated(scores$recorded_id))
+  stopifnot(!anyDuplicated(metadata$recorded_id))
 
+  joined <- left_join(scores, metadata, by = "recorded_id")
+  stopifnot(nrow(joined) == nrow(scores))
+  joined
+}
+
+# Save the all-time-point object used by ACE21_16s_analysis.Rmd.
+saveRDS(DIV_RelA_stats, "Data/ITS2_phyloseq.rds")
 
 #bray curtis presence-absense and abundance
 ```
+
+## PERMANOVA design inventory
+
+`adonis2()` does not fit random effects. Repeated or grouped observations can instead be handled by restricting permutations with `strata` or a `permute::how()` design. The table below records the current analyses and likely blocking variables; it does not change the tests until the experimental unit is confirmed.
+
+```{r}
+permanova_design_inventory <- data.frame(
+  scope = c(
+    "T0 all species",
+    "T1 all species",
+    "TF all species",
+    "T0 within species",
+    "T1 within species",
+    "TF within species"
+  ),
+  phyloseq_object = c(
+    "DIV_RelA_stats.T0",
+    "DIV_RelA_stats.T1",
+    "DIV_RelA_stats.TF",
+    "species-specific T0 object",
+    "species-specific T1 object",
+    "species-specific TF object"
+  ),
+  metadata_frame = c(
+    "samp.df.T0",
+    "samp.df",
+    "samp.df",
+    "species-specific sample_data",
+    "species-specific sample_data",
+    "species-specific sample_data"
+  ),
+  current_formula = c(
+    "Species",
+    "Species * Treatment",
+    "Species * Treatment",
+    "Clade",
+    "Treatment; Clade * Treatment",
+    "Treatment; Clade * Treatment"
+  ),
+  repeated_unit_to_review = c(
+    "Tank.num",
+    "Parent.ID and Tank.num",
+    "Parent.ID and Tank.num",
+    "Tank.num",
+    "Parent.ID and Tank.num",
+    "Parent.ID and Tank.num"
+  ),
+  stringsAsFactors = FALSE
+)
+permanova_design_inventory
+```
+
 #### T0 only ######
 Figure 2C
 ```{r}
@@ -593,10 +633,7 @@ plot(bc.all.HSD)
 set.seed(30)
 ord.DIV_RelA_stats.T0 <- ordinate(DIV_RelA_stats.T0, "NMDS", "bray", trymax = 100) 
 stressplot(ord.DIV_RelA_stats.T0)
-scores.ord.DIV_RelA_stats.T0 <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.T0, display="sites"))) #make df
-scores.ord.DIV_RelA_stats.T0$Treatment <- samp.df.T0$Treatment
-scores.ord.DIV_RelA_stats.T0$Species <- samp.df.T0$Species
-scores.ord.DIV_RelA_stats.T0$Clade <- samp.df.T0$Clade
+scores.ord.DIV_RelA_stats.T0 <- ordination_scores_with_metadata(ord.DIV_RelA_stats.T0, DIV_RelA_stats.T0)
 scores.ord.DIV_RelA_stats.T0$Code <- paste(samp.df.T0$Species,samp.df.T0$Clade)
 
 # FIGURE 2C ITS2 T0 - shown by Profile group  ####
@@ -604,8 +641,8 @@ scores.ord.DIV_RelA_stats.T0$Code <- paste(samp.df.T0$Species,samp.df.T0$Clade)
 its2plot<-ggplot(scores.ord.DIV_RelA_stats.T0, aes(x = NMDS1, y = NMDS2, color = Code)) + 
   geom_point(size = 2) +
     stat_ellipse(aes(fill = Code), level = 0.95, alpha = 0.2, linetype = 1, size = 0.5, geom = "polygon") + 
-scale_color_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen")) +  # Set colors for points
-   scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+   
+scale_color_manual(values=c("goldenrod1","darkorange3", "pink1","firebrick", "palegreen2","darkgreen", "powderblue","#0072B2")) +  # Set colors for points
+   scale_fill_manual(values=c("goldenrod1","darkorange3", "pink1","firebrick", "palegreen2","darkgreen", "powderblue","#0072B2"))+
   xlim(-3, 3) +  # Set lower bound of x-axis to -2.5
     ylim(-3, 3) +  # Set lower bound of x-axis to -2.5
   ggtitle("NMDS - Algal Symbiont Communities") +
@@ -636,23 +673,20 @@ DIV_RelA_stats.T1<-subset_samples(DIV_RelA_stats, Time.Point=="T1")
 #bray curtis presence-absense and abundance
 #all speices
 set.seed(30)
-bc.all <- phyloseq::distance(DIV_RelA_stats.T1, method = "bray")#make bray curtis data matrix
-  samp.df <- as(sample_data(DIV_RelA_stats.T1), "data.frame") #sample df
+bc.all.T1 <- phyloseq::distance(DIV_RelA_stats.T1, method = "bray")#make bray curtis data matrix
+  samp.df.T1 <- as(sample_data(DIV_RelA_stats.T1), "data.frame") #sample df
 #adonis test
-adonis2(bc.all ~ Species*Treatment, data = samp.df)
+adonis2(bc.all.T1 ~ Species*Treatment, data = samp.df.T1)
     
 # Homogeneity of dispersion test
-betaAll <- betadisper(bc.all, samp.df$Species)
-permutest(betaAll, pairwise = T) 
+betaAll.T1 <- betadisper(bc.all.T1, samp.df.T1$Species)
+permutest(betaAll.T1, pairwise = T)
 
 #Ordination NMDS for all species
 set.seed(30)
 ord.DIV_RelA_stats.T1 <- ordinate(DIV_RelA_stats.T1, "NMDS", "bray", trymax = 100) 
 stressplot(ord.DIV_RelA_stats.T1)
-scores.ord.DIV_RelA_statsT1 <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.T1, display="sites"))) #make df
-scores.ord.DIV_RelA_statsT1$Treatment <- samp.df$Treatment
-scores.ord.DIV_RelA_statsT1$Species <- samp.df$Species
-scores.ord.DIV_RelA_statsT1$Clade <- samp.df$Clade
+scores.ord.DIV_RelA_statsT1 <- ordination_scores_with_metadata(ord.DIV_RelA_stats.T1, DIV_RelA_stats.T1)
 scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
 scores.ord.DIV_RelA_statsT1$Code3<-paste(scores.ord.DIV_RelA_statsT1$Species,scores.ord.DIV_RelA_statsT1$Treatment)
 
@@ -680,26 +714,23 @@ DIV_RelA_stats.TF<-subset_samples(DIV_RelA_stats, Time.Point=="TF")
 #all speices
 set.seed(30)
 #make bray curtis data matrix
-bc.all <- phyloseq::distance(DIV_RelA_stats.TF, method = "bray")
-  samp.df <- as(sample_data(DIV_RelA_stats.TF), "data.frame") #sample df
+bc.all.TF <- phyloseq::distance(DIV_RelA_stats.TF, method = "bray")
+  samp.df.TF <- as(sample_data(DIV_RelA_stats.TF), "data.frame") #sample df
 #adonis test
-adonis2(bc.all ~ Species*Treatment, data = samp.df)
+adonis2(bc.all.TF ~ Species*Treatment, data = samp.df.TF)
     
 # Homogeneity of dispersion test
-betaAll <- betadisper(bc.all, samp.df$Species)
-permutest(betaAll, pairwise = T) 
+betaAll.TF <- betadisper(bc.all.TF, samp.df.TF$Species)
+permutest(betaAll.TF, pairwise = T)
 
 #Ordination NMDS for all species
 set.seed(30)
 ord.DIV_RelA_stats.TF <- ordinate(DIV_RelA_stats.TF, "NMDS", "bray", trymax = 100) 
 stressplot(ord.DIV_RelA_stats.TF)
-scores.ord.DIV_RelA_stats <- as.data.frame(cbind(vegan::scores(ord.DIV_RelA_stats.TF, display="sites"))) #make df
-scores.ord.DIV_RelA_stats$Treatment <- samp.df$Treatment
-scores.ord.DIV_RelA_stats$Species <- samp.df$Species
-scores.ord.DIV_RelA_stats$Clade <- samp.df$Clade
-scores.ord.DIV_RelA_stats$Code3<-paste(scores.ord.DIV_RelA_stats$Species,scores.ord.DIV_RelA_stats$Treatment)
+scores.ord.DIV_RelA_statsTF <- ordination_scores_with_metadata(ord.DIV_RelA_stats.TF, DIV_RelA_stats.TF)
+scores.ord.DIV_RelA_statsTF$Code3<-paste(scores.ord.DIV_RelA_statsTF$Species,scores.ord.DIV_RelA_statsTF$Treatment)
 
-ggplot(scores.ord.DIV_RelA_stats, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
+ggplot(scores.ord.DIV_RelA_statsTF, aes(x = NMDS1, y = NMDS2, color = Species, linetype=Treatment)) +
   geom_point(aes(shape=Treatment), size=4) +
   stat_ellipse(geom = "polygon",
                aes(fill = Code3), 
@@ -834,16 +865,12 @@ set.seed(30)
 Mcap.Parent.colors <- c("363" = "green4",  "364" = "firebrick3", "365" ="deeppink4", "366" = "orange", "367" = "green1","368" = "gold",  "369"= "hotpink", "370" ="darkslateblue", "371" = "cyan", "372" = "darkorange","373" ="darkorchid1", "374" = "lightblue", "Ambient" = "#4575B4", "High" = "#D73027","C Ambient"="blue","C High"="red", "CD Ambient"="darkblue", "CD High"="darkred") 
 
 #T1 and TF
-ord.mcap <- ordinate(mcap.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
+set.seed(30)
+ord.mcap <- ordinate(mcap.RelRare.T1F, method="NMDS", distance="bray", trymax = 100)
 stressplot(ord.mcap)
-scores.mcap.samp.df <- as.data.frame(cbind(vegan::scores(ord.mcap, display="sites"))) #make df
-scores.mcap.samp.df$Time.Point <- mcap.RelRare.T1F.samp.df$Time.Point
-scores.mcap.samp.df$Parent.ID <- mcap.RelRare.T1F.samp.df$Parent.ID
-scores.mcap.samp.df$Treatment <- mcap.RelRare.T1F.samp.df$Treatment
-scores.mcap.samp.df$ID <- mcap.RelRare.T1F.samp.df$ID
-scores.mcap.samp.df$Clade <- mcap.RelRare.T1F.samp.df$Clade
-scores.mcap.samp.df$Code <- paste(mcap.RelRare.T1F.samp.df$Parent.ID,mcap.RelRare.T1F.samp.df$Time.Point)
-scores.mcap.samp.df$Code2 <- paste(mcap.RelRare.T1F.samp.df$Treatment,mcap.RelRare.T1F.samp.df$Time.Point)
+scores.mcap.samp.df <- ordination_scores_with_metadata(ord.mcap, mcap.RelRare.T1F)
+scores.mcap.samp.df$Code <- paste(scores.mcap.samp.df$Parent.ID, scores.mcap.samp.df$Time.Point)
+scores.mcap.samp.df$Code2 <- paste(scores.mcap.samp.df$Treatment, scores.mcap.samp.df$Time.Point)
 
 #Check if Parent.ID shifts within time point
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
@@ -855,7 +882,7 @@ McapITS2_T1TF<-ggplot(scores.mcap.samp.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle(expression(italic("M. capitata")~"ITS2")) +
   theme_classic()+
   facet_wrap(~Time.Point);McapITS2_T1TF
-#ggsave("McapT1its2.pdf")
+#ggsave("Figures/McapT1its2.pdf")
 
 #NMDS Mcap T1 and TF
  
@@ -931,15 +958,12 @@ set.seed(30)
 Pcomp.Parent.colors <- c("313" = "green4",  "314" = "firebrick3", "315" ="deeppink4", "316" = "orange", "317" = "green1","318" = "gold",  "319"= "hotpink", "320" ="darkslateblue", "321" = "cyan", "322" = "darkorange","323" ="darkorchid1", "324" = "lightblue","Ambient" = "#4575B4", "High" = "#D73027",     "C15cj Ambient"="blue","C15cj High"="red", "C15n Ambient"="darkblue", "C15n High"="darkred") 
 
 #T1 and TF
-ord.pcomp <- ordinate(pcomp.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
+set.seed(30)
+ord.pcomp <- ordinate(pcomp.RelRare.T1F, method="NMDS", distance="bray", trymax = 100)
 stressplot(ord.pcomp)
-scores.pcomp.samp.df <- as.data.frame(cbind(vegan::scores(ord.pcomp, display="sites"))) #make df
-scores.pcomp.samp.df$Time.Point <- pcomp.RelRare.T1F.samp.df$Time.Point
-scores.pcomp.samp.df$Parent.ID <- pcomp.RelRare.T1F.samp.df$Parent.ID
-scores.pcomp.samp.df$Treatment <- pcomp.RelRare.T1F.samp.df$Treatment
-scores.pcomp.samp.df$Clade <- pcomp.RelRare.T1F.samp.df$Clade
-scores.pcomp.samp.df$Code <- paste(pcomp.RelRare.T1F.samp.df$Parent.ID,pcomp.RelRare.T1F.samp.df$Time.Point)
-scores.pcomp.samp.df$Code2 <- paste(pcomp.RelRare.T1F.samp.df$Treatment,pcomp.RelRare.T1F.samp.df$Time.Point)
+scores.pcomp.samp.df <- ordination_scores_with_metadata(ord.pcomp, pcomp.RelRare.T1F)
+scores.pcomp.samp.df$Code <- paste(scores.pcomp.samp.df$Parent.ID, scores.pcomp.samp.df$Time.Point)
+scores.pcomp.samp.df$Code2 <- paste(scores.pcomp.samp.df$Treatment, scores.pcomp.samp.df$Time.Point)
 
 #Check if Parent.ID shifts within time point
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
@@ -951,7 +975,7 @@ PcompITS2_T1TF<-ggplot(scores.pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle(expression(italic("P. compressa")~"ITS2")) +
   theme_classic()+
   facet_wrap(~Time.Point);PcompITS2_T1TF
-#ggsave("PcompT1its2.pdf")
+#ggsave("Figures/PcompT1its2.pdf")
 
 PcompITS2_T1TFplot<-ggplot(scores.pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment, shape = Treatment), size = 4) +
@@ -961,7 +985,7 @@ PcompITS2_T1TFplot<-ggplot(scores.pcomp.samp.df, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()+
   facet_wrap(~Time.Point);PcompITS2_T1TFplot
 
-#ggsave("PcompT1its2.pdf")
+#ggsave("Figures/PcompT1its2.pdf")
 
 ```
 Pavona varians
@@ -1027,15 +1051,12 @@ set.seed(30)
 Pvar.Parent.colors <- c("325" = "green4",  "351" = "firebrick3", "353" ="deeppink4", "354" = "orange", "355" = "green1","356" = "gold",  "357"= "hotpink", "358" ="darkslateblue", "359" = "honeydew4", "360" = "khaki4","361" ="ivory4", "362" = "lightblue", "Ambient" = "#4575B4", "High" = "#D73027","C1 Ambient"="blue","C1 High"="red", "C27 Ambient"="darkblue", "C27 High"="darkred") 
 
 #T1 and TF
-ord.pvar <- ordinate(pvar.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
+set.seed(30)
+ord.pvar <- ordinate(pvar.RelRare.T1F, method="NMDS", distance="bray", trymax = 100)
 stressplot(ord.pvar)
-scores.pvar.samp.df <- as.data.frame(cbind(vegan::scores(ord.pvar, display="sites"))) #make df
-scores.pvar.samp.df$Time.Point <- pvar.RelRare.T1F.samp.df$Time.Point
-scores.pvar.samp.df$Parent.ID <- pvar.RelRare.T1F.samp.df$Parent.ID
-scores.pvar.samp.df$Treatment <- pvar.RelRare.T1F.samp.df$Treatment
-scores.pvar.samp.df$Clade <- pvar.RelRare.T1F.samp.df$Clade
-scores.pvar.samp.df$Code <- paste(pvar.RelRare.T1F.samp.df$Parent.ID,pvar.RelRare.T1F.samp.df$Time.Point)
-scores.pvar.samp.df$Code2 <- paste(pvar.RelRare.T1F.samp.df$Treatment,pvar.RelRare.T1F.samp.df$Time.Point)
+scores.pvar.samp.df <- ordination_scores_with_metadata(ord.pvar, pvar.RelRare.T1F)
+scores.pvar.samp.df$Code <- paste(scores.pvar.samp.df$Parent.ID, scores.pvar.samp.df$Time.Point)
+scores.pvar.samp.df$Code2 <- paste(scores.pvar.samp.df$Treatment, scores.pvar.samp.df$Time.Point)
 
 #Check if Parent.ID shifts within time point
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
@@ -1058,7 +1079,7 @@ PvarITS2_T1TFplot<-ggplot(scores.pvar.samp.df, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-#ggsave("PvarT1its2.pdf")
+#ggsave("Figures/PvarT1its2.pdf")
 ```
 Pocillopora acuta
 ```{r}       
@@ -1123,15 +1144,12 @@ Pacu.Parent.colors <- c("305" = "green4",  "306" = "firebrick3", "307" ="deeppin
 
 
 #T1 and TF
-ord.pacu <- ordinate(pacu.RelRare.T1F, method="NMDS", "bray", trymax = 100, set.seed(30)) 
+set.seed(30)
+ord.pacu <- ordinate(pacu.RelRare.T1F, method="NMDS", distance="bray", trymax = 100)
 stressplot(ord.pacu)
-scores.pacu.samp.df <- as.data.frame(cbind(vegan::scores(ord.pacu, display="sites"))) #make df
-scores.pacu.samp.df$Time.Point <- pacu.RelRare.T1F.samp.df$Time.Point
-scores.pacu.samp.df$Parent.ID <- pacu.RelRare.T1F.samp.df$Parent.ID
-scores.pacu.samp.df$Treatment <- pacu.RelRare.T1F.samp.df$Treatment
-scores.pacu.samp.df$Clade <- pacu.RelRare.T1F.samp.df$Clade
-scores.pacu.samp.df$Code <- paste(pacu.RelRare.T1F.samp.df$Parent.ID,pacu.RelRare.T1F.samp.df$Time.Point)
-scores.pacu.samp.df$Code2 <- paste(pacu.RelRare.T1F.samp.df$Treatment,pacu.RelRare.T1F.samp.df$Time.Point)
+scores.pacu.samp.df <- ordination_scores_with_metadata(ord.pacu, pacu.RelRare.T1F)
+scores.pacu.samp.df$Code <- paste(scores.pacu.samp.df$Parent.ID, scores.pacu.samp.df$Time.Point)
+scores.pacu.samp.df$Code2 <- paste(scores.pacu.samp.df$Treatment, scores.pacu.samp.df$Time.Point)
 
 #Check if Parent.ID shifts within time point
 #http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-Section-01-Main-Lab.html#procrustes-and-ggplot2 
@@ -1143,7 +1161,7 @@ PacuITS2_T1TF<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle(expression(italic("P. acuta")~"ITS2")) +
   theme_classic()+
   facet_wrap(~Time.Point);PacuITS2_T1TF
-#ggsave("PacuT1its2.pdf")
+#ggsave("Figures/PacuT1its2.pdf")
 
 PacuITS2_T1TFplot<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Treatment), size = 4) +
@@ -1152,30 +1170,68 @@ PacuITS2_T1TFplot<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) +
   ggtitle(expression(italic("P. acuta")~"ITS2")) +
   theme_classic()+
   facet_wrap(~Time.Point);PacuITS2_T1TFplot
-#ggsave("PacuT1its2.pdf")
+#ggsave("Figures/PacuT1its2.pdf")
 
 ```
 All plots by lineage: Figure S19
 ```{r}
-p<-grid.arrange(McapITS2_T1TF, PcompITS2_T1TF, PvarITS2_T1TF,PacuITS2_T1TF, nrow = 1)
-ggsave( "ITS2_T1_TF_NMDS.pdf", plot= p, width=16, height=7, units="in")
+ITS2_lineage_NMDS_panel <- arrangeGrob(McapITS2_T1TF, PcompITS2_T1TF, PvarITS2_T1TF, PacuITS2_T1TF, nrow = 1)
+ggsave("Figures/ITS2_T1_TF_NMDS.pdf", plot = ITS2_lineage_NMDS_panel, width = 16, height = 7, units = "in")
 
 ```
 All plots: Figure S15
 ```{r}
-p<-grid.arrange(McapITS2_T1TFplot, PcompITS2_T1TFplot, PvarITS2_T1TFplot,PacuITS2_T1TFplot, nrow = 4)
-ggsave( "ITS2_T1_TF_NMDS_FigS15.pdf", plot= p, width=7, height=16, units="in")
+ITS2_treatment_NMDS_panel <- arrangeGrob(McapITS2_T1TFplot, PcompITS2_T1TFplot, PvarITS2_T1TFplot, PacuITS2_T1TFplot, nrow = 4)
+ggsave("Figures/ITS2_T1_TF_NMDS_FigS15.pdf", plot = ITS2_treatment_NMDS_panel, width = 7, height = 16, units = "in")
+
+# All time points: visual summary for Figure S16
+DIV_RelA_stats.all <- prune_taxa(
+  taxa_sums(DIV_RelA_stats) > 0,
+  DIV_RelA_stats
+)
+
+set.seed(30)
+ord.DIV_RelA_stats.all <- ordinate(
+  DIV_RelA_stats.all,
+  method = "NMDS",
+  distance = "bray",
+  trymax = 100
+)
+stressplot(ord.DIV_RelA_stats.all)
+
+scores.ord.DIV_RelA_stats.all <- ordination_scores_with_metadata(
+  ord.DIV_RelA_stats.all,
+  DIV_RelA_stats.all
+)
+scores.ord.DIV_RelA_stats.all$Time_Treatment <- interaction(
+  scores.ord.DIV_RelA_stats.all$Time.Point,
+  scores.ord.DIV_RelA_stats.all$Treatment,
+  sep = "_"
+)
+
+ITS2_all_time_NMDS <- ggplot(
+  scores.ord.DIV_RelA_stats.all,
+  aes(x = NMDS1, y = NMDS2, colour = Species, shape = Time_Treatment)
+) +
+  geom_point(size = 4) +
+  scale_color_manual(values = species_colors) +
+  ggtitle("NMDS ITS2 Bray-Curtis") +
+  facet_wrap(~Species) +
+  theme_classic()
+
+ITS2_all_time_NMDS
+ggsave("Figures/ITS2_all_time_NMDS_FigS16.pdf", plot = ITS2_all_time_NMDS)
 
 ```
 
 
 
 #Alpha diversity: observed richness, Shannon (+evenness) - microbiome packages  
-Use rarefied data, not relative abunances   
+Use rarefied data, not relative abundances
 df:coral_DIV2_rare
 ```{r}         
 
-Sp.colors <- c("Montipora_capitata"= "#D43F3AFF","Porites_compressa"="#EEA236FF","Pavona_varians"="#5CB85CFF","Pocillopora_acuta"="#46B8DAFF", "High"="darkRed","Ambient"="navyBlue")
+Sp.colors <- c(species_colors, "High" = "darkRed", "Ambient" = "navyBlue")
 
 its2.al.alpha<-coral_DIV2_rare #make a copy of df, use COUNTS
 
@@ -1188,23 +1244,256 @@ its2.al.alpha2.sd <- as(sample_data(its2.al.alpha2), "data.frame") #create sampl
 library(microbiome)  
 library(knitr)
 
-erich.tab <-microbiome::alpha(its2.al.alpha2, index = "all") # pull out: observed, diversity_shannon, evenness_pielou
+alpha_values <- microbiome::alpha(its2.al.alpha2, index = "all")
+alpha_values$recorded_id <- rownames(alpha_values)
 
-erich.tab2its<-erich.tab[-c(2:4,6:8,10:22)] #keep the cols you need
+# Join metadata by the phyloseq sample name instead of assuming row order.
+alpha_metadata <- as(sample_data(its2.al.alpha2), "data.frame")
+alpha_metadata$recorded_id <- rownames(alpha_metadata)
 
- erich.tab2its$Treatment <- its2.al.alpha2.sd$Treatment       #add its2k in meta
-  erich.tab2its$Time.Point <- its2.al.alpha2.sd$Time.Point
-  erich.tab2its$Parent.ID <- its2.al.alpha2.sd$Parent.ID
-  erich.tab2its$ID <- its2.al.alpha2.sd$Frag.ID
-  erich.tab2its$Species <- its2.al.alpha2.sd$Species
-    erich.tab2its$Clade <- its2.al.alpha2.sd$Clade
-    erich.tab2its$Tank.num <- its2.al.alpha2.sd$Tank.num
+stopifnot(!anyDuplicated(alpha_values$recorded_id))
+stopifnot(!anyDuplicated(alpha_metadata$recorded_id))
 
-  erich.tab2its$Time.Point = factor(erich.tab2its$Time.Point, levels = c("T0", "T1", "TF"))
+erich.tab2its <- alpha_values %>%
+  dplyr::select(recorded_id, observed, evenness_pielou) %>%
+  left_join(
+    alpha_metadata %>%
+      dplyr::select(recorded_id, ID, Treatment, Time.Point, Parent.ID, Species, Clade, Tank.num),
+    by = "recorded_id"
+  )
+
+stopifnot(nrow(erich.tab2its) == nrow(alpha_values))
+stopifnot(!anyNA(erich.tab2its$Species))
+
+# recorded_id is the SymPortal sample_name/Frag.ID. ID is retained separately
+# because five metadata records differ and must not be silently canonicalized.
+sample_id_comparison <- erich.tab2its %>%
+  distinct(recorded_id, ID) %>%
+  mutate(
+    same_id = recorded_id == ID,
+    duplicate_suffix = grepl("[bB]$", recorded_id)
+  )
+sample_id_comparison %>% filter(!same_id)
+
+erich.tab2its$Time.Point <- factor(erich.tab2its$Time.Point, levels = c("T0", "T1", "TF"))
 ```
+
+# Refactored alpha-diversity models and figures
+
+The models below cover observed richness and Pielou evenness using the same design for every species. T0 models use tank as the grouping term. T1/TF models use parent identity because fragments from a parent are measured repeatedly across treatment and time. Model failures and singular fits are retained in the result objects rather than being hidden.
+
+```{r}
+alpha_species_tables <- list(
+  mcap = subset(erich.tab2its, Species == "Montipora_capitata"),
+  pcomp = subset(erich.tab2its, Species == "Porites_compressa"),
+  pvar = subset(erich.tab2its, Species == "Pavona_varians"),
+  pacu = subset(erich.tab2its, Species == "Pocillopora_acuta")
+)
+
+# Compatibility names for older downstream code.
+erich.tab2its.mcap <- alpha_species_tables$mcap
+erich.tab2its.pcomp <- alpha_species_tables$pcomp
+erich.tab2its.pvar <- alpha_species_tables$pvar
+erich.tab2its.pacu <- alpha_species_tables$pacu
+
+fit_alpha_model <- function(data, response, fixed_effects, emmeans_specs, random_effect = NULL) {
+  analysis_data <- droplevels(data)
+  formula_terms <- if (is.null(random_effect)) fixed_effects else paste(fixed_effects, "+", random_effect)
+  model_formula <- as.formula(paste(response, "~", formula_terms))
+
+  tryCatch({
+    model <- if (is.null(random_effect)) {
+      lm(model_formula, data = analysis_data)
+    } else {
+      lmer(model_formula, data = analysis_data, REML = TRUE)
+    }
+    estimated_means <- emmeans(model, specs = as.formula(emmeans_specs))
+
+    list(
+      formula = model_formula,
+      n = nrow(analysis_data),
+      model_type = if (is.null(random_effect)) "lm" else "lmer",
+      model = model,
+      anova = anova(model),
+      emmeans = estimated_means,
+      contrasts = pairs(estimated_means, adjust = "Tukey"),
+      singular = if (inherits(model, "merMod")) lme4::isSingular(model) else FALSE,
+      error = NULL
+    )
+  }, error = function(e) {
+    list(
+      formula = model_formula,
+      n = nrow(analysis_data),
+      model_type = if (is.null(random_effect)) "lm" else "lmer",
+      model = NULL,
+      anova = NULL,
+      emmeans = NULL,
+      contrasts = NULL,
+      singular = NA,
+      error = conditionMessage(e)
+    )
+  })
+}
+
+alpha_metrics <- c(
+  richness = "observed",
+  evenness = "evenness_pielou"
+)
+
+alpha_model_results <- setNames(vector("list", length(alpha_metrics)), names(alpha_metrics))
+
+for (metric_name in names(alpha_metrics)) {
+  response <- alpha_metrics[[metric_name]]
+  metric_results <- list()
+
+  # T0 comparison across host species.
+  t0_all <- subset(erich.tab2its, Time.Point == "T0")
+  metric_results$T0_all_species <- fit_alpha_model(
+    t0_all,
+    response,
+    fixed_effects = "Species",
+    emmeans_specs = "~ Species",
+    random_effect = "(1 | Tank.num)"
+  )
+
+  for (species_code in names(alpha_species_tables)) {
+    species_data <- alpha_species_tables[[species_code]]
+
+    # T0 lineage comparison. Montipora lineages are C31 and C31D4.
+    t0_data <- subset(species_data, Time.Point == "T0")
+    metric_results[[paste(species_code, "T0", sep = "_")]] <- fit_alpha_model(
+      t0_data,
+      response,
+      fixed_effects = "Clade",
+      emmeans_specs = "~ Clade",
+      random_effect = NULL
+    )
+
+    # Combined T1/TF model.
+    post_t0_data <- subset(species_data, Time.Point %in% c("T1", "TF"))
+    post_t0_data$Time.Point <- droplevels(post_t0_data$Time.Point)
+    post_t0_fixed <- if (dplyr::n_distinct(post_t0_data$Clade, na.rm = TRUE) > 1) {
+      "Time.Point * Treatment * Clade"
+    } else {
+      "Time.Point * Treatment"
+    }
+    post_t0_emmeans <- if (grepl("Clade", post_t0_fixed)) {
+      "~ Time.Point * Treatment * Clade"
+    } else {
+      "~ Time.Point * Treatment"
+    }
+    metric_results[[paste(species_code, "T1TF", sep = "_")]] <- fit_alpha_model(
+      post_t0_data,
+      response,
+      fixed_effects = post_t0_fixed,
+      emmeans_specs = post_t0_emmeans,
+      random_effect = "(1 | Parent.ID)"
+    )
+
+    # Separate T1 and TF treatment models.
+    for (time_point in c("T1", "TF")) {
+      time_data <- subset(species_data, Time.Point == time_point)
+      time_fixed <- if (dplyr::n_distinct(time_data$Clade, na.rm = TRUE) > 1) {
+        "Treatment * Clade"
+      } else {
+        "Treatment"
+      }
+      time_emmeans <- if (grepl("Clade", time_fixed)) {
+        "~ Treatment * Clade"
+      } else {
+        "~ Treatment"
+      }
+      metric_results[[paste(species_code, time_point, sep = "_")]] <- fit_alpha_model(
+        time_data,
+        response,
+        fixed_effects = time_fixed,
+        emmeans_specs = time_emmeans,
+        random_effect = "(1 | Parent.ID)"
+      )
+    }
+  }
+
+  alpha_model_results[[metric_name]] <- metric_results
+}
+
+alpha_model_status <- do.call(rbind, lapply(names(alpha_model_results), function(metric_name) {
+  do.call(rbind, lapply(names(alpha_model_results[[metric_name]]), function(scope) {
+    result <- alpha_model_results[[metric_name]][[scope]]
+    data.frame(
+      metric = metric_name,
+      scope = scope,
+      formula = paste(deparse(result$formula), collapse = " "),
+      n = result$n,
+      model_type = result$model_type,
+      singular = result$singular,
+      error = if (is.null(result$error)) NA_character_ else result$error
+    )
+  }))
+}))
+rownames(alpha_model_status) <- NULL
+alpha_model_status
+
+summarize_alpha_metric <- function(data, response) {
+  data %>%
+    group_by(Species, Treatment, Time.Point, Clade) %>%
+    summarise(
+      n = sum(!is.na(.data[[response]])),
+      mean = mean(.data[[response]], na.rm = TRUE),
+      sd = sd(.data[[response]], na.rm = TRUE),
+      se = sd / sqrt(n),
+      .groups = "drop"
+    )
+}
+
+make_alpha_plot <- function(summary_data, y_label, include_clade = FALSE) {
+  grouping <- if (include_clade) interaction(summary_data$Treatment, summary_data$Clade) else summary_data$Treatment
+  summary_data$plot_group <- grouping
+
+  ggplot(summary_data, aes(x = Time.Point, y = mean, group = plot_group, color = Treatment)) +
+    geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.1) +
+    geom_point(aes(shape = if (include_clade) Clade else Treatment), size = 3) +
+    geom_line(aes(linetype = if (include_clade) Clade else Treatment)) +
+    facet_wrap(~Species) +
+    scale_color_manual(values = c("Ambient" = "dodgerblue3", "High" = "darkred")) +
+    labs(x = NULL, y = y_label, color = "Treatment", shape = "Clade", linetype = "Clade") +
+    theme_classic()
+}
+
+alpha_richness_summary <- summarize_alpha_metric(erich.tab2its, "observed")
+alpha_evenness_summary <- summarize_alpha_metric(erich.tab2its, "evenness_pielou")
+
+ITS2_richness_summary_plot <- make_alpha_plot(
+  alpha_richness_summary,
+  "Observed richness"
+)
+ITS2_richness_clade_plot <- make_alpha_plot(
+  alpha_richness_summary,
+  "Observed richness",
+  include_clade = TRUE
+)
+ITS2_evenness_summary_plot <- make_alpha_plot(
+  alpha_evenness_summary,
+  "Pielou evenness"
+)
+ITS2_evenness_clade_plot <- make_alpha_plot(
+  alpha_evenness_summary,
+  "Pielou evenness",
+  include_clade = TRUE
+)
+
+ggsave("Figures/ITS2_alpha_richness_summary.pdf", ITS2_richness_summary_plot, width = 12, height = 7)
+ggsave("Figures/ITS2_alpha_richness_by_clade.pdf", ITS2_richness_clade_plot, width = 12, height = 7)
+ggsave("Figures/ITS2_alpha_evenness_summary.pdf", ITS2_evenness_summary_plot, width = 12, height = 7)
+ggsave("Figures/ITS2_alpha_evenness_by_clade.pdf", ITS2_evenness_clade_plot, width = 12, height = 7)
+```
+
+# Legacy alpha-diversity workflow (reference only)
+
+The original repeated model and plotting blocks are retained temporarily for comparison but are not evaluated. The refactored section above replaces them with consistently named results for both metrics and every species.
+
 #Observed Richness 
 Table S9, S17
-```{r}     
+```{r, eval=FALSE}
 library(stats)
 #T0 only ####
   erich.tab2its.T0<-subset(erich.tab2its, Time.Point=="T0")
@@ -1218,14 +1507,31 @@ set.seed(30)
   cld(emm)
   pairs(emm)
   
-  #Richness
-p1 <- ggviolin(erich.tab2its.T0, x = "Species", y = "observed",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
+# Richness and evenness plots
+erich.tab2its.T0$Species <- factor(
+  erich.tab2its.T0$Species,
+  levels = names(species_colors)
+)
+
+ITS2_rich <- ggplot(erich.tab2its.T0, aes(x = Species, y = observed, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = species_colors) +
+  labs(x = "Host Species", y = "Microbial Richness", fill = "Species") +
+  theme_classic() +
+  theme(axis.text.x = element_blank())
+ITS2_rich
+
 #Evenness
-p1 <- ggviolin(erich.tab2its.T0, x = "Species", y = "evenness_pielou",
-   add = "boxplot", fill = "Species", palette = c(Sp.colors)) 
-  print(p1)
+ITS2_even <- ggplot(
+  erich.tab2its.T0,
+  aes(x = Species, y = evenness_pielou, fill = Species)
+) +
+  geom_boxplot() +
+  scale_fill_manual(values = species_colors) +
+  labs(x = "Host Species", y = "Microbial Evenness", fill = "Species") +
+  theme_classic() +
+  theme(axis.text.x = element_blank())
+ITS2_even
 
 #Mcap T0
    erich.tab2its.T0mcap<-subset(erich.tab2its.T0, Species=="Montipora_capitata")
@@ -1266,7 +1572,7 @@ set.seed(30)
 ```
 
 T1TF
-```{r}
+```{r, eval=FALSE}
 ##Mcap only ####
   erich.tab2its.mcap<-subset(erich.tab2its, Species=="Montipora_capitata")
   
@@ -1547,7 +1853,7 @@ hist(erich.tab2its.pacu.T0$observed)
   
 ``` 
 alpha Observed Plots, no clade
-```{r} 
+```{r, eval=FALSE}
 #Means
 observed_mean <- ddply(erich.tab2its, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(observed[!is.na(observed)]), #calculate the length of the data frame, excluding NA’s
@@ -1688,7 +1994,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```  
 
 alpha Observed Plots, clade  
-```{r}   
+```{r, eval=FALSE}
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 
@@ -1896,7 +2202,7 @@ grid.arrange(Mcap_observed_plot, Pcomp_observed_plot, Pvar_observed_plot,Pacu_ob
 ```
  
 #evenness_pielou Richness 
-```{r}     
+```{r, eval=FALSE}
 #evenness_pielou  
 #not transformed
 
@@ -2172,7 +2478,7 @@ hist(erich.tab2its.pacu.T0$observed)
  
 ```
 alpha evenness_pielou Plots, no clade
-```{r} 
+```{r, eval=FALSE}
 #Means 
 evenness_pielou_mean <- ddply(erich.tab2its, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(evenness_pielou[!is.na(evenness_pielou)]), #calculate the length of the data frame, excluding NA’s
@@ -2392,7 +2698,7 @@ grid.arrange(Mcap_evenness_pielou_plot, Pcomp_evenness_pielou_plot, Pvar_evennes
 ```  
 
 alpha evenness_pielou Plots, clade  
-```{r}  
+```{r, eval=FALSE}
 # color pal from eta mcap.g.Parent.colors
 alpha.colors <- c( "Ambient" = "dodgerblue", "High" = "darkred",
                         "C Ambient"="#1F78B4","C High"="#6A3D9A", "CD Ambient"="#E31A1C", "CD High"="#FF7F00") 

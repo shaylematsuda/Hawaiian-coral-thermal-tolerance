@@ -1421,9 +1421,120 @@ erich.tab2_noPacu<-subset(erich.tab2, Species!="Pocillopora_acuta")
 ```
 
 
-#Mantel Test
-T0 only
+# Mantel and Procrustes tests: 16S and ITS2
+
+This consolidated workflow matches samples by ID rather than by row position. It runs the comparison at T0 across all species and within each species, then at T1 and TF within treatment groups.
+
 ```{r}
+run_mantel_procrustes <- function(ps16, ps_its2, permutations = 999) {
+  shared <- intersect(sample_names(ps16), sample_names(ps_its2))
+
+  if (length(shared) < 3) {
+    stop("Too few shared samples after matching.")
+  }
+
+  ps16_sub <- prune_samples(shared, ps16)
+  ps_its2_sub <- prune_samples(shared, ps_its2)
+  ps16_sub <- prune_taxa(taxa_sums(ps16_sub) > 0, ps16_sub)
+  ps_its2_sub <- prune_taxa(taxa_sums(ps_its2_sub) > 0, ps_its2_sub)
+
+  dist16 <- phyloseq::distance(ps16_sub, method = "wunifrac")
+  dist_its2_matrix <- as.matrix(phyloseq::distance(ps_its2_sub, method = "bray"))
+  dist_its2 <- as.dist(dist_its2_matrix[labels(dist16), labels(dist16)])
+
+  nmds16 <- vegan::metaMDS(dist16, k = 2, trace = FALSE)
+  nmds_its2 <- vegan::metaMDS(dist_its2, k = 2, trace = FALSE)
+
+  list(
+    n_shared = length(shared),
+    mantel = vegan::mantel(dist16, dist_its2, permutations = permutations),
+    procrustes = vegan::protest(nmds16, nmds_its2, permutations = permutations)
+  )
+}
+
+summarize_mantel_procrustes <- function(result, comparison) {
+  data.frame(
+    comparison = comparison,
+    n_shared = result$n_shared,
+    mantel_r = unname(result$mantel$statistic),
+    mantel_p = result$mantel$signif,
+    procrustes_r = result$procrustes$t0,
+    procrustes_p = result$procrustes$signif
+  )
+}
+
+Bac.s.rel_mantel <- Bac.s.rel
+sample_names(Bac.s.rel_mantel) <- sub("b$", "", as.character(sample_data(Bac.s.rel_mantel)$sample_name.1))
+
+ITS2_mantel <- readRDS("Data/ITS2_phyloseq.rds")
+sample_names(ITS2_mantel) <- sub("b$", "", as.character(sample_data(ITS2_mantel)$ID))
+
+# T0 across all species and within species
+Bac_T0 <- subset_samples(Bac.s.rel_mantel, Time.Point == "T0")
+ITS2_T0 <- subset_samples(ITS2_mantel, Time.Point == "T0")
+
+mantel_results <- list(
+  T0_all_species = run_mantel_procrustes(Bac_T0, ITS2_T0)
+)
+
+shared_species <- intersect(
+  unique(as.character(sample_data(Bac_T0)$Species)),
+  unique(as.character(sample_data(ITS2_T0)$Species))
+)
+
+for (species_name in shared_species) {
+  bac_subset <- subset_samples(Bac_T0, Species == species_name)
+  its2_subset <- subset_samples(ITS2_T0, Species == species_name)
+  comparison <- paste("T0", species_name, sep = "_")
+
+  if (length(intersect(sample_names(bac_subset), sample_names(its2_subset))) >= 3) {
+    mantel_results[[comparison]] <- run_mantel_procrustes(bac_subset, its2_subset)
+  }
+}
+
+# T1 and TF within treatment, both across and within species
+for (time_point in c("T1", "TF")) {
+  for (treatment_name in c("Ambient", "High")) {
+    bac_group <- subset_samples(
+      Bac.s.rel_mantel,
+      Time.Point == time_point & Treatment == treatment_name
+    )
+    its2_group <- subset_samples(
+      ITS2_mantel,
+      Time.Point == time_point & Treatment == treatment_name
+    )
+
+    comparison <- paste(time_point, treatment_name, "all_species", sep = "_")
+    if (length(intersect(sample_names(bac_group), sample_names(its2_group))) >= 3) {
+      mantel_results[[comparison]] <- run_mantel_procrustes(bac_group, its2_group)
+    }
+
+    for (species_name in shared_species) {
+      bac_subset <- subset_samples(bac_group, Species == species_name)
+      its2_subset <- subset_samples(its2_group, Species == species_name)
+      comparison <- paste(time_point, treatment_name, species_name, sep = "_")
+
+      if (length(intersect(sample_names(bac_subset), sample_names(its2_subset))) >= 3) {
+        mantel_results[[comparison]] <- run_mantel_procrustes(bac_subset, its2_subset)
+      }
+    }
+  }
+}
+
+mantel_summary <- do.call(
+  rbind,
+  Map(summarize_mantel_procrustes, mantel_results, names(mantel_results))
+)
+rownames(mantel_summary) <- NULL
+mantel_summary
+```
+
+## Legacy Mantel workflow (reference only)
+
+This row-based workflow is retained temporarily for comparison during code review. It is not evaluated because sample matching by row number is fragile and the consolidated workflow above supersedes it.
+
+T0 only
+```{r, eval=FALSE}
 # Identify which samples are represented in the its2 and 16s dfs
 
 # T0 only  #####
@@ -1577,10 +1688,10 @@ T0 only
  # Bac_T0_mantel ITS2_T0_mantel
     
     #subset df for Pacu
-    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pavona_varians")
+    Bac_T0_mantel.Pacu <- subset_samples(Bac_T0_mantel, Species == "Pocillopora_acuta")
     Bac_T0_mantel.Pacu = prune_taxa(taxa_sums(Bac_T0_mantel.Pacu) > 0, Bac_T0_mantel.Pacu) 
     
-    ITS2_T0_mantel.Pacu  <- subset_samples(ITS2_T0_mantel, Species == "Pavona_varians")
+    ITS2_T0_mantel.Pacu  <- subset_samples(ITS2_T0_mantel, Species == "Pocillopora_acuta")
     ITS2_T0_mantel.Pacu = prune_taxa(taxa_sums(ITS2_T0_mantel.Pacu) > 0, ITS2_T0_mantel.Pacu)
         
     #16s T0 Pacu dist        
@@ -1598,7 +1709,7 @@ T0 only
 
 ```
 T1 High only
-```{r}
+```{r, eval=FALSE}
 # figure out which samples are represented in the its2 and 16s dfs
 
 # T1 only  #####
@@ -1772,7 +1883,7 @@ T1 High only
 
 ```
 T1 Ambient only
-```{r}
+```{r, eval=FALSE}
 # figure out which samples are represented in the its2 and 16s dfs
 
 # T1 only  #####
