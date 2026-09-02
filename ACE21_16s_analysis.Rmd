@@ -88,6 +88,8 @@ Bac.field = subset_samples(Bac.seq, Type== "field" )
 Bac.field.df <- as(sample_data(Bac.field), "data.frame") #create sample data frame to view
 ```
 
+
+
 #Make relative abundance df
 ```{r}        
 Bac.s.rel  = transform_sample_counts(Bac.s, function(x) x / sum(x) )
@@ -2061,4 +2063,431 @@ T1 Ambient only
    # Run mantel test
       mantel(unifrac.Bac_T1.Ambient_mantel.Pacu, bray.ITS2.T1.Ambient.mantel.Pacu,  permutations=1000)  
 
+```
+# HANNAH ADDITIONAL 16S ANALYSES - REPRODUCIBLE INTEGRATION
+
+This section integrates the analyses originally stored under `Data/16s_analysis/` into the main 16S workflow. It deliberately uses the current `Bac.seq` object created and filtered earlier in this notebook rather than loading either historical `16s_phyloseq4HE.RData` file. Regenerated files are written to `Data/16s_analysis/comparison_current_main/`; Hannah's original outputs are never overwritten.
+
+## Prepare the current experimental dataset
+
+```{r hannah-integration-setup}
+set.seed(30)
+
+h16_output_dir <- "Data/16s_analysis/comparison_current_main"
+dir.create(h16_output_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Work on a copy so this integration cannot change upstream notebook objects.
+h16_bac <- Bac.seq
+h16_meta <- as(sample_data(h16_bac), "data.frame")
+
+# S3059 is correctly recorded in Meta16s_3k.csv as an experimental T1 sample.
+# The historical RData object stored its Type as "S3059" and Time.Point as "F1",
+# which caused Type == "sample" filters to drop it before the F1 correction.
+S3059_row <- which(as.character(h16_meta$sample_name.1) == "S3059")
+if (length(S3059_row) == 1) {
+  h16_meta[S3059_row, "Type"] <- "sample"
+  h16_meta[S3059_row, "Time.Point"] <- "T1"
+  sample_data(h16_bac) <- sample_data(h16_meta)
+}
+
+h16_bac_exp <- subset_samples(h16_bac, Type == "sample")
+h16_bac_exp <- prune_taxa(taxa_sums(h16_bac_exp) > 0, h16_bac_exp)
+h16_meta_exp <- as(sample_data(h16_bac_exp), "data.frame")
+
+# The current base object uses shortened phyloseq row names (for example 3059),
+# while sample_name.1 contains the recorded IDs used across the project (S3059).
+# Field samples legitimately repeat fragment numbers, so canonicalize only after
+# selecting experimental samples, where recorded IDs must be unique.
+stopifnot(!anyDuplicated(as.character(h16_meta_exp$sample_name.1)))
+sample_names(h16_bac_exp) <- as.character(h16_meta_exp$sample_name.1)
+h16_meta_exp <- as(sample_data(h16_bac_exp), "data.frame")
+
+h16_sample_audit <- data.frame(
+  source = "current_main_16S",
+  n_samples = nsamples(h16_bac_exp),
+  n_taxa = ntaxa(h16_bac_exp),
+  min_library_size = min(sample_sums(h16_bac_exp)),
+  max_library_size = max(sample_sums(h16_bac_exp)),
+  S3059_present = "S3059" %in% sample_names(h16_bac_exp)
+)
+write.csv(
+  h16_sample_audit,
+  file.path(h16_output_dir, "sample_audit.csv"),
+  row.names = FALSE
+)
+h16_sample_audit
+```
+
+## Top-abundance tables
+
+These tables reproduce Hannah's top-ten-OTU workflow while consistently using the filtered experimental object.
+
+```{r hannah-integration-top-abundance}
+h16_species_codes <- c(
+  Montipora_capitata = "mcap",
+  Porites_compressa = "pcomp",
+  Pavona_varians = "pvar",
+  Pocillopora_acuta = "pacu"
+)
+
+h16_top_abundance <- function(ps, n_top = 10) {
+  ps_rel <- transform_sample_counts(ps, function(x) x / sum(x))
+  top_taxa <- names(sort(taxa_sums(ps_rel), decreasing = TRUE))[seq_len(min(n_top, ntaxa(ps_rel)))]
+  result <- psmelt(prune_taxa(top_taxa, ps_rel))
+  result$top.group <- "abund"
+  result
+}
+
+h16_abundance_dir <- file.path(h16_output_dir, "top_abundance")
+dir.create(h16_abundance_dir, recursive = TRUE, showWarnings = FALSE)
+h16_abundance_results <- list()
+
+for (species_name in names(h16_species_codes)) {
+  species_code <- unname(h16_species_codes[species_name])
+  species_ps <- subset_samples(h16_bac_exp, Species == species_name)
+  species_ps <- prune_taxa(taxa_sums(species_ps) > 0, species_ps)
+
+  all_result <- h16_top_abundance(species_ps)
+  h16_abundance_results[[paste(species_code, "all", sep = "_")]] <- all_result
+  write.csv(all_result, file.path(h16_abundance_dir, paste0(species_code, "_abund.csv")), row.names = FALSE)
+
+  for (time_point in c("T0", "T1", "TF")) {
+    time_ps <- subset_samples(species_ps, Time.Point == time_point)
+    time_ps <- prune_taxa(taxa_sums(time_ps) > 0, time_ps)
+    time_result <- h16_top_abundance(time_ps)
+    h16_abundance_results[[paste(species_code, time_point, sep = "_")]] <- time_result
+    write.csv(
+      time_result,
+      file.path(h16_abundance_dir, paste0(species_code, "_", time_point, "_abund.csv")),
+      row.names = FALSE
+    )
+  }
+}
+```
+
+## Core-microbiome tables
+
+The original species-specific thresholds are retained for direct historical comparison and recorded in the output manifest. They should be described as descriptive, species-specific thresholds rather than a single universal definition of core microbiome.
+
+```{r hannah-integration-core}
+h16_core_prevalence <- c(mcap = 0.60, pcomp = 0.50, pvar = 0.45, pacu = 0.57)
+h16_core_T0_prevalence <- c(mcap = 0.65, pcomp = 0.75, pvar = 0.60, pacu = 0.74)
+h16_core_dir <- file.path(h16_output_dir, "core_microbiome")
+dir.create(h16_core_dir, recursive = TRUE, showWarnings = FALSE)
+h16_core_results <- list()
+
+h16_core_table <- function(ps, prevalence) {
+  ps_rel <- transform_sample_counts(ps, function(x) x / sum(x))
+  core_ps <- microbiome::core(ps_rel, detection = 0.0001, prevalence = prevalence)
+  result <- psmelt(core_ps)
+  result$top.group <- "core"
+  result$core_prevalence <- prevalence
+  result
+}
+
+for (species_name in names(h16_species_codes)) {
+  species_code <- unname(h16_species_codes[species_name])
+  species_ps <- subset_samples(h16_bac_exp, Species == species_name)
+  species_ps <- prune_taxa(taxa_sums(species_ps) > 0, species_ps)
+
+  all_result <- h16_core_table(species_ps, h16_core_prevalence[species_code])
+  h16_core_results[[paste(species_code, "all", sep = "_")]] <- all_result
+  write.csv(all_result, file.path(h16_core_dir, paste0(species_code, "_core.csv")), row.names = FALSE)
+
+  T0_ps <- subset_samples(species_ps, Time.Point == "T0")
+  T0_ps <- prune_taxa(taxa_sums(T0_ps) > 0, T0_ps)
+  T0_result <- h16_core_table(T0_ps, h16_core_T0_prevalence[species_code])
+  h16_core_results[[paste(species_code, "T0", sep = "_")]] <- T0_result
+  write.csv(T0_result, file.path(h16_core_dir, paste0(species_code, "_T0_core.csv")), row.names = FALSE)
+}
+
+write.csv(
+  data.frame(
+    species_code = names(h16_core_prevalence),
+    all_timepoints_prevalence = unname(h16_core_prevalence),
+    T0_prevalence = unname(h16_core_T0_prevalence)
+  ),
+  file.path(h16_core_dir, "core_thresholds.csv"),
+  row.names = FALSE
+)
+```
+
+## T0 indicator-species analysis
+
+This corrects the historical `Treatment == "T0"` typo to `Time.Point == "T0"`, creates the result table directly from `multipatt()`, and sets the permutation seed explicitly.
+
+```{r hannah-integration-indicator}
+h16_indicator_dir <- file.path(h16_output_dir, "indicator_analysis")
+dir.create(h16_indicator_dir, recursive = TRUE, showWarnings = FALSE)
+
+h16_T0 <- subset_samples(h16_bac_exp, Time.Point == "T0")
+h16_T0 <- prune_taxa(taxa_sums(h16_T0) > 0, h16_T0)
+h16_T0_otu <- as(otu_table(h16_T0), "matrix")
+if (taxa_are_rows(h16_T0)) h16_T0_otu <- t(h16_T0_otu)
+h16_T0_meta <- as(sample_data(h16_T0), "data.frame")
+
+set.seed(30)
+h16_indicator_model <- indicspecies::multipatt(
+  h16_T0_otu,
+  h16_T0_meta$Species,
+  control = permute::how(nperm = 999)
+)
+
+h16_indicator_results <- as.data.frame(h16_indicator_model$sign)
+h16_indicator_results$taxa_id <- rownames(h16_indicator_results)
+rownames(h16_indicator_results) <- NULL
+h16_taxonomy <- as.data.frame(as(tax_table(h16_T0), "matrix"), stringsAsFactors = FALSE)
+h16_taxonomy$taxa_id <- rownames(h16_taxonomy)
+h16_indicator_with_tax <- merge(h16_indicator_results, h16_taxonomy, by = "taxa_id", all.x = TRUE)
+
+write.csv(h16_indicator_results, file.path(h16_indicator_dir, "species_indicval.csv"), row.names = FALSE)
+write.csv(h16_indicator_with_tax, file.path(h16_indicator_dir, "species_indicval_with_tax.csv"), row.names = FALSE)
+```
+
+## Treatment ANCOM by species and time point
+
+Each T1 and TF model is now run independently. Because fragments from the same parent occur in both treatments, the model includes a random intercept for `Parent.ID`. Outputs identify their species and time point explicitly.
+
+```{r hannah-integration-ancom}
+source("Data/16s_analysis/ancom/procedure/ANCOM_v2.1.R")
+h16_ancom_dir <- file.path(h16_output_dir, "ancom_by_treatment")
+dir.create(h16_ancom_dir, recursive = TRUE, showWarnings = FALSE)
+
+h16_run_ancom <- function(ps, species_name, species_code, time_point) {
+  model_ps <- subset_samples(ps, Species == species_name & Time.Point == time_point)
+  model_ps <- prune_taxa(taxa_sums(model_ps) > 0, model_ps)
+  model_meta <- as(sample_data(model_ps), "data.frame")
+  model_meta$Sample.ID <- sample_names(model_ps)
+  model_meta$Parent.ID <- factor(model_meta$Parent.ID)
+  model_meta$Treatment <- droplevels(factor(model_meta$Treatment, levels = c("Ambient", "High")))
+
+  feature_table <- as(otu_table(model_ps), "matrix")
+  if (!taxa_are_rows(model_ps)) feature_table <- t(feature_table)
+
+  preprocessed <- feature_table_pre_process(
+    feature_table = feature_table,
+    meta_data = model_meta,
+    sample_var = "Sample.ID",
+    group_var = "Treatment",
+    out_cut = 0.05,
+    zero_cut = 0.90,
+    lib_cut = 1000,
+    neg_lb = TRUE
+  )
+
+  fit <- ANCOM(
+    feature_table = preprocessed$feature_table,
+    meta_data = preprocessed$meta_data,
+    struc_zero = preprocessed$structure_zeros,
+    main_var = "Treatment",
+    p_adj_method = "BH",
+    alpha = 0.05,
+    adj_formula = NULL,
+    rand_formula = "~1|Parent.ID",
+    control = nlme::lmeControl(opt = "optim", maxIter = 200, msMaxIter = 200)
+  )
+
+  result <- as.data.frame(fit$out)
+  result$taxa_id <- rownames(result)
+  rownames(result) <- NULL
+  figure_data <- as.data.frame(fit$fig$data)
+  if (!"taxa_id" %in% names(figure_data)) figure_data$taxa_id <- rownames(figure_data)
+
+  taxonomy <- as.data.frame(as(tax_table(model_ps), "matrix"), stringsAsFactors = FALSE)
+  taxonomy$taxa_id <- rownames(taxonomy)
+  result <- merge(result, taxonomy, by = "taxa_id", all.x = TRUE)
+  figure_data <- merge(figure_data, taxonomy, by = "taxa_id", all.x = TRUE)
+  result$Species <- species_name
+  result$Time.Point <- time_point
+  result$model <- "Treatment + random intercept for Parent.ID"
+  figure_data$Species <- species_name
+  figure_data$Time.Point <- time_point
+
+  prefix <- paste(species_code, time_point, sep = "_")
+  write.csv(result, file.path(h16_ancom_dir, paste0(prefix, "_ancom_res.csv")), row.names = FALSE)
+  write.csv(figure_data, file.path(h16_ancom_dir, paste0(prefix, "_ancom_figdata.csv")), row.names = FALSE)
+
+  list(result = result, figure_data = figure_data, n_samples = nsamples(model_ps))
+}
+
+h16_ancom_results <- list()
+set.seed(30)
+for (species_name in names(h16_species_codes)) {
+  species_code <- unname(h16_species_codes[species_name])
+  for (time_point in c("T1", "TF")) {
+    result_name <- paste(species_code, time_point, sep = "_")
+    h16_ancom_results[[result_name]] <- h16_run_ancom(
+      h16_bac_exp,
+      species_name,
+      species_code,
+      time_point
+    )
+  }
+}
+```
+
+## Integrated output manifest
+
+```{r hannah-integration-manifest}
+h16_output_manifest <- data.frame(
+  analysis = c("sample audit", "top abundance", "core microbiome", "T0 indicator analysis", "ANCOM treatment contrasts"),
+  source_object = "current notebook Bac.seq",
+  important_change = c(
+    "S3059 corrected and historical exclusions retained",
+    "Uses experimental samples only",
+    "Original descriptive species-specific thresholds retained and recorded",
+    "Uses Time.Point == T0 and writes multipatt results directly",
+    "Runs each species/time independently with Parent.ID random intercept"
+  )
+)
+write.csv(h16_output_manifest, file.path(h16_output_dir, "output_manifest.csv"), row.names = FALSE)
+h16_output_manifest
+```
+
+## Compare regenerated and historical outputs
+
+The historical RData and output tables are read only in this comparison chunk. They are not used to construct or analyze the integrated dataset.
+
+```{r hannah-integration-comparison}
+h16_comparison_rows <- list()
+
+h16_add_comparison <- function(analysis, comparison, historical_taxa, current_taxa, notes = "") {
+  historical_taxa <- unique(as.character(historical_taxa))
+  current_taxa <- unique(as.character(current_taxa))
+  overlap <- intersect(historical_taxa, current_taxa)
+  union_taxa <- union(historical_taxa, current_taxa)
+  data.frame(
+    analysis = analysis,
+    comparison = comparison,
+    historical_n = length(historical_taxa),
+    current_n = length(current_taxa),
+    overlap_n = length(overlap),
+    jaccard = if (length(union_taxa)) length(overlap) / length(union_taxa) else NA_real_,
+    notes = notes
+  )
+}
+
+h16_taxa_from_table <- function(x) {
+  if ("OTU" %in% names(x)) return(as.character(x$OTU))
+  if ("otu_genus" %in% names(x)) return(sub("-.*$", "", as.character(x$otu_genus)))
+  if ("taxa_id" %in% names(x)) return(as.character(x$taxa_id))
+  stop("No recognized taxon identifier column in comparison table.")
+}
+
+# Sample membership comparison
+h16_historical_env <- new.env(parent = emptyenv())
+load("Data/16s_analysis/16s_phyloseq4HE.RData", envir = h16_historical_env)
+h16_historical_exp <- subset_samples(h16_historical_env$Bac.seq, Type == "sample")
+h16_historical_ids <- as.character(sample_data(h16_historical_exp)$sample_name.1)
+h16_current_ids <- sample_names(h16_bac_exp)
+h16_sample_differences <- data.frame(
+  sample_id = union(h16_historical_ids, h16_current_ids),
+  in_historical = union(h16_historical_ids, h16_current_ids) %in% h16_historical_ids,
+  in_current = union(h16_historical_ids, h16_current_ids) %in% h16_current_ids
+)
+write.csv(h16_sample_differences, file.path(h16_output_dir, "sample_set_differences.csv"), row.names = FALSE)
+
+# Top-abundance comparisons
+for (species_code in unname(h16_species_codes)) {
+  for (suffix in c("", "_T0", "_T1", "_TF")) {
+    filename <- paste0(species_code, suffix, "_abund.csv")
+    historical_file <- file.path("Data/16s_analysis/top_abundance/output", filename)
+    current_file <- file.path(h16_abundance_dir, filename)
+    historical <- read.csv(historical_file, check.names = FALSE)
+    current <- read.csv(current_file, check.names = FALSE)
+    h16_comparison_rows[[paste("abundance", filename)]] <- h16_add_comparison(
+      "top abundance", filename, h16_taxa_from_table(historical), h16_taxa_from_table(current),
+      "Unique OTUs among each top-ten table"
+    )
+  }
+}
+
+# Core-microbiome comparisons
+for (species_code in unname(h16_species_codes)) {
+  for (suffix in c("", "_T0")) {
+    historical_filename <- if (suffix == "") paste0(species_code, "_core.csv") else paste0(species_code, "_T0_core.csv")
+    current_filename <- historical_filename
+    historical <- read.csv(file.path("Data/16s_analysis/core_microbiome/output", historical_filename), check.names = FALSE)
+    current <- read.csv(file.path(h16_core_dir, current_filename), check.names = FALSE)
+    h16_comparison_rows[[paste("core", historical_filename)]] <- h16_add_comparison(
+      "core microbiome", historical_filename, h16_taxa_from_table(historical), h16_taxa_from_table(current),
+      "Unique core OTUs at the original species-specific threshold"
+    )
+  }
+}
+
+# Indicator taxa: compare Hannah's saved significant table with directly generated
+# single-species associations at p <= 0.05.
+h16_indicator_historical <- read.csv(
+  "Data/16s_analysis/indicator_analysis/output/species_indicval.csv",
+  check.names = FALSE
+)
+h16_indicator_current_sig <- subset(h16_indicator_results, p.value <= 0.05 & index %in% 1:4)
+h16_indicator_species_lookup <- c(
+  `1` = "Montipora_capitata",
+  `2` = "Pavona_varians",
+  `3` = "Pocillopora_acuta",
+  `4` = "Porites_compressa"
+)
+h16_indicator_current_sig$Species <- unname(h16_indicator_species_lookup[as.character(h16_indicator_current_sig$index)])
+
+for (species_name in unique(h16_indicator_historical$Species)) {
+  historical_taxa <- h16_indicator_historical$taxa_id[h16_indicator_historical$Species == species_name]
+  current_taxa <- h16_indicator_current_sig$taxa_id[h16_indicator_current_sig$Species == species_name]
+  h16_comparison_rows[[paste("indicator", species_name)]] <- h16_add_comparison(
+    "T0 indicator", species_name, historical_taxa, current_taxa,
+    "Significant single-species associations at p <= 0.05"
+  )
+}
+write.csv(
+  h16_indicator_current_sig,
+  file.path(h16_indicator_dir, "species_indicval_significant_single_species.csv"),
+  row.names = FALSE
+)
+
+# ANCOM comparisons. Historical files combine T1 and TF; current files are explicit.
+# Effect and W correlations are descriptive because the current model adds Parent.ID.
+h16_ancom_comparison <- list()
+for (species_code in unname(h16_species_codes)) {
+  historical <- read.csv(
+    file.path("Data/16s_analysis/ancom/output/by_treatment", paste0("ancom_", species_code, "_figdata.csv")),
+    check.names = FALSE
+  )
+  for (time_point in c("T1", "TF")) {
+    historical_time <- subset(historical, contrast == time_point)
+    current <- read.csv(
+      file.path(h16_ancom_dir, paste0(species_code, "_", time_point, "_ancom_figdata.csv")),
+      check.names = FALSE
+    )
+    matched <- merge(
+      historical_time[, c("taxa_id", "x", "y")],
+      current[, c("taxa_id", "x", "y")],
+      by = "taxa_id",
+      suffixes = c("_historical", "_current")
+    )
+    historical_cutoff <- 0.6 * (nrow(historical_time) - 1)
+    current_cutoff <- 0.6 * (nrow(current) - 1)
+    h16_ancom_comparison[[paste(species_code, time_point, sep = "_")]] <- data.frame(
+      analysis = "ANCOM",
+      comparison = paste(species_code, time_point, sep = "_"),
+      historical_taxa_n = nrow(historical_time),
+      current_taxa_n = nrow(current),
+      matched_taxa_n = nrow(matched),
+      CLR_effect_correlation = cor(matched$x_historical, matched$x_current, use = "complete.obs"),
+      W_correlation = cor(matched$y_historical, matched$y_current, use = "complete.obs"),
+      historical_detected_0.6_n = sum(historical_time$y >= historical_cutoff, na.rm = TRUE),
+      current_detected_0.6_n = sum(current$y >= current_cutoff, na.rm = TRUE),
+      notes = "Current model includes Parent.ID random intercept; historical model did not"
+    )
+  }
+}
+h16_ancom_comparison <- do.call(rbind, h16_ancom_comparison)
+write.csv(h16_ancom_comparison, file.path(h16_output_dir, "ancom_comparison_summary.csv"), row.names = FALSE)
+
+h16_taxa_comparison_summary <- do.call(rbind, h16_comparison_rows)
+rownames(h16_taxa_comparison_summary) <- NULL
+write.csv(h16_taxa_comparison_summary, file.path(h16_output_dir, "taxa_comparison_summary.csv"), row.names = FALSE)
+
+h16_taxa_comparison_summary
+h16_ancom_comparison
 ```
