@@ -1,12 +1,10 @@
 #### New R Script to streamline the 16S figure generation & analysis for ACE21 ####
 
 #Load libraries
+check
+
 library(phyloseq)
 library(tidyverse)
-library(ggplot2)
-library(plyr)
-library(vegan)
-
 ##NOTE: The working colours are as follows: 
 # mcap "#E69F00" ; pcomp "#56B4E9" ; pvar "#CC79A7" ; pacu"#009E73"
 
@@ -14,16 +12,25 @@ library(vegan)
 #Check your working directory
 
 getwd()
-
+#want to be in /Data/16s_analysis/bac_figures/procedure/
 #Load 16S data in & extract the samples:
 
 load("../../16s_phyloseq4HE.RData")
 bac.exp <- subset_samples(Bac.seq, Type == "sample")
 
+#We have an issue with rank names
+rank_names(bac.exp)
+
+#Let's rename them: 
+bac.exp.1 <- bac.exp %>% speedyseq::rename_tax_table(Kingdom = Domain) %>%
+  speedyseq::rename_tax_table(Order2 = Class) %>%
+  speedyseq::rename_tax_table(Class = Order) %>%
+  speedyseq::rename_tax_table(Order = Order2)
+rank_names(bac.exp.1)
 
 #Okay let's make some ordinations of the ambient time point
 
-bac.ambient <- subset_samples(bac.exp, Time.Point == "T0")
+bac.ambient <- subset_samples(bac.exp.1, Time.Point == "T0")
 bac.ambient.ra <- transform_sample_counts(bac.ambient, function(x) x/ sum(x)) 
 bac.ambient.data <- as(sample_data(bac.ambient), "data.frame")
 
@@ -208,6 +215,7 @@ ggplot(sum.phy, aes(x = Species, y = mean, fill = col_phylum)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 dev.off()
 
+
 #2
 #How about with genus
 #Might be an issue with saying "Species" as host species
@@ -223,30 +231,48 @@ percent.gen <- bac.ambient.ra %>%
   transform_sample_counts(function(x) {x/sum(x)}) %>%
   psmelt()
 
+sum.gen <- plyr::ddply(percent.gen, c("Genus", "host_species"), summarise,
+                 N = length(Abundance),
+                 mean = mean(Abundance),
+                 sd = sd(Abundance), 
+                 se = sd/sqrt(N)
+)
+View(sum.gen)
+
 percent.gen$Genus<- as.character(percent.gen$Genus) #convert to character
 percent.gen$Genus[percent.gen$Abundance < 0.02] <- "< 2% abund."
 
 #Apparently changes the merge factor to "Sample" column - so we need to make sure these are in the right order: 
 percent.gen$Sample <- as.factor(percent.gen$Sample)
-percent.gen$Sample <- factor(percent.gen$Sample, levels = c("Pocillopora_acuta","Pavona_varians",  "Porites_compressa", "Montipora_capitata"))
+percent.gen$Sample <- factor(percent.gen$Sample, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta"))
 
 
 p.gen.amb <- ggplot(percent.gen, aes(x = Sample, y = Abundance, fill = Genus)) +
   geom_bar(stat = "identity", position = "stack") +
-  ggtitle("Communities by Genus at Ambient Temperatures (T0)") +
+  #ggtitle("Communities by Genus at Ambient Temperatures (T0)") +
   guides() +
   scale_fill_manual(values = c('#AAAAAB','#2B8CBC',  '#9ABCAD','#D6BAD9', '#F6BD91', '#9FD7F5', '#AA76B3', 
                                '#70BADD',  '#AA7552','#C97D67',  '#8D6373', '#DBF1F9', 
-                               '#476269')) +
-  xlab("\nHost Species") +
-  scale_x_discrete(labels= c("P.acuta", "P. varians", "P. compressa", "M. capitata")) +
+                               '#476269'),
+                    labels = c("<2% abundance", "Alphaproteobacteria (unclassified)", "Bacteria (unclassified)", 
+                              expression(italic("Ca.")*" Amoebophilus"), "Cytophagales (unclassified)", expression(italic("Endozoicomonas")), 
+                              expression(italic("Fulvivirga")), "Gammaproteobacteria (unclassified)", expression(italic("Mastigocoleus")*" BC008"),
+                              "Cyanobacterium MBIC10086", "Myxococcales P3OB-42_ge", "Rhodobacteriaceae (unclassified)",
+                              "Thalassobaculales (uncultured)")) +
+  #xlab("\nHost Species") +
+  xlab("") +
+  scale_x_discrete(labels= c("M. capitata", "P. compressa", "P. varians", "P.acuta")) +
   ylab("Mean Relative Abundance") +
-  coord_flip() +
+  scale_y_continuous(labels = c("0", "25", "50", "75", "100")) +
+  #coord_flip() + #this flips the plot on its side
   theme_classic() +
-  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5))
+  #theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.line.x = element_line(linewidth = 0.15), axis.text.x = element_text(angle = 45, vjust = 0.8, hjust = 0.8, face = 'bold.italic')) +
+  theme(axis.line.y = element_line(linewidth = 0.15), axis.title.y = element_text(size = 12), axis.ticks.y = element_blank()) +
+  theme( legend.box.margin = margin(t = 50), legend.text = element_text(size = 8))
 
 
-ggsave("bac_figures/output/organised_output/6b_Genus_bars_ambient_coord.pdf", plot = p.gen.amb)
+ggsave("../output/organised_output/6b_Genus_bars_ambient_coord.pdf", plot = p.gen.amb)
 
 
 #Not quite built the same way as the phylum level plot
@@ -263,40 +289,275 @@ percent.phy$Phylum<- as.character(percent.phy$Phylum) #convert to character
 percent.phy$Phylum[percent.phy$Abundance < 0.01] <- "< 1% abund."
 
 percent.phy$Sample <- as.factor(percent.phy$Sample)
-percent.phy$Sample <- factor(percent.phy$Sample, levels = c("Pocillopora_acuta","Pavona_varians",  "Porites_compressa", "Montipora_capitata"))
+percent.phy$Sample <- factor(percent.phy$Sample, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta"))
 
 #species_names <- c("M. capitata", "P. varians", "P. acuta", "P. compressa")
 
 p.phy.amb <- ggplot(percent.phy, aes(x = Sample, y = Abundance, fill = Phylum)) +
   geom_bar(stat = "identity", position = "stack") +
-  ggtitle("Communities by Phylum at Ambient Temperatures (T0)") +
+  #ggtitle("Communities by Phylum at Ambient Temperatures (T0)") +
   guides() +
   scale_fill_manual(values = c('#808080','#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032',
-                               '#C2B280','#0067A5',  '#E68FAC', '#654522')) +
-  xlab("\nHost Species") +
-  scale_x_discrete(labels= c("P. acuta","P. varians", "P. compressa", "M. capitata")) +
+                               '#C2B280','#0067A5',  '#E68FAC', '#654522'),  
+                    labels = c("<1% abundance", "Actinobacteriota", "Bacteria (unclassified)", "Bacteroidota",
+                               "Cyanobacteriota", "Epsilonbacteraeota", "Bacillota", "Planctomycetota", 
+                               "Pseudomonadota", "Spirochaetota", "Verrucomicrobiota")) +
+  #xlab("\nHost Species") +
+  xlab("") +
+  scale_x_discrete(labels= c("M. capitata", "P. compressa", "P. varians", "P. acuta")) +
   ylab("Mean Relative Abundance") +
-  coord_flip() +
+  scale_y_continuous(labels = c("0", "25", "50", "75", "100")) +
+  #coord_flip() + #this flips the plot on its side
+  theme_classic() +
+  #theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.line.x = element_line(linewidth = 0.15) , axis.text.x = element_text(angle = 45, vjust = 0.8, hjust = 0.8, face = 'bold.italic')) +
+  theme(axis.line.y = element_line(linewidth = 0.15), axis.title.y = element_text(size = 12), axis.ticks.y = element_blank()) +
+  theme(legend.box.margin = margin(t = 20), legend.text = element_text(size = 8))
+  
+
+ggsave("../output/organised_output/5b_Phylum_bars_ambient_coord.pdf", plot = p.phy.amb)
+
+#3 Can we make an order level plot??
+percent.order <- bac.ambient.ra %>% 
+  tax_glom(taxrank = "Order") 
+perc.melt.order <- psmelt(percent.order)
+
+sum.order <- plyr::ddply(perc.melt.order, c("Order", "Species"), summarise,
+                 N = length(Abundance),
+                 mean = mean(Abundance),
+                 sd = sd(Abundance), 
+                 se = sd/sqrt(N)
+)
+
+ggplot(sum.order, aes(x = Species, y = mean, fill = Order)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Communities by Order at Ambient Temperatures (T0)") +
+  #guides(fill=NULL) +
+  xlab("/nHost Species") +
+  ylab("Mean Relative Abundance") +
   theme_classic() +
   theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5))
 
 
-ggsave("bac_figures/output/organised_output/5b_Phylum_bars_ambient_coord.pdf", plot = p.phy.amb)
+x = tapply(sum.order$mean, sum.order$Order, function(x) max(x))
+x = sort(x, TRUE) #sort phyla 
+View(x) #add top 10 to code below to set NAs
+
+##Bacteria_Unclassified is not included as top 10 below bc we can't distinguish whether they all come from the same phylum
+#Added # 11 = Rhizobiales, and moved unclassified to Unassigned
+
+sum.order$Order = factor(as.character(sum.order$Order), levels=names(x))
+sum.order$col_order <- sum.order$Order
+View(sum.order$col_order)
+#Set everything that is super low to NA so that we can call them "other"
+sum.order$col_order <- as.character(sum.order$col_order)
+sum.order$col_order <- ifelse(is.na(sum.order$col_order), 
+                             'Unassigned', sum.order$col_order)
+sum.order$col_order <- as.factor(sum.order$col_order)
+
+sum.order$col_order[sum.order$col_order != "Oceanospirillales" &
+                     sum.order$col_order != "Myxococcales" & 
+                     sum.order$col_order != "Cytophagales" &
+                     sum.order$col_order != "Phormidesmiales" &
+                     sum.order$col_order != "Rhodobacterales" &
+                     sum.order$col_order != "Flavobacteriales" &
+                     sum.order$col_order != "Alteromonadales" &
+                     sum.order$col_order != "Rickettsiales" &
+                     sum.order$col_order != "Cellvibrionales" &
+                     sum.order$col_order != "Rhizobiales"] <- NA
 
 
+levels(sum.order$col_order)
+# add new factor
+sum.order$col_order <- factor(sum.order$col_order, levels = c(levels(sum.order$col_order), "Other"))
+# convert NAs to other
+sum.order$col_order[is.na(sum.order$col_order)] = "Other"
+sum.order$col_order <- factor(x = sum.order$col_order, levels = c("Other", "Rhizobiales",
+                                                                  "Cellvibrionales", "Rickettsiales", "Alteromonadales",
+                                                                  "Flavobacteriales", "Rhodobacterales" , "Phormidesmiales", 
+                                                                  "Cytophagales", "Myxococcales","Oceanospirillales"))
+#Make a colour scheme
+library(RColorBrewer)
+nb.cols <- 11
+mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
 
-##Can we put them on the same graph on top of each other? 
-install.packages("patchwork")
-library(patchwork)
- # Combine the plots
-gen.phy.wrap <- wrap_plots(p.phy.amb, p.gen.amb, ncol = 1, nrow = 2)
+#plot!
+ggplot(sum.order, aes(x = Species, y = mean, fill = col_order)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("\nHost Species") +
+  ggtitle("Top Order at Ambient (T0)") +
+  theme_classic() +
+  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#it worked! 
 
-ggsave("bac_figures/output/organised_output/5_6_bars_ambient_coord_wrap.pdf", plot = gen.phy.wrap)
+#can we make this more like the genus level in colour and organization? 
 
-
-
+str(sum.order$Species)
+sum.order$Species <- factor(sum.order$Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", 
+                                      "Pocillopora_acuta"))
+pdf(file = "../output/organised_output/6c_Order_bars_ambient_correct_color.pdf")
+p.order <- ggplot(sum.order, aes(x = Species, y = mean, fill = col_order)) +
+  geom_bar(stat = "identity", position = "stack") +
+  #ggtitle("Communities by Phylum at Ambient Temperatures (T0)") +
+  scale_fill_manual(values = c('#808080','#654522','#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032',
+                               '#C2B280', '#E68FAC', '#0067A5'),  
+                    labels = c("<3.4%", "Rhizobiales",
+                               "Cellvibrionales", "Rickettsiales", "Alteromonadales",
+                               "Flavobacteriales", "Rhodobacterales" , "Phormidesmiales", 
+                               "Cytophagales", "Myxococcales","Oceanospirillales")) +
+  #xlab("\nHost Species") +
+  xlab("") +
+  scale_x_discrete(labels= c("M. capitata", "P. compressa", "P. varians", "P. acuta")) +
+  ylab("Mean Relative Abundance") +
+  labs(fill = "Order") +
+  scale_y_continuous(labels = c("0", "25", "50", "75", "100")) +
+  #coord_flip() + #this flips the plot on its side
+  theme_classic() +
+  #theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.line.x = element_line(linewidth = 0.15) , axis.text.x = element_text(angle = 45, vjust = 0.8, hjust = 0.8, face = 'bold.italic')) +
+  theme(axis.line.y = element_line(linewidth = 0.15), axis.title.y = element_text(size = 12), axis.ticks.y = element_blank()) +
+  theme(legend.box.margin = margin(t = 20), legend.text = element_text(size = 8))
+dev.off()
 # Genus level plot currently deprecated version below here
 #Commented out, but could be useful in future:
+
+#3 Can we make a class level plot??
+#1 phylum level
+percent.class <- bac.ambient.ra %>% 
+  tax_glom(taxrank = "Class") 
+perc.melt.class <- psmelt(percent.class)
+
+sum.class <- plyr::ddply(perc.melt.class, c("Class", "Species"), summarise,
+                         N = length(Abundance),
+                         mean = mean(Abundance),
+                         sd = sd(Abundance), 
+                         se = sd/sqrt(N)
+)
+
+ggplot(sum.class, aes(x = Species, y = mean, fill = Class)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Communities by Class at Ambient Temperatures (T0)") +
+  #guides(fill=NULL) +
+  xlab("/nHost Species") +
+  ylab("Mean Relative Abundance") +
+  theme_classic() +
+  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5))
+
+
+x = tapply(sum.class$mean, sum.class$Class, function(x) max(x))
+x = sort(x, TRUE) #sort phyla 
+View(x) #add top 10 to code below to set NAs
+
+##Bacteria_Unclassified is not included as top 10 below bc we can't distinguish whether they all come from the same phylum
+#Added # 11 = Verrucomicrobiae, and moved unclassfied to Unassigned
+
+sum.class$Class = factor(as.character(sum.class$Class), levels=names(x))
+sum.class$col_class <- sum.class$Class
+View(sum.class$col_class)
+#Set everything that is super low to NA so that we can call them "other"
+sum.class$col_class <- as.character(sum.class$col_class)
+sum.class$col_class <- ifelse(is.na(sum.class$col_class), 
+                              'Unassigned', sum.class$col_class)
+sum.class$col_class <- as.factor(sum.class$col_class)
+
+sum.class$col_class[sum.class$col_class != "Gammaproteobacteria" &
+                      sum.class$col_class != "Deltaproteobacteria" & 
+                      sum.class$col_class != "Bacteroidia" &
+                      sum.class$col_class != "Alphaproteobacteria" &
+                      sum.class$col_class != "Oxyphotobacteria" &
+                      sum.class$col_class != "Campylobacteria" &
+                      sum.class$col_class != "Actinobacteria" &
+                      sum.class$col_class != "Spirochaetia" &
+                      sum.class$col_class != "Bacilli" &
+                      sum.class$col_class != "Verrucomicrobiae"] <- NA
+
+
+levels(sum.class$col_class)
+# add new factor
+sum.class$col_class <- factor(sum.class$col_class, levels = c(levels(sum.class$col_class), "Other"))
+# convert NAs to other
+sum.class$col_class[is.na(sum.class$col_class)] = "Other"
+sum.class$col_class <- factor(x = sum.class$col_class, levels = c("Other", "Verrucomicrobiae",
+                                                                  "Bacilli", "Spirochaetia", "Actinobacteria",
+                                                                  "Campylobacteria", "Oxyphotobacteria" , "Alphaproteobacteria", 
+                                                                  "Bacteroidia", "Deltaproteobacteria","Gammaproteobacteria"))
+#Make a colour scheme
+library(RColorBrewer)
+nb.cols <- 11
+mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
+
+#plot!
+ggplot(sum.class, aes(x = Species, y = mean, fill = col_class)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values=mycolors) +
+  ylab("Relative Abundance") +
+  xlab("\nHost Species") +
+  ggtitle("Top Class at Ambient (T0)") +
+  theme_classic() +
+  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#it worked! 
+
+#Can we change the colours and match it to genus level plot? 
+#First change order of host species
+str(sum.class$Species)
+sum.class$Species <- factor(sum.class$Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", 
+                                                          "Pocillopora_acuta"))
+pdf(file = "../output/organised_output/6d_Class_bars_ambient_correct_color.pdf")
+p.class <- ggplot(sum.class, aes(x = Species, y = mean, fill = col_class)) +
+  geom_bar(stat = "identity", position = "stack") +
+  #ggtitle("Communities by Phylum at Ambient Temperatures (T0)") +
+  scale_fill_manual(values = c('#808080','#654522','#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032',
+                               '#C2B280', '#E68FAC', '#0067A5'),  
+                    labels = c("<1% abundance", "Verrucomicrobiae",
+                               "Bacilli", "Spirochaetia", "Actinobacteria",
+                               "Campylobacteria", "Oxyphotobacteria" , "Alphaproteobacteria", 
+                               "Bacteroidia", "Deltaproteobacteria","Gammaproteobacteria")) +
+  #xlab("\nHost Species") +
+  xlab("") +
+  scale_x_discrete(labels= c("M. capitata", "P. compressa", "P. varians", "P. acuta")) +
+  ylab("Mean Relative Abundance") +
+  labs(fill = "Class") +
+  scale_y_continuous(labels = c("0", "25", "50", "75", "100")) +
+  #coord_flip() + #this flips the plot on its side
+  theme_classic() +
+  #theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
+  theme(axis.line.x = element_line(linewidth = 0.15) , axis.text.x = element_text(angle = 45, vjust = 0.8, hjust = 0.8, face = 'bold.italic')) +
+  theme(axis.line.y = element_line(linewidth = 0.15), axis.title.y = element_text(size = 12), axis.ticks.y = element_blank()) +
+  theme(legend.box.margin = margin(t = 20), legend.text = element_text(size = 8))
+dev.off()
+
+##Can we put them on the same graph on top of each other? 
+
+library(patchwork)
+# Combine the plots
+
+#Can we make the legend below??
+#p.phy.amb <- p.phy.amb + theme(
+#  legend.position = "bottom") +
+#  guides(fill=guide_legend(ncol=2,bycol=TRUE)) + 
+#  labs(fill = "")
+
+#p.gen.amb <- p.gen.amb + theme(
+#  legend.position = "bottom") +
+#  #legend.box.margin = margin(b = 50)) +
+#  guides(fill=guide_legend(ncol=2,bycol=TRUE)) + 
+#  labs(fill = "")
+
+#plot_layout(widths = c(2, 1), heights = unit(c(5, 1), c('cm', 'null')))
+gen.phy.wrap <- wrap_plots(p.phy.amb, p.gen.amb, ncol = 2, nrow = 1)
+gen.class.wrap <- wrap_plots(p.class, p.gen.amb, ncol = 2, nrow = 1)
+gen.order.wrap <- wrap_plots(p.order, p.gen.amb, ncol = 2, nrow = 1)
+#ggsave("bac_figures/output/organised_output/5_6_bars_ambient_coord_wrap.pdf", plot = gen.phy.wrap)
+ggsave("../output/organised_output/5_6_gen_class_ambient_nonflip_wrap.pdf", plot = gen.class.wrap, width = 210, height = 99, units = "mm" )
+ggsave("../output/organised_output/5_6_gen_order_ambient_nonflip_wrap.pdf", plot = gen.order.wrap, width = 210, height = 99, units = "mm" )
+
+
+
 
 
 #percent.gen <- bac.ambient.ra %>% 
@@ -387,5 +648,36 @@ ggsave("bac_figures/output/organised_output/5_6_bars_ambient_coord_wrap.pdf", pl
 #  theme(panel.border = element_rect(color = "black", fill = NA, linetype = 1, linewidth = 0.5)) +
 #  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 #dev.off()
+
+###Pull out an entire Endozoicomonas spreadsheet###
+
+rank_names(bac.exp)
+endo <- subset_taxa(bac.exp, Family == "Endozoicomonadaceae")
+tax_table(endo)
+View(tax_table(endo))
+
+endo.otu <- as.data.frame(otu_table(endo))
+endo.data <- as.data.frame(sample_data(endo))
+View(endo.data)
+
+write.csv(endo.otu, "bac_figures/output/endozoicomonas_otu.csv")
+write.csv(endo.data, "bac_figures/output/endozoicomonas_metadata.csv")
+
+#Make and Endo tree#
+endo.amb <- subset_taxa(bac.ambient, Family == "Endozoicomonadaceae")
+
+endo.amb.mcap <- subset_samples(endo.amb, Species == "Montipora_capitata")
+endo.amb.pvar <- subset_samples(endo.amb, Species == "Pavona_varians")
+endo.amb.pacu <- subset_samples(endo.amb, Species == "Pocillopora_acuta")
+endo.amb.pcomp <- subset_samples(endo.amb, Species == "Porites_compressa")
+endo.amb
+plot_tree(endo.amb.mcap, color = "Parent.ID")
+p.tree <- plot_tree(endo.amb, shape = "Species", color = "Clade")
+p.tree + facet_wrap(~Species)
+
+
+
+
+
 
 
