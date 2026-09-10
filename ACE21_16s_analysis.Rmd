@@ -204,7 +204,7 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
   mcap.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Montipora_capitata")
   mcap.u.bac.T0 = prune_taxa(taxa_sums(mcap.u.bac.T0) > 0, mcap.u.bac.T0) #this removes any OTU with 0s
   
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.mcap.u.T0 <- phyloseq::distance(mcap.u.bac.T0, method = "wunifrac")
      mcap.u.samp.df.T0 <- as(sample_data(mcap.u.bac.T0), "data.frame") #sample df
     
@@ -217,7 +217,7 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
   Pcomp.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Porites_compressa")
   Pcomp.u.bac.T0 = prune_taxa(taxa_sums(Pcomp.u.bac.T0) > 0, Pcomp.u.bac.T0) 
 
-  #make bray curtis data matrix -T0
+  #make weighted UniFrac distance matrix -T0
   u.Pcomp.u.T0 <- phyloseq::distance(Pcomp.u.bac.T0, method = "wunifrac")
      Pcomp.u.samp.df.T0 <- as(sample_data(Pcomp.u.bac.T0), "data.frame") 
      
@@ -231,7 +231,7 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
   Pvar.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pavona_varians")
   Pvar.u.bac.T0 = prune_taxa(taxa_sums(Pvar.u.bac.T0) > 0, Pvar.u.bac.T0) 
 
-  #make bray curtis data matrix -T0
+  #make weighted UniFrac distance matrix -T0
   u.Pvar.u.T0 <- phyloseq::distance(Pvar.u.bac.T0, method = "wunifrac")
      Pvar.u.samp.df.T0 <- as(sample_data(Pvar.u.bac.T0), "data.frame") #sample df
   
@@ -246,7 +246,7 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
   Pacu.u.bac.T0 <- subset_samples(Bac.s.rel.u.T0, Species == "Pocillopora_acuta")
   Pacu.u.bac.T0 = prune_taxa(taxa_sums(Pacu.u.bac.T0) > 0, Pacu.u.bac.T0) 
 
-  #make bray curtis data matrix -T0
+  #make weighted UniFrac distance matrix -T0
   u.Pacu.u.T0 <- phyloseq::distance(Pacu.u.bac.T0, method = "wunifrac")
      Pacu.u.samp.df.T0 <- as(sample_data(Pacu.u.bac.T0), "data.frame") 
      
@@ -321,7 +321,7 @@ Control16dups
         mcap.u.bac.T0T1.amb = prune_taxa(taxa_sums(mcap.u.bac.T0T1.amb) > 0, mcap.u.bac.T0T1.amb) #this removes any OTU with 0s
         sample_sums(mcap.u.bac.T0T1.amb)
       
-  #Make bray curtis data matrix
+  #Make weighted UniFrac distance matrix
   u.mcap.u.bac.T0T1.amb <- phyloseq::distance(mcap.u.bac.T0T1.amb, method = "wunifrac")
      mcap.u.samp.df.T0T1.amb <- as(sample_data(mcap.u.bac.T0T1.amb), "data.frame") #sample df
 
@@ -335,7 +335,7 @@ Control16dups
      mcap.u.bac.T1TF.amb = prune_taxa(taxa_sums(mcap.u.bac.T1TF.amb) > 0, mcap.u.bac.T1TF.amb) #this removes any OTU with 0s
         sample_sums(mcap.u.bac.T1TF.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.mcap.u.bac.T1TF.amb <- phyloseq::distance(mcap.u.bac.T1TF.amb, method = "wunifrac")
      mcap.u.samp.df.T1TF.amb <- as(sample_data(mcap.u.bac.T1TF.amb), "data.frame") #sample df
      mcap.u.samp.df.T1TF.amb$Code<-paste(mcap.u.samp.df.T1TF.amb$Treatment, mcap.u.samp.df.T1TF.amb$Time.Point)
@@ -352,7 +352,7 @@ Control16dups
        mcap.u.bac.T0T1.high = prune_taxa(taxa_sums(mcap.u.bac.T0T1.high) > 0, mcap.u.bac.T0T1.high) #this removes any OTU with 0s
         sample_sums(mcap.u.bac.T0T1.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.mcap.u.bac.T0T1.high <- phyloseq::distance(mcap.u.bac.T0T1.high, method = "wunifrac")
      mcap.u.samp.df.T0T1.high <- as(sample_data(mcap.u.bac.T0T1.high), "data.frame") #sample df
 
@@ -366,7 +366,7 @@ Control16dups
        mcap.u.bac.T1TF.high = prune_taxa(taxa_sums(mcap.u.bac.T1TF.high) > 0, mcap.u.bac.T1TF.high) #this removes any OTU with 0s
         sample_sums(mcap.u.bac.T1TF.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.mcap.u.bac.T1TF.high <- phyloseq::distance(mcap.u.bac.T1TF.high, method = "wunifrac")
      mcap.u.samp.df.T1TF.high <- as(sample_data(mcap.u.bac.T1TF.high), "data.frame") #sample df
      mcap.u.samp.df.T1TF.high$Code<-paste(mcap.u.samp.df.T1TF.high$Treatment, mcap.u.samp.df.T1TF.high$Time.Point)
@@ -386,7 +386,7 @@ Control16dups
         pcomp.u.bac.T0T1.amb = prune_taxa(taxa_sums(pcomp.u.bac.T0T1.amb) > 0, pcomp.u.bac.T0T1.amb) #this removes any OTU with 0s
         sample_sums(pcomp.u.bac.T0T1.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pcomp.u.bac.T0T1.amb <- phyloseq::distance(pcomp.u.bac.T0T1.amb, method = "wunifrac")
      pcomp.u.samp.df.T0T1.amb <- as(sample_data(pcomp.u.bac.T0T1.amb), "data.frame") #sample df
 
@@ -400,7 +400,7 @@ Control16dups
        pcomp.u.bac.T1TF.amb = prune_taxa(taxa_sums(pcomp.u.bac.T1TF.amb) > 0, pcomp.u.bac.T1TF.amb) #this removes any OTU with 0s
         sample_sums(pcomp.u.bac.T1TF.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pcomp.u.bac.T1TF.amb <- phyloseq::distance(pcomp.u.bac.T1TF.amb, method = "wunifrac")
      pcomp.u.samp.df.T1TF.amb <- as(sample_data(pcomp.u.bac.T1TF.amb), "data.frame") #sample df
      pcomp.u.samp.df.T1TF.amb$Code<-paste(pcomp.u.samp.df.T1TF.amb$Treatment, pcomp.u.samp.df.T1TF.amb$Time.Point)
@@ -417,7 +417,7 @@ Control16dups
        pcomp.u.bac.T0T1.high = prune_taxa(taxa_sums(pcomp.u.bac.T0T1.high) > 0, pcomp.u.bac.T0T1.high) 
         sample_sums(pcomp.u.bac.T0T1.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pcomp.u.bac.T0T1.high <- phyloseq::distance(pcomp.u.bac.T0T1.high, method = "wunifrac")
      pcomp.u.samp.df.T0T1.high <- as(sample_data(pcomp.u.bac.T0T1.high), "data.frame") #sample df
 
@@ -431,7 +431,7 @@ Control16dups
        pcomp.u.bac.T1TF.high = prune_taxa(taxa_sums(pcomp.u.bac.T1TF.high) > 0, pcomp.u.bac.T1TF.high) 
         sample_sums(pcomp.u.bac.T1TF.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pcomp.u.bac.T1TF.high <- phyloseq::distance(pcomp.u.bac.T1TF.high, method = "wunifrac")
      pcomp.u.samp.df.T1TF.high <- as(sample_data(pcomp.u.bac.T1TF.high), "data.frame") #sample df
      pcomp.u.samp.df.T1TF.high$Code<-paste(pcomp.u.samp.df.T1TF.high$Treatment, pcomp.u.samp.df.T1TF.high$Time.Point)
@@ -451,7 +451,7 @@ Control16dups
        pvar.u.bac.T0T1.amb = prune_taxa(taxa_sums(pvar.u.bac.T0T1.amb) > 0, pvar.u.bac.T0T1.amb) #this removes any OTU with 0s
         sample_sums(pvar.u.bac.T0T1.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pvar.u.bac.T0T1.amb <- phyloseq::distance(pvar.u.bac.T0T1.amb, method = "wunifrac")
      pvar.u.samp.df.T0T1.amb <- as(sample_data(pvar.u.bac.T0T1.amb), "data.frame") #sample df
 
@@ -465,7 +465,7 @@ Control16dups
        pvar.u.bac.T1TF.amb = prune_taxa(taxa_sums(pvar.u.bac.T1TF.amb) > 0, pvar.u.bac.T1TF.amb) #this removes any OTU with 0s
         sample_sums(pvar.u.bac.T1TF.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pvar.u.bac.T1TF.amb <- phyloseq::distance(pvar.u.bac.T1TF.amb, method = "wunifrac")
      pvar.u.samp.df.T1TF.amb <- as(sample_data(pvar.u.bac.T1TF.amb), "data.frame") #sample df
      pvar.u.samp.df.T1TF.amb$Code<-paste(pvar.u.samp.df.T1TF.amb$Treatment, pvar.u.samp.df.T1TF.amb$Time.Point)
@@ -486,7 +486,7 @@ Control16dups
        pvar.u.bac.T0T1.high = prune_taxa(taxa_sums(pvar.u.bac.T0T1.high) > 0, pvar.u.bac.T0T1.high) #this removes any OTU with 0s
         sample_sums(pvar.u.bac.T0T1.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pvar.u.bac.T0T1.high <- phyloseq::distance(pvar.u.bac.T0T1.high, method = "wunifrac")
      pvar.u.samp.df.T0T1.high <- as(sample_data(pvar.u.bac.T0T1.high), "data.frame") #sample df
 
@@ -500,7 +500,7 @@ Control16dups
        pvar.u.bac.T1TF.high = prune_taxa(taxa_sums(pvar.u.bac.T1TF.high) > 0, pvar.u.bac.T1TF.high) #this removes any OTU with 0s
         sample_sums(pvar.u.bac.T1TF.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pvar.u.bac.T1TF.high <- phyloseq::distance(pvar.u.bac.T1TF.high, method = "wunifrac")
      pvar.u.samp.df.T1TF.high <- as(sample_data(pvar.u.bac.T1TF.high), "data.frame") #sample df
      pvar.u.samp.df.T1TF.high$Code<-paste(pvar.u.samp.df.T1TF.high$Treatment, pvar.u.samp.df.T1TF.high$Time.Point)
@@ -520,7 +520,7 @@ Control16dups
         pacu.u.bac.T0T1.amb = prune_taxa(taxa_sums(pacu.u.bac.T0T1.amb) > 0, pacu.u.bac.T0T1.amb) #this removes any OTU with 0s
         sample_sums(pacu.u.bac.T0T1.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pacu.u.bac.T0T1.amb <- phyloseq::distance(pacu.u.bac.T0T1.amb, method = "wunifrac")
      pacu.u.samp.df.T0T1.amb <- as(sample_data(pacu.u.bac.T0T1.amb), "data.frame") #sample df
 
@@ -534,7 +534,7 @@ Control16dups
        pacu.u.bac.T1TF.amb = prune_taxa(taxa_sums(pacu.u.bac.T1TF.amb) > 0, pacu.u.bac.T1TF.amb) #this removes any OTU with 0s
         sample_sums(pacu.u.bac.T1TF.amb)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pacu.u.bac.T1TF.amb <- phyloseq::distance(pacu.u.bac.T1TF.amb, method = "wunifrac")
      pacu.u.samp.df.T1TF.amb <- as(sample_data(pacu.u.bac.T1TF.amb), "data.frame") #sample df
      pacu.u.samp.df.T1TF.amb$Code<-paste(pacu.u.samp.df.T1TF.amb$Treatment, pacu.u.samp.df.T1TF.amb$Time.Point)
@@ -551,7 +551,7 @@ Control16dups
        pacu.u.bac.T0T1.high = prune_taxa(taxa_sums(pacu.u.bac.T0T1.high) > 0, pacu.u.bac.T0T1.high) #this removes any OTU with 0s
         sample_sums(pacu.u.bac.T0T1.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pacu.u.bac.T0T1.high <- phyloseq::distance(pacu.u.bac.T0T1.high, method = "wunifrac")
      pacu.u.samp.df.T0T1.high <- as(sample_data(pacu.u.bac.T0T1.high), "data.frame") #sample df
 
@@ -565,7 +565,7 @@ Control16dups
        pacu.u.bac.T1TF.high = prune_taxa(taxa_sums(pacu.u.bac.T1TF.high) > 0, pacu.u.bac.T1TF.high) #this removes any OTU with 0s
         sample_sums(pacu.u.bac.T1TF.high)
       
-  #make bray curtis data matrix
+  #make weighted UniFrac distance matrix
   u.pacu.u.bac.T1TF.high <- phyloseq::distance(pacu.u.bac.T1TF.high, method = "wunifrac")
      pacu.u.samp.df.T1TF.high <- as(sample_data(pacu.u.bac.T1TF.high), "data.frame") #sample df
      pacu.u.samp.df.T1TF.high$Code<-paste(pacu.u.samp.df.T1TF.high$Treatment, pacu.u.samp.df.T1TF.high$Time.Point)
@@ -2118,6 +2118,167 @@ write.csv(
 h16_sample_audit
 ```
 
+## Hannah's updated ambient-community figures
+
+This subsection incorporates the ambient-figure updates added to
+`Data/16s_analysis/bac_figures/procedure/ambient_figures_ace21.R` on
+2026-09-10. The current main phyloseq object already has the correct taxonomy
+rank order (`Domain`, `Phylum`, `Class`, `Order`, `Family`, `Genus`), so the
+historical Class/Order swap is neither needed nor applied here. The plots and
+summary tables use the filtered experimental object prepared above.
+
+```{r hannah-integration-ambient-figures}
+h16_ambient_dir <- file.path(h16_output_dir, "ambient_figures")
+dir.create(h16_ambient_dir, recursive = TRUE, showWarnings = FALSE)
+
+h16_required_ranks <- c("Domain", "Phylum", "Class", "Order", "Family", "Genus")
+stopifnot(all(h16_required_ranks %in% rank_names(h16_bac_exp)))
+
+h16_ambient <- subset_samples(h16_bac_exp, Time.Point == "T0")
+h16_ambient <- prune_taxa(taxa_sums(h16_ambient) > 0, h16_ambient)
+h16_ambient_rel <- transform_sample_counts(h16_ambient, function(x) x / sum(x))
+h16_ambient_meta <- as(sample_data(h16_ambient_rel), "data.frame")
+
+# Keep this additional T0 analysis consistent with Tables S3-S6 by using
+# weighted UniFrac throughout.
+set.seed(30)
+h16_ambient_wunifrac <- phyloseq::distance(h16_ambient_rel, method = "wunifrac")
+h16_ambient_permanova <- vegan::adonis2(
+  h16_ambient_wunifrac ~ Species,
+  data = h16_ambient_meta,
+  permutations = 999
+)
+h16_ambient_permanova_table <- data.frame(
+  term = rownames(h16_ambient_permanova),
+  as.data.frame(h16_ambient_permanova),
+  row.names = NULL,
+  check.names = FALSE
+)
+write.csv(
+  h16_ambient_permanova_table,
+  file.path(h16_ambient_dir, "T0_weighted_unifrac_permanova_by_species.csv"),
+  row.names = FALSE
+)
+
+set.seed(30)
+h16_ambient_dispersion <- vegan::permutest(
+  vegan::betadisper(h16_ambient_wunifrac, h16_ambient_meta$Species, type = "centroid"),
+  permutations = 999
+)
+h16_ambient_dispersion_table <- data.frame(
+  term = rownames(h16_ambient_dispersion$tab),
+  as.data.frame(h16_ambient_dispersion$tab),
+  row.names = NULL,
+  check.names = FALSE
+)
+write.csv(
+  h16_ambient_dispersion_table,
+  file.path(h16_ambient_dir, "T0_weighted_unifrac_dispersion_by_species.csv"),
+  row.names = FALSE
+)
+
+h16_species_levels <- c(
+  "Montipora_capitata", "Porites_compressa",
+  "Pavona_varians", "Pocillopora_acuta"
+)
+h16_species_labels <- c(
+  "M. capitata", "P. compressa", "P. varians", "P. acuta"
+)
+
+h16_summarize_rank <- function(ps, tax_rank, n_keep = 10) {
+  rank_ps <- tax_glom(ps, taxrank = tax_rank, NArm = FALSE)
+  rank_long <- psmelt(rank_ps)
+  rank_long[[tax_rank]] <- as.character(rank_long[[tax_rank]])
+  rank_long[[tax_rank]][is.na(rank_long[[tax_rank]]) | rank_long[[tax_rank]] == ""] <- "Unassigned"
+
+  summary <- rank_long %>%
+    group_by(Species, .data[[tax_rank]]) %>%
+    summarise(
+      N = dplyr::n(),
+      mean = mean(Abundance),
+      sd = sd(Abundance),
+      se = sd / sqrt(N),
+      .groups = "drop"
+    )
+
+  keep <- summary %>%
+    group_by(.data[[tax_rank]]) %>%
+    summarise(max_mean = max(mean), .groups = "drop") %>%
+    arrange(desc(max_mean)) %>%
+    slice_head(n = n_keep) %>%
+    pull(.data[[tax_rank]])
+
+  summary$display_taxon <- ifelse(summary[[tax_rank]] %in% keep, summary[[tax_rank]], "Other")
+  summary$Species <- factor(summary$Species, levels = h16_species_levels)
+  summary
+}
+
+h16_plot_rank <- function(summary, tax_rank) {
+  ggplot(summary, aes(x = Species, y = mean, fill = display_taxon)) +
+    geom_col(position = "stack") +
+    scale_x_discrete(labels = h16_species_labels, drop = FALSE) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    labs(x = NULL, y = "Mean Relative Abundance", fill = tax_rank) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(angle = 45, vjust = 0.8, hjust = 0.8, face = "bold.italic"),
+      axis.line = element_line(linewidth = 0.15),
+      axis.ticks.y = element_blank(),
+      legend.text = element_text(size = 8)
+    )
+}
+
+h16_ambient_rank_summaries <- lapply(
+  c("Phylum", "Genus", "Order", "Class"),
+  function(rank) h16_summarize_rank(h16_ambient_rel, rank)
+)
+names(h16_ambient_rank_summaries) <- c("Phylum", "Genus", "Order", "Class")
+
+h16_ambient_rank_plots <- Map(
+  h16_plot_rank,
+  h16_ambient_rank_summaries,
+  names(h16_ambient_rank_summaries)
+)
+
+for (rank in names(h16_ambient_rank_summaries)) {
+  write.csv(
+    h16_ambient_rank_summaries[[rank]],
+    file.path(h16_ambient_dir, paste0("T0_", tolower(rank), "_mean_relative_abundance.csv")),
+    row.names = FALSE
+  )
+  ggsave(
+    file.path(h16_ambient_dir, paste0("T0_", tolower(rank), "_bars.pdf")),
+    plot = h16_ambient_rank_plots[[rank]],
+    width = 105,
+    height = 99,
+    units = "mm"
+  )
+}
+
+h16_genus_class_plot <- patchwork::wrap_plots(
+  h16_ambient_rank_plots$Class,
+  h16_ambient_rank_plots$Genus,
+  ncol = 2
+)
+h16_genus_order_plot <- patchwork::wrap_plots(
+  h16_ambient_rank_plots$Order,
+  h16_ambient_rank_plots$Genus,
+  ncol = 2
+)
+
+ggsave(
+  file.path(h16_ambient_dir, "T0_genus_class_bars.pdf"),
+  h16_genus_class_plot, width = 210, height = 99, units = "mm"
+)
+ggsave(
+  file.path(h16_ambient_dir, "T0_genus_order_bars.pdf"),
+  h16_genus_order_plot, width = 210, height = 99, units = "mm"
+)
+
+h16_ambient_permanova_table
+h16_ambient_dispersion_table
+```
+
 ## Top-abundance tables
 
 These tables reproduce Hannah's top-ten-OTU workflow while consistently using the filtered experimental object.
@@ -2330,10 +2491,11 @@ for (species_name in names(h16_species_codes)) {
 
 ```{r hannah-integration-manifest}
 h16_output_manifest <- data.frame(
-  analysis = c("sample audit", "top abundance", "core microbiome", "T0 indicator analysis", "ANCOM treatment contrasts"),
+  analysis = c("sample audit", "T0 ambient figures", "top abundance", "core microbiome", "T0 indicator analysis", "ANCOM treatment contrasts"),
   source_object = "current notebook Bac.seq",
   important_change = c(
     "S3059 corrected and historical exclusions retained",
+    "Uses current taxonomy ranks; adds Class and Order panels and retains weighted UniFrac for T0 tests",
     "Uses experimental samples only",
     "Original descriptive species-specific thresholds retained and recorded",
     "Uses Time.Point == T0 and writes multipatt results directly",
