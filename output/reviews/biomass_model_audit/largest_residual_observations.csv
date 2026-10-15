@@ -1,0 +1,17 @@
+"Frag.ID","Parent.ID","Species","Time.Point","Treatment","Tank.num","AFDWmg.cm2","scaled_residual"
+"664","361","Pavona varians","T1","Ambient","5",0.828079742247196,-1.9268243209802
+"3246","353","Pavona varians","T1","High","2",7.30802283686886,1.60452859996744
+"1037","358","Pavona varians","TF","Ambient","9",9.06801903471122,2.35628833864591
+"420","354","Pavona varians","TF","Ambient","4",2.61392016101806,-1.74162266904963
+"3035","303","Pocillopora acuta","T1","Ambient","9",8.49335950741458,3.66290908009221
+"314","305","Pocillopora acuta","T1","High","6",5.08413005438464,1.25049602742414
+"3481","312","Pocillopora acuta","TF","High","7",8.36381379561159,2.46824385869822
+"3516","309","Pocillopora acuta","TF","High","6",6.54773699362067,1.45892897263365
+"1388","370","Montipora capitata","T1","High","7",3.55052462349652,-2.2129997171205
+"N184","363","Montipora capitata","T1","Ambient","9",9.78599688028443,1.7724631018501
+"619","368","Montipora capitata","TF","High","2",3.51207184178297,-1.67686228636703
+"N212","374","Montipora capitata","TF","High","7",8.40865077340097,1.39977524869232
+"3488","315","Porites compressa","T1","High","6",2.12569937672126,-2.26431813299974
+"N149","321","Porites compressa","T1","Ambient","5",12.9042671689166,1.84820968133141
+"N122","319","Porites compressa","TF","Ambient","4",2.61663435841516,-1.86282975846405
+"N189","313","Porites compressa","TF","Ambient","4",13.9390583892475,1.74156169132411

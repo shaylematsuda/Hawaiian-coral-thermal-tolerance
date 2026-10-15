@@ -1,0 +1,7 @@
+Frag.ID,Parent.ID,Species,Tank.num,Treatment,tank_treatment_T1_TF
+1108,362,Pavona varians,9,High,Ambient
+208,354,Pavona varians,6,Ambient,High
+755,312,Pocillopora acuta,5,High,Ambient
+N2,306,Pocillopora acuta,11,Ambient,High
+N35,353,Pavona varians,11,Ambient,High
+N84,360,Pavona varians,8,High,Ambient

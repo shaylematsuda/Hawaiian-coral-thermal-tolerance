@@ -1,0 +1,25 @@
+"Species","Time.Point","Treatment","n"
+"Montipora capitata","T0","Ambient",6
+"Porites compressa","T0","Ambient",6
+"Pavona varians","T0","Ambient",6
+"Pocillopora acuta","T0","Ambient",6
+"Montipora capitata","T1","Ambient",12
+"Porites compressa","T1","Ambient",11
+"Pavona varians","T1","Ambient",12
+"Pocillopora acuta","T1","Ambient",12
+"Montipora capitata","TF","Ambient",11
+"Porites compressa","TF","Ambient",12
+"Pavona varians","TF","Ambient",12
+"Pocillopora acuta","TF","Ambient",12
+"Montipora capitata","T0","High",6
+"Porites compressa","T0","High",6
+"Pavona varians","T0","High",6
+"Pocillopora acuta","T0","High",6
+"Montipora capitata","T1","High",12
+"Porites compressa","T1","High",12
+"Pavona varians","T1","High",12
+"Pocillopora acuta","T1","High",12
+"Montipora capitata","TF","High",12
+"Porites compressa","TF","High",12
+"Pavona varians","TF","High",12
+"Pocillopora acuta","TF","High",12

@@ -1,0 +1,25 @@
+library(openxlsx)
+out <- 'output/spreadsheets/T0_trait_model_updates_2026-10-15.xlsx'
+wb <- createWorkbook()
+addWorksheet(wb, 'T0 model updates')
+title <- createStyle(fontSize=14, textDecoration='bold')
+head <- createStyle(textDecoration='bold', halign='center')
+note <- createStyle(textDecoration='italic', wrapText=TRUE)
+writeData(wb, 'T0 model updates', 'T0 physiology model updates after corrected treatment assignments', startRow=1, startCol=1)
+addStyle(wb, 'T0 model updates', title, rows=1, cols=1)
+writeData(wb, 'T0 model updates', 'All values use the existing Type III linear mixed-model specifications with Satterthwaite degrees of freedom.', startRow=2, startCol=1)
+mergeCells(wb,'T0 model updates',cols=1:7,rows=2); addStyle(wb,'T0 model updates',note,rows=2,cols=1)
+
+writeData(wb,'T0 model updates','Biomass',startRow=4,startCol=1); addStyle(wb,'T0 model updates',title,rows=4,cols=1)
+biomass <- data.frame(Effect=c('Treatment','Species','Treatment × Species'), Before_correction_p=c(0.8870845,NA,0.3639037), Corrected_p=c(0.3252078,0.00003522368,0.4791093), Conclusion=c('Not significant','Species differ','Not significant'))
+writeData(wb,'T0 model updates',biomass,startRow=5,startCol=1,headerStyle=head)
+
+writeData(wb,'T0 model updates','PAM / Fv/Fm',startRow=10,startCol=1); addStyle(wb,'T0 model updates',title,rows=10,cols=1)
+pam <- data.frame(Effect=c('Treatment','Species','Treatment × Species'), Before_correction_F=c(0.2191696,61.54047,0.4775186), Before_correction_p=c(0.6446351,6.177e-29,0.6982477), Corrected_F=c(0.0493216,61.47589,0.4299281), Corrected_p=c(0.8298590,6.451e-29,0.7317622), Conclusion=c('Not significant','Species differ','Not significant'))
+writeData(wb,'T0 model updates',pam,startRow=11,startCol=1,headerStyle=head)
+
+writeData(wb,'T0 model updates','Remaining traits',startRow=16,startCol=1); addStyle(wb,'T0 model updates',title,rows=16,cols=1)
+other <- data.frame(Trait=c('Symbiodiniaceae cell counts','Chlorophyll','Protein','Gross photosynthesis','Respiration','Photosynthesis:respiration ratio'), Status=rep('Pending targeted rerun and comparison',6), Notes=rep('Use this section to record the before/corrected model results.',6))
+writeData(wb,'T0 model updates',other,startRow=17,startCol=1,headerStyle=head)
+setColWidths(wb,'T0 model updates',cols=1:7,widths=c(30,18,18,18,18,18,28))
+saveWorkbook(wb,out,overwrite=TRUE)

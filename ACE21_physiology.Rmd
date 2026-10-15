@@ -17,6 +17,7 @@ AFDW Flow Cytometry (cell counts) Protien Biomass BW PAM
 
 ```{r}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+dir.create("Data/derived", recursive=TRUE, showWarnings=FALSE)
 
 
 library(plyr)
@@ -189,6 +190,7 @@ testAFDW<-merge(AFDW, meta, all=T)
 #write.csv(SurfaceArea, "SurfaceAreaACE21.csv")
 ```
 
+# BIOMASS SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #Biomass (AFDW and SA)
 ```{r}
 SA<-WaxDipping 
@@ -209,6 +211,7 @@ biomass$AFDWmg.cm2 <-biomass$AFDWmg/biomass$Surface.area # mg/cm2
  
 # merge with metadata to plot by treatments
 biomass2 <- merge(biomass, meta)
+saveRDS(biomass2, "Data/derived/biomass_clean.rds")
 
 biomass2_mean <- ddply(biomass2, c("Treatment", "Species", "Time.Point"), summarise, #summarize cell counts
                  N    = length(AFDWmg.cm2[!is.na(AFDWmg.cm2)]), #length of the df, excluding NAs
@@ -593,6 +596,8 @@ biomass_T0_mean <- ddply(biomass_T0, c( "Species"), summarise,
 )
 biomass_T0_mean
 
+# PHYSIOLOGY PLOT SECTION: Supplementary Figure S3 (T0 trait values by host species).
+# Also contributes trait-specific panels used in Supplementary Figure S6 (T0 values by algal lineage).
 #2/16/24 boxplot ####
 #T0 only
  Biomass_T0<- ggplot(biomass_T0, aes(x=Species, y=AFDWmg.cm2, fill=Species)) + 
@@ -628,6 +633,7 @@ ggsave("Biomass_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf"
   
 #all species ####
 
+# PHYSIOLOGY PLOT SECTION: Supplementary Figure S5 (physiological responses at T1 and TF by host species and treatment).
 #Plots T1 and TF
 biomass_T1TF<-subset(biomass2, Time.Point!="T0") 
 
@@ -841,6 +847,7 @@ plot_row<-plot_grid(AFDW_Mcap_plot, AFDW_Pcomp_plot, AFDW_Pvar_plot, AFDW_Pacu_p
 ggsave("AFDW_profiles_TF.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 ```
 
+# CELL-COUNT SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 # Flow cytometry cell counts
 ```{r}
 #import data
@@ -950,6 +957,7 @@ Pvar_FC$zoox.AFDWmg.cm2<-Pvar_FC$Tot.zoox/Pvar_FC$AFDWmg.cm2
 Pacu_FC$zoox.AFDWmg.cm2<-Pacu_FC$Tot.zoox/Pacu_FC$AFDWmg.cm2
 
 FC_Data <- rbind(Mcap_FC, Pcomp_FC, Pvar_FC, Pacu_FC) #combine
+saveRDS(FC_Data, "Data/derived/cell_counts_clean.rds")
 
 ```
 
@@ -2877,6 +2885,7 @@ Growth.Percent.day<-merge(Growth3, meta, all=T)
 
 ```
 
+# CHLOROPHYLL SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #Chl-a\
 dfs: Slurry=airbrush, SA=wax dip
 
@@ -3027,6 +3036,7 @@ Chla<-unique(Chla) #remove any duplicate entries
 
 Chla$Chla_RepDiff<-Chla$chlaSA1-Chla$chlaSA2
 Chla$ChlaSA<-(Chla$chlaSA1+Chla$chlaSA2)/2
+saveRDS(Chla, "Data/derived/chlorophyll_clean.rds")
 checkChla<-merge(Chla,meta, all.y=T)
 duplicated(checkChla)
 #write.csv(checkChla,"checkChla.csv")
@@ -3335,6 +3345,7 @@ hist(Chla_stats_T0$ChlaSA_log)
 
 #t0 only
 Chla_T0_model<-lmer(ChlaSA_log~Treatment*Species+(1|Tank.num), Chla_stats_T0)
+#So the overall T0 chlorophyll treatment term is significant, but no individual species has a significant High-versus-Ambient difference after multiple-comparison adjustment.
 anova(Chla_T0_model)  #species differ
 qqPlot(residuals(Chla_T0_model)) 
 emm<-emmeans(Chla_T0_model,  ~ Species, adjust="Tukey")
@@ -3660,6 +3671,7 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
 
 ```
 
+# PAM / Fv/Fm SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #PAM
 
 ```{r}
@@ -3750,6 +3762,7 @@ Stats
 ```{r}
 #remove notes 
 PAMdata2_stats<-PAMdata2[,c("Frag.ID","Date","Yield","Parent.ID","Treatment","Species","Tank.num","Days","Clade")] # keep only columns you need
+saveRDS(PAMdata2_stats, "Data/derived/pam_clean.rds")
 PAMdata2_stats$Days<-as.factor(as.character(PAMdata2_stats$Days))
 PAMdata2_stats$Yield<-as.numeric(PAMdata2_stats$Yield)
 PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
@@ -4421,6 +4434,7 @@ pl<-grid.arrange(PAM_mcapProfile,PAM_pcompProfile,PAM_pvarProfile,PAM_pacuProfil
 ggsave("PAM_Profileall.pdf", plot=pl, path="Figures",device = "pdf", width=8, height=25, units=c("in"), dpi=300)
 ```
 
+# PROTEIN SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #Protein
 
 ```{r}
@@ -4433,6 +4447,7 @@ Protein<-merge(Protein, Slurry) #merge with slurry
 Protein<-merge(Protein, SA) # merge with SA
 Protein$Surface.area<-as.numeric(as.character(Protein$Surface.area))
 Protein<-merge(Protein, meta) #merge with metadata
+saveRDS(Protein, "Data/derived/protein_clean.rds")
 Protein$Parent.ID<-as.factor(as.character(Protein$Parent.ID))
 Protein$Tank.num<-as.factor(as.character(Protein$Tank.num))
 
@@ -4485,9 +4500,16 @@ hist (Prot_stats_T0$mg.mm2_sqrt)
 
 #t0 only
 Prot_T0_model<-lmer(mg.mm2_sqrt~Treatment*Species+(1|Tank.num), Prot_stats_T0)
+#The overall T0 protein treatment term and treatment-by-species interaction are significant; after multiple-comparison adjustment, only P. varians has significantly lower protein in the eventual High group.
 anova(Prot_T0_model)  #species differ
 qqPlot(residuals(Prot_T0_model)) 
 emm<-emmeans(Prot_T0_model,  ~ Species, adjust="Tukey")
+Protein_T0_treatment_plot <- ggplot(Prot_stats_T0, aes(x=Species, y=mg.mm2_sqrt, colour=Treatment)) +
+  geom_boxplot(aes(group=interaction(Species, Treatment)), position=position_dodge(.65), width=.55, outlier.shape=NA, alpha=.15) +
+  geom_jitter(position=position_jitterdodge(dodge.width=.65, jitter.width=.08), size=2.7) +
+  labs(title="T0 protein by eventual treatment assignment", x=NULL, y="Protein (square-root transformed)") +
+  theme_classic(base_size=12)
+ggsave("Protein_T0_treatment_plot.pdf", plot=Protein_T0_treatment_plot, path="Figures", device="pdf", width=9, height=5, units="in")
 cld(emm)
 pairs(emm)
 
@@ -5112,6 +5134,7 @@ PR.df_B$GrossP<-PR.df_B$Photo+PR.df_B$RespPos
 
 #calcualte PR ratio with gross (abs values)
 PR.df_B$PR_real<-PR.df_B$GrossP/PR.df_B$RespPos
+saveRDS(PR.df_B, "Data/derived/respirometry_clean.rds")
 
 ```
 
@@ -5681,6 +5704,7 @@ GrossP_Pacu_model<-lmer(GrossP~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+
 Respiration plots
 
 ```{r}
+# PHOTOSYNTHESIS SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #Respiration (absolute)
 #just T0 #### 
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
@@ -6208,6 +6232,7 @@ Resp_Pacu_model<-lmer(Resp~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tank.num)
 P:R plots
 
 ```{r}
+# RESPIRATION AND P:R SECTION - Supplementary Figure S3: T0 host-species trait values; Supplementary Figure S5: T1/TF treatment responses; Supplementary Figure S6: T0 algal-lineage values.
 #Respiration (absolute)
 #just T0 #### 
 PR.df_T0<-subset(PR.df_B, Time.Point=="T0")
@@ -6955,6 +6980,8 @@ All P, R, PR plots
 
 ```
 
+# PHYSIOLOGY PLOT SECTION: Supplementary Figure S5 (T1 and TF physiological-response panels).
+# This block also assembles the related main Figure 4 treatment-response summaries.
 # all physio figure T1 and TF boxplots Figure 4
 
 ```{r}
@@ -7484,6 +7511,7 @@ PhysioData_plot$Protein <- PhysioData_plot$Protein^2
 # Fv/Fm already contains means of original-scale Yield above.
 
 write.csv(PhysioData,"PhysioData.csv") #export
+saveRDS(PhysioData, "Data/derived/PhysioData_complete.rds") #reusable complete physiology dataframe
 
 
 ```
@@ -7583,6 +7611,8 @@ scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
 
 
 
+# CHUNK: LEGACY PHYSIOLOGY NMDS PLOTS FOR T1/TF
+# DELETE CANDIDATE: not used for the current physiology figures; retain only if these exploratory NMDS plots are wanted later.
 #################### Subset PLOTS (do not rerun nmds) for T1 and TF visualizations ####
   
 
@@ -8302,6 +8332,8 @@ Miss_scores$species <- apData$Species
 Miss_scores$time.point <- apData$Time.Point
 
 
+# PHYSIOLOGY PCA SECTION: Figure_20260226.pdf panel A (T0 PCA biplot) and ACE21 Fig 4 20260319.pdf panel A (PCA over time).
+# Supplementary Figures S3, S5, and S6 are produced in the trait-specific plot sections.
 #Plot
 ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
   stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
@@ -8410,7 +8442,8 @@ scores$species <- apDataT0$Species
 scaling_factor <- 6
 loadings_scaled <- loadings * scaling_factor
 
-# Create the plot - FIGURE 2A
+# FIGURE_20260226.pdf, panel A: T0 coral physiology PCA biplot (points, ellipses, and trait loading arrows)
+# Output: Figures/PCA_T0_physio.pdf
 plot<-ggplot(scores, aes(PC1, PC2, color = species)) +
   geom_point(alpha = 1, size = 3) +
   scale_color_manual(values = c("#E69F00", "#56B4E9", "#CC79A7", "#009E73")) + # Manually set colors for points
@@ -8784,6 +8817,8 @@ Pacu_pca<-Pacu_pca+ theme(legend.position = "none") #remove legend
 grid.arrange(Mcap_pca, Pcomp_pca, Pvar_pca,Pacu_pca, nrow = 2)
 ```
 
+# CHUNK: LEGACY PARENT-LEVEL PCA EXPLORATION
+# DELETE CANDIDATE: not used for any current main or supplementary figure.
 Legacy exploratory attempt to collapse the PCA data by parent (not part of the current analysis).
 
 ```{r, eval=FALSE, purl=FALSE}
@@ -8917,6 +8952,8 @@ plot<-ggplot() +
        x = "PC1", y = "PC2") +
   theme(legend.position = "right")
 
+# ACE21 Fig 4 20260319.pdf, panel A top row: physiology PCA over time, faceted by host species
+# Output: PhysPCAAarow_plot.pdf
 #Facet by species
 plot+facet_wrap(~Species, scales = "free", nrow=1)+
 
@@ -8945,6 +8982,8 @@ ggsave("PhysPCAAarow_plot.pdf",
 
 
 
+# CHUNK: ALTERNATIVE PCA WITHOUT CALCIFICATION
+# DELETE CANDIDATE: exploratory PCA sensitivity check; not the current Figure 4 PCA.
 #### Try this again but with Calcification T0 as 0 and then just removed to see how big a visual different it makes ####
 # Subset numeric physiological columns
 physio_vars <- PhysioData2 %>% 
@@ -9166,6 +9205,9 @@ ggsave("percent_difference_plot.pdf",
        width = 8, height = 12, units = "in")
 
 ```
+# CHUNK: LEGACY PERCENT-CHANGE PROTOTYPE
+# DELETE CANDIDATE: placeholder `Var*` columns; not part of the current analysis.
+# KEEP the later trait-specific percent-change plots, which show the degree of change in High relative to Ambient.
 Legacy percent-change prototype with placeholder `Var*` column names (not part of the current analysis).
 ```{r, eval=FALSE, purl=FALSE}
 # Step 1: Calculate average per Parent.ID for each timepoint and treatment
@@ -10138,6 +10180,8 @@ library(vegan)
 library(RVAideMemoire)
 ```
 
+# CHUNK: LEGACY PHYSIOLOGY NMDS (ALL TIME POINTS)
+# DELETE CANDIDATE: exploratory NMDS; not used for the current PCA figures or supplementary physiology figures.
 why did you do nmds for physio. not right. but euclidian is right
 
 ```{r}
