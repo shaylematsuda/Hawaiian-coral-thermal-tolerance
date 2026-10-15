@@ -1,0 +1,6 @@
+"analysis","source_object","important_change"
+"sample audit","current notebook Bac.seq","S3059 corrected and historical exclusions retained"
+"top abundance","current notebook Bac.seq","Uses experimental samples only"
+"core microbiome","current notebook Bac.seq","Original descriptive species-specific thresholds retained and recorded"
+"T0 indicator analysis","current notebook Bac.seq","Uses Time.Point == T0 and writes multipatt results directly"
+"ANCOM treatment contrasts","current notebook Bac.seq","Runs each species/time independently with Parent.ID random intercept"

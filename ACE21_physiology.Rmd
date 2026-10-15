@@ -1,12 +1,11 @@
 ---
 title: "R Notebook"
-html_document:
-code_folding: hide
-toc:yes
-toc_depth:3
-toc_float:yes
-output: 
-chunk_output_type: console
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: true
 editor_options: 
   chunk_output_type: console
 ---
@@ -356,7 +355,7 @@ biomass_stats_T1TF_Pvar<-subset(biomass_stats_T1TF, Species=="Pavona varians")
   biomass_stats_T1TF_Pvar.C1<-subset(biomass_stats_T1TF_Pvar, Clade=="C1")
   biomass_stats_T1TF_Pvar.C27<-subset(biomass_stats_T1TF_Pvar, Clade=="C27")
 biomass_stats_T1TF_Pacu<-subset(biomass_stats_T1TF, Species=="Pocillopora acuta")
-  biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="C1D")
+  biomass_stats_T1TF_Pacu.CCC<-subset(biomass_stats_T1TF_Pacu, Clade=="C1d")
   biomass_stats_T1TF_Pacu.C42<-subset(biomass_stats_T1TF_Pacu, Clade=="C42_2")
   
 #mcap by algal profile####
@@ -409,7 +408,7 @@ Biomass_Mcap_model.TF<-lmer(AFDWmg.cm2~Treatment*Clade+(1|Parent.ID)+(1|Tank.num
   anova(Biomass_Mcap_model.CD) 
   qqPlot(residuals(Biomass_Mcap_model.CD)) 
     emm<-emmeans(Biomass_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)*
+    cld(emm)
     pairs(emm)
     
 #Pcomp ####
@@ -562,7 +561,7 @@ Biomass_Pacu_model.TF<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID)+(1|Tank.num), bio
   Biomass_Pacu_model.CCC<-lmer(AFDWmg.cm2~Time.Point*Treatment+(1|Parent.ID)+(1|Tank.num), biomass_stats_T1TF_Pacu.CCC)
   anova(Biomass_Pacu_model.CCC) 
   qqPlot(residuals(Biomass_Pacu_model.CCC)) 
-    emm<-emmeans(Biomass_Pacu_model.CCC,  ~ Days*Treatment, adjust="Tukey")
+    emm<-emmeans(Biomass_Pacu_model.CCC,  ~ Time.Point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
@@ -1041,13 +1040,13 @@ FC_stats_T1TF<-subset(FC_Data, Time.Point=="T1"|Time.Point=="TF")
 #test adding traits - not running 20250204
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Montipora capitata"] <- "thick"  
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Porites compressa"] <- "thick"  
-FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona varians"] <- "thin"  
+FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pavona varians"] <- "thick"
 FC_stats_T1TF$tissue[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "thin"  
 FC_stats_T1TF$tissue<-as.factor(FC_stats_T1TF$tissue)
 FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Montipora capitata"] <- "porous"  
 FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Porites compressa"] <- "porous"  
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona varians"] <- "porous"  
-FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "nonporous"  
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pavona varians"] <- "self-shading"
+FC_stats_T1TF$skeleton[FC_stats_T1TF$Species == "Pocillopora acuta"] <- "non-porous"
 FC_stats_T1TF$skeleton<-as.factor(FC_stats_T1TF$skeleton)
 
 CellCount_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Species*skeleton+(1|Parent.ID)+(1|Tank.num), FC_stats_T1TF)
@@ -1103,7 +1102,7 @@ FC_Mcap_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
     FC_Mcap_model.T1<-lmer(zoox.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.T1)
   anova(FC_Mcap_model.T1) 
   qqPlot(residuals(FC_Mcap_model.T1)) 
-  emm<-emmeans(FC_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(FC_Mcap_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -1114,7 +1113,7 @@ FC_Mcap_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
   FC_Mcap_model.TF<-lmer(zoox.cm2_log~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), FC_stats_Mcap.TF)
   anova(FC_Mcap_model.TF) 
   qqPlot(residuals(FC_Mcap_model.TF)) 
-  emm<-emmeans(FC_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(FC_Mcap_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -1134,7 +1133,7 @@ FC_Mcap_model<-lmer(zoox.cm2_log~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Tan
   anova(FC_Mcap_model.CD) 
   qqPlot(residuals(FC_Mcap_model.CD)) 
     emm<-emmeans(FC_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)*
+    cld(emm)
     pairs(emm)
     
 #Pcomp ####
@@ -2325,7 +2324,7 @@ BW_T0_clade<-  ggplot(BW_df4_T1_amb, aes(x=interaction(Clade, Species), y=value,
       ggtitle("Growth Rate - Ambient by ITS2 Profile")+
       geom_boxplot( show.legend = FALSE)+
       scale_x_discrete(guide = "axis_nested"); BW_T0_clade
-ggsave("FC_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
+ggsave("BW_T0_profile.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 
 
@@ -2663,7 +2662,7 @@ qqPlot(residuals(percent.change_stats_model))
 percent.change_sqrt_stats_modelC<-lmer(percent.change_sqrt~Time.point*Treatment*Species*Clade+(1|Parent.ID:Frag.ID)+(1|Tank.num), Growth3)
 anova(percent.change_sqrt_stats_modelC) 
 
-emm<-emmeans(percent.change_sqrt_stats_model,  ~ Days*Treatment|Species, adjust="Tukey") #not running
+emm<-emmeans(percent.change_stats_model,  ~ Time.point*Treatment|Species, adjust="Tukey")
  cld(emm)
  pairs(emm)
   
@@ -2689,7 +2688,7 @@ percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
 
   anova(Biomass_Mcap_model.T1) 
   qqPlot(residuals(Biomass_Mcap_model.T1)) 
-  emm<-emmeans(Biomass_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Biomass_Mcap_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -2699,7 +2698,7 @@ percent.change_sqrt_Mcap_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
   Biomass_Mcap_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Mcap.TF)
   anova(Biomass_Mcap_model.TF) 
   qqPlot(residuals(Biomass_Mcap_model.TF)) 
-  emm<-emmeans(Biomass_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Biomass_Mcap_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -2792,7 +2791,7 @@ percent.change_sqrt_Pvar_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
     Biomass_Pvar_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.T1)
   anova(Biomass_Pvar_model.T1) 
   qqPlot(residuals(Biomass_Pvar_model.T1)) 
-  emm<-emmeans(Biomass_Pvar_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Biomass_Pvar_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -2802,7 +2801,7 @@ percent.change_sqrt_Pvar_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
   grow_Pvar_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pvar.TF)
   anova(grow_Pvar_model.TF) 
   qqPlot(residuals(grow_Pvar_model.TF)) 
-  emm<-emmeans(grow_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(grow_Pvar_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
 
@@ -2840,7 +2839,7 @@ percent.change_sqrt_Pacu_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
     Growth_Pacu_model.T1<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.T1)
   anova(Growth_Pacu_model.T1) 
   qqPlot(residuals(Growth_Pacu_model.T1)) 
-  emm<-emmeans(Growth_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Growth_Pacu_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -2850,7 +2849,7 @@ percent.change_sqrt_Pacu_model<-lmer(percent.change_sqrt~Time.point*Treatment*Cl
   Growth_Pacu_model.TF<-lmer(percent.change_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Growth3_Pacu.TF)
   anova(Growth_Pacu_model.TF) 
   qqPlot(residuals(Growth_Pacu_model.TF)) 
-  emm<-emmeans(Growth_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Growth_Pacu_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -3462,7 +3461,7 @@ Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
     Chla_Mcap_model.T1<-lmer(ChlaSA_quart~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_Mcap.T1)
   anova(Chla_Mcap_model.T1) 
   qqPlot(residuals(Chla_Mcap_model.T1)) 
-  emm<-emmeans(Chla_Mcap_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Chla_Mcap_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -3474,7 +3473,7 @@ Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
   Chla_Mcap_model.TF<-lmer(ChlaSA_quart~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_Mcap.TF)
   anova(Chla_Mcap_model.TF) 
   qqPlot(residuals(Chla_Mcap_model.TF)) 
-  emm<-emmeans(Chla_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Chla_Mcap_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -3492,7 +3491,7 @@ Chla_Mcap_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
   anova(Chla_Mcap_model.CD) 
   qqPlot(residuals(Chla_Mcap_model.CD)) 
     emm<-emmeans(Chla_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)*
+    cld(emm)
     pairs(emm)
     
 #Pcomp ####
@@ -3592,7 +3591,7 @@ Chla_Pvar_model.TF<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla
   Chla_Pvar_model.C1<-lmer(ChlaSA_quart~Treatment+(1|Parent.ID)+(1|Tank.num), Chla_stats_T1TF_Pvar.C1)
   anova(Chla_Pvar_model.C1) 
   qqPlot(residuals(Chla_Pvar_model.C1)) 
-    emm<-emmeans(Chla_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
+    emm<-emmeans(Chla_Pvar_model.C1,  ~ Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
@@ -3627,7 +3626,7 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
     Chla_Pacu_model.T1<-lmer(ChlaSA_quart~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_Pacu.T1)
   anova(Chla_Pacu_model.T1) 
   qqPlot(residuals(Chla_Pacu_model.T1)) 
-  emm<-emmeans(Chla_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Chla_Pacu_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -3638,7 +3637,7 @@ Chla_Pacu_model<-lmer(ChlaSA_quart~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|T
   Chla_Pacu_model.TF<-lmer(ChlaSA_quart~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Chla_stats_Pacu.TF)
   anova(Chla_Pacu_model.TF) 
   qqPlot(residuals(Chla_Pacu_model.TF)) 
-  emm<-emmeans(Chla_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Chla_Pacu_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -3937,7 +3936,7 @@ Yield_cu_Mcap_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
    PAMdata2_stats_Mcap.CD.T1.model<-lmer(Yield_cu~Treatment+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Mcap.CD.T1)
   anova(PAMdata2_stats_Mcap.CD.T1.model) 
   qqPlot(residuals(PAMdata2_stats_Mcap.CD.T1.model)) 
-  emm<-emmeans(PAMdata2_stats_Mcap.CD.T1.model,  ~ Clade*Treatment, adjust="Tukey")
+  emm<-emmeans(PAMdata2_stats_Mcap.CD.T1.model,  ~ Treatment, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -3997,7 +3996,7 @@ Yield_cu_Pcomp_model.Clade<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag
   Yield_cu_Pcomp_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pcomp.TF)
   anova(Yield_cu_Pcomp_model.TF) 
   qqPlot(residuals(Yield_cu_Pcomp_model.TF)) 
-  emm<-emmeans(Yield_cu_Pcomp_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Yield_cu_Pcomp_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)   
     
@@ -4094,7 +4093,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
     Yield_cu_Pacu_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pacu.T1)
   anova(Yield_cu_Pacu_model.T1) 
   qqPlot(residuals(Yield_cu_Pacu_model.T1)) 
-  emm<-emmeans(Yield_cu_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Yield_cu_Pacu_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -4104,7 +4103,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
   Yield_cu_Pacu_model.TF<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PAMdata2_stats_Pacu.TF)
   anova(Yield_cu_Pacu_model.TF) 
   qqPlot(residuals(Yield_cu_Pacu_model.TF)) 
-  emm<-emmeans(Yield_cu_Pacu_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Yield_cu_Pacu_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -4128,7 +4127,7 @@ Yield_cu_Pacu_model<-lmer(Yield_cu~Days*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1
 
 
 #set up df for physi
-  keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield_cu","Clade") #keep cols you need
+  keepPAM<-c("Frag.ID", "Parent.ID","Species","Tank.num","Treatment","Days","Yield","Yield_cu","Clade") #retain original Yield for figures and transformed Yield for models
 PAMdata2_stats<-PAMdata2_stats[keepPAM] #keep cols you want
 PAMdata2_stats$Parent.ID<-as.factor(as.character(PAMdata2_stats$Parent.ID))
 #PAMdata2_physio<-dcast(PAMdata2_stats, Frag.ID+Parent.ID+Species+Tank.num+Treatment~Days,fun.aggregate = mean) #cast
@@ -4178,9 +4177,9 @@ Pacu_PAM_mean.clade<-subset(PAMdata2_meanClade, Species =="Pocillopora acuta")
 
 
 #T0 ####
-PAM_T0<-subset(PAMdata2, Days=="0")
+PAM_T0_data<-subset(PAMdata2, Days=="0")
 
-PAM_T0<-ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) + 
+PAM_T0<-ggplot(PAM_T0_data, aes(x=Species, y=Yield, fill=Species)) + 
       scale_fill_manual(values=c("#E69F00", "#56B4E9", "#CC79A7","#009E73"))+
       xlab("") + #Label the X Axis
       ylab(bquote("fv/fm"))+
@@ -4195,7 +4194,7 @@ PAM_T0<-ggplot(PAM_T0, aes(x=Species, y=Yield, fill=Species)) +
 ggsave("PAM_T0.pdf", plot=last_plot(), path="Figures",device = "pdf", width=8, height=5, units=c("in"), dpi=300)
 
 #T0 only - by algal profile
- PAM_T0_clade<- ggplot(PAM_T0, aes(x=interaction(Clade, Species), y=Yield, fill=Clade)) + 
+ PAM_T0_clade<- ggplot(PAM_T0_data, aes(x=interaction(Clade, Species), y=Yield, fill=Clade)) + 
          scale_fill_manual(values=c("goldenrod1","darkorange3", "powderblue","#0072B2" ,"pink1","firebrick",   "palegreen2","darkgreen"))+
       xlab("") + #Label the X Axis
       theme(axis.text.x = element_text(face = "italic",size=14))+
@@ -4230,7 +4229,7 @@ FvFmT1TF<- ggplot(FvFm_T1TF_ND_D24D58, aes(x=interaction(Treatment,Days,Species)
           scale_x_discrete(guide = "axis_nested");FvFmT1TF
 
 #Plots T1 and TF AGAIN with Pacuta non detectable removed ####
-FvFm_T1TF_ND<-FvFm_T1TF
+FvFm_T1TF_ND<-PAMdata2
  #Remove rows where Yield is 0.100
 FvFm_T1TF_ND <- FvFm_T1TF_ND %>%
   filter(Yield != 0.100)
@@ -4561,8 +4560,8 @@ pairs(emm)
 
 # by Species df: Prot_stats_T1TF_Mcap, Prot_stats_T1TF_Pcomp, Prot_stats_T1TF_Pvar, Prot_stats_T1TF_Pacu
 Prot_stats_T1TF_Mcap<-subset(Prot_stats_T1TF, Species=="Montipora capitata")
-  Prot_stats_T1TF_Mcap.C<-subset(Prot_stats_T1TF_Mcap, Clade=="C")
-  Prot_stats_T1TF_Mcap.CD<-subset(Prot_stats_T1TF_Mcap, Clade=="CD")
+  Prot_stats_T1TF_Mcap.C<-subset(Prot_stats_T1TF_Mcap, Clade=="C31")
+  Prot_stats_T1TF_Mcap.CD<-subset(Prot_stats_T1TF_Mcap, Clade=="C31D4")
 Prot_stats_T1TF_Pcomp<-subset(Prot_stats_T1TF, Species=="Porites compressa")
   Prot_stats_T1TF_Pcomp.C15cj<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15cj")
   Prot_stats_T1TF_Pcomp.C15n<-subset(Prot_stats_T1TF_Pcomp, Clade=="C15n")
@@ -4570,8 +4569,8 @@ Prot_stats_T1TF_Pvar<-subset(Prot_stats_T1TF, Species=="Pavona varians")
   Prot_stats_T1TF_Pvar.C1<-subset(Prot_stats_T1TF_Pvar, Clade=="C1")
   Prot_stats_T1TF_Pvar.C27<-subset(Prot_stats_T1TF_Pvar, Clade=="C27")
 Prot_stats_T1TF_Pacu<-subset(Prot_stats_T1TF, Species=="Pocillopora acuta")
-  Prot_stats_T1TF_Pacu.CCC<-subset(Prot_stats_T1TF_Pacu, Clade=="CCC")
-  Prot_stats_T1TF_Pacu.C42<-subset(Prot_stats_T1TF_Pacu, Clade=="C42")
+  Prot_stats_T1TF_Pacu.CCC<-subset(Prot_stats_T1TF_Pacu, Clade=="C1d")
+  Prot_stats_T1TF_Pacu.C42<-subset(Prot_stats_T1TF_Pacu, Clade=="C42_2")
   
 #mcap ####
 #lmer
@@ -4585,7 +4584,6 @@ Prot_Mcap_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
   pairs(emm)
   
  #T1 only
-  aProt_stats_Mcap.T1<-Prot_stats_Mcap.T1
   Prot_stats_Mcap.T1<-subset(Prot_stats_T1TF_Mcap, Time.Point=="T1")
   Prot_Mcap_model.T1<-lmer(mg.mm2_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Prot_stats_Mcap.T1)
   anova(Prot_Mcap_model.T1) 
@@ -4603,7 +4601,7 @@ Prot_Mcap_model.TF<-lmer(mg.mm2_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Prot_
   Prot_Mcap_model.TF<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Mcap.TF)
   anova(Prot_Mcap_model.TF) 
   qqPlot(residuals(Prot_Mcap_model.TF)) 
-  emm<-emmeans(Prot_Mcap_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Prot_Mcap_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
   
@@ -4620,7 +4618,7 @@ Prot_Mcap_model.TF<-lmer(mg.mm2_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Prot_
   anova(Prot_Mcap_model.CD) 
   qqPlot(residuals(Prot_Mcap_model.CD)) 
     emm<-emmeans(Prot_Mcap_model.CD,  ~ Time.Point*Treatment, adjust="Tukey")
-    cld(emm)*
+    cld(emm)
     pairs(emm)
     
 #Pcomp ####
@@ -4701,7 +4699,7 @@ Prot_Pvar_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
     Prot_Pvar_model.T1<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Pvar.T1)
   anova(Prot_Pvar_model.T1) 
   qqPlot(residuals(Prot_Pvar_model.T1)) 
-  emm<-emmeans(Prot_Pvar_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Prot_Pvar_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -4712,7 +4710,7 @@ Prot_Pvar_model.TF<-lmer(mg.mm2_sqrt~Treatment+(1|Parent.ID)+(1|Tank.num), Prot_
   Prot_Pvar_model.TF<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Pvar.TF)
   anova(Prot_Pvar_model.TF) 
   qqPlot(residuals(Prot_Pvar_model.TF)) 
-  emm<-emmeans(Prot_Pvar_model.TF,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Prot_Pvar_model.TF,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)  
     
@@ -4753,7 +4751,7 @@ Prot_Pacu_model<-lmer(mg.mm2_sqrt~Time.Point*Treatment*Clade+(1|Parent.ID)+(1|Ta
     Prot_Pacu_model.T1<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Pacu.T1)
   anova(Prot_Pacu_model.T1) 
   qqPlot(residuals(Prot_Pacu_model.T1)) 
-  emm<-emmeans(Prot_Pacu_model.T1,  ~ Time.Point*Treatment, adjust="Tukey")
+  emm<-emmeans(Prot_Pacu_model.T1,  ~ Treatment*Clade, adjust="Tukey")
   cld(emm)
   pairs(emm)
   
@@ -5271,7 +5269,7 @@ plot_row<-plot_grid(PR.df_Mcap_plot, PR.df_Pcomp_plot, PR.df_Pvar_plot, PR.df_Pa
   theme(plot.margin = margin(0, 0, 0, 7))
   plot_grid(title, plot_row,ncol = 1, rel_heights = c(0.1, 1))
 
-ggsave("GrossPhoto_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
+ggsave("GrossPhoto_profiles_T1.pdf", plot=last_plot(), path="Figures",device = "pdf", width=15, height=4, units=c("in"), dpi=300)
 
 #TF ####
     PhotoTF<-  ggplot(PR.df_TF, aes(x=Species, y=GrossP, fill=Treatment)) + 
@@ -5441,8 +5439,8 @@ emm<-emmeans(GrossP_stats_model,  ~ Time.Point*Treatment|Species, adjust="Tukey"
 
 # by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
 PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
-  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
-  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
+  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C31")
+  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="C31D4")
 PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
   PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
   PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
@@ -5450,8 +5448,8 @@ PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
   PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
   PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
 PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
-  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
-  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
+  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="C1d")
+  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42_2")
   
 #mcap####
 #lmer   
@@ -5555,14 +5553,14 @@ GrossP_Pcomp_model.Clade<-lmer(GrossP~Time.Point*Treatment*Clade+(1|Parent.ID:Fr
   
     
 #Pcomp-C15cj only ####
-  GrossP_Pcomp_model.C15cj<-1-lmer(GrossP~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
+  GrossP_Pcomp_model.C15cj<-lmer(GrossP~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15cj)
   anova(GrossP_Pcomp_model.C15cj) 
   qqPlot(residuals(GrossP_Pcomp_model.C15cj)) 
     emm<-emmeans(GrossP_Pcomp_model.C15cj,  ~ Time.Point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
-#Pcomp-C27 only
+#Pcomp-C15n only
   GrossP_Pcomp_model.C15n<-lmer(GrossP~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pcomp.C15n)
   anova(GrossP_Pcomp_model.C15n) 
   qqPlot(residuals(GrossP_Pcomp_model.C15n)) 
@@ -6671,8 +6669,8 @@ PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
 
 # by Species df: PR.df_B_Mcap, PR.df_B_Pcomp, PR.df_B_Pvar, PR.df_B_Pacu
 PR.df_B_Mcap<-subset(PR.df_B, Species=="Montipora capitata")
-  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C")
-  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="CD")
+  PR.df_B_Mcap.C<-subset(PR.df_B_Mcap, Clade=="C31")
+  PR.df_B_Mcap.CD<-subset(PR.df_B_Mcap, Clade=="C31D4")
 PR.df_B_Pcomp<-subset(PR.df_B, Species=="Porites compressa")
   PR.df_B_Pcomp.C15cj<-subset(PR.df_B_Pcomp, Clade=="C15cj")
   PR.df_B_Pcomp.C15n<-subset(PR.df_B_Pcomp, Clade=="C15n")
@@ -6680,8 +6678,8 @@ PR.df_B_Pvar<-subset(PR.df_B, Species=="Pavona varians")
   PR.df_B_Pvar.C1<-subset(PR.df_B_Pvar, Clade=="C1")
   PR.df_B_Pvar.C27<-subset(PR.df_B_Pvar, Clade=="C27")
 PR.df_B_Pacu<-subset(PR.df_B, Species=="Pocillopora acuta")
-  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="CCC")
-  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42")
+  PR.df_B_Pacu.CCC<-subset(PR.df_B_Pacu, Clade=="C1d")
+  PR.df_B_Pacu.C42<-subset(PR.df_B_Pacu, Clade=="C42_2")
 
 
 
@@ -6871,7 +6869,7 @@ PR_Pvar_model<-lmer(PR_real~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|
   PR_Pvar_model.C1<-lmer(PR~Time.Point*Treatment+(1|Parent.ID:Frag.ID)+(1|Tank.num), PR.df_B_Pvar.C1)
   anova(PR_Pvar_model.C1) 
   qqPlot(residuals(PR_Pvar_model.C1)) 
-    emm<-emmeans(PR_Pvar_model.C1,  ~ Clade*Treatment, adjust="Tukey")
+    emm<-emmeans(PR_Pvar_model.C1,  ~ Time.Point*Treatment, adjust="Tukey")
     cld(emm)
     pairs(emm)
 
@@ -6948,11 +6946,12 @@ PR_Pacu_model<-lmer(PR_real~Time.Point*Treatment*Clade+(1|Parent.ID:Frag.ID)+(1|
 All P, R, PR plots
 
 ```{r}
-grid.arrange(Mcap_Photo_plot, Pcomp_Photo_plot, Pvar_Photo_plot,Pacu_Photo_plot,Mcap_Resp_plot, Pcomp_Resp_plot, Pvar_Resp_plot,Pacu_Resp_plot,Mcap_PR_plot, Pcomp_PR_plot, Pvar_PR_plot,Pacu_PR_plot, nrow = 3)
+# Legacy combined-plot call removed: the referenced *_Photo_plot, *_Resp_plot,
+# and *_PR_plot objects are not created by the current workflow.
 
  
 #by clade
-grid.arrange(Mcap_Photo_plot.Clade, Pcomp_Photo_plot.Clade, Pvar_Photo_plot.Clade,Pacu_Photo_plot.Clade,Mcap_Resp_plot.Clade, Pcomp_Resp_plot.Clade, Pvar_Resp_plot.Clade,Pacu_Resp_plot.Clade,Mcap_PR_plot.Clade, Pcomp_PR_plot.Clade, Pvar_PR_plot.Clade,Pacu_PR_plot.Clade, nrow = 3)
+# Legacy clade-level combined-plot call removed for the same reason.
 
 ```
 
@@ -7370,13 +7369,13 @@ PAM_psyDF<-PAM_psy #make copy for dissertation plot
 PAM_psy$Code<-paste(PAM_psy$Species,PAM_psy$Treatment,PAM_psy$Parent.ID,PAM_psy$Time.Point) #make code
 PAM_psy$Code<-as.factor(PAM_psy$Code)
 
-PAM_psy<- PAM_psy[,c("Code","Yield_cu")] # keep only columns you need
+PAM_psy<- PAM_psy[,c("Code","Yield")] # original-scale Fv/Fm for PCA and descriptive figures
 # PAM_psy<-PAM_psy %>% group_by(Code) %>% mutate(mean=mean(Yield_cu)) # mean by code, this worked
 # names(PAM_psy)[names(PAM_psy) == "mean"] <- "PAM.Yield_cu" #change name
 # PAM_psy<-PAM_psy[,c("Code","Parent.ID", "Treatment","Species","PAM.Yield_cu","Time.Point")] #remove col
 # PAM_psy<-unique(PAM_psy) #remove duplicates, now you have 
  
-PAM_psy<-aggregate(x = PAM_psy$Yield_cu,                # Specify data column
+PAM_psy<-aggregate(x = PAM_psy$Yield,                # Specify data column
           by = list(PAM_psy$Code),              # Specify group indicator
           FUN = mean)        
         names(PAM_psy)[names(PAM_psy) == "x"] <- "Fv/Fm" #change name
@@ -7440,7 +7439,8 @@ PR_psy<-PR.df_B
 #merging full physio
 
 ```{r}
-#merg: this is EVERYTHING! PAM and BW subsetted to ONLY T0, T1 and TF time points, and all data is already transformed! 
+#merge: PAM and BW include T0, T1 and TF. Fv/Fm uses original Yield;
+# cell density and protein retain their statistical transformations for ordinations.
  
 
 # #create duplicate T0 for H or A that isn't there for each parent. id
@@ -7474,6 +7474,14 @@ duplicated(PhysioData$Code)
 PhysioData$Code[duplicated(PhysioData$Code)]
 PhysioData<-unique(PhysioData) #this is the df. 
 # PhysioData <- PhysioData[, c(10,11,1,2,3,4,5,6,7,12, 13,8,9,14:20)]
+
+# Descriptive figures need original-scale traits. These inverses act on the
+# individual cell-density/protein values (before any plotting summaries), not
+# on transformed means. Keep PhysioData for the existing ordination workflow.
+PhysioData_plot <- PhysioData
+PhysioData_plot$`Zoox Density` <- 10^PhysioData_plot$`Zoox Density` - 1
+PhysioData_plot$Protein <- PhysioData_plot$Protein^2
+# Fv/Fm already contains means of original-scale Yield above.
 
 write.csv(PhysioData,"PhysioData.csv") #export
 
@@ -7621,7 +7629,7 @@ Phy_nmds.T1<-subset(Phy_nmds, Time.Point=="T1")
   set.seed(30)
 Phy_nmds.MDS.T1<-metaMDS(Phy_nmds.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS.T1)
-Phy_nmds.MDS.T1.scores <- as.data.frame(scores(Phy_nmds.MDS.T1)) #make the nMDS scores into a dataframe
+Phy_nmds.MDS.T1.scores <- as.data.frame(scores(Phy_nmds.MDS.T1, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds.MDS.T1 #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
@@ -7661,9 +7669,9 @@ scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
 ## Do by TF RERUN
 Phy_nmds.TF<-subset(Phy_nmds, Time.Point=="TF")
   set.seed(30)
-Phy_nmds.MDS.TF<-metaMDS(Phy_nmds.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds.MDS.TF<-metaMDS(Phy_nmds.TF[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds.MDS.TF)
-Phy_nmds.MDS.TF.scores <- as.data.frame(scores(Phy_nmds.MDS.TF)) #make the nMDS scores into a dataframe
+Phy_nmds.MDS.TF.scores <- as.data.frame(scores(Phy_nmds.MDS.TF, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds.MDS.TF #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
@@ -7726,13 +7734,13 @@ Phy_nmds.MDS.scores_T0$Time.Point <- pData.T0$Time.Point
 Phy_nmds.MDS.scores_T0$Code <- pData.T0$Code # move the code 
 
 #make loading vectors
-vec.spT0<-envfit(Phy_nmds.MDS.scores_T0, pData.T0[,12:19], perm=1000)
+vec.spT0<-envfit(Phy_nmds.MDS.T0, pData.T0[,12:19], perm=1000)
 vec.sp.dfT0<-as.data.frame(vec.spT0$vectors$arrows*sqrt(vec.spT0$vectors$r))
 vec.sp.dfT0$traits<-rownames(vec.sp.dfT0)
 
 mult <- .25
 
-ggplot(Phy_nmds.MDS.T0.scores, aes(x = NMDS1, y = NMDS2)) + 
+ggplot(Phy_nmds.MDS.scores_T0, aes(x = NMDS1, y = NMDS2)) + 
   geom_point(aes(colour = Species), size = 4) +
   scale_color_manual(values=Sp.colors)+
   #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
@@ -7748,7 +7756,7 @@ ggplot(Phy_nmds.MDS.T0.scores, aes(x = NMDS1, y = NMDS2)) +
   
   theme_classic()
 
-write.csv(Phy_nmds.MDS.T0,"Phy_nmds.MDS.T0.csv") #for gauntlet figure
+write.csv(Phy_nmds.MDS.scores_T0,"Phy_nmds.MDS.T0.csv") #site scores for gauntlet figure
  
 ```
 
@@ -7764,9 +7772,9 @@ Phy_nmds_Mcap<-subset(Phy_nmds_Mcap, Species=="Montipora capitata")
 
 set.seed(30)
 
-Phy_nmds_Mcap.MDS<-metaMDS(Phy_nmds_Mcap[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds_Mcap.MDS<-metaMDS(Phy_nmds_Mcap[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds_Mcap.MDS)
-Phy_nmds_Mcap.MDS.scores <- as.data.frame(scores(Phy_nmds_Mcap.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_Mcap.MDS.scores <- as.data.frame(scores(Phy_nmds_Mcap.MDS, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds_Mcap.MDS #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
@@ -7809,7 +7817,7 @@ ggplot(Phy_nmds_Mcap.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Tre
 
 #T1
 Phy_nmds_Mcap.T1<-subset(Phy_nmds_Mcap, Time.Point=="T1")
-ord.mcap.T1<-metaMDS(Phy_nmds_Mcap.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.mcap.T1<-metaMDS(Phy_nmds_Mcap.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.mcap.T1)
 ord.mcap.T1.df<-as.data.frame(cbind(vegan::scores(ord.mcap.T1, display="sites"))) # these are "points" ask hannah 
 ord.mcap.T1.df$Time.Point <- Phy_nmds_Mcap.T1$Time.Point
@@ -7837,7 +7845,7 @@ ggplot(ord.mcap.T1.df, aes(x = NMDS1, y = NMDS2)) +
 
 #TF
 Phy_nmds_Mcap.TF<-subset(Phy_nmds_Mcap, Time.Point=="TF")
-ord.mcap.TF<-metaMDS(Phy_nmds_Mcap.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.mcap.TF<-metaMDS(Phy_nmds_Mcap.TF[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.mcap.TF)
 ord.mcap.TF.df<-as.data.frame(cbind(vegan::scores(ord.mcap.TF, display="sites"))) # these are "points" ask hannah 
 ord.mcap.TF.df$Time.Point <- Phy_nmds_Mcap.TF$Time.Point
@@ -7846,7 +7854,7 @@ ord.mcap.TF.df$Treatment <- Phy_nmds_Mcap.TF$Treatment
 ord.mcap.TF.df$Clade <- Phy_nmds_Mcap.TF$Clade
 ord.mcap.TF.df$Code <- paste(Phy_nmds_Mcap.TF$Parent.ID,Phy_nmds_Mcap.TF$Time.Point)
 ord.mcap.TF.df$Code2 <- paste(Phy_nmds_Mcap.TF$Clade,Phy_nmds_Mcap.TF$Treatment)
-ord.mcap.TF.df$Code2 <- as.factor(Phy_nmds_Mcap.TF$Code2)
+ord.mcap.TF.df$Code2 <- as.factor(ord.mcap.TF.df$Code2)
 
 ggplot(ord.mcap.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
@@ -7880,9 +7888,9 @@ Phy_nmds_pcomp<-subset(Phy_nmds_pcomp, Species=="Porites compressa")
 
 set.seed(30)
 
-Phy_nmds_pcomp.MDS<-metaMDS(Phy_nmds_pcomp[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds_pcomp.MDS<-metaMDS(Phy_nmds_pcomp[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds_pcomp.MDS)
-Phy_nmds_pcomp.MDS.scores <- as.data.frame(scores(Phy_nmds_pcomp.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pcomp.MDS.scores <- as.data.frame(scores(Phy_nmds_pcomp.MDS, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds_pcomp.MDS #get summary info,
 
 ##Add variables that you want to test to your scores data sheet
@@ -7908,7 +7916,7 @@ ggplot(Phy_nmds_pcomp.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Tr
  geom_point(aes(size = 5) )+
     #geom_point(aes(colour = Treatment, size = 4, shape=Code2)) +
     scale_shape_manual(values = c(21, 22,24,25)) + 
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.Parent.colors)+
    # geom_line(aes(group = Code), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Code2, lty=factor(Time.Point))) +
   scale_linetype_manual(values=c(2,3,2,3))+
@@ -7918,7 +7926,7 @@ ggplot(Phy_nmds_pcomp.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Tr
 
 #T1
 Phy_nmds_pcomp.T1<-subset(Phy_nmds_pcomp, Time.Point=="T1")
-ord.pcomp.T1<-metaMDS(Phy_nmds_pcomp.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pcomp.T1<-metaMDS(Phy_nmds_pcomp.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pcomp.T1)
 ord.pcomp.T1.df<-as.data.frame(cbind(vegan::scores(ord.pcomp.T1, display="sites"))) # these are "points" ask hannah 
 ord.pcomp.T1.df$Time.Point <- Phy_nmds_pcomp.T1$Time.Point
@@ -7927,12 +7935,12 @@ ord.pcomp.T1.df$Treatment <- Phy_nmds_pcomp.T1$Treatment
 ord.pcomp.T1.df$Clade <- Phy_nmds_pcomp.T1$Clade
 ord.pcomp.T1.df$Code <- paste(Phy_nmds_pcomp.T1$Parent.ID,Phy_nmds_pcomp.T1$Time.Point)
 ord.pcomp.T1.df$Code2 <- paste(Phy_nmds_pcomp.T1$Clade,Phy_nmds_pcomp.T1$Treatment)
-ord.pcomp.T1.df$Code2 <- as.factor(Phy_nmds_pcomp.T1$Code2)
+ord.pcomp.T1.df$Code2 <- as.factor(ord.pcomp.T1.df$Code2)
 
 ggplot(ord.pcomp.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
     scale_linetype_manual(values=c(3,3))+
@@ -7946,7 +7954,7 @@ ggplot(ord.pcomp.T1.df, aes(x = NMDS1, y = NMDS2)) +
 
 #TF
 Phy_nmds_pcomp.TF<-subset(Phy_nmds_pcomp, Time.Point=="TF")
-ord.pcomp.TF<-metaMDS(Phy_nmds_pcomp.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pcomp.TF<-metaMDS(Phy_nmds_pcomp.TF[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pcomp.TF)
 ord.pcomp.TF.df<-as.data.frame(cbind(vegan::scores(ord.pcomp.TF, display="sites"))) # these are "points" ask hannah 
 ord.pcomp.TF.df$Time.Point <- Phy_nmds_pcomp.TF$Time.Point
@@ -7955,7 +7963,7 @@ ord.pcomp.TF.df$Treatment <- Phy_nmds_pcomp.TF$Treatment
 ord.pcomp.TF.df$Clade <- Phy_nmds_pcomp.TF$Clade
 ord.pcomp.TF.df$Code <- paste(Phy_nmds_pcomp.TF$Parent.ID,Phy_nmds_pcomp.TF$Time.Point)
 ord.pcomp.TF.df$Code2 <- paste(Phy_nmds_pcomp.TF$Clade,Phy_nmds_pcomp.TF$Treatment)
-ord.pcomp.TF.df$Code2 <- as.factor(Phy_nmds_pcomp.TF$Code2)
+ord.pcomp.TF.df$Code2 <- as.factor(ord.pcomp.TF.df$Code2)
 
 #try envfit
 # env = Phy_nmds_pcomp.TF[,3] NOT WORKING SORT OUT LATER
@@ -7966,7 +7974,7 @@ ord.pcomp.TF.df$Code2 <- as.factor(Phy_nmds_pcomp.TF$Code2)
 ggplot(ord.pcomp.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
     geom_point(aes(colour = Treatment, size = 4, shape=Treatment)) +
-  scale_color_manual(values=Pcomp.Parent.colors)+
+  scale_color_manual(values=pcomp.Parent.colors)+
    # geom_line(aes(group = Parent.ID), color = "black") + 
   stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Treatment, lty=factor(Treatment))) +
     scale_linetype_manual(values=c(3,3))+
@@ -7991,9 +7999,9 @@ Phy_nmds_pvar<-subset(Phy_nmds_pvar, Species=="Pavona varians")
 
 set.seed(30)
 
-Phy_nmds_pvar.MDS<-metaMDS(Phy_nmds_pvar[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds_pvar.MDS<-metaMDS(Phy_nmds_pvar[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds_pvar.MDS)
-Phy_nmds_pvar.MDS.scores <- as.data.frame(scores(Phy_nmds_pvar.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pvar.MDS.scores <- as.data.frame(scores(Phy_nmds_pvar.MDS, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds_pvar.MDS #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
@@ -8029,7 +8037,7 @@ ggplot(Phy_nmds_pvar.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Tre
 
 #T1
 Phy_nmds_pvar.T1<-subset(Phy_nmds_pvar, Time.Point=="T1")
-ord.pvar.T1<-metaMDS(Phy_nmds_pvar.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pvar.T1<-metaMDS(Phy_nmds_pvar.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pvar.T1)
 ord.pvar.T1.df<-as.data.frame(cbind(vegan::scores(ord.pvar.T1, display="sites"))) # these are "points" ask hannah 
 ord.pvar.T1.df$Time.Point <- Phy_nmds_pvar.T1$Time.Point
@@ -8038,7 +8046,7 @@ ord.pvar.T1.df$Treatment <- Phy_nmds_pvar.T1$Treatment
 ord.pvar.T1.df$Clade <- Phy_nmds_pvar.T1$Clade
 ord.pvar.T1.df$Code <- paste(Phy_nmds_pvar.T1$Parent.ID,Phy_nmds_pvar.T1$Time.Point)
 ord.pvar.T1.df$Code2 <- paste(Phy_nmds_pvar.T1$Clade,Phy_nmds_pvar.T1$Treatment)
-ord.pvar.T1.df$Code2 <- as.factor(Phy_nmds_pvar.T1$Code2)
+ord.pvar.T1.df$Code2 <- as.factor(ord.pvar.T1.df$Code2)
 
 ggplot(ord.pvar.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
@@ -8057,7 +8065,7 @@ ggplot(ord.pvar.T1.df, aes(x = NMDS1, y = NMDS2)) +
 
 #TF
 Phy_nmds_pvar.TF<-subset(Phy_nmds_pvar, Time.Point=="TF")
-ord.pvar.TF<-metaMDS(Phy_nmds_pvar.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pvar.TF<-metaMDS(Phy_nmds_pvar.TF[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pvar.TF)
 ord.pvar.TF.df<-as.data.frame(cbind(vegan::scores(ord.pvar.TF, display="sites"))) # these are "points" ask hannah 
 ord.pvar.TF.df$Time.Point <- Phy_nmds_pvar.TF$Time.Point
@@ -8066,7 +8074,7 @@ ord.pvar.TF.df$Treatment <- Phy_nmds_pvar.TF$Treatment
 ord.pvar.TF.df$Clade <- Phy_nmds_pvar.TF$Clade
 ord.pvar.TF.df$Code <- paste(Phy_nmds_pvar.TF$Parent.ID,Phy_nmds_pvar.TF$Time.Point)
 ord.pvar.TF.df$Code2 <- paste(Phy_nmds_pvar.TF$Clade,Phy_nmds_pvar.TF$Treatment)
-ord.pvar.TF.df$Code2 <- as.factor(Phy_nmds_pvar.TF$Code2)
+ord.pvar.TF.df$Code2 <- as.factor(ord.pvar.TF.df$Code2)
 
 ggplot(ord.pvar.TF.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
@@ -8099,9 +8107,9 @@ Phy_nmds_pacu<-subset(Phy_nmds_pacu, Species=="Pocillopora acuta")
 
 set.seed(30)
 
-Phy_nmds_pacu.MDS<-metaMDS(Phy_nmds_pacu[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+Phy_nmds_pacu.MDS<-metaMDS(Phy_nmds_pacu[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(Phy_nmds_pacu.MDS)
-Phy_nmds_pacu.MDS.scores <- as.data.frame(scores(Phy_nmds_pacu.MDS)) #make the nMDS scores into a dataframe
+Phy_nmds_pacu.MDS.scores <- as.data.frame(scores(Phy_nmds_pacu.MDS, "sites")) #make the nMDS site scores into a dataframe
 Phy_nmds_pacu.MDS #get summary info, stress is 0.096 great
 
 ##Add variables that you want to test to your scores data sheet
@@ -8136,7 +8144,7 @@ ggplot(Phy_nmds_pacu.MDS.scores, aes(x = NMDS1, y = NMDS2, shape=Code2, fill=Tre
 
 #T1
 Phy_nmds_pacu.T1<-subset(Phy_nmds_pacu, Time.Point=="T1")
-ord.pacu.T1<-metaMDS(Phy_nmds_pacu.T1[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pacu.T1<-metaMDS(Phy_nmds_pacu.T1[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pacu.T1)
 ord.pacu.T1.df<-as.data.frame(cbind(vegan::scores(ord.pacu.T1, display="sites"))) # these are "points" ask hannah 
 ord.pacu.T1.df$Time.Point <- Phy_nmds_pacu.T1$Time.Point
@@ -8145,7 +8153,7 @@ ord.pacu.T1.df$Treatment <- Phy_nmds_pacu.T1$Treatment
 ord.pacu.T1.df$Clade <- Phy_nmds_pacu.T1$Clade
 ord.pacu.T1.df$Code <- paste(Phy_nmds_pacu.T1$Parent.ID,Phy_nmds_pacu.T1$Time.Point)
 ord.pacu.T1.df$Code2 <- paste(Phy_nmds_pacu.T1$Clade,Phy_nmds_pacu.T1$Treatment)
-ord.pacu.T1.df$Code2 <- as.factor(Phy_nmds_pacu.T1$Code2)
+ord.pacu.T1.df$Code2 <- as.factor(ord.pacu.T1.df$Code2)
 
 ggplot(ord.pacu.T1.df, aes(x = NMDS1, y = NMDS2)) + 
    geom_point(aes(stroke=3, colour = Parent.ID, shape=Treatment,size = 4) )+
@@ -8164,7 +8172,7 @@ ggplot(ord.pacu.T1.df, aes(x = NMDS1, y = NMDS2)) +
 
 #TF
 Phy_nmds_pacu.TF<-subset(Phy_nmds_pacu, Time.Point=="TF")
-ord.pacu.TF<-metaMDS(Phy_nmds_pacu.TF[,8:16], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
+ord.pacu.TF<-metaMDS(Phy_nmds_pacu.TF[,12:20], distance = "bray", k = 2, trymax = 200, engine = c("monoMDS", "isoMDS"))
 stressplot(ord.pacu.TF)
 ord.pacu.TF.df<-as.data.frame(cbind(vegan::scores(ord.pacu.TF, display="sites"))) # these are "points" ask hannah 
 ord.pacu.TF.df$Time.Point <- Phy_nmds_pacu.TF$Time.Point
@@ -8196,8 +8204,8 @@ ggplot(ord.pacu.TF.df, aes(x = NMDS1, y = NMDS2)) +
   
 #ALL THE DATA T1TF
 
-phy.dist <- vegdist(pData.T1TF [8:16], method="bray") #make dist matrix
-phy.div <- adonis2(pData.T1TF [8:16] ~ Species*Treatment*Time.Point, data = pData.T1TF [1:6], permutations = 999, method="bray")
+phy.dist <- vegdist(pData.T1TF[,12:20], method="bray") #make dist matrix
+phy.div <- adonis2(pData.T1TF[,12:20] ~ Species*Treatment*Time.Point, data = pData.T1TF, permutations = 999, method="bray")
 phy.div #view, 
 
 ##Check for homogeneity of dispersions (you want this to be insignificant)
@@ -8211,8 +8219,8 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 
 #ALL THE DATA T0
 
-phy.dist.T0 <- vegdist(pData.T0 [9:16], method="bray") #make dist matrix
-phy.div.T0 <- adonis2(pData.T0 [9:16] ~ Species, data = pData.T0 [1:7], permutations = 999, method="bray")
+phy.dist.T0 <- vegdist(pData.T0[,12:19], method="bray") #make dist matrix
+phy.div.T0 <- adonis2(pData.T0[,12:19] ~ Species, data = pData.T0, permutations = 999, method="bray")
 phy.div.T0 #view, 
 
 ##Check for homogeneity of dispersions (you want this to be insignificant)
@@ -8227,8 +8235,8 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 
 ```{r}
 #Mcap, Phy_nmds_Mcap
-phy_Mcap.dist <- vegdist(Phy_nmds_Mcap [8:16], method="bray") #make dist matrix
-phy_Mcap.div <- adonis2(Phy_nmds_Mcap [8:16] ~ Treatment*Time.Point, data = Phy_nmds_Mcap [1:7], permutations = 999, method="bray")
+phy_Mcap.dist <- vegdist(Phy_nmds_Mcap[,12:20], method="bray") #make dist matrix
+phy_Mcap.div <- adonis2(Phy_nmds_Mcap[,12:20] ~ Treatment*Time.Point, data = Phy_nmds_Mcap, permutations = 999, method="bray")
 phy_Mcap.div #view, Time is significant
   ##Check for homogeneity of dispersions (you want this to be insignificant)
   phy.dist.disp <- betadisper(phy_Mcap.dist, Phy_nmds_Mcap$Treatment, type = "centroid")
@@ -8236,8 +8244,8 @@ phy_Mcap.div #view, Time is significant
   permutest(phy.dist.disp) #this is your PERMDISP test
 
 #Pcomp, Phy_nmds_Pcomp 
-phy_Pcomp.dist <- vegdist(Phy_nmds_pcomp [8:16], method="bray") #make dist matrix
-phy_Pcomp.div <- adonis2(Phy_nmds_pcomp [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pcomp [1:7], permutations = 999, method="bray")
+phy_Pcomp.dist <- vegdist(Phy_nmds_pcomp[,12:20], method="bray") #make dist matrix
+phy_Pcomp.div <- adonis2(Phy_nmds_pcomp[,12:20] ~ Treatment*Time.Point, data = Phy_nmds_pcomp, permutations = 999, method="bray")
 phy_Pcomp.div 
   ##Check for homogeneity of dispersions (you want this to be insignificant)
   phy.dist.disp <- betadisper(phy_Pcomp.dist, Phy_nmds_pcomp$Treatment, type = "centroid")
@@ -8245,8 +8253,8 @@ phy_Pcomp.div
   permutest(phy.dist.disp) #this is your PERMDISP test
 
 #Pvar, Phy_nmds_Pvar
-phy_Pvar.dist <- vegdist(Phy_nmds_pvar [8:16], method="bray") #make dist matrix
-phy_Pvar.div <- adonis2(Phy_nmds_pvar [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pvar [1:7], permutations = 999, method="bray")
+phy_Pvar.dist <- vegdist(Phy_nmds_pvar[,12:20], method="bray") #make dist matrix
+phy_Pvar.div <- adonis2(Phy_nmds_pvar[,12:20] ~ Treatment*Time.Point, data = Phy_nmds_pvar, permutations = 999, method="bray")
 phy_Pvar.div #view, all is significant
     ##Check for homogeneity of dispersions (you want this to be insignificant)
   phy.dist.disp <- betadisper(phy_Pvar.dist, Phy_nmds_pvar$Treatment, type = "centroid")
@@ -8255,8 +8263,8 @@ phy_Pvar.div #view, all is significant
   
   
 #Pacu, Phy_nmds_Pacu
-phy_Pacu.dist <- vegdist(Phy_nmds_pacu [8:16], method="bray") #make dist matrix
-phy_Pacu.div <- adonis2(Phy_nmds_pacu [8:16] ~ Treatment*Time.Point, data = Phy_nmds_pacu [1:7], permutations = 999, method="bray")
+phy_Pacu.dist <- vegdist(Phy_nmds_pacu[,12:20], method="bray") #make dist matrix
+phy_Pacu.div <- adonis2(Phy_nmds_pacu[,12:20] ~ Treatment*Time.Point, data = Phy_nmds_pacu, permutations = 999, method="bray")
 phy_Pacu.div #view, all is significant
    ##Check for homogeneity of dispersions (you want this to be insignificant)
   phy.dist.disp <- betadisper(phy_Pacu.dist, Phy_nmds_pacu$Treatment, type = "centroid")
@@ -8316,15 +8324,15 @@ apData4<-merge(apData[1:4], apData3, by="row.names") #this should merge them
 apData5<-subset(apData4, select = -c(1) ) #remove rownames
 
 #trying to recode correct stats, scaled/centered and euclidian 10/18/21
-phy.dist.test <- vegdist(apData2[c(5:13)],  method="euclidian") #make dist matrix
-phy.divTest <- adonis2(apData5[c(5:13)] ~ Species*Treatment*Time.Point, data = apData5 [1:4], permutations = 999, method="euclidian")
+phy.dist.test <- vegdist(apData5[c(5:13)], method="euclidean") #make distance matrix from scaled physiology variables
+phy.divTest <- adonis2(apData5[c(5:13)] ~ Species*Treatment*Time.Point, data = apData5, permutations = 999, method="euclidean")
 phy.divTest #view, 
 
 ##Check for homogeneity of dispersions - this runs for the above
 phy.dist.disptest <- betadisper(phy.dist.test, apData$Species, type = "centroid")
 #par(pty = 's')
-boxplot(phy.dist.disp) #visualise your dispersion
-permutest(phy.dist.disp) #this is your PERMDISP test
+boxplot(phy.dist.disptest) #visualise your dispersion
+permutest(phy.dist.disptest) #this is your PERMDISP test
 
 
 
@@ -8332,47 +8340,12 @@ permutest(phy.dist.disp) #this is your PERMDISP test
 
 
 
-#subset by T0#### 
-apDataT0<-PhysioData #make a copy
-apDataT0<-subset(apDataT0, Time.Point=="T0") #
-apDataT0<-na.omit(apDataT0) #remove NAs
-apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point", "Calcification","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR","Code")] #put cols in correct order
-
-apDataT02 <- prcomp(apDataT0[c(5:13)], center = TRUE, scale = TRUE) #center and scale
-summary(apData2)
- 
-str(apData2)
-
-ggbiplot(apData2) #quick look at plot
-
-#exract scores for gg
-Miss_scores <- as.data.frame(apData2$x)
-Miss_scores$frag.id <- apData$Frag.ID
-Miss_scores$parent.id <- apData$Parent.ID
-Miss_scores$treatment <- apData$Treatment
-Miss_scores$species <- apData$Species
-Miss_scores$time.point <- apData$Time.Point
-
-
-#Plot
-ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
-  stat_ellipse(aes(x = PC1, y = PC2, colour = species), linetype = 2) +
-  theme_classic()
-
-#plot by time and species
-Miss_scores$treatSpecies<-paste0(Miss_scores$species, Miss_scores$treatment )
-Miss_scores$treatTime<-paste0(Miss_scores$treatment, Miss_scores$time.point )
-
-ggplot(Miss_scores, aes(x = PC1, y= PC2)) + geom_point(aes(colour = species, shape = time.point), size = 4) +
-  stat_ellipse(aes(x = PC1, y = PC2, colour = treatSpecies), linetype = 2) +
-  theme_classic()
-
-
-
+# T0 PCA uses the no-calcification workflow below because calcification is
+# constant/unavailable at T0 and cannot be scaled to unit variance.
 apDataT0<-PhysioData #copy
 apDataT0<-subset(apDataT0, Time.Point=="T0") #
 #remove calcification
-apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcificaiton
+apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcification
 apDataT0<-na.omit(apDataT0)
 apDataT02 <- prcomp(apDataT0[c(5:12)], center = TRUE, scale = TRUE)
 summary(apDataT02)
@@ -8413,13 +8386,13 @@ ggbiplot(pcobj = apDataT02,
 apDataT0<-PhysioData #copy
 apDataT0<-subset(apDataT0, Time.Point=="T0") #
 #remove calcification
-apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","zoox.cm2_log","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcificaiton
+apDataT0<-apDataT0[,c("Parent.ID","Treatment","Species", "Time.Point","AFDWmg.cm2","Zoox Density","Chl a","Protein", "Fv/Fm","Photosynthesis", "Respiration","PR")] #put cols in correct order, remove calcification
 apDataT0<-na.omit(apDataT0)
  
  apDataT0 <- apDataT0 %>%
  dplyr:: rename(
     Biomass = AFDWmg.cm2,
-    Symbiont_density = zoox.cm2_log,
+    Symbiont_density = `Zoox Density`,
     Soluable_protein=Protein
   )
 
@@ -8446,8 +8419,12 @@ plot<-ggplot(scores, aes(PC1, PC2, color = species)) +
   theme_classic() +
   geom_segment(data = loadings_scaled, aes(x = 0, y = 0, xend = PC1, yend = PC2),
                arrow = arrow(length = unit(0.2, "cm")), color = "black") +
-  geom_text(data = loadings_scaled, aes(x = PC1, y = PC2, label = rownames(loadings_scaled)),
-            color = "black", vjust = 1.5, size=6);plot
+  ggrepel::geom_text_repel(data = loadings_scaled,
+            aes(x = PC1, y = PC2, label = rownames(loadings_scaled)),
+            color = "black", size = 4, seed = 30, max.overlaps = Inf,
+            box.padding = 0.6, min.segment.length = 0,
+            segment.color = ifelse(rownames(loadings_scaled) == "Biomass", "black", NA),
+            segment.linetype = "dotted");plot
 ggsave("Figures/PCA_T0_physio.pdf", plot = plot, device = "pdf", width = 8, height = 6)
 
 
@@ -8484,6 +8461,7 @@ scale_linetype_manual(values=c(1,2,1,2,1,2,1,2))+
   theme_classic();Miss_scores_TF_plot
 
 ###### OLD BELOW, DELETE when you figure it out ####
+if (FALSE) {
 
 # library(VIM)
 # library(FactoMineR)
@@ -8592,12 +8570,13 @@ fviz_pca_ind(PhysioData5.pr, geom.ind = "point", pointshape = 21,
 PhysioData5_mat<-PhysioData5[c(8:11)]
 cor.res <- cor(PhysioData5_mat)
 corrplot.mixed(cor.res, tl.cex = 0.7, tl.col = "black", addCoefasPercent = TRUE)
+}
  
 ```
 
 PCA hannah use physio data
 
-```{r}
+```{r, eval=FALSE, purl=FALSE}
 ##PCA with imputation using PPCA (Probabilistic PCA, can handle ~15% missing data)
 
 ##Use the pcaMethods package for imputing
@@ -8718,7 +8697,7 @@ grid.arrange(Miss_Mcap_pca, Miss_Pcomp_pca, Miss_Pvar_pca,Miss_Pacu_pca, nrow = 
 
 PCA not alive measurements' not PAM.BW
 
-```{r}
+```{r, eval=FALSE, purl=FALSE}
 #PhysioData5 
 
 PhysioData5.pca <- prcomp(PhysioData5[,c(8:11)], center = TRUE,scale. = TRUE)
@@ -8805,9 +8784,9 @@ Pacu_pca<-Pacu_pca+ theme(legend.position = "none") #remove legend
 grid.arrange(Mcap_pca, Pcomp_pca, Pvar_pca,Pacu_pca, nrow = 2)
 ```
 
-Lets try the PCA by Parent.ID, collapse the df by parent.
+Legacy exploratory attempt to collapse the PCA data by parent (not part of the current analysis).
 
-```{r}
+```{r, eval=FALSE, purl=FALSE}
  PhysioData6<-PhysioData #make a copy
 
 
@@ -8873,7 +8852,7 @@ PhysioData_updated <- bind_rows(PhysioData_no_T0, T0_data)
 
 
 #select cols for the PCA - Since no measured data for growth at T0 and it looks the same as making T0 the same as ambient T1, just do not include
-PhysioData_updated3 <- PhysioData_updated2 %>%  
+PhysioData_updated3 <- PhysioData %>%  
   dplyr::select(Parent.ID, Treatment,Species, Time.Point, `Chl a`, Protein, `Zoox Density`, AFDWmg.cm2, `Fv/Fm`, Photosynthesis, Respiration, PR)  #get rid of unused cols
 
 # Subset numeric physiological columns
@@ -9085,7 +9064,7 @@ library(tidyr)
 library(ggplot2)
 
 
-PhysioData_clean <- PhysioData %>%
+PhysioData_clean <- PhysioData_plot %>%
   dplyr::select(-Code, -Depth, -Clade, -Tissue,-transmission, -skeleton, -shape)
 
 # Step 1: Reshape to long format
@@ -9138,7 +9117,7 @@ ggplot(summary_data, aes(x = Time.Point, y = MeanChange, color = Treatment)) +
 # trying again with the focus between treatments at each time point
 ```{r}
 
-PhysioData_clean <- PhysioData %>%
+PhysioData_clean <- PhysioData_plot %>%
   dplyr::select(-Code, -Depth, -Clade, -Tissue,-transmission, -skeleton, -shape)
 
 # Step 1: Reshape to long format
@@ -9187,8 +9166,8 @@ ggsave("percent_difference_plot.pdf",
        width = 8, height = 12, units = "in")
 
 ```
-test
-```{r}
+Legacy percent-change prototype with placeholder `Var*` column names (not part of the current analysis).
+```{r, eval=FALSE, purl=FALSE}
 # Step 1: Calculate average per Parent.ID for each timepoint and treatment
 avg_by_parent <- PhysioData_clean %>%
   group_by(Species, Parent.ID, Treatment, Time.Point) %>%
@@ -9830,9 +9809,14 @@ PR_pc.2_mean)
 PchangeDF_T1TF<-subset(PchangeDF, Time.Point=="T1"|Time.Point=="TF")
 PchangeDF_T1TF$Trait<-as.factor(PchangeDF_T1TF$Trait)
 
-PchangeDF_T1TF$Trait <- ordered(c("P:R","Respiration","Gross Photosynthesis","Protein", "Biomass", "Chl a", "Fv/Fm", "CellCounts"))
+# Preserve each row's trait label; set display order with factor levels below.
 
 PchangeDF_T1TF$Trait <- factor(PchangeDF_T1TF$Trait, levels = c("P:R","Respiration","Gross Photosynthesis","Protein", "Biomass", "Chl a", "Fv/Fm", "Calcification","CellCounts"))
+
+# Use the same full data range for all species/time panels so no trait is hidden.
+percent_difference_limits <- range(c(0, PchangeDF_T1TF$PercentChange), finite = TRUE)
+percent_difference_limits <- percent_difference_limits + c(-1, 1) *
+  max(5, diff(percent_difference_limits) * 0.05)
 
 #mcap
 PchangeDF_T1TF_mcap<-subset(PchangeDF_T1TF, Species=="Montipora capitata")
@@ -9865,7 +9849,7 @@ Mcap_T1_plot<-ggplot(data=PchangeDF_T1_mcap, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-80,80)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -9896,7 +9880,7 @@ Pcomp_T1_plot<-ggplot(data=PchangeDF_T1_pcomp, aes(x=Trait, y=PercentChange, col
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-ylim(-80,80)+
+ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -9926,7 +9910,7 @@ pvar_T1_plot<-ggplot(data=PchangeDF_T1_pvar, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-80,80)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -9956,7 +9940,7 @@ pacu_T1_plot<-ggplot(data=PchangeDF_T1_pacu, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-85,85)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -9979,7 +9963,7 @@ ggsave("Pacut1aga.pdf",pacu_T1_plot, height = 11, width = 7)
 
 
 
-grid.arrange(mcap_T1_plot, Pcomp_T1_plot, pvar_T1_plot,pacu_T1_plot, nrow = 1)
+grid.arrange(Mcapt1, Pcomp_T1_plot, pvar_T1_plot,pacu_T1_plot, nrow = 1)
 
 
 
@@ -9994,7 +9978,7 @@ mcap_TF_plot<-ggplot(data=PchangeDF_TF_mcap, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-80,80)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -10024,7 +10008,7 @@ Pcomp_TF_plot<-ggplot(data=PchangeDF_TF_pcomp, aes(x=Trait, y=PercentChange, col
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-ylim(-80,80)+
+ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -10054,7 +10038,7 @@ pvar_TF_plot<-ggplot(data=PchangeDF_TF_pvar, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-80,80)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -10084,7 +10068,7 @@ pacu_TF_plot<-ggplot(data=PchangeDF_TF_pacu, aes(x=Trait, y=PercentChange, color
   geom_line(aes(color=Trait), show.legend = F)+
   #scale_color_manual(values=c("dodgerblue3", "darkorange", "darkred"))+
   xlab("mean") + #Label the X Axis
-  ylim(-85,85)+
+  ylim(percent_difference_limits)+
   geom_hline(yintercept=0, linetype="dashed", size=.5) +
   #ylim(0,2000) + #set Y limits
    #scale_y_log10()+
@@ -10107,7 +10091,7 @@ ggsave("pacu_TF_plot.pdf",pacu_TF_plot, height = 11, width = 7)
 
 
 
-grid.arrange(TF_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
+grid.arrange(mcap_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 ```
 
 #Plot mean ordi

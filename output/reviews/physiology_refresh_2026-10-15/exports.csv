@@ -1,0 +1,15 @@
+path,bytes
+PhysioData.csv,59652
+Phy_nmds.MDS.T0.csv,5636
+Figures/PCA_T0_physio.pdf,10195
+PhysPCAAarow_plot.pdf,21555
+PhysPCAAarow_NoCalc_plot.pdf,21472
+percent_difference_plot.pdf,11480
+Mcapt1.pdf,5609
+Pcompt1.pdf,5606
+Pvart1.pdf,5615
+Pacut1aga.pdf,5607
+mcap_TF_plot.pdf,5562
+Pcomp_TF_plot.pdf,5569
+pvar_TF_plot.pdf,5580
+pacu_TF_plot.pdf,5576

@@ -2,3 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# Local system files and generated review intermediates
+.DS_Store
+Rplots.pdf
+*.inspect.ndjson
+/tmp/
+/output/reviews/*/objects.rds
+/output/reviews/*/rendered/
+/output/reviews/*/previous/
+/output/reviews/*/*.log
