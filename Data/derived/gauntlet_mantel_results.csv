@@ -1,0 +1,176 @@
+"comparison","pair_type","n","r","p"
+"T0_Montipora_capitata","16S vs ITS2",9,-0.09460654904635,0.665
+"T0_Pavona_varians","16S vs ITS2",12,-0.0473982026035731,0.623
+"T0_Pocillopora_acuta","16S vs ITS2",8,-0.0582467365837239,0.632
+"T0_Porites_compressa","16S vs ITS2",10,-0.187945042444348,0.866
+"T0_all","16S vs ITS2",39,0.496976777948209,0.001
+"T1_Ambient_Montipora_capitata","16S vs ITS2",10,-0.129839848220378,0.75
+"T1_Ambient_Pavona_varians","16S vs ITS2",8,0.266977918887024,0.089
+"T1_Ambient_Pocillopora_acuta","16S vs ITS2",7,-0.24165817964759,0.83
+"T1_Ambient_Porites_compressa","16S vs ITS2",12,-0.181539774210144,0.971
+"T1_Ambient_all","16S vs ITS2",37,0.723908192795231,0.001
+"T1_High_Montipora_capitata","16S vs ITS2",8,-0.123806052955201,0.692
+"T1_High_Pavona_varians","16S vs ITS2",12,0.375153548847006,0.018
+"T1_High_Pocillopora_acuta","16S vs ITS2",9,-0.0386522682141464,0.442
+"T1_High_Porites_compressa","16S vs ITS2",11,0.19554293887292,0.264
+"T1_High_all","16S vs ITS2",40,0.593680345386987,0.001
+"TF_Ambient_Montipora_capitata","16S vs ITS2",6,0.296199494238638,0.175
+"TF_Ambient_Pavona_varians","16S vs ITS2",11,-0.0760685449804333,0.675
+"TF_Ambient_Pocillopora_acuta","16S vs ITS2",9,0.294874494473134,0.081
+"TF_Ambient_Porites_compressa","16S vs ITS2",12,-0.0783613069593057,0.689
+"TF_Ambient_all","16S vs ITS2",38,0.707857255318706,0.001
+"TF_High_Montipora_capitata","16S vs ITS2",8,-0.259873646623245,0.917
+"TF_High_Pavona_varians","16S vs ITS2",10,0.00177088350089471,0.45
+"TF_High_Pocillopora_acuta","16S vs ITS2",4,0.123432207942278,0.416666666666667
+"TF_High_Porites_compressa","16S vs ITS2",10,0.00252172635541637,0.582
+"TF_High_all","16S vs ITS2",32,0.533467736843422,0.001
+"T0_Montipora_capitata","16S vs host condition",9,-0.0874508361339697,0.644
+"T0_Pavona_varians","16S vs host condition",8,0.14524303960167,0.269
+"T0_Pocillopora_acuta","16S vs host condition",6,0.303364143262236,0.123611111111111
+"T0_Porites_compressa","16S vs host condition",10,-0.0710541066017161,0.523
+"T0_all","16S vs host condition",33,0.289957170332831,0.001
+"T1_Ambient_Montipora_capitata","16S vs host condition",10,0.312729272860218,0.036
+"T1_Ambient_Pavona_varians","16S vs host condition",9,-0.127268126956575,0.796
+"T1_Ambient_Pocillopora_acuta","16S vs host condition",7,0.0443138268528474,0.455
+"T1_Ambient_Porites_compressa","16S vs host condition",11,0.0216533259851453,0.345
+"T1_Ambient_all","16S vs host condition",37,0.0225916648466571,0.37
+"T1_High_Montipora_capitata","16S vs host condition",9,-0.244944358583768,0.838
+"T1_High_Pavona_varians","16S vs host condition",12,-0.145970567082545,0.786
+"T1_High_Pocillopora_acuta","16S vs host condition",9,-0.0500065166613081,0.51
+"T1_High_Porites_compressa","16S vs host condition",11,0.0687603341138136,0.484
+"T1_High_all","16S vs host condition",41,0.0394705203139546,0.243
+"TF_Ambient_Montipora_capitata","16S vs host condition",6,-0.227060736898849,0.761111111111111
+"TF_Ambient_Pavona_varians","16S vs host condition",11,0.210895847738644,0.078
+"TF_Ambient_Pocillopora_acuta","16S vs host condition",9,-0.302541382490517,0.92
+"TF_Ambient_Porites_compressa","16S vs host condition",12,0.320614302967978,0.04
+"TF_Ambient_all","16S vs host condition",38,0.105743174878348,0.046
+"TF_High_Montipora_capitata","16S vs host condition",7,-0.35055517113589,0.938
+"TF_High_Pavona_varians","16S vs host condition",11,-0.056432241451255,0.579
+"TF_High_Pocillopora_acuta","16S vs host condition",6,0.232434221279555,0.0819444444444444
+"TF_High_Porites_compressa","16S vs host condition",8,-0.228571947747769,0.774
+"TF_High_all","16S vs host condition",32,-0.0187108857412712,0.583
+"T0_Montipora_capitata","16S vs overall physiology",9,-0.0342278065154624,0.557
+"T0_Pavona_varians","16S vs overall physiology",8,0.174941476591976,0.234
+"T0_Pocillopora_acuta","16S vs overall physiology",6,0.23523600492995,0.184722222222222
+"T0_Porites_compressa","16S vs overall physiology",10,-0.1003773699322,0.608
+"T0_all","16S vs overall physiology",33,0.3120087925184,0.001
+"T1_Ambient_Montipora_capitata","16S vs overall physiology",10,0.131175725223671,0.23
+"T1_Ambient_Pavona_varians","16S vs overall physiology",9,-0.325320425675086,0.961
+"T1_Ambient_Pocillopora_acuta","16S vs overall physiology",7,-0.242193130927076,0.745
+"T1_Ambient_Porites_compressa","16S vs overall physiology",11,0.0609267804415936,0.338
+"T1_Ambient_all","16S vs overall physiology",37,0.141593226254713,0.024
+"T1_High_Montipora_capitata","16S vs overall physiology",9,0.291034606834169,0.09
+"T1_High_Pavona_varians","16S vs overall physiology",12,-0.101899618758301,0.689
+"T1_High_Pocillopora_acuta","16S vs overall physiology",9,-0.109100217617157,0.69
+"T1_High_Porites_compressa","16S vs overall physiology",11,0.212279420441252,0.24
+"T1_High_all","16S vs overall physiology",41,0.048884782117029,0.181
+"TF_Ambient_Montipora_capitata","16S vs overall physiology",3,-0.44495776629456,0.666666666666667
+"TF_Ambient_Pavona_varians","16S vs overall physiology",5,-0.312052414091198,0.725
+"TF_Ambient_Pocillopora_acuta","16S vs overall physiology",6,0.468968980359124,0.134722222222222
+"TF_Ambient_Porites_compressa","16S vs overall physiology",12,0.0618253619786776,0.383
+"TF_Ambient_all","16S vs overall physiology",26,0.07937780717627,0.185
+"TF_High_Montipora_capitata","16S vs overall physiology",6,-0.241676926343598,0.869444444444444
+"TF_High_Pavona_varians","16S vs overall physiology",11,0.0663011562129156,0.369
+"TF_High_Pocillopora_acuta","16S vs overall physiology",5,0.258982318058528,0.241666666666667
+"TF_High_Porites_compressa","16S vs overall physiology",7,-0.315519965467478,0.857
+"TF_High_all","16S vs overall physiology",29,-0.134002268485655,0.967
+"T0_Montipora_capitata","16S vs symbiont physiology",9,0.0447221725203052,0.351
+"T0_Pavona_varians","16S vs symbiont physiology",8,0.429678088520044,0.022
+"T0_Pocillopora_acuta","16S vs symbiont physiology",6,0.200558554514348,0.229166666666667
+"T0_Porites_compressa","16S vs symbiont physiology",10,-0.056836597069951,0.528
+"T0_all","16S vs symbiont physiology",33,0.276964261934889,0.001
+"T1_Ambient_Montipora_capitata","16S vs symbiont physiology",10,-0.161584662385411,0.825
+"T1_Ambient_Pavona_varians","16S vs symbiont physiology",9,-0.24700782876718,0.908
+"T1_Ambient_Pocillopora_acuta","16S vs symbiont physiology",7,-0.481126241115121,0.95
+"T1_Ambient_Porites_compressa","16S vs symbiont physiology",11,-0.00850679698577451,0.387
+"T1_Ambient_all","16S vs symbiont physiology",37,0.180580687284451,0.007
+"T1_High_Montipora_capitata","16S vs symbiont physiology",9,0.576932938544208,0.006
+"T1_High_Pavona_varians","16S vs symbiont physiology",12,-0.219752007925773,0.884
+"T1_High_Pocillopora_acuta","16S vs symbiont physiology",9,-0.176205645819726,0.725
+"T1_High_Porites_compressa","16S vs symbiont physiology",11,0.221052957699091,0.243
+"T1_High_all","16S vs symbiont physiology",41,0.0965008874211802,0.08
+"TF_Ambient_Montipora_capitata","16S vs symbiont physiology",3,-0.656086004086005,0.833333333333333
+"TF_Ambient_Pavona_varians","16S vs symbiont physiology",5,-0.589375583360818,1
+"TF_Ambient_Pocillopora_acuta","16S vs symbiont physiology",6,0.387047236117945,0.145833333333333
+"TF_Ambient_Porites_compressa","16S vs symbiont physiology",12,-0.0929054898214288,0.477
+"TF_Ambient_all","16S vs symbiont physiology",26,0.151789932051464,0.07
+"TF_High_Montipora_capitata","16S vs symbiont physiology",7,-0.190507082039373,0.811
+"TF_High_Pavona_varians","16S vs symbiont physiology",11,0.0410633327112157,0.398
+"TF_High_Pocillopora_acuta","16S vs symbiont physiology",5,0.17451064571069,0.25
+"TF_High_Porites_compressa","16S vs symbiont physiology",9,-0.227513589677724,0.818
+"TF_High_all","16S vs symbiont physiology",32,-0.113507494635234,0.949
+"T0_Montipora_capitata","ITS2 vs host condition",12,0.172989411812817,0.106
+"T0_Pavona_varians","ITS2 vs host condition",8,0.0330096797153942,0.388
+"T0_Pocillopora_acuta","ITS2 vs host condition",10,-0.122280766895671,0.722
+"T0_Porites_compressa","ITS2 vs host condition",12,-0.0540285393213573,0.662
+"T0_all","ITS2 vs host condition",42,0.260353764745632,0.001
+"T1_Ambient_Montipora_capitata","ITS2 vs host condition",12,0.0275192487562029,0.392
+"T1_Ambient_Pavona_varians","ITS2 vs host condition",11,-0.102822932740976,0.691
+"T1_Ambient_Pocillopora_acuta","ITS2 vs host condition",11,0.0611964264355515,0.36
+"T1_Ambient_Porites_compressa","ITS2 vs host condition",11,-0.164096034786645,0.848
+"T1_Ambient_all","ITS2 vs host condition",45,0.167420486393605,0.001
+"T1_High_Montipora_capitata","ITS2 vs host condition",10,0.502468382664751,0.015
+"T1_High_Pavona_varians","ITS2 vs host condition",12,0.0641945757129328,0.274
+"T1_High_Pocillopora_acuta","ITS2 vs host condition",10,0.28810506622157,0.103
+"T1_High_Porites_compressa","ITS2 vs host condition",12,-0.0671098061519046,0.644
+"T1_High_all","ITS2 vs host condition",44,0.191724066644273,0.001
+"TF_Ambient_Montipora_capitata","ITS2 vs host condition",9,-0.0223423354559457,0.515
+"TF_Ambient_Pavona_varians","ITS2 vs host condition",12,-0.159647609501678,0.929
+"TF_Ambient_Pocillopora_acuta","ITS2 vs host condition",11,0.0647728693026387,0.381
+"TF_Ambient_Porites_compressa","ITS2 vs host condition",12,-0.0431858203975116,0.603
+"TF_Ambient_all","ITS2 vs host condition",44,0.16945605241234,0.001
+"TF_High_Montipora_capitata","ITS2 vs host condition",10,-0.180615259704441,0.936
+"TF_High_Pavona_varians","ITS2 vs host condition",11,-0.00973333817719525,0.512
+"TF_High_Pocillopora_acuta","ITS2 vs host condition",8,0.300350105817371,0.217
+"TF_High_Porites_compressa","ITS2 vs host condition",9,-0.237569379119204,0.918
+"TF_High_all","ITS2 vs host condition",38,0.301296012900812,0.001
+"T0_Montipora_capitata","ITS2 vs overall physiology",12,0.158047083430064,0.104
+"T0_Pavona_varians","ITS2 vs overall physiology",8,0.107316666968158,0.258
+"T0_Pocillopora_acuta","ITS2 vs overall physiology",10,0.0437749000543244,0.408
+"T0_Porites_compressa","ITS2 vs overall physiology",12,-0.209438286116584,0.928
+"T0_all","ITS2 vs overall physiology",42,0.403039487696173,0.001
+"T1_Ambient_Montipora_capitata","ITS2 vs overall physiology",12,0.420586239010305,0.005
+"T1_Ambient_Pavona_varians","ITS2 vs overall physiology",11,0.228685015553827,0.102
+"T1_Ambient_Pocillopora_acuta","ITS2 vs overall physiology",11,0.162911123926751,0.225
+"T1_Ambient_Porites_compressa","ITS2 vs overall physiology",11,0.0495167409067329,0.362
+"T1_Ambient_all","ITS2 vs overall physiology",45,0.27459059876491,0.001
+"T1_High_Montipora_capitata","ITS2 vs overall physiology",10,0.314541583842685,0.084
+"T1_High_Pavona_varians","ITS2 vs overall physiology",12,0.0503280440908019,0.381
+"T1_High_Pocillopora_acuta","ITS2 vs overall physiology",10,0.526972400161633,0.009
+"T1_High_Porites_compressa","ITS2 vs overall physiology",12,0.109533812980622,0.25
+"T1_High_all","ITS2 vs overall physiology",44,0.190620611022119,0.001
+"TF_Ambient_Montipora_capitata","ITS2 vs overall physiology",4,-0.0386574807620035,0.416666666666667
+"TF_Ambient_Pavona_varians","ITS2 vs overall physiology",5,-0.0222206508655817,0.416666666666667
+"TF_Ambient_Pocillopora_acuta","ITS2 vs overall physiology",8,0.505589218688819,0.053
+"TF_Ambient_Porites_compressa","ITS2 vs overall physiology",12,-0.0681217782299454,0.66
+"TF_Ambient_all","ITS2 vs overall physiology",29,0.148050312449255,0.026
+"TF_High_Montipora_capitata","ITS2 vs overall physiology",9,-0.0896938081510279,0.662
+"TF_High_Pavona_varians","ITS2 vs overall physiology",11,-0.129622242283625,0.777
+"TF_High_Pocillopora_acuta","ITS2 vs overall physiology",8,0.210896489471893,0.247
+"TF_High_Porites_compressa","ITS2 vs overall physiology",8,-0.143763089199786,0.742
+"TF_High_all","ITS2 vs overall physiology",36,0.247456086475652,0.001
+"T0_Montipora_capitata","ITS2 vs symbiont physiology",12,0.0996490641013088,0.211
+"T0_Pavona_varians","ITS2 vs symbiont physiology",8,0.0933842484676961,0.332
+"T0_Pocillopora_acuta","ITS2 vs symbiont physiology",10,0.138137306916226,0.165
+"T0_Porites_compressa","ITS2 vs symbiont physiology",12,-0.240724327140297,0.977
+"T0_all","ITS2 vs symbiont physiology",42,0.428141452282964,0.001
+"T1_Ambient_Montipora_capitata","ITS2 vs symbiont physiology",12,0.479892060862325,0.003
+"T1_Ambient_Pavona_varians","ITS2 vs symbiont physiology",11,0.300783136504611,0.036
+"T1_Ambient_Pocillopora_acuta","ITS2 vs symbiont physiology",11,0.159654570167965,0.196
+"T1_Ambient_Porites_compressa","ITS2 vs symbiont physiology",11,0.243205236628576,0.064
+"T1_Ambient_all","ITS2 vs symbiont physiology",45,0.275575493672742,0.001
+"T1_High_Montipora_capitata","ITS2 vs symbiont physiology",10,0.162859738590711,0.217
+"T1_High_Pavona_varians","ITS2 vs symbiont physiology",12,0.0193089009964995,0.443
+"T1_High_Pocillopora_acuta","ITS2 vs symbiont physiology",10,0.40116278959812,0.015
+"T1_High_Porites_compressa","ITS2 vs symbiont physiology",12,0.178421998937468,0.139
+"T1_High_all","ITS2 vs symbiont physiology",44,0.189790266038998,0.001
+"TF_Ambient_Montipora_capitata","ITS2 vs symbiont physiology",4,-0.177003624441588,0.666666666666667
+"TF_Ambient_Pavona_varians","ITS2 vs symbiont physiology",5,0.134700171130215,0.216666666666667
+"TF_Ambient_Pocillopora_acuta","ITS2 vs symbiont physiology",8,0.530382656887294,0.066
+"TF_Ambient_Porites_compressa","ITS2 vs symbiont physiology",12,-0.034663830493447,0.563
+"TF_Ambient_all","ITS2 vs symbiont physiology",29,0.227415478598726,0.003
+"TF_High_Montipora_capitata","ITS2 vs symbiont physiology",10,-0.0376135278019,0.542
+"TF_High_Pavona_varians","ITS2 vs symbiont physiology",11,-0.0887188230392407,0.703
+"TF_High_Pocillopora_acuta","ITS2 vs symbiont physiology",8,-0.0166022414466112,0.405
+"TF_High_Porites_compressa","ITS2 vs symbiont physiology",11,0.158254327000589,0.161
+"TF_High_all","ITS2 vs symbiont physiology",40,0.256439222312035,0.001

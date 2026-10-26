@@ -1,0 +1,22 @@
+"Time.Point","Treatment","Species","n_16S","n_ITS2","n_physiology","n_shared_all_three"
+"T0","Baseline","All species",39,48,48,33
+"T1","Ambient","All species",38,46,47,36
+"TF","Ambient","All species",39,45,30,25
+"T1","High","All species",41,44,48,40
+"TF","High","All species",35,42,41,27
+"T1","Ambient","Montipora_capitata",10,12,12,10
+"TF","Ambient","Montipora_capitata",7,10,5,2
+"T1","High","Montipora_capitata",9,10,12,8
+"TF","High","Montipora_capitata",8,11,10,6
+"T1","Ambient","Porites_compressa",12,12,11,11
+"TF","Ambient","Porites_compressa",12,12,12,12
+"T1","High","Porites_compressa",11,12,12,11
+"TF","High","Porites_compressa",10,12,8,7
+"T1","Ambient","Pavona_varians",9,11,12,8
+"TF","Ambient","Pavona_varians",11,12,5,5
+"T1","High","Pavona_varians",12,12,12,12
+"TF","High","Pavona_varians",11,11,12,10
+"T1","Ambient","Pocillopora_acuta",7,11,12,7
+"TF","Ambient","Pocillopora_acuta",9,11,8,6
+"T1","High","Pocillopora_acuta",9,10,12,9
+"TF","High","Pocillopora_acuta",6,8,11,4

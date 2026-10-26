@@ -1,0 +1,16 @@
+"comparison","association","n","r_partial","p"
+"T0","16S vs physiology | ITS2",33,0.0291341314709787,0.357
+"T0","ITS2 vs physiology | 16S",33,0.35977995033465,0.001
+"T0","16S vs ITS2 | physiology",33,0.578837610413958,0.001
+"T1_Ambient","16S vs physiology | ITS2",36,-0.08357427557789,0.861
+"T1_Ambient","ITS2 vs physiology | 16S",36,0.266631586999485,0.001
+"T1_Ambient","16S vs ITS2 | physiology",36,0.692987620944234,0.001
+"T1_High","16S vs physiology | ITS2",40,-0.0541650001025245,0.798
+"T1_High","ITS2 vs physiology | 16S",40,0.164703691194366,0.001
+"T1_High","16S vs ITS2 | physiology",40,0.59363406156603,0.001
+"TF_Ambient","16S vs physiology | ITS2",25,-0.0457478499420736,0.633
+"TF_Ambient","ITS2 vs physiology | 16S",25,0.116644061580488,0.129
+"TF_Ambient","16S vs ITS2 | physiology",25,0.809794472087404,0.001
+"TF_High","16S vs physiology | ITS2",27,-0.20693456954826,1
+"TF_High","ITS2 vs physiology | 16S",27,0.228468795081858,0.001
+"TF_High","16S vs ITS2 | physiology",27,0.419755255416232,0.001

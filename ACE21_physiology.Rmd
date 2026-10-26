@@ -5188,7 +5188,7 @@ duplicated(Protein_psy)
 Calcification_psy<- Growth.Percent.day #copy df
 
 Calcification_psy <- Calcification_psy %>%
-  mutate(percent.change = ifelse(Time.Point == "T0", 0, percent.change))
+  mutate(percent.change = ifelse(Time.point == "T0", 0, percent.change))
 (Calcification_psy <- Calcification_psy %>%
   drop_na() )
 Calcification_psy$Time.point<-as.character(Calcification_psy$Time.point)
@@ -5493,9 +5493,9 @@ plot<-ggplot() +
        x = "PC1", y = "PC2") +
   theme(legend.position = "right")
 
-# ACE21 Fig 4 20260319.pdf, panel A (top row): physiology PCA over time, faceted by host species
-# This panel shows the multivariate trajectory of each host species through T0, T1, and TF under Ambient and High treatment.
-# Output: PhysPCAAarow_plot.pdf
+# Supplementary figure: physiology PCA trajectories over time, faceted by host species
+# Former Figure 4A. This panel shows the multivariate trajectory of each host species through T0, T1, and TF under Ambient and High treatment.
+# Output: Figures/Supplementary_Physiology_PCA_trajectories.pdf
 #Facet by species
 plot+facet_wrap(~Species, scales = "free", nrow=1)+
 
@@ -5511,7 +5511,7 @@ plot+facet_wrap(~Species, scales = "free", nrow=1)+
   theme(legend.position = "right")
 
 # Save the plot to a PDF with 8x10 size
-ggsave("PhysPCAAarow_plot.pdf", 
+ggsave("Figures/Supplementary_Physiology_PCA_trajectories.pdf", 
        plot = last_plot(), 
        width = 10, 
        height = 5, 
@@ -6456,8 +6456,8 @@ ggsave("pacu_TF_plot.pdf",pacu_TF_plot, height = 11, width = 7)
 grid.arrange(mcap_TF_plot, Pcomp_TF_plot, pvar_TF_plot,pacu_TF_plot, nrow = 1)
 ```
 
-# Figure 4 physiology significance summary
-This Figure 4 panel summarizes treatment-effect p-values by physiology trait, host species, and experimental time point. The table below is built directly from the current cleaned trait datasets and primary treatment models, so it updates automatically whenever the data or model specifications change. Photosynthesis uses gross photosynthesis (`GrossP`), matching the physiology plots, PCA, and merged physiology dataset.
+# Figure 4 physiological effect-size summary
+This Figure 4 panel shows the magnitude and direction of the High-versus-Ambient treatment difference for each trait, host species, and post-stress time point. Cell color and text use untransformed trait means; asterisks retain the model-based treatment-effect significance from the current primary models. The panel therefore shows effect size and direction without applying statistical transformations to plotted values. Photosynthesis uses gross photosynthesis (`GrossP`), matching the physiology plots, PCA, and merged physiology dataset.
 ```{r}
 build_figure4_physio_table <- function() {
   species_full <- c("Montipora capitata", "Porites compressa", "Pavona varians", "Pocillopora acuta")
@@ -6494,6 +6494,16 @@ build_figure4_physio_table <- function() {
 
 phys_fig4 <- build_figure4_physio_table()
 
+# Reload raw values outside the model-building function for the effect-size plot.
+# These values are used only to calculate High-versus-Ambient percent differences.
+biomass_fig4 <- readRDS("Data/derived/biomass_clean.rds")
+cells_fig4 <- readRDS("Data/derived/cell_counts_clean.rds")
+growth_fig4 <- readRDS("Data/derived/calcification_clean.rds") %>% filter(!is.na(percent.change), Time.point %in% c("time1.growth", "time2.growth")) %>% mutate(Time.Point = if_else(Time.point == "time1.growth", "T1", "TF"))
+chla_fig4 <- readRDS("Data/derived/chlorophyll_clean.rds")
+pam_fig4 <- readRDS("Data/derived/pam_clean.rds") %>% mutate(Days = as.character(Days), Time.Point = case_when(Days == "24" ~ "T1", Days == "52" ~ "TF", TRUE ~ NA_character_)) %>% filter(!is.na(Time.Point))
+protein_fig4 <- readRDS("Data/derived/protein_clean.rds")
+respirometry_fig4 <- readRDS("Data/derived/respirometry_clean.rds") %>% filter(Time.Point %in% c("T1", "TF"))
+
 trait_order <- c(
   "Biomass",
   "Protein",
@@ -6526,34 +6536,39 @@ figure4_colors <- c(
   "Not significant" = "azure3"
 )
 
-physiology_figure4 <- ggplot(
-  phys_fig4,
-  aes(x = `Time pt`, y = `Physiology trait`, fill = fill_category)
-) +
-  geom_tile(color = "#2B2B2B", linewidth = 0.6, width = 0.95, height = 0.98) +
-  geom_text(aes(label = p_label), size = 3.4, fontface = "bold") +
-  facet_grid(. ~ `Host species`, switch = "x") +
-  scale_fill_manual(values = figure4_colors) +
-  scale_x_discrete(position = "top") +
-  labs(x = NULL, y = NULL) +
-  theme_void() +
-  theme(
-    legend.position = "none",
-    panel.background = element_rect(fill = "white", color = "black"),
-    plot.background = element_rect(fill = "white", color = "black"),
-    strip.background = element_rect(fill = "white", color = "black"),
-    strip.text.x = element_text(
-      color = "black",
-      face = "italic",
-      size = 10,
-      margin = margin(b = 8)
-    ),
-    axis.text.x = element_text(color = "black", face = "bold", size = 11),
-    axis.text.y = element_text(color = "black", size = 10, hjust = 1),
-    panel.spacing.x = unit(1.2, "lines"),
-    plot.margin = margin(20, 20, 20, 20)
-  )
+# Figure 4 displays raw High-versus-Ambient effect sizes; the model-based p-values above provide the asterisks.
+figure4_species_full <- c("Montipora capitata", "Porites compressa", "Pavona varians", "Pocillopora acuta")
+figure4_effect_inputs <- list(
+  Biomass = biomass_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Biomass", Value = AFDWmg.cm2),
+  Protein = protein_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Protein", Value = mg.mm2),
+  Calcification = growth_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Calcification", Value = percent.change),
+  `Algal Cell Counts` = cells_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Algal Cell Counts", Value = zoox.cm2),
+  `Chl-a` = chla_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Chl-a", Value = ChlaSA),
+  `Quantum yield` = pam_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Quantum yield", Value = Yield),
+  Photosynthesis = respirometry_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Photosynthesis", Value = GrossP),
+  Respiration = respirometry_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Respiration", Value = RespPos),
+  `Metabolic Rate` = respirometry_fig4 %>% transmute(Species, Treatment, Time.Point, `Physiology trait` = "Metabolic Rate", Value = PR_real)
+)
+
+figure4_effects <- bind_rows(figure4_effect_inputs) %>%
+  filter(Time.Point %in% c("T1", "TF")) %>%
+  group_by(`Physiology trait`, Species, Time.Point, Treatment) %>%
+  summarise(mean_value = mean(Value, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Treatment, values_from = mean_value) %>%
+  mutate(percent_difference = 100 * (High - Ambient) / Ambient, `Host species` = dplyr::recode(Species, "Montipora capitata" = "M. capitata", "Porites compressa" = "P. compressa", "Pavona varians" = "P. varians", "Pocillopora acuta" = "P. acuta")) %>%
+  left_join(phys_fig4 %>% dplyr::select(`Physiology trait`, `Host species`, `Time pt`, significant), by = c("Physiology trait", "Host species", "Time.Point" = "Time pt")) %>%
+  mutate(`Physiology trait` = factor(`Physiology trait`, levels = rev(trait_order)), Species = factor(Species, levels = figure4_species_full), Time.Point = factor(Time.Point, levels = c("T1", "TF")), cell_label = paste0(sprintf("%.0f", percent_difference), "%", if_else(coalesce(significant, FALSE), "*", "")))
+
+physiology_figure4 <- ggplot(figure4_effects, aes(x = Species, y = `Physiology trait`, fill = percent_difference)) +
+  geom_tile(color = "white", linewidth = 0.9) +
+  geom_text(aes(label = cell_label), size = 3.3) +
+  facet_wrap(~Time.Point, nrow = 1) +
+  scale_fill_gradient2(low = "#B2182B", mid = "white", high = "#2166AC", midpoint = 0, limits = c(-85, 85), oob = scales::squish, name = "% difference\nHigh vs Ambient") +
+  labs(x = NULL, y = NULL, caption = "* Significant High-versus-Ambient treatment effect (p < 0.05).") +
+  theme_minimal(base_size = 11) +
+  theme(panel.grid = element_blank(), strip.text = element_text(face = "bold"), axis.text.x = element_text(face = "italic", angle = 30, hjust = 1), plot.caption = element_text(hjust = 0))
 
 physiology_figure4
-ggsave("Figures/ACE21_Figure4_physiology_summary.pdf", physiology_figure4, width = 10, height = 7, units = "in")
+ggsave("Figures/ACE21_Figure4_physiology_summary.pdf", physiology_figure4, width = 11, height = 6, units = "in", bg = "white")
+ggsave("Figures/ACE21_Figure4_physiology_summary.png", physiology_figure4, width = 11, height = 6, units = "in", dpi = 300, bg = "white")
 ```

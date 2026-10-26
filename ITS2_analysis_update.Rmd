@@ -1179,10 +1179,41 @@ ITS2_lineage_NMDS_panel <- arrangeGrob(McapITS2_T1TF, PcompITS2_T1TF, PvarITS2_T
 ggsave("Figures/ITS2_T1_TF_NMDS.pdf", plot = ITS2_lineage_NMDS_panel, width = 16, height = 7, units = "in")
 
 ```
-All plots: Figure S15
+Legacy treatment-only ITS2 ordinations; retained for reference and not used as Figure S15.
 ```{r}
 ITS2_treatment_NMDS_panel <- arrangeGrob(McapITS2_T1TFplot, PcompITS2_T1TFplot, PvarITS2_T1TFplot, PacuITS2_T1TFplot, nrow = 4)
-ggsave("Figures/ITS2_T1_TF_NMDS_FigS15.pdf", plot = ITS2_treatment_NMDS_panel, width = 7, height = 16, units = "in")
+ggsave("Figures/ITS2_T1_TF_NMDS_treatment_legacy.pdf", plot = ITS2_treatment_NMDS_panel, width = 7, height = 16, units = "in")
+
+# Supplementary Figure S15: algal symbiont lineages across the experiment
+# Each panel is an NMDS of ITS2 Bray-Curtis dissimilarity within one host species.
+# Point color identifies the dominant algal symbiont lineage, point shape identifies
+# time point, and lines connect lineage centroids from T0 through TF.
+```{r}
+its2_lineage_alltime <- readRDS("Data/ITS2_phyloseq.rds")
+its2_species_levels <- c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")
+its2_species_labels <- c("Montipora capitata" = "M. capitata", "Porites compressa" = "P. compressa", "Pavona varians" = "P. varians", "Pocillopora acuta" = "P. acuta")
+its2_lineage_colours <- c("C31" = "goldenrod1", "C31D4" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1" = "pink1", "C27" = "firebrick", "C1d" = "palegreen2", "C42_2" = "darkgreen")
+
+# Use one ordination across all samples so the panel retains the lineage separation
+# visible in the all-species ITS2 NMDS; panels then show the same ordination by host.
+set.seed(101)
+its2_lineage_global_nmds <- ordinate(its2_lineage_alltime, method = "NMDS", distance = "bray", trymax = 100)
+its2_lineage_global_data <- plot_ordination(its2_lineage_alltime, its2_lineage_global_nmds, justDF = TRUE) %>% filter(!is.na(Clade), Species %in% its2_species_levels, Time.Point %in% c("T0", "T1", "TF")) %>% mutate(Time.Point = factor(Time.Point, levels = c("T0", "T1", "TF")))
+
+make_its2_lineage_time_plot <- function(species_name) {
+  ord_data <- its2_lineage_global_data %>% filter(Species == species_name)
+  centroids <- ord_data %>% group_by(Clade, Time.Point) %>% summarise(NMDS1 = mean(NMDS1), NMDS2 = mean(NMDS2), .groups = "drop")
+  ggplot(ord_data, aes(NMDS1, NMDS2)) + geom_path(data = centroids, aes(NMDS1, NMDS2, group = Clade, color = Clade), linewidth = 0.7, arrow = arrow(length = unit(0.12, "in")), inherit.aes = FALSE) + geom_point(data = centroids, aes(NMDS1, NMDS2, color = Clade), size = 3, inherit.aes = FALSE) + geom_point(aes(color = Clade, shape = Time.Point), size = 2.3, alpha = 0.75) + stat_ellipse(aes(color = Clade), level = 0.80, linewidth = 0.5, linetype = 2, show.legend = FALSE) + scale_color_manual(values = its2_lineage_colours, name = "Dominant lineage") + scale_shape_manual(values = c("T0" = 16, "T1" = 17, "TF" = 15), name = "Time point") + labs(title = its2_species_labels[gsub("_", " ", species_name)], x = "NMDS1", y = "NMDS2") + theme_classic(base_size = 11) + theme(plot.title = element_text(face = "italic", hjust = 0.5), legend.position = "none")
+}
+
+its2_lineage_time_plots <- purrr::map(its2_species_levels, make_its2_lineage_time_plot)
+ITS2_lineage_time_panels <- cowplot::plot_grid(plotlist = its2_lineage_time_plots, ncol = 2)
+its2_lineage_legend_plot <- ggplot(tidyr::expand_grid(Clade = names(its2_lineage_colours), Time.Point = c("T0", "T1", "TF")), aes(x = Clade, y = Time.Point, color = Clade, shape = Time.Point)) + geom_point(size = 3) + scale_color_manual(values = its2_lineage_colours, name = "Dominant lineage") + scale_shape_manual(values = c("T0" = 16, "T1" = 17, "TF" = 15), name = "Time point") + theme_void() + theme(legend.position = "bottom", legend.box = "vertical", plot.background = element_rect(fill = "white", color = NA), panel.background = element_rect(fill = "white", color = NA))
+its2_lineage_legend <- cowplot::get_plot_component(its2_lineage_legend_plot, "guide-box-bottom")
+ITS2_lineages_across_time_FigS15 <- cowplot::plot_grid(ITS2_lineage_time_panels, its2_lineage_legend, ncol = 1, rel_heights = c(1, 0.13))
+ggsave("Figures/ITS2_lineages_across_time_FigS15.pdf", ITS2_lineages_across_time_FigS15, width = 10, height = 10, units = "in", bg = "white")
+ggsave("Figures/ITS2_lineages_across_time_FigS15.png", ITS2_lineages_across_time_FigS15, width = 10, height = 10, units = "in", dpi = 300, bg = "white")
+```
 
 # All time points: visual summary for Figure S16
 DIV_RelA_stats.all <- prune_taxa(
