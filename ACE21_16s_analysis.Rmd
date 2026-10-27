@@ -100,6 +100,94 @@ Bac.seq.rel<- transform_sample_counts(Bac.seq, function(x) x / sum(x) )
 Bac.seq.rel = prune_taxa(taxa_sums(Bac.seq.rel) > 0, Bac.seq.rel) #this removes any OTU with 0s
 data.Bac.seq.rel <- as(sample_data(Bac.seq.rel), "data.frame") 
 
+# Supplementary figure: baseline 16S ASV composition by host species
+# Row 1 shows all ASVs without a legend; row 2 shows the global top 20 ASVs;
+# row 3 shows the top 20 ASVs within each host species. Remaining ASVs are pooled.
+# Legends use the deepest available taxonomic rank; an ASV identifier is added only
+# when multiple ASVs share the same taxonomic label.
+bacteria_T0_ASV <- subset_samples(Bac.s.rel, Time.Point == "T0")
+bacteria_T0_ASV <- prune_taxa(taxa_sums(bacteria_T0_ASV) > 0, bacteria_T0_ASV)
+bacteria_T0_ASV_raw <- psmelt(bacteria_T0_ASV)
+
+clean_tax_rank <- function(x) {
+  x <- as.character(x)
+  x[x %in% c("", "NA", "Bacteria_unclassified")] <- NA_character_
+  sub("_unclassified$", "", x)
+}
+
+asv_taxonomy <- as.data.frame(tax_table(bacteria_T0_ASV)) %>%
+  tibble::rownames_to_column("OTU") %>%
+  mutate(across(c(Genus, Family, Order, Class, Phylum), clean_tax_rank), taxon = coalesce(Genus, Family, Order, Class, Phylum, "Unclassified bacterium")) %>%
+  group_by(taxon) %>%
+  mutate(legend_label = if (n() > 1) paste0(taxon, " (", OTU, ")") else taxon) %>%
+  ungroup()
+
+asv_legend_labels <- setNames(asv_taxonomy$legend_label, asv_taxonomy$OTU)
+
+bacteria_T0_sample_order <- bacteria_T0_ASV_raw %>%
+  distinct(Sample, Species, Clade) %>%
+  arrange(Species, Clade, Sample) %>%
+  pull(Sample)
+
+make_asv_composition_data <- function(data, retained_asv_keys, use_species_key = FALSE) {
+  data %>%
+    mutate(asv_key = if (use_species_key) paste(Species, OTU, sep = "__") else as.character(OTU), ASV_group = if_else(asv_key %in% retained_asv_keys, as.character(OTU), "Other ASVs")) %>%
+  group_by(Sample, Species, Clade, ASV_group) %>%
+    summarise(Abundance = sum(Abundance), .groups = "drop") %>%
+    mutate(Sample = factor(Sample, levels = bacteria_T0_sample_order), Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")))
+}
+
+make_asv_composition_plot <- function(data, colours, title, show_legend = FALSE, legend_labels = waiver(), facet_species = TRUE) {
+  ggplot(data, aes(x = Sample, y = Abundance, fill = ASV_group)) +
+    geom_col(width = 0.95) +
+    {if (facet_species) facet_grid(. ~ Species, scales = "free_x", space = "free_x")} +
+    scale_fill_manual(values = colours, labels = legend_labels, name = "16S taxon") +
+    labs(title = title, x = NULL, y = "Relative abundance") +
+    theme_classic(base_size = 11) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7), strip.text = element_text(face = "italic"), plot.title = element_text(face = "bold", hjust = 0), legend.position = if (show_legend) "right" else "none")
+}
+
+# 1. All ASVs, shown without a legend.
+all_T0_ASVs <- sort(unique(as.character(bacteria_T0_ASV_raw$OTU)))
+bacteria_T0_all_ASV_long <- make_asv_composition_data(bacteria_T0_ASV_raw, all_T0_ASVs)
+bacteria_T0_all_ASV_colours <- setNames(grDevices::hcl.colors(length(all_T0_ASVs), palette = "Dynamic"), all_T0_ASVs)
+Supplement_16S_all_ASVs <- make_asv_composition_plot(bacteria_T0_all_ASV_long, bacteria_T0_all_ASV_colours, "A. All 16S ASVs at T0", show_legend = FALSE)
+
+# 2. The global top 20 ASVs, with all other ASVs pooled.
+top20_T0_ASVs <- names(sort(taxa_sums(bacteria_T0_ASV), decreasing = TRUE))[seq_len(min(20, ntaxa(bacteria_T0_ASV)))]
+bacteria_T0_top20_long <- make_asv_composition_data(bacteria_T0_ASV_raw, top20_T0_ASVs)
+bacteria_T0_top20_colours <- c(setNames(scales::hue_pal(l = 55, c = 100)(length(top20_T0_ASVs)), top20_T0_ASVs), "Other ASVs" = "grey85")
+top20_T0_legend_labels <- c(asv_legend_labels[top20_T0_ASVs], "Other ASVs" = "Other ASVs")
+Supplement_16S_top20_global <- make_asv_composition_plot(bacteria_T0_top20_long, bacteria_T0_top20_colours, "B. Top 20 16S ASVs across all species at T0", show_legend = TRUE, legend_labels = top20_T0_legend_labels)
+
+# 3. The top 20 ASVs within each host species, with all other ASVs pooled.
+top20_T0_ASVs_by_species <- bacteria_T0_ASV_raw %>%
+  group_by(Species, OTU) %>%
+  summarise(total_abundance = sum(Abundance), .groups = "drop") %>%
+  group_by(Species) %>%
+  slice_max(total_abundance, n = 20, with_ties = FALSE) %>%
+  ungroup() %>%
+  transmute(asv_key = paste(Species, OTU, sep = "__")) %>%
+  pull(asv_key)
+
+bacteria_T0_top20_species_long <- make_asv_composition_data(bacteria_T0_ASV_raw, top20_T0_ASVs_by_species, use_species_key = TRUE)
+species_names <- levels(bacteria_T0_top20_species_long$Species)
+species_display_names <- c(Montipora_capitata = "M. capitata", Porites_compressa = "P. compressa", Pavona_varians = "P. varians", Pocillopora_acuta = "P. acuta")
+
+Supplement_16S_top20_species <- lapply(species_names, function(species_name) {
+  species_data <- filter(bacteria_T0_top20_species_long, Species == species_name)
+  species_asvs <- sort(unique(as.character(species_data$ASV_group[species_data$ASV_group != "Other ASVs"])))
+  species_colours <- c(setNames(grDevices::hcl.colors(length(species_asvs), palette = "Dynamic"), species_asvs), "Other ASVs" = "grey85")
+  species_labels <- c(asv_legend_labels[species_asvs], "Other ASVs" = "Other ASVs")
+  make_asv_composition_plot(species_data, species_colours, paste0("C. Top 20 ASVs in ", species_display_names[[species_name]], " at T0"), show_legend = TRUE, legend_labels = species_labels, facet_species = FALSE) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 6), legend.text = element_text(size = 7), legend.title = element_text(size = 8))
+})
+
+Supplement_16S_top20_species_panel <- cowplot::plot_grid(plotlist = Supplement_16S_top20_species, ncol = 2)
+Supplement_16S_ASV_composition <- cowplot::plot_grid(Supplement_16S_all_ASVs, Supplement_16S_top20_global, Supplement_16S_top20_species_panel, ncol = 1, rel_heights = c(1, 1, 2.2))
+Supplement_16S_ASV_composition
+ggsave("Figures/Supplement_16S_ASV_composition.pdf", Supplement_16S_ASV_composition, width = 18, height = 26, units = "in", bg = "white")
+ggsave("Figures/Supplement_16S_ASV_composition.png", Supplement_16S_ASV_composition, width = 18, height = 26, units = "in", dpi = 300, bg = "white")
+
 #number of ASVs by species
 Bac.s.rel_Mcap<-subset_samples(Bac.s.rel, Species=="Montipora_capitata")
     Bac.s.rel_Mcap = prune_taxa(taxa_sums(Bac.s.rel_Mcap) > 0, Bac.s.rel_Mcap) #this removes any OTU with 0s
@@ -107,7 +195,7 @@ Bac.s.rel_Mcap<-subset_samples(Bac.s.rel, Species=="Montipora_capitata")
   Bac.s.rel_Pcomp<-subset_samples(Bac.s.rel, Species=="Porites_compressa")
     Bac.s.rel_Pcomp = prune_taxa(taxa_sums(Bac.s.rel_Pcomp) > 0, Bac.s.rel_Pcomp) #this removes any OTU with 0s
 
-Bac.s.rel_Pvar<-subset_samples(Bac.s.rel, Species=="Pavona_varians")
+  Bac.s.rel_Pvar<-subset_samples(Bac.s.rel, Species=="Pavona_varians")
     Bac.s.rel_Pvar = prune_taxa(taxa_sums(Bac.s.rel_Pvar) > 0, Bac.s.rel_Pvar) #this removes any OTU with 0s
   
     #by lineage for Pvar
