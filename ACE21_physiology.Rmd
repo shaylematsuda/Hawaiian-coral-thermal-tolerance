@@ -265,9 +265,8 @@ Biomass_Pvar_T1_primary<-lmer(AFDWmg.cm2~Treatment+(1|Parent.ID), biomass_stats_
 Biomass_Pvar_T1_clade<-lmer(AFDWmg.cm2~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), biomass_stats_Pvar.T1)
   anova(Biomass_Pvar_T1_clade) 
   qqPlot(residuals(Biomass_Pvar_T1_clade)) 
-  emm<-emmeans(Biomass_Pvar_T1_clade,  ~ Treatment*Clade)
-  cld(emm)
-  pairs(emm)
+  Biomass_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(Biomass_Pvar_T1_clade, ~ Treatment | Clade), adjust = "none")))
+  Biomass_Pvar_T1_ALG_pairs
   
 #TF only
 biomass_stats_Pvar.TF<-subset(biomass_stats_T1TF_Pvar, Time.Point=="TF")
@@ -766,6 +765,9 @@ FC_Pcomp_T1_primary<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID), FC_stats_T1_Pcom
 FC_Pcomp_T1_clade<-lmer(zoox.cm2_log~Treatment*Clade+(1|Parent.ID), FC_stats_T1_Pcomp)
   anova(FC_Pcomp_T1_clade) 
   qqPlot(residuals(FC_Pcomp_T1_clade)) 
+  # Diagnostic High-versus-Ambient contrasts within each ALG; not reported because the Treatment:Clade interaction is not significant.
+  FC_Pcomp_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(FC_Pcomp_T1_clade, ~ Treatment | Clade), adjust = "none")))
+  FC_Pcomp_T1_ALG_pairs
   
 #TF only
 FC_Pcomp_TF_primary<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID), FC_stats_TF_Pcomp)
@@ -792,8 +794,9 @@ FC_Pvar_T1_primary<-lmer(zoox.cm2_log~Treatment+(1|Tank.num), FC_stats_T1_Pvar)
 FC_Pvar_T1_clade<-lmer(zoox.cm2_log~Treatment*Clade+(1|Tank.num), FC_stats_T1_Pvar)
   anova(FC_Pvar_T1_clade) 
   qqPlot(residuals(FC_Pvar_T1_clade)) 
-  emm<-emmeans(FC_Pvar_T1_clade,  ~ Treatment*Clade, adjust="Tukey")
-  pairs(emm)
+  # Pre-specified High-versus-Ambient contrasts within each ALG; reported in Table S14 because the interaction is significant.
+  FC_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(FC_Pvar_T1_clade, ~ Treatment | Clade), adjust = "none")))
+  FC_Pvar_T1_ALG_pairs
 
 #TF only
 FC_Pvar_TF_primary<-lmer(zoox.cm2_log~Treatment+(1|Parent.ID), FC_stats_TF_Pvar)
@@ -2411,9 +2414,8 @@ Chla_Pvar_model.T1<-lm(ChlaSA_quart~Treatment, Chla_stats_Pvar.T1)
 Chla_Pvar_model.T1<-lm(ChlaSA_quart~Treatment*Clade, Chla_stats_Pvar.T1)
   anova(Chla_Pvar_model.T1) 
   qqPlot(residuals(Chla_Pvar_model.T1)) 
-  emm<-emmeans(Chla_Pvar_model.T1,  ~ Clade*Treatment, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Chla_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(Chla_Pvar_model.T1, ~ Treatment | Clade), adjust = "none")))
+  Chla_Pvar_T1_ALG_pairs
   
 #TF only
 Chla_stats_Pvar.TF<-subset(Chla_stats_T1TF_Pvar, Time.Point=="TF")
@@ -2730,8 +2732,8 @@ Yield_cu_Pvar_model.T1<-lmer(Yield_cu~Treatment+(1|Parent.ID)+(1|Tank.num), PAMd
 Yield_cu_Pvar_model.T1<-lmer(Yield_cu~Treatment*Clade+(1|Parent.ID), PAMdata2_stats_Pvar.T1)
   anova(Yield_cu_Pvar_model.T1) 
   qqPlot(residuals(Yield_cu_Pvar_model.T1)) 
-  emm<-emmeans(Yield_cu_Pvar_model.T1,  ~ Clade*Treatment, adjust="Tukey")
-  pairs(emm)
+  Yield_cu_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(Yield_cu_Pvar_model.T1, ~ Treatment | Clade), adjust = "none")))
+  Yield_cu_Pvar_T1_ALG_pairs
   
 #TF only
 Yield_cu_Pvar_model.TF<-lm(Yield_cu~Treatment, PAMdata2_stats_Pvar.TF)
@@ -3189,6 +3191,8 @@ qqPlot(residuals(Prot_Pcomp_model.TF_primary))
 Prot_Pcomp_model.TF_clade<-lmer(mg.mm2_sqrt~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), Prot_stats_Pcomp.TF)
 anova(Prot_Pcomp_model.TF_clade)
 qqPlot(residuals(Prot_Pcomp_model.TF_clade))
+Prot_Pcomp_TF_ALG_pairs <- as.data.frame(summary(pairs(emmeans(Prot_Pcomp_model.TF_clade, ~ Treatment | Clade), adjust = "none")))
+Prot_Pcomp_TF_ALG_pairs
 
 # P. varians ####
 Prot_stats_Pvar.T1<-subset(Prot_stats_T1TF_Pvar, Time.Point=="T1")
@@ -3912,9 +3916,8 @@ PR.df_B_Pvar_model.T1<-lmer(GrossP~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_B
 PR.df_B_Pvar_model.T1<-lmer(GrossP~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.T1)
   anova(PR.df_B_Pvar_model.T1) 
   qqPlot(residuals(PR.df_B_Pvar_model.T1)) 
-  emm<-emmeans(PR.df_B_Pvar_model.T1,  ~ Treatment*Clade)
-  cld(emm)
-  pairs(emm)
+  GrossP_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(PR.df_B_Pvar_model.T1, ~ Treatment | Clade), adjust = "none")))
+  GrossP_Pvar_T1_ALG_pairs
   
 #TF only
 PR.df_B_Pvar.TF<-subset(PR.df_B_Pvar, Time.Point=="TF")
@@ -3942,9 +3945,7 @@ PR.df_B_Pacu_model.T1<-lmer(GrossP~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_B
   anova(PR.df_B_Pacu_model.T1)
   qqPlot(residuals(PR.df_B_Pacu_model.T1)) 
 
-PR.df_B_Pacu_model.T1<-lmer(GrossP~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pacu.T1)
-  anova(PR.df_B_Pacu_model.T1) 
-  qqPlot(residuals(PR.df_B_Pacu_model.T1)) 
+# P. acuta ALG model omitted because lineage groups are strongly unbalanced.
   
 #TF only
 PR.df_B_Pacu.TF<-subset(PR.df_B_Pacu, Time.Point=="TF")
@@ -4330,9 +4331,8 @@ PR.df_B_Pvar_model.T1<-lmer(Resp~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_B_P
 PR.df_B_Pvar_model.T1<-lmer(Resp~Treatment*Clade+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.T1)
   anova(PR.df_B_Pvar_model.T1) 
   qqPlot(residuals(PR.df_B_Pvar_model.T1)) 
-  emm<-emmeans(PR.df_B_Pvar_model.T1,  ~ Treatment*Clade, adjust="Tukey")
-  cld(emm)
-  pairs(emm)
+  Resp_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(PR.df_B_Pvar_model.T1, ~ Treatment | Clade), adjust = "none")))
+  Resp_Pvar_T1_ALG_pairs
   
 #TF only
 PR.df_B_Pvar_model.TF<-lmer(Resp~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.TF)
@@ -4872,8 +4872,8 @@ PR.df_B_Pvar_model.T1<-lmer(PR_real~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_
 PR.df_B_Pvar_model.T1<-lmer(PR_real~Treatment*Clade+(1|Parent.ID), PR.df_B_Pvar.T1)
   anova(PR.df_B_Pvar_model.T1) 
   qqPlot(residuals(PR.df_B_Pvar_model.T1)) 
-  # Run clade-specific contrasts only if the Treatment:Clade interaction is significant.
-  # emm<-emmeans(PR.df_B_Pvar_model.T1, ~Clade|Treatment); pairs(emm)
+  PR_Pvar_T1_ALG_pairs <- as.data.frame(summary(pairs(emmeans(PR.df_B_Pvar_model.T1, ~ Treatment | Clade), adjust = "none")))
+  PR_Pvar_T1_ALG_pairs
   
 #TF only
 PR.df_B_Pvar_model.TF<-lmer(PR_real~Treatment+(1|Parent.ID)+(1|Tank.num), PR.df_B_Pvar.TF)
@@ -4975,18 +4975,44 @@ RespT1TF <- RespT1TF +
 PRT1TF <- PRT1TF + 
   theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
 
-# Combine plots vertically using patchwork
+# Draft all-species T1/TF treatment-response plot. The final Figure S5 below separates
+# the three hosts with balanced ALG groups; P. acuta is excluded from that figure.
+# Combine the T1 and TF treatment-response plots vertically.
 combined_plot <- BiomassT1TF / bwT1TF / FlowT1TF / ChlaT1TF / FvFmT1TF / 
                  ProteinT1TF / PhotoT1TF / RespT1TF / PRT1TF +
-                 plot_layout(ncol = 1)
+                 plot_layout(ncol = 1) +
+                 plot_annotation(title = "Figure S5a. Physiological responses to elevated temperature at T1 and TF by coral species")
 
-# Display in the RStudio Plot pane before saving the publication-size PDF.
+# Display the all-species version in the RStudio Plot pane.
 combined_plot
+ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.pdf", combined_plot, width = 10, height = 19, units = "in", bg = "white")
+ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.png", combined_plot, width = 10, height = 19, units = "in", dpi = 300, bg = "white")
 
+# Supplementary Figure S5: raw T1/TF physiological responses by host-specific ALG.
+# P. acuta is excluded because its two ALG groups are strongly unbalanced.
+make_alg_response_plot <- function(data, response, trait_title, y_label, log_y = FALSE) {
+  panel_data <- data |> dplyr::filter(Species %in% c("Montipora capitata", "Porites compressa", "Pavona varians"), Time.Point %in% c("T1", "TF"), !is.na(Clade)) |> dplyr::mutate(ALG_panel = factor(paste(dplyr::recode(Species, "Montipora capitata" = "M. capitata", "Porites compressa" = "P. compressa", "Pavona varians" = "P. varians"), Clade, sep = " – "), levels = c("M. capitata – C31", "M. capitata – C31D4", "P. compressa – C15cj", "P. compressa – C15n", "P. varians – C1", "P. varians – C27")), Time.Point = factor(Time.Point, levels = c("T1", "TF")), Time_Treatment = factor(paste(Time.Point, Treatment, sep = "\n"), levels = c("T1\nAmbient", "T1\nHigh", "TF\nAmbient", "TF\nHigh")))
+  plot <- ggplot(panel_data, aes(x = Time_Treatment, y = .data[[response]], fill = Treatment)) + geom_boxplot(width = 0.72, outlier.size = 1.2) + facet_grid(. ~ ALG_panel, scales = "free_x", space = "free_x") + scale_fill_manual(values = c("Ambient" = "#00BFC4", "High" = "#FC4E07")) + labs(title = trait_title, x = NULL, y = y_label) + theme_classic(base_size = 10) + theme(plot.title = element_text(face = "bold.italic", hjust = 0), strip.text = element_text(face = "bold", size = 8), axis.text.x = element_text(size = 7), axis.title.y = element_text(size = 8), legend.position = "none", panel.spacing = unit(0.25, "lines"))
+  if (log_y) plot <- plot + scale_y_log10()
+  plot
+}
 
-pdf("CombinedPhysioPlots.pdf", width = 10, height = 18)
-print(combined_plot)
-dev.off()
+Growth3_alg <- Growth3 |> dplyr::mutate(Time.Point = dplyr::case_when(Time.point == "time1.growth" ~ "T1", Time.point == "time2.growth" ~ "TF", TRUE ~ NA_character_))
+PAM_alg <- PAM_psyDF |> dplyr::filter(Time.Point %in% c("T1", "TF"))
+S5_Biomass <- make_alg_response_plot(biomass2, "AFDWmg.cm2", "Biomass", expression("Ash-free Dry Weight (mg cm"^{-2}*")"))
+S5_Growth <- make_alg_response_plot(Growth3_alg, "percent.change", "Growth Rate", "Growth Rate (percent day⁻¹)")
+S5_CellCounts <- make_alg_response_plot(FC_Data, "zoox.cm2", "Symbiodiniaceae Cell Density", expression("Symbiodiniaceae cells (cm"^{-2}*")"), log_y = TRUE)
+S5_Chla <- make_alg_response_plot(Chla, "ChlaSA", "Chlorophyll-α", expression("Chlorophyll-"*italic(alpha)*" cm"^{-2}))
+S5_Yield <- make_alg_response_plot(PAM_alg, "Yield", "Photochemical Quantum Yield", "Fv/Fm")
+S5_Protein <- make_alg_response_plot(Protein, "mg.mm2", "Total Soluble Protein", expression("Total Soluble Protein (mg mm"^{-2}*")"))
+S5_Photosynthesis <- make_alg_response_plot(PR.df_B, "GrossP", "Gross Photosynthesis", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5_Respiration <- make_alg_response_plot(PR.df_B, "Resp", "Respiration", expression("μmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5_PR <- make_alg_response_plot(PR.df_B, "PR", "P:R", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+
+Supplementary_Figure_S5b <- S5_Biomass / S5_Growth / S5_CellCounts / S5_Chla / S5_Yield / S5_Protein / S5_Photosynthesis / S5_Respiration / S5_PR + plot_layout(ncol = 1) + plot_annotation(title = "Figure S5b. Physiological responses to elevated temperature at T1 and TF by host-specific algal symbiont lineage group")
+Supplementary_Figure_S5b
+ggsave("Figures/Supplementary_Figure_S5b_Physiological_responses_by_ALG_T1_TF.pdf", Supplementary_Figure_S5b, width = 18, height = 19, units = "in", bg = "white")
+ggsave("Figures/Supplementary_Figure_S5b_Physiological_responses_by_ALG_T1_TF.png", Supplementary_Figure_S5b, width = 18, height = 19, units = "in", dpi = 300, bg = "white")
 
 ```
 #T0 all physio
