@@ -2741,3 +2741,157 @@ write.csv(h16_taxa_comparison_summary, file.path(h16_output_dir, "taxa_compariso
 h16_taxa_comparison_summary
 h16_ancom_comparison
 ```
+
+## Supplementary Endozoicomonas specific analyses & trees. 
+
+The data show multiple ASVs of Endozoicomonas present within the dataset. Some recent literature suggests there may be host specific or even Symbiodiniaceae specific ASVs (Pogoreutz et al. 2022: https://doi.org/10.1038/s41396-022-01226-7;  Neave et al. 2017: https://www.nature.com/articles/srep40579, but see Hochart et al. 2023: https://doi.org/10.1038/s41467-023-38502-9). Quick check on whether we think this might be the case with our data.
+
+```{r hannah-integration-endozoicomonas}
+#Using h16_ambient_rel
+
+#Subset the Endozoicomonas data at T0 (all ambient)
+endo_ambient <- subset_taxa(h16_ambient_rel, Family == "Endozoicomonadaceae")
+tax_table(endo_ambient)
+View(tax_table(endo_ambient))
+
+#Let's look at the tree all together. There are 34 Parent IDs. 
+
+library(pals) #for discrete color choosing. 
+
+parentid_colors <- as.character(polychrome(34))
+p_tree_all <-  plot_tree(endo_ambient, color = "Parent.ID", size = "Abundance", 
+          label.tips="taxa_names") +
+  scale_color_manual(values = parentid_colors) 
+
+
+
+p_tree_all + scale_size_continuous(name = "Relative Abundance",
+                                   breaks = c(0.001, 0.01, 0.1, 0.5),
+                                    labels = c("0.1%", "1%", "10%", "50%"),
+                                    range = c(2, 8))
+
+#There are 3 OTUs that are present in the most adults, including OTU 00006, 000002, and 000001. #The highest relative abundances are found in OTU0008 and OTU0001 & 00002
+
+#Let's split these up by each host species to explore this in more detail. 
+
+endo_amb_mcap <- subset_samples(endo_ambient, Species == "Montipora_capitata")
+endo_amb_pvar <- subset_samples(endo_ambient, Species == "Pavona_varians")
+endo_amb_pacu <- subset_samples(endo_ambient, Species == "Pocillopora_acuta")
+endo_amb_pcomp <- subset_samples(endo_ambient, Species == "Porites_compressa")
+
+levels(as.factor(sample_data(endo_amb_mcap)$Clade))
+
+#Run each host species and include color as clade so that we can visualize whether
+#ALG correlates at all with endozoicomonas phylogeny. 
+
+#For some reason the manual fill colors are not working in this script
+#It is having trouble over-writing the default color. 
+
+p_tree_mcap <- plot_tree(endo_amb_mcap, color = "Clade", size = "abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8)) +
+  #scale_color_manual(values = alpha(c("C31" = "darkgreen", "C31D4" = "darkorange"), 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="M. capitata")
+
+p_tree_pvar <- plot_tree(endo_amb_pvar,  color = "Clade", size = "Abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance",
+                        breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"),range = c(2, 8)) +
+  #scale_color_manual(values = alpha(c("C1" = "lightblue", "C27" = "navyblue"), 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. varians")
+
+
+p_tree_pacu <- plot_tree(endo_amb_pacu, color = "Clade",  size = "abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8))+
+  #scale_color_manual(values = alpha(c("C1d" = "violet", "C42_2" = "purple"), 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. acuta")
+
+p_tree_pcomp <- plot_tree(endo_amb_pcomp, color = "Clade",  size = "abundance",
+                          label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8)) +
+  #scale_color_manual(values = alpha(c("C15cj" = "lightgreen", "C15n" = "yellow"), 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. compressa")
+
+multi.clade <- (p_tree_mcap + p_tree_pvar + p_tree_pacu + p_tree_pcomp) + 
+  patchwork::plot_layout(widths = c(2,2))
+multi.clade
+
+ggsave("Figures/Supplementary_16S_Endoz_tree_clade.pdf", plot = multi.clade, width = 12, height = 7)
+
+
+
+##By adult
+
+#Let's first pull out unique parent id colors for each species so there is no overlap
+mcap_parentid_colors <- as.character(c("#5A5156" ,"#E4E1E3", "#F6222E", "#FE00FA" ,"#16FF32", "#3283FE", "#FEAF16", "#B00068" )) #8
+pvar_parentid_colors <- as.character(c("#1CFFCE", "#90AD1C" ,"#2ED9FF" ,"#DEA0FD" ,"#AA0DFE", "#F8A19F" ,"#325A9B" ,"#C4451C", "#1C8356" )) #9
+pacu_parentid_colors <- as.character(c("#85660D",  "#B10DA1", "#FBE426" ,"#1CBE4F", "#FA0087" ,"#FC1CBF" ,"#F7E1A0" )) #7
+pcomp_parentid_colors <- as.character(c("#C075A6" ,"#782AB6" ,"#AAF400","#BDCDFF" ,"#822E1C" ,"#B5EFB5", "#7ED7D1", "#1C7F93", "#D85FF7", "#683B79")) #10
+
+
+#For some reason the colors are again not working here. Plot as is without manual scales & come back to this. 
+
+p_tree_mcap_pi <- plot_tree(endo_amb_mcap, color = "Parent.ID", shape = "Clade", size = "abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8)) +
+  #scale_color_manual(values = alpha(mcap_parentid_colors, 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="M. capitata")
+
+p_tree_pvar_pi <- plot_tree(endo_amb_pvar,  color = "Parent.ID", shape = "Clade", size = "abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance",
+                        breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"),range = c(2, 8)) +
+  #scale_color_manual(values = alpha(pvar_parentid_colors, 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. varians")
+
+
+p_tree_pacu_pi <- plot_tree(endo_amb_pacu, color = "Parent.ID", shape = "Clade", size = "abundance",
+                         label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8))+
+  #scale_color_manual(values = alpha(pacu_parentid_colors, 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. acuta")
+
+p_tree_pcomp_pi <- plot_tree(endo_amb_pcomp, color = "Parent.ID", shape = "Clade",  size = "abundance",
+                          label.tips = "taxa_names", text.size = 3) + 
+  scale_size_continuous(name = "Relative Abundance", breaks = c(0.001, 0.01, 0.1, 0.5),
+                        labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8)) +
+  #scale_color_manual(values = alpha(pcomp_parentid_colors, 0.8)) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
+        plot.title = element_text(size = 12, face = "italic")) +
+  labs(title="P. compressa")
+
+multi.parentid <- (p_tree_mcap_pi + p_tree_pvar_pi + p_tree_pacu_pi + p_tree_pcomp_pi) + 
+  patchwork::plot_layout(widths = c(2,2))
+multi.parentid
+
+#ggsave("~/Documents/Shedd/Supplementary_16S_Endoz_tree_parentid.pdf", plot = multi.parentid, width = 15, height = 9)
+
+ggsave("Figures/Supplementary_16S_Endoz_tree_parentID.pdf", plot = multi.parentid, width = 15, height = 9)
+
+
+```
+
+
+
