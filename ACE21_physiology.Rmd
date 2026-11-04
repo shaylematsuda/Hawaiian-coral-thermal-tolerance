@@ -4905,94 +4905,47 @@ These raw trait-response boxplots are the source plots for interpreting the phys
 
 ## RELOAD SAVED TRAIT DATA FOR PHYSIOLOGY MERGE
 
-Run the Data and libraries and metadata chunks once after opening a new R session, then run this chunk to start directly at **COMBINE all physio dfs**. The plot-assembly chunks above still require their individual plot objects, but the merged PhysioData/PCA workflow below does not require rerunning the trait-cleaning and statistics sections.
+Run the Data and libraries and metadata chunks once after opening a new R session, then run the reload chunk followed by either self-contained figure chunk below. This avoids rerunning trait cleaning and statistics before the PhysioData/PCA workflow.
 
 ```{r}
+# Reload saved clean trait data after clearing the R environment.
 biomass2 <- readRDS("Data/derived/biomass_clean.rds"); Biomass_stats <- biomass2; FC_Data <- readRDS("Data/derived/cell_counts_clean.rds"); FC_Data$zoox.cm2_log <- log10(FC_Data$zoox.cm2 + 1); FC_stats_T1TF <- subset(FC_Data, Time.Point %in% c("T1", "TF")); Growth3 <- readRDS("Data/derived/calcification_clean.rds"); Growth3 <- Growth3[!is.na(Growth3$percent.change) & Growth3$Time.point %in% c("time1.growth", "time2.growth"), ]; Growth.Percent.day <- Growth3; Chla <- readRDS("Data/derived/chlorophyll_clean.rds"); PAMdata2_stats <- readRDS("Data/derived/pam_clean.rds"); PAM_psyDF <- PAMdata2_stats |> dplyr::mutate(Days=as.character(Days), Time.Point=dplyr::case_when(Days=="0"~"T0", Days=="24"~"T1", Days=="52"~"TF", TRUE~NA_character_)) |> dplyr::filter(!is.na(Time.Point)); Protein <- readRDS("Data/derived/protein_clean.rds"); PR.df_B <- readRDS("Data/derived/respirometry_clean.rds")
 ```
 
 ```{r}
+# Supplementary Figure S5a: self-contained all-species T1/TF response panels.
+# This recreates the plots from the reloaded saved data above; it does not depend
+# on plot objects made in the earlier trait-specific sections.
 library(patchwork)
+s5_species <- c("Montipora capitata", "Porites compressa", "Pavona varians", "Pocillopora acuta")
+make_species_response_plot <- function(data, response, trait_title, y_label, log_y = FALSE) {
+  panel_data <- data |> dplyr::filter(Species %in% s5_species, Time.Point %in% c("T1", "TF")) |> dplyr::mutate(Species = factor(Species, levels = s5_species), Time.Point = factor(Time.Point, levels = c("T1", "TF")), Time_Treatment = factor(paste(Time.Point, Treatment, sep = "\n"), levels = c("T1\nAmbient", "T1\nHigh", "TF\nAmbient", "TF\nHigh")))
+  p <- ggplot(panel_data, aes(x = Time_Treatment, y = .data[[response]], fill = Treatment)) + geom_boxplot(width = 0.72, outlier.size = 1.2, show.legend = FALSE) + facet_grid(. ~ Species, scales = "free_x", space = "free_x") + scale_fill_manual(values = c("Ambient" = "deepskyblue1", "High" = "orangered")) + labs(title = trait_title, x = NULL, y = y_label) + theme_classic(base_size = 10) + theme(plot.title = element_text(face = "bold.italic", hjust = 0), strip.text = element_text(face = "italic", size = 8), axis.text.x = element_text(size = 7), axis.title.y = element_text(size = 8), panel.spacing = unit(0.25, "lines"))
+  if (log_y) p <- p + scale_y_log10()
+  p
+}
 
-# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
-BiomassT1TF <- BiomassT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 9),
-        panel.spacing = unit(1, "lines"))
+Growth3_s5 <- Growth3 |> dplyr::mutate(Time.Point = dplyr::case_when(Time.point == "time1.growth" ~ "T1", Time.point == "time2.growth" ~ "TF", TRUE ~ NA_character_))
+S5a_Biomass <- make_species_response_plot(biomass2, "AFDWmg.cm2", "Biomass", expression("mg cm"^{-2}*""))
+S5a_Growth <- make_species_response_plot(Growth3_s5, "percent.change", "Growth Rate", expression("" * percent ~ day^-1 * ""))
+S5a_CellCounts <- make_species_response_plot(FC_Data, "zoox.cm2", "Symbiodiniaceae Cell Density", expression("cells cm"^{-2}*""), log_y = TRUE)
+S5a_Chla <- make_species_response_plot(Chla, "ChlaSA", "Chlorophyll a", expression(mu * "g Chl-" * italic(a) * " cm"^-2))
+S5a_Yield <- make_species_response_plot(PAM_psyDF, "Yield", "Photochemical Quantum Yield", "Fv/Fm")
+S5a_Protein <- make_species_response_plot(Protein, "mg.mm2", "Total Soluble Protein", expression("mg mm"^{-2}*""))
+S5a_Photosynthesis <- make_species_response_plot(PR.df_B, "GrossP", "Gross Photosynthesis", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5a_Respiration <- make_species_response_plot(PR.df_B, "Resp", "Respiration", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5a_PR <- make_species_response_plot(PR.df_B, "PR_real", "Metabolic Rate", "P:R")
 
-bwT1TF <- bwT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-FlowT1TF <- FlowT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-ChlaT1TF <- ChlaT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-FvFmT1TF <- FvFmT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-ProteinT1TF <- ProteinT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PhotoT1TF <- PhotoT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-RespT1TF <- RespT1TF +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PRT1TF <- PRT1TF + 
-  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
-
-# Draft all-species T1/TF treatment-response plot. The final Figure S5 below separates
-# the three hosts with balanced ALG groups; P. acuta is excluded from that figure.
-# Combine the T1 and TF treatment-response plots vertically.
-combined_plot <- BiomassT1TF / bwT1TF / FlowT1TF / ChlaT1TF / FvFmT1TF / 
-                 ProteinT1TF / PhotoT1TF / RespT1TF / PRT1TF +
-                 plot_layout(ncol = 1) +
-                 plot_annotation(title = "Figure S5a. Physiological responses to elevated temperature at T1 and TF by coral species")
-
-# Display the all-species version in the RStudio Plot pane.
-combined_plot
-ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.pdf", combined_plot, width = 10, height = 19, units = "in", bg = "white")
-ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.png", combined_plot, width = 10, height = 19, units = "in", dpi = 300, bg = "white")
+Supplementary_Figure_S5a <- S5a_Biomass / S5a_Growth / S5a_CellCounts / S5a_Chla / S5a_Yield / S5a_Protein / S5a_Photosynthesis / S5a_Respiration / S5a_PR + plot_layout(ncol = 1) + plot_annotation(title = "Figure S5a. Physiological responses to elevated temperature at T1 and TF by coral species")
+Supplementary_Figure_S5a
+ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.pdf", Supplementary_Figure_S5a, width = 10, height = 19, units = "in", bg = "white")
+ggsave("Figures/Supplementary_Figure_S5a_Physiological_responses_all_species_T1_TF.png", Supplementary_Figure_S5a, width = 10, height = 19, units = "in", dpi = 300, bg = "white")
 
 # Supplementary Figure S5: raw T1/TF physiological responses by host-specific ALG.
 # P. acuta is excluded because its two ALG groups are strongly unbalanced.
 make_alg_response_plot <- function(data, response, trait_title, y_label, log_y = FALSE) {
   panel_data <- data |> dplyr::filter(Species %in% c("Montipora capitata", "Porites compressa", "Pavona varians"), Time.Point %in% c("T1", "TF"), !is.na(Clade)) |> dplyr::mutate(ALG_panel = factor(paste(dplyr::recode(Species, "Montipora capitata" = "M. capitata", "Porites compressa" = "P. compressa", "Pavona varians" = "P. varians"), Clade, sep = " – "), levels = c("M. capitata – C31", "M. capitata – C31D4", "P. compressa – C15cj", "P. compressa – C15n", "P. varians – C1", "P. varians – C27")), Time.Point = factor(Time.Point, levels = c("T1", "TF")), Time_Treatment = factor(paste(Time.Point, Treatment, sep = "\n"), levels = c("T1\nAmbient", "T1\nHigh", "TF\nAmbient", "TF\nHigh")))
-  plot <- ggplot(panel_data, aes(x = Time_Treatment, y = .data[[response]], fill = Treatment)) + geom_boxplot(width = 0.72, outlier.size = 1.2) + facet_grid(. ~ ALG_panel, scales = "free_x", space = "free_x") + scale_fill_manual(values = c("Ambient" = "#00BFC4", "High" = "#FC4E07")) + labs(title = trait_title, x = NULL, y = y_label) + theme_classic(base_size = 10) + theme(plot.title = element_text(face = "bold.italic", hjust = 0), strip.text = element_text(face = "bold", size = 8), axis.text.x = element_text(size = 7), axis.title.y = element_text(size = 8), legend.position = "none", panel.spacing = unit(0.25, "lines"))
+  plot <- ggplot(panel_data, aes(x = Time_Treatment, y = .data[[response]], fill = Treatment)) + geom_boxplot(width = 0.72, outlier.size = 1.2) + facet_grid(. ~ ALG_panel, scales = "free_x", space = "free_x") + scale_fill_manual(values = c("Ambient" = "deepskyblue1", "High" = "orangered")) + labs(title = trait_title, x = NULL, y = y_label) + theme_classic(base_size = 10) + theme(plot.title = element_text(face = "bold.italic", hjust = 0), strip.text = element_text(face = "bold", size = 8), axis.text.x = element_text(size = 7), axis.title.y = element_text(size = 8), legend.position = "none", panel.spacing = unit(0.25, "lines"))
   if (log_y) plot <- plot + scale_y_log10()
   plot
 }
@@ -5002,12 +4955,12 @@ PAM_alg <- PAM_psyDF |> dplyr::filter(Time.Point %in% c("T1", "TF"))
 S5_Biomass <- make_alg_response_plot(biomass2, "AFDWmg.cm2", "Biomass", expression("Ash-free Dry Weight (mg cm"^{-2}*")"))
 S5_Growth <- make_alg_response_plot(Growth3_alg, "percent.change", "Growth Rate", "Growth Rate (percent day⁻¹)")
 S5_CellCounts <- make_alg_response_plot(FC_Data, "zoox.cm2", "Symbiodiniaceae Cell Density", expression("Symbiodiniaceae cells (cm"^{-2}*")"), log_y = TRUE)
-S5_Chla <- make_alg_response_plot(Chla, "ChlaSA", "Chlorophyll-α", expression("Chlorophyll-"*italic(alpha)*" cm"^{-2}))
+S5_Chla <- make_alg_response_plot(Chla, "ChlaSA", "Chlorophyll a", expression(mu * "g Chl-" * italic(a) * " cm"^-2))
 S5_Yield <- make_alg_response_plot(PAM_alg, "Yield", "Photochemical Quantum Yield", "Fv/Fm")
 S5_Protein <- make_alg_response_plot(Protein, "mg.mm2", "Total Soluble Protein", expression("Total Soluble Protein (mg mm"^{-2}*")"))
 S5_Photosynthesis <- make_alg_response_plot(PR.df_B, "GrossP", "Gross Photosynthesis", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
-S5_Respiration <- make_alg_response_plot(PR.df_B, "Resp", "Respiration", expression("μmol O"[2]*" cm"^{-2}*" min"^{-1}))
-S5_PR <- make_alg_response_plot(PR.df_B, "PR", "P:R", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5_Respiration <- make_alg_response_plot(PR.df_B, "Resp", "Respiration", expression("nmol O"[2]*" cm"^{-2}*" min"^{-1}))
+S5_PR <- make_alg_response_plot(PR.df_B, "PR_real", "Metabolic Rate (P:R)", "P:R")
 
 Supplementary_Figure_S5b <- S5_Biomass / S5_Growth / S5_CellCounts / S5_Chla / S5_Yield / S5_Protein / S5_Photosynthesis / S5_Respiration / S5_PR + plot_layout(ncol = 1) + plot_annotation(title = "Figure S5b. Physiological responses to elevated temperature at T1 and TF by host-specific algal symbiont lineage group")
 Supplementary_Figure_S5b
@@ -5017,155 +4970,82 @@ ggsave("Figures/Supplementary_Figure_S5b_Physiological_responses_by_ALG_T1_TF.pn
 ```
 #T0 all physio
 ```{r}
-# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
-BiomassT0 <- Biomass_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 9),
-        panel.spacing = unit(1, "lines"))
+# Supplementary Figure S3: self-contained T0 physiology plot. Reloading the
+# saved clean trait data prevents stale objects elsewhere in the R session from
+# affecting this figure. Box widths are 20% of the default ggplot width.
+s3_species <- c("Montipora capitata", "Porites compressa", "Pavona varians", "Pocillopora acuta")
+s3_colors <- c("Montipora capitata" = "#E69F00", "Porites compressa" = "#56B4E9", "Pavona varians" = "#CC79A7", "Pocillopora acuta" = "#009E73")
 
-BWT0 <- BW_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+make_s3_panel <- function(data, value, title, y_label, show_x = FALSE) {
+  data$Species <- factor(as.character(data$Species), levels = s3_species)
+  data$.s3_x <- c(0.70, 0.78, 0.86, 0.94)[as.integer(data$Species)]
+  p <- ggplot(data, aes(x = .s3_x, y = .data[[value]], group = Species, fill = Species)) +
+    geom_boxplot(width = 0.06, show.legend = FALSE) +
+    scale_fill_manual(values = s3_colors, drop = FALSE) +
+    scale_x_continuous(breaks = c(0.70, 0.78, 0.86, 0.94), labels = s3_species, limits = c(0.62, 1.02), expand = c(0, 0)) +
+    xlab("") + ylab(y_label) + ggtitle(title) + theme_classic() +
+    theme(plot.title = element_text(size = 11, face = "bold"), axis.title.y = element_text(size = 7, face = "bold"), axis.text.y = element_text(size = 7))
+  if (show_x) p <- p + theme(axis.text.x = element_text(size = 8, face = "italic", angle = 45, hjust = 1)) else p <- p + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank())
+  p
+}
 
-FlowT0 <- FC_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+s3_biomass <- subset(readRDS("Data/derived/biomass_clean.rds"), Time.Point == "T0")
+s3_growth <- subset(readRDS("Data/derived/calcification_clean.rds"), Time.point == "time1.growth" & Treatment == "Ambient")
+s3_cell_counts <- subset(readRDS("Data/derived/cell_counts_clean.rds"), Time.Point == "T0")
+s3_chla <- subset(readRDS("Data/derived/chlorophyll_clean.rds"), Time.Point == "T0")
+s3_pam <- subset(readRDS("Data/derived/pam_clean.rds"), Days == 0)
+s3_protein <- subset(readRDS("Data/derived/protein_clean.rds"), Time.Point == "T0")
+s3_respirometry <- subset(readRDS("Data/derived/respirometry_clean.rds"), Time.Point == "T0")
 
-ChlT0 <- Chl_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+S3_plot_column <- cowplot::plot_grid(
+  make_s3_panel(s3_biomass, "AFDWmg.cm2", "Biomass", expression("mg cm"^-2)),
+  make_s3_panel(s3_growth, "percent.change", "Growth Rate", expression(percent ~ day^-1)),
+  make_s3_panel(s3_cell_counts, "zoox.cm2", "Symbiodiniaceae Cell Density", expression("cells cm"^-2)),
+  make_s3_panel(s3_chla, "ChlaSA", "Chlorophyll a", expression(mu * "g Chl-" * italic(a) * " cm"^-2)),
+  make_s3_panel(s3_pam, "Yield", "Photochemical Quantum Yield", "Fv/Fm"),
+  make_s3_panel(s3_protein, "mg.mm2", "Total Soluble Protein", expression("mg mm"^-2)),
+  make_s3_panel(s3_respirometry, "GrossP", "Gross Photosynthesis", expression("nmol " * O[2] * " cm"^-2 * " min"^-1)),
+  make_s3_panel(s3_respirometry, "Resp", "Respiration", expression("nmol " * O[2] * " cm"^-2 * " min"^-1)),
+  make_s3_panel(s3_respirometry, "PR_real", "Metabolic Rate", "P:R", show_x = TRUE),
+  ncol = 1
+)
 
-PAMT0 <- PAM_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+# Keep all panels on the left and reserve the right half as white space.
+combined_plot <- cowplot::plot_grid(S3_plot_column, cowplot::ggdraw(), nrow = 1, rel_widths = c(1, 1))
+print(combined_plot) # Explicit print is needed when this chunk is sourced/run non-interactively.
 
-ProtT0 <- Prot_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PhotoT0 <- Photo_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-RespT0 <- Resp_T0 +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PRT0 <- PR_T0 + 
-  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
-
-# Combine plots vertically using patchwork
-combined_plot <- BiomassT0 / BWT0 / FlowT0 / ChlT0 / PAMT0 / 
-                 ProtT0 / PhotoT0 / RespT0 / PRT0 +
-                 plot_layout(ncol = 1)
-
-# Display in the RStudio Plot pane before saving the publication-size PDF.
-combined_plot
-
-
-pdf("CombinedPhysioPlots_T0.pdf", width = 10, height = 18)
-print(combined_plot)
-dev.off()
+ggsave("Figures/CombinedPhysioPlots_T0.pdf", combined_plot, width = 10, height = 18, units = "in", bg = "white")
+ggsave("Figures/CombinedPhysioPlots_T0.png", combined_plot, width = 10, height = 18, units = "in", dpi = 300, bg = "white")
 ```
 #T0 all physio by algal symbiont lineage
 ```{r}
-# Adjust y-axis text size and hide x-axis labels/underlines except for the bottom plot
-BiomassT0_clade <- Biomass_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 9),
-        panel.spacing = unit(1, "lines"))
+# Supplementary Figure S6: T0 physiology by algal symbiont lineage group (ALG).
+# This self-contained version uses saved clean trait data and can be run after
+# clearing the R environment.
+s6_species <- c("Montipora capitata", "Porites compressa", "Pavona varians", "Pocillopora acuta")
+s6_algs <- c("C31", "C31D4", "C15cj", "C15n", "C1", "C27", "C1d", "C42_2")
+s6_colors <- c("C31" = "goldenrod1", "C31D4" = "darkorange3", "C15cj" = "powderblue", "C15n" = "#0072B2", "C1" = "pink1", "C27" = "firebrick", "C1d" = "palegreen2", "C42_2" = "darkgreen")
 
-BWT0_clade <- BW_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+make_s6_panel <- function(data, value, title, y_label, show_x = FALSE) {
+  panel_data <- data |> dplyr::filter(Species %in% s6_species, !is.na(Clade)) |> dplyr::mutate(Species = factor(as.character(Species), levels = s6_species), Clade = factor(as.character(Clade), levels = s6_algs), ALG_species = interaction(Clade, Species, sep = ".", lex.order = TRUE))
+  p <- ggplot(panel_data, aes(x = ALG_species, y = .data[[value]], fill = Clade)) + geom_boxplot(show.legend = FALSE) + scale_fill_manual(values = s6_colors, drop = FALSE) + scale_x_discrete(guide = ggh4x::guide_axis_nested(delim = ".")) + labs(title = title, x = NULL, y = y_label) + theme_classic(base_size = 10) + theme(plot.title = element_text(face = "bold", hjust = 0), axis.title.y = element_text(size = 8), axis.text.y = element_text(size = 8), axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank(), panel.spacing = unit(0.25, "lines"))
+  if (show_x) p <- p + theme(axis.text.x = element_text(size = 8, angle = 0, hjust = 0.5), axis.ticks.x = element_line())
+  p
+}
 
-FlowT0_clade <- FC_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+s6_biomass <- subset(readRDS("Data/derived/biomass_clean.rds"), Time.Point == "T0")
+s6_growth <- subset(readRDS("Data/derived/calcification_clean.rds"), Time.point == "time1.growth" & Treatment == "Ambient")
+s6_cell_counts <- subset(readRDS("Data/derived/cell_counts_clean.rds"), Time.Point == "T0")
+s6_chla <- subset(readRDS("Data/derived/chlorophyll_clean.rds"), Time.Point == "T0")
+s6_pam <- subset(readRDS("Data/derived/pam_clean.rds"), Days == 0)
+s6_protein <- subset(readRDS("Data/derived/protein_clean.rds"), Time.Point == "T0")
+s6_respirometry <- subset(readRDS("Data/derived/respirometry_clean.rds"), Time.Point == "T0")
 
-ChlT0_clade <- Chl_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
+Supplementary_Figure_S6 <- make_s6_panel(s6_biomass, "AFDWmg.cm2", "Biomass", expression("mg cm"^-2)) / make_s6_panel(s6_growth, "percent.change", "Growth Rate", expression(percent ~ day^-1)) / make_s6_panel(s6_cell_counts, "zoox.cm2", "Symbiodiniaceae Cell Density", expression("cells cm"^-2)) / make_s6_panel(s6_chla, "ChlaSA", "Chlorophyll a", expression(mu * "g Chl-" * italic(a) * " cm"^-2)) / make_s6_panel(s6_pam, "Yield", "Photochemical Quantum Yield", "Fv/Fm") / make_s6_panel(s6_protein, "mg.mm2", "Total Soluble Protein", expression("mg mm"^-2)) / make_s6_panel(s6_respirometry, "GrossP", "Gross Photosynthesis", expression("nmol O"[2] * " cm"^-2 * " min"^-1)) / make_s6_panel(s6_respirometry, "Resp", "Respiration", expression("nmol O"[2] * " cm"^-2 * " min"^-1)) / make_s6_panel(s6_respirometry, "PR_real", "Metabolic Rate (P:R)", "P:R", show_x = TRUE) + patchwork::plot_layout(ncol = 1)
 
-PAMT0_clade <- PAM_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-ProtT0_clade <- Prot_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PhotoT0_clade <- Photo_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-RespT0_clade <- Resp_T0_clade +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.y = element_text(size = 9),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank())
-
-PRT0_clade <- PR_T0_clade + 
-  theme(axis.text.y = element_text(size = 10),axis.title.y = element_text(size = 9))  # Keep x-axis on bottom plot
-
-# Combine plots vertically using patchwork
-combined_plot <- BiomassT0_clade / BWT0_clade / FlowT0_clade / ChlT0_clade / PAMT0_clade / 
-                 ProtT0_clade / PhotoT0_clade / RespT0_clade / PRT0_clade +
-                 plot_layout(ncol = 1)
-
-# Display in the RStudio Plot pane before saving the publication-size PDF.
-combined_plot
-
-
-pdf("CombinedPhysioPlots_T0_clade.pdf", width = 10, height = 18)
-print(combined_plot)
-dev.off()
+print(Supplementary_Figure_S6)
+ggsave("Figures/Supplementary_Figure_S6_T0_physiology_by_ALG.pdf", Supplementary_Figure_S6, width = 10, height = 18, units = "in", bg = "white")
+ggsave("Figures/Supplementary_Figure_S6_T0_physiology_by_ALG.png", Supplementary_Figure_S6, width = 10, height = 18, units = "in", dpi = 300, bg = "white")
 ```
 
 #COMBINE all physio dfs Set these up so they are by PARENT-TREATMENT-TIMEPOINT and average across frag reps

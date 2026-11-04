@@ -275,7 +275,7 @@ partial_mantel_results <- lapply(seq_len(nrow(partial_mantel_groups)), function(
 partial_mantel_results
 ```
 
-# 16S–ITS2 Procrustes plots
+# Supplementary Figure S20: 16S–ITS2 Procrustes plots
 
 Each arrow joins the 16S and ITS2 positions for one matched coral sample. These diagnostic plots show the same all-species comparisons summarized by the Procrustes tests above.
 

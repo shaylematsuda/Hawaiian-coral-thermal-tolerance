@@ -696,16 +696,20 @@ ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) +
   theme_classic()
 ggsave("16S_T0.pdf")
 
-#T0 Only Figure S13
-ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(aes(colour = Clade, shape=Species), size = 4) +
-  #scale_color_manual(values=Sp.colors)+
-  #geom_text(label = rownames(scores), nudge_x = 0.05, nudge_y = 0.05,check_overlap = T) +
- # stat_ellipse(aes(x = NMDS1, y = NMDS2, colour = Clade), linetype = 2) +
-  ggtitle("NMDS 16s unifrac T0") +
-  theme_classic()+
+# Supplementary Figure S12: T0 bacterial community NMDS colored by algal symbiont lineage group (ALG).
+# `Clade` is retained only as the source metadata field; it is displayed as ALG.
+scores.ord.u_RelA_stats.T0$ALG <- factor(scores.ord.u_RelA_stats.T0$Clade, levels = c("C31", "C31D4", "C15cj", "C15n", "C1", "C27"))
+scores.ord.u_RelA_stats.T0 <- scores.ord.u_RelA_stats.T0 |> dplyr::filter(Species %in% c("Montipora_capitata", "Porites_compressa", "Pavona_varians")) |> dplyr::mutate(Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians")))
+Supplementary_Figure_S13 <- ggplot(scores.ord.u_RelA_stats.T0, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(aes(colour = ALG, shape = Species), size = 4) +
+  scale_colour_manual(values = clade_colors, name = "ALG", drop = TRUE) +
+  scale_shape_discrete(name = "Host species") +
+  labs(title = "T0 bacterial community composition by ALG", x = "NMDS1", y = "NMDS2") +
+  theme_classic() +
   facet_wrap(~Species)
-ggsave("16S_T0Clade.pdf")
+Supplementary_Figure_S13
+ggsave("Figures/Supplementary_Figure_S12_16S_T0_by_ALG.pdf", Supplementary_Figure_S13, width = 10, height = 7, units = "in", bg = "white")
+ggsave("Figures/Supplementary_Figure_S12_16S_T0_by_ALG.png", Supplementary_Figure_S13, width = 10, height = 7, units = "in", dpi = 300, bg = "white")
 
 #T1 only####
 Bac.s.rel.u.T1<-subset_samples(Bac.s.rel, Time.Point=="T1")
@@ -752,7 +756,7 @@ scores.ord.u_RelA_stats.T1_Pcomp<-subset(scores.ord.u_RelA_stats.T1, Species=="P
 # Subset Porites compressa
 scores.ord.u_RelA_stats.T1_Pcomp <- subset(scores.ord.u_RelA_stats.T1, Species == "Porites_compressa")
 
-# Plot with matched fill and color using Sp.colors: Figure S13
+# Plot with matched fill and color using Sp.colors: Figure S12
 p <- ggplot(scores.ord.u_RelA_stats.T1_Pcomp, aes(x = NMDS1, y = NMDS2)) + 
   # Points
   geom_point(aes(color = Treatment, shape = Treatment), size = 8) +
@@ -2919,7 +2923,7 @@ p_tree_pacu <- plot_tree(endo_amb_pacu, size = "Abundance",
                         labels = c("0.1%", "1%", "10%", "50%"), range = c(2, 8)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=0.5), 
         plot.title = element_text(size = 12, face = "italic")) +
-  labs(title="P. acuta", colour = "ALG", shape = "ALG") +
+  labs(title="P. acuta") +
   guides(shape = "none")
 
 p_tree_pcomp <- plot_tree(endo_amb_pcomp, color = "Clade",  size = "Abundance",
@@ -2937,7 +2941,8 @@ multi_ALG <- (p_tree_mcap + p_tree_pvar + p_tree_pacu + p_tree_pcomp) +
   patchwork::plot_layout(widths = c(2,2))
 multi_ALG
 
-ggsave("Figures/Supplementary_16S_Endoz_tree_ALG.pdf", plot = multi_ALG, width = 12, height = 7)
+ggsave("Figures/Supplementary_Figure_S22B_16S_Endozoicomonadaceae_by_ALG.pdf", plot = multi_ALG, width = 12, height = 7)
+ggsave("Figures/Supplementary_Figure_S22B_16S_Endozoicomonadaceae_by_ALG.png", plot = multi_ALG, width = 12, height = 7, dpi = 300)
 
 
 
