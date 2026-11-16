@@ -12,6 +12,13 @@ editor_options:
 ---
 This is an RMarkdown for the All Coral Experiment 16S data. 
 
+# MANUSCRIPT OUTPUT MAP
+# Main Figure 2B: baseline 16S NMDS by host species.
+# Supplementary Figures S2, S7--S12, S14, S17, S18, S22B, and S24 are generated below.
+# Tables S3--S6: baseline 16S community composition/dispersion and within-species ALG tests.
+# Table S10: 16S treatment effects, dispersion, richness, and evenness.
+# Table S16: Mantel and Procrustes analyses (exported in the Gauntlet workflow).
+
 #16S
 Load in your data
 ```{r} 
@@ -100,7 +107,7 @@ Bac.seq.rel<- transform_sample_counts(Bac.seq, function(x) x / sum(x) )
 Bac.seq.rel = prune_taxa(taxa_sums(Bac.seq.rel) > 0, Bac.seq.rel) #this removes any OTU with 0s
 data.Bac.seq.rel <- as(sample_data(Bac.seq.rel), "data.frame") 
 
-# Supplementary figure: baseline 16S ASV composition by host species
+# SUPPLEMENTARY FIGURE S24: baseline 16S ASV composition by host species
 # Row 1 shows all ASVs without a legend; row 2 shows the global top 20 ASVs;
 # row 3 shows the top 20 ASVs within each host species. Remaining ASVs are pooled.
 # Legends use the deepest available taxonomic rank; an ASV identifier is added only
@@ -263,8 +270,8 @@ pairwise_shared[[1]]$shared_taxa
 # With taxonomy:
 sharedtax<-as.data.frame(tax_table(Bac.s.rel)[pairwise_shared[[1]]$shared_taxa, ])
 ``` 
-#Permanova UNIFRAC by ASV T0 ONLY
-Tables S3-S6
+# TABLES S3--S6: baseline weighted-UniFrac PERMANOVA and dispersion tests,
+# including host-species and within-species ALG comparisons at T0.
 ```{r}         
  #T0 only #### 
 Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
@@ -346,7 +353,8 @@ Bac.s.rel.u.T0<-subset_samples(Bac.s.rel, Time.Point=="T0")
 
 ``` 
     
-#Permanova UNIFRAC by ASV
+# TABLE S11: 16S temporal comparisons within Ambient and High treatments.
+# PERMANOVA UNIFRAC by ASV
 T0-T1, T1-TF by TREATMENT (high only, ambient only)
 Models run within treatment group (high, ambient) with all T0 genotypes represented in both treatments (not split at T0)
 Table S11
@@ -664,8 +672,10 @@ Control16dups
     permutest(betadisper(u.pacu.u.bac.T1TF.high, pacu.u.samp.df.T1TF.high$Time.Point, type = "centroid")) 
 ``` 
 
-#Unifrac NMDS 
-Figure 2B, S13-S15
+# FIGURE 2B: baseline weighted-UniFrac NMDS by host species.
+# SUPPLEMENTARY FIGURE S12: baseline 16S NMDS by ALG.
+# SUPPLEMENTARY FIGURE S14: 16S NMDS at T1 and TF by treatment.
+# SUPPLEMENTARY FIGURE S2: experimental versus field 16S NMDS.
 ```{r}      
  Sp.colors <- c("Montipora_capitata"= "#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#CC79A7","Pocillopora_acuta"="#009E73", "High"="darkRed","Ambient"="navyBlue")
 
@@ -1004,17 +1014,17 @@ pacu_16S_clade<-ggplot(scores.pacu.u.samp.df, aes(x = NMDS1, y = NMDS2)) +
     theme(plot.title = element_text(face = "italic")) +  
   facet_wrap(~Time.Point);pacu_16S_clade
 
-#plot all together: Figure S14 #### 
+# SUPPLEMENTARY FIGURE S14: 16S NMDS at T1 and TF by treatment.
 combined_16S <- grid.arrange(mcap_16S, pcomp_16S, pvar_16S, pacu_16S, ncol = 1)
 ggsave("16S_over_time.png", combined_16S, width = 8, height = 16, dpi = 300)
 
 
-#plot all together: Figure S15 #### 
+# LEGACY 16S NMDS by `Clade`; retained for reference only and not a manuscript figure.
 combined_16S <- grid.arrange(mcap_16S_clade, pcomp_16S_clade, pvar_16S_clade, pacu_16S_clade, ncol = 1)
 ggsave("16S_over_time_clade.png", combined_16S, width = 8, height = 16, dpi = 300)
 ```
 
-# Unifrac with field samples to compare: Figure S16
+# SUPPLEMENTARY FIGURE S2: 16S NMDS comparing experimental and field samples.
 ```{r} 
  # Check for microbiome tank drift compare Ambient to Field samples #### 
 Bac.subset <- subset_samples(Bac.seq, Type == "field" | Treatment == "Ambient")
@@ -1043,7 +1053,7 @@ pf<-ggplot(scores.ord.u_ALLfield_stats, aes(x = NMDS1, y = NMDS2)) +
 field<-pf+facet_wrap(~Species~Time.Point, nrow=4);field
 ggsave("16S_field_compare.png", field, width = 8, height = 13, dpi = 300)
 
-#PERMANOVA by species: Table S18, no interactive effect of microbial communities between sample times over time
+# Legacy field-comparison PERMANOVA; retained for reference only (not a current manuscript table).
 
 #Mcap
 Bac.subset.mcap<-subset_samples(Bac.subset, Species=="Montipora_capitata")
@@ -1093,7 +1103,9 @@ FieldSamps.pacu <- phyloseq::distance(Bac.subset.pacu, method = "wunifrac")
     adonis2(FieldSamps.pacu ~ Type*Time.Point, data = FieldSamps.df.pacu, by="margin")
 ``` 
 
-#Alpha diversit: observed richness, Shannon (+evenness) - Hannah  
+# TABLE S7: baseline 16S alpha diversity (observed richness and Pielou evenness).
+# TABLE S10: post-stress 16S alpha diversity, community composition, and dispersion.
+# SUPPLEMENTARY FIGURE S17: observed richness; SUPPLEMENTARY FIGURE S18: evenness.
 ```{r}           
 Sp.colors <- c("Montipora_capitata"="#E69F00","Porites_compressa"="#56B4E9","Pavona_varians"="#009E73","Pocillopora_acuta"="#CC79A7", "High"="darkRed","Ambient"="navyBlue")
 
@@ -1480,7 +1492,7 @@ set.seed(30)
   qqPlot(residuals(Pacu_alpha_mod)) 
 
 ```
-Evenness Plots: Figure S18
+# SUPPLEMENTARY FIGURE S18: 16S Pielou evenness over time.
 ```{r}   
 EvennessT1TF<- ggplot(erich.tab2, aes(x=interaction(Treatment,Time.Point,Species), y=evenness_pielou, fill=Treatment)) + 
       scale_fill_manual(values=c("deepskyblue1", "orangered"))+
@@ -1514,6 +1526,61 @@ erich.tab2_noPacu<-subset(erich.tab2, Species!="Pocillopora_acuta")
 
 ```
 
+
+# TABLE S17: 16S treatment × ALG effects at T1 and TF
+
+This analysis tests whether treatment effects on weighted-UniFrac bacterial community composition differ by algal symbiont lineage group (ALG) within each host species at T1 and TF. It is limited to *M. capitata*, *P. compressa*, and *P. varians*, which have two sufficiently represented ALGs; *P. acuta* is excluded. Table S17a reports sequential PERMANOVA terms (`Treatment`, `ALG`, and `Treatment × ALG`). Table S17b tests homogeneity of multivariate dispersion among the four treatment–ALG groups. Pairwise dispersion contrasts are exported only when the omnibus dispersion test is significant.
+
+```{r table-s17-16s-treatment-alg}
+table_s17_species <- c(Montipora_capitata = "M. capitata", Porites_compressa = "P. compressa", Pavona_varians = "P. varians")
+
+run_table_s17 <- function(ps, species_name, species_label, time_point, permutations = 999) {
+  ps_current <- prune_samples(sample_data(ps)$Species == species_name & sample_data(ps)$Time.Point == time_point, ps)
+  ps_current <- prune_taxa(taxa_sums(ps_current) > 0, ps_current)
+  metadata <- as(sample_data(ps_current), "data.frame")
+  metadata$Treatment <- droplevels(factor(metadata$Treatment, levels = c("Ambient", "High")))
+  metadata$ALG <- droplevels(factor(metadata$Clade))
+  metadata$Treatment_ALG <- interaction(metadata$Treatment, metadata$ALG, sep = " × ", drop = TRUE)
+  if (nlevels(metadata$Treatment) != 2 || nlevels(metadata$ALG) != 2 || nlevels(metadata$Treatment_ALG) != 4) stop("Table S17 requires two treatments, two ALGs, and all four treatment × ALG groups.")
+
+  wunifrac <- phyloseq::distance(ps_current, method = "wunifrac")
+  set.seed(30)
+  permanova <- vegan::adonis2(wunifrac ~ Treatment * ALG, data = metadata, permutations = permutations, by = "terms")
+  composition <- as.data.frame(permanova)
+  composition$Effect <- rownames(composition)
+  composition$Effect[composition$Effect == "Treatment:ALG"] <- "Treatment × ALG"
+  composition <- data.frame(Host_species = species_label, Time_point = time_point, Effect = composition$Effect, Df = composition$Df, SS = composition$SumOfSqs, R2 = composition$R2, F = composition$F, P_value = composition$`Pr(>F)`, row.names = NULL)
+
+  dispersion_model <- vegan::betadisper(wunifrac, metadata$Treatment_ALG, type = "centroid")
+  set.seed(30)
+  dispersion_permutations <- vegan::permutest(dispersion_model, permutations = permutations, pairwise = TRUE)
+  dispersion <- as.data.frame(dispersion_permutations$tab)
+  dispersion$Effect <- rownames(dispersion)
+  dispersion$Effect[dispersion$Effect == "Groups"] <- "Treatment × ALG (4 groups)"
+  dispersion <- data.frame(Host_species = species_label, Time_point = time_point, Effect = dispersion$Effect, Df = dispersion$Df, SS = dispersion$`Sum Sq`, F = dispersion$F, N_permutations = dispersion$N.Perm, P_value = dispersion$`Pr(>F)`, row.names = NULL)
+
+  pairwise_dispersion <- data.frame(Host_species = character(), Time_point = character(), Contrast = character(), P_value = numeric())
+  if (!is.na(dispersion$P_value[1]) && dispersion$P_value[1] < 0.05) {
+    pairwise_p <- dispersion_permutations$pairwise$permuted
+    pairwise_dispersion <- data.frame(Host_species = species_label, Time_point = time_point, Contrast = names(pairwise_p), P_value = unname(pairwise_p), row.names = NULL)
+  }
+
+  list(composition = composition, dispersion = dispersion, pairwise_dispersion = pairwise_dispersion)
+}
+
+table_s17_results <- unlist(lapply(names(table_s17_species), function(species_name) lapply(c("T1", "TF"), function(time_point) run_table_s17(Bac.s.rel, species_name, table_s17_species[[species_name]], time_point))), recursive = FALSE)
+table_s17_composition <- dplyr::bind_rows(lapply(table_s17_results, `[[`, "composition"))
+table_s17_dispersion <- dplyr::bind_rows(lapply(table_s17_results, `[[`, "dispersion"))
+table_s17_pairwise_dispersion <- dplyr::bind_rows(lapply(table_s17_results, `[[`, "pairwise_dispersion"))
+
+write.csv(table_s17_composition, "Data/derived/Table_S17a_16S_Treatment_x_ALG_PERMANOVA.csv", row.names = FALSE)
+write.csv(table_s17_dispersion, "Data/derived/Table_S17b_16S_Treatment_x_ALG_dispersion.csv", row.names = FALSE)
+write.csv(table_s17_pairwise_dispersion, "Data/derived/Table_S17c_16S_Treatment_x_ALG_pairwise_dispersion.csv", row.names = FALSE)
+
+table_s17_composition
+table_s17_dispersion
+table_s17_pairwise_dispersion
+```
 
 # Mantel and Procrustes tests: 16S and ITS2
 
@@ -2307,13 +2374,61 @@ h16_summarize_rank <- function(ps, tax_rank, n_keep = 10) {
     pull(.data[[tax_rank]])
 
   summary$display_taxon <- ifelse(summary[[tax_rank]] %in% keep, summary[[tax_rank]], "Other")
+  if (tax_rank == "Class") {
+    # Original class selection, with the explicitly requested unclassified category.
+    original_order <- c("Bacteria_unclassified", "Verrucomicrobiae", "Bacilli",
+                        "Spirochaetia", "Actinobacteria", "Campylobacteria",
+                        "Oxyphotobacteria", "Alphaproteobacteria", "Bacteroidia",
+                        "Deltaproteobacteria", "Gammaproteobacteria")
+    summary$display_taxon <- factor(
+      ifelse(summary[[tax_rank]] %in% original_order,
+             as.character(summary[[tax_rank]]), "<1%"),
+      levels = c("<1%", original_order))
+  }
   summary$Species <- factor(summary$Species, levels = h16_species_levels)
   summary
 }
 
+# Preserve the original genus plotting pipeline (ambient_figures_ace21.R):
+# tax_glom -> merge species -> normalize -> pool entries below 2%.
+# Keep this plotting table separate from the analytical rank-summary tables.
+h16_figure3_genus_data <- function(ps) {
+  # The original six-rank object had no Size column. Size is an OTU count,
+  # not an ancestral taxonomic rank; retaining it prevents correct genus merging.
+  tax_table(ps) <- tax_table(as(tax_table(ps), "matrix")[,
+    c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), drop = FALSE])
+  genus_ps <- tax_glom(ps, taxrank = "Genus")
+  genus_ps <- merge_samples(genus_ps, "Species")
+  genus_ps <- transform_sample_counts(genus_ps, function(x) x / sum(x))
+  genus_data <- psmelt(genus_ps)
+  genus_data$Species <- factor(as.character(genus_data$Sample), levels = h16_species_levels)
+  genus_data$mean <- genus_data$Abundance
+  genus_data$display_taxon <- ifelse(
+    genus_data$Abundance < 0.02, "<2%", as.character(genus_data$Genus))
+  genus_data$display_taxon <- factor(genus_data$display_taxon,
+    levels = c("<2%", sort(setdiff(unique(genus_data$display_taxon), "<2%"))))
+  genus_data
+}
+
 h16_plot_rank <- function(summary, tax_rank) {
+  class_colors <- c("<1%" = "#808080", "Bacteria_unclassified" = "#9ABCAD",
+                    "Verrucomicrobiae" = "#654522", "Bacilli" = "#F3C300",
+                    "Spirochaetia" = "#008856", "Actinobacteria" = "#875692",
+                    "Campylobacteria" = "#F38400", "Oxyphotobacteria" = "#A1CAF1",
+                    "Alphaproteobacteria" = "#BE0032", "Bacteroidia" = "#C2B280",
+                    "Deltaproteobacteria" = "#E68FAC", "Gammaproteobacteria" = "#0067A5")
+  extra_classes <- setdiff(unique(as.character(summary$display_taxon)), names(class_colors))
+  if (length(extra_classes)) {
+    class_colors <- c(class_colors, setNames(
+      grDevices::hcl.colors(length(extra_classes), "Dark 3"), extra_classes))
+  }
   ggplot(summary, aes(x = Species, y = mean, fill = display_taxon)) +
     geom_col(position = "stack") +
+    {if (tax_rank == "Class") scale_fill_manual(
+      values = class_colors,
+      labels = function(x) sub("Bacteria_unclassified", "Bacteria (unclassified)", x),
+      drop = TRUE
+    )} +
     scale_x_discrete(labels = h16_species_labels, drop = FALSE) +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     labs(x = NULL, y = "Mean Relative Abundance", fill = tax_rank) +
@@ -2337,6 +2452,10 @@ h16_ambient_rank_plots <- Map(
   h16_ambient_rank_summaries,
   names(h16_ambient_rank_summaries)
 )
+
+# Use the original genus figure calculation, not the top-ten analytical summary.
+h16_genus_figure_data <- h16_figure3_genus_data(h16_ambient_rel)
+h16_ambient_rank_plots$Genus <- h16_plot_rank(h16_genus_figure_data, "Genus")
 
 for (rank in names(h16_ambient_rank_summaries)) {
   write.csv(
@@ -2402,6 +2521,24 @@ ggsave(
 
 h16_ambient_permanova_table
 h16_ambient_dispersion_table
+```
+
+## Figure 3: exported ITS2 panel and bacterial community composition
+
+Panel A is loaded from the editable plot exported by the Figure 3A chunk in
+`ITS2_analysis_update.Rmd`: all DIVs above a profile row at approximately one-quarter
+the height, with matching sample order, ALG group lines, and a profile-only legend.
+The side-by-side Class and Genus plots in panel B use the current T0
+bacterial summaries above, including Bacteria (unclassified) as a separate class
+plot category. The assembled figure is saved as `Figures/Fig3.pdf` and `.png`.
+
+```{r figure-3-assembly, fig.width=8, fig.height=10}
+source("scripts/assemble_figure3.R")
+Fig3 <- assemble_figure3(
+  class_plot = h16_ambient_rank_plots$Class,
+  genus_plot = h16_ambient_rank_plots$Genus
+)
+Fig3
 ```
 
 ## Top-abundance tables
@@ -2670,6 +2807,141 @@ for (species_name in names(h16_species_codes)) {
 }
 ```
 
+## Supplementary Figures S8--S11: abundant, core, and differential ASVs
+
+These species-specific bubble plots show the top-ten abundant ASVs, core ASVs,
+and the ASVs selected for Figure S7 (ANCOM W >= 0.6). The differential ASVs
+are selected from the same saved Figure S7 source tables, then their relative
+abundances are recalculated from the current filtered experimental phyloseq
+object at T0, T1, and TF. This preserves the Figure S7 selection while showing
+the longitudinal abundance context. ASVs are ordered alphabetically by their
+best available taxonomic name, rather than by OTU identifier. *P. varians* had
+no ASVs above the Figure S7 threshold, so its differential panel explicitly
+reports that result.
+
+```{r hannah-integration-supplementary-asv-bubble-plots}
+h16_supp_asv_dir <- "Figures"
+h16_supp_figure_numbers <- c(mcap = "S8", pcomp = "S9", pvar = "S10", pacu = "S11")
+h16_supp_species_titles <- c(Montipora_capitata = "Montipora capitata", Porites_compressa = "Porites compressa", Pavona_varians = "Pavona varians", Pocillopora_acuta = "Pocillopora acuta")
+
+h16_taxon_name <- function(x) {
+  coalesce(
+    na_if(as.character(x$Genus), ""),
+    na_if(as.character(x$Family), ""),
+    na_if(as.character(x$Order), ""),
+    na_if(as.character(x$Class), ""),
+    na_if(as.character(x$Phylum), ""),
+    "Unclassified"
+  )
+}
+
+h16_bubble_panel <- function(panel_data, panel_title, show_x = FALSE) {
+  taxon_levels <- panel_data %>% distinct(taxon_label, taxon_name, OTU) %>% arrange(taxon_name, OTU) %>% pull(taxon_label)
+  panel_data$taxon_label <- factor(panel_data$taxon_label, levels = rev(taxon_levels))
+  ggplot(panel_data, aes(x = Sample, y = taxon_label, size = Abundance, colour = Time.Point, shape = Treatment)) +
+    geom_point(alpha = 0.9) +
+    scale_colour_manual(values = c(T0 = "#F4A259", T1 = "#8B2E1A", TF = "#4C8C8A")) +
+    scale_shape_manual(values = c(Ambient = 16, High = 17)) +
+    scale_size_area(max_size = 6, limits = c(0, 1), breaks = c(0.05, 0.10, 0.30, 0.50, 0.70, 0.90)) +
+    facet_grid(. ~ Time.Point, scales = "free_x", space = "free_x") +
+    labs(title = panel_title, x = if (show_x) "Sample" else NULL, y = "ASV - taxon", colour = "Time point", shape = "Treatment", size = "Relative abundance") +
+    theme_classic(base_size = 11) +
+    theme(axis.text.x = if (show_x) element_text(angle = 90, hjust = 1, size = 7) else element_blank(), axis.ticks.x = if (show_x) element_line() else element_blank(), strip.background = element_rect(fill = "white", colour = "black"), strip.text = element_text(face = "bold"), panel.spacing.x = grid::unit(0.45, "lines"), plot.title = element_text(face = "bold", hjust = 0, size = 11), legend.position = "right")
+}
+
+h16_blank_differential_panel <- function() {
+  ggplot() +
+    annotate("text", x = 0.5, y = 0.5, label = "No ASVs above the ANCOM W = 0.6 threshold", size = 5, colour = "grey35") +
+    labs(title = "Differential ASVs (ANCOM W >= 0.6)") +
+    theme_void(base_size = 11) +
+    theme(plot.title = element_text(face = "bold", hjust = 0, size = 11), plot.margin = margin(10, 5.5, 10, 5.5))
+}
+
+h16_supp_asv_plots <- list()
+for (species_name in names(h16_species_codes)) {
+  species_code <- unname(h16_species_codes[species_name])
+  species_ps <- subset_samples(h16_bac_exp, Species == species_name)
+  species_ps <- prune_taxa(taxa_sums(species_ps) > 0, species_ps)
+  species_rel <- transform_sample_counts(species_ps, function(x) x / sum(x))
+
+  top_ids <- names(sort(taxa_sums(species_rel), decreasing = TRUE))[seq_len(min(10, ntaxa(species_rel)))]
+  top_data <- psmelt(prune_taxa(top_ids, species_rel)) %>% mutate(top_group = "Top 10 abundant ASVs")
+  core_data <- h16_core_table(species_ps, h16_core_prevalence[species_code]) %>% mutate(top_group = "Core ASVs")
+
+  # Historical Figure S7 selection tables list only ASVs that cleared W >= 0.6.
+  # No P. varians selection table exists because no ASVs crossed that threshold.
+  selection_file <- file.path("Data/16s_analysis/ancom/output/by_treatment", paste0(species_code, "_ancom.csv"))
+  differential_ids <- if (file.exists(selection_file)) unique(read.csv(selection_file, check.names = FALSE)$OTU) else character(0)
+  differential_data <- if (length(differential_ids) > 0) {
+    psmelt(prune_taxa(differential_ids, species_rel)) %>% mutate(top_group = "Differential ASVs")
+  } else {
+    data.frame()
+  }
+
+  panel_data <- bind_rows(top_data, core_data, differential_data) %>%
+    mutate(taxon_name = h16_taxon_name(.), taxon_label = paste(OTU, taxon_name, sep = " - "), Time.Point = factor(Time.Point, levels = c("T0", "T1", "TF")), Treatment = factor(Treatment, levels = c("Ambient", "High")))
+  sample_order <- as(sample_data(species_ps), "data.frame") %>% mutate(Sample = rownames(.), Time.Point = factor(Time.Point, levels = c("T0", "T1", "TF")), Treatment = factor(Treatment, levels = c("Ambient", "High"))) %>% arrange(Time.Point, Treatment, Parent.ID) %>% pull(Sample)
+  panel_data$Sample <- factor(panel_data$Sample, levels = sample_order)
+
+  top_panel <- h16_bubble_panel(filter(panel_data, top_group == "Top 10 abundant ASVs"), "Top 10 abundant ASVs")
+  core_panel <- h16_bubble_panel(filter(panel_data, top_group == "Core ASVs"), "Core ASVs (species-specific prevalence threshold)", show_x = length(differential_ids) == 0)
+  differential_panel <- if (length(differential_ids) > 0) h16_bubble_panel(filter(panel_data, top_group == "Differential ASVs"), "Differential ASVs (ANCOM W >= 0.6)", show_x = TRUE) else h16_blank_differential_panel()
+  height_weights <- if (length(differential_ids) > 0) c(1.3, 0.85, 0.60) else c(1.3, 0.85, 0.35)
+  figure_plot <- (top_panel / core_panel / differential_panel) + patchwork::plot_layout(guides = "collect", heights = height_weights) + patchwork::plot_annotation(title = h16_supp_species_titles[species_name])
+  h16_supp_asv_plots[[species_code]] <- figure_plot
+
+  figure_stub <- paste0("Supplementary_Figure_", h16_supp_figure_numbers[species_code], "_", species_code, "_ASV_taxa")
+  ggsave(file.path(h16_supp_asv_dir, paste0(figure_stub, ".png")), figure_plot, width = 12, height = 12, units = "in", dpi = 300, bg = "white")
+  ggsave(file.path(h16_supp_asv_dir, paste0(figure_stub, ".pdf")), figure_plot, width = 12, height = 12, units = "in", bg = "white")
+}
+
+h16_supp_asv_plots
+```
+
+## Supplementary Figure S7: ANCOM treatment screens
+
+This rerenders Figure S7 from the saved ANCOM figure-data tables used to
+identify the differential ASVs. Each point is an ASV; colored taxa are those
+at or above the W = 0.6 threshold within that host species and time point,
+whereas all remaining ASVs are shown in gray. These are the same selections
+used in the differential panels of Figures S8--S11.
+
+```{r hannah-integration-figure-s7-ancom}
+h16_s7_species_plot <- function(figure_data, species_title) {
+  panel_data <- figure_data %>%
+    group_by(contrast) %>%
+    mutate(w_cutoff = 0.6 * (n() - 1)) %>%
+    ungroup() %>%
+    mutate(taxon_name = h16_taxon_name(.), plot_taxon = ifelse(y >= w_cutoff, taxon_name, "Other"))
+  selected_taxa <- sort(unique(panel_data$plot_taxon[panel_data$plot_taxon != "Other"]))
+  taxon_colours <- c(if (length(selected_taxa) > 0) setNames(scales::hue_pal(l = 55, c = 100)(length(selected_taxa)), selected_taxa) else character(0), Other = "grey65")
+  cutoff_data <- panel_data %>% group_by(contrast) %>% summarise(w_cutoff = first(w_cutoff), label_x = min(x, na.rm = TRUE), .groups = "drop")
+  ggplot(panel_data, aes(x = x, y = y, colour = plot_taxon)) +
+    geom_vline(xintercept = 0, colour = "grey75") +
+    geom_hline(data = cutoff_data, aes(yintercept = w_cutoff), inherit.aes = FALSE, linetype = "dashed") +
+    geom_point(size = 2.5) +
+    geom_text(data = cutoff_data, aes(x = label_x, y = w_cutoff, label = "W[0.6]"), inherit.aes = FALSE, parse = TRUE, colour = "orange", vjust = -0.5, hjust = 0) +
+    scale_colour_manual(name = "Taxon", values = taxon_colours) +
+    facet_wrap(~contrast, nrow = 1, scales = "free") +
+    labs(title = species_title, x = "CLR mean difference", y = "W statistic") +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0, size = 12), strip.background = element_rect(fill = "white", colour = "black"), strip.text = element_text(face = "bold"), panel.spacing.x = grid::unit(0.45, "lines"), legend.position = "right")
+}
+
+h16_s7_plots <- list()
+for (species_name in names(h16_species_codes)) {
+  species_code <- unname(h16_species_codes[species_name])
+  s7_data <- read.csv(file.path("Data/16s_analysis/ancom/output/by_treatment", paste0("ancom_", species_code, "_figdata.csv")), check.names = FALSE)
+  names(s7_data)[1] <- "row_id"
+  h16_s7_plots[[species_code]] <- h16_s7_species_plot(s7_data, h16_supp_species_titles[species_name])
+}
+
+h16_s7_figure <- patchwork::wrap_plots(h16_s7_plots, ncol = 1) + patchwork::plot_annotation(title = "ANCOM treatment screens")
+ggsave("Figures/Figure_S7_ANCOM_treatment_by_species.png", h16_s7_figure, width = 12, height = 18, units = "in", dpi = 300, bg = "white")
+ggsave("Figures/Figure_S7_ANCOM_treatment_by_species.pdf", h16_s7_figure, width = 12, height = 18, units = "in", bg = "white")
+h16_s7_figure
+```
+
 ## Integrated output manifest
 
 ```{r hannah-integration-manifest}
@@ -2842,7 +3114,7 @@ h16_taxa_comparison_summary
 h16_ancom_comparison
 ```
 
-## Supplementary Endozoicomonas specific analyses & trees. 
+## SUPPLEMENTARY FIGURE S22B: Endozoicomonadaceae phylogenetic tree by ALG
 
 The data show multiple ASVs of Endozoicomonas present within the dataset. Some recent literature suggests there may be host specific or even Symbiodiniaceae specific ASVs (Pogoreutz et al. 2022: https://doi.org/10.1038/s41396-022-01226-7;  Neave et al. 2017: https://www.nature.com/articles/srep40579, but see Hochart et al. 2023: https://doi.org/10.1038/s41467-023-38502-9). Quick check on whether we think this might be the case with our data.
 

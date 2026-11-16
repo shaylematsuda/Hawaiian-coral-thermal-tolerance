@@ -1,0 +1,22 @@
+{
+  "href": "https://server.arcgisonline.com/arcgis/rest/directories/arcgisoutput/World_Imagery_MapServer/_ags_mapb1beb1d7cb684c63b4fe953ab9a519d5.jpg",
+  "width": 1800,
+  "height": 1500,
+  "extent": {
+    "xmin": -17577365.81154816,
+    "ymin": 2438682.251579933,
+    "xmax": -17558850.345495958,
+    "ymax": 2454111.8066234346,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "scale": 38877.54125200743,
+  "request_url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=-17577236.276767105%2C2438682.251579933%2C-17558979.880277008%2C2454111.8066234346&bboxSR=3857&imageSR=3857&size=1800%2C1500&format=jpg&f=json",
+  "collection_coordinates": {
+    "latitude": 21.463086,
+    "longitude": -157.812518
+  },
+  "service": "Esri World Imagery"
+}

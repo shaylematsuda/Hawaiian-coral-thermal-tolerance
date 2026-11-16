@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE BlastOutput PUBLIC "-//NCBI//NCBI BlastOutput/EN" "http://www.ncbi.nlm.nih.gov/dtd/NCBI_BlastOutput.dtd">
+<BlastOutput>
+  <BlastOutput_program>blastn</BlastOutput_program>
+  <BlastOutput_version>BLASTN 2.17.0+</BlastOutput_version>
+  <BlastOutput_reference>Zheng Zhang, Scott Schwartz, Lukas Wagner, and Webb Miller (2000), &quot;A greedy algorithm for aligning DNA sequences&quot;, J Comput Biol 2000; 7(1-2):203-14.</BlastOutput_reference>
+  <BlastOutput_db>core_nt</BlastOutput_db>
+  <BlastOutput_query-ID>Query_4454823</BlastOutput_query-ID>
+  <BlastOutput_query-def>No definition line</BlastOutput_query-def>
+  <BlastOutput_query-len>403</BlastOutput_query-len>
+  <BlastOutput_param>
+    <Parameters>
+      <Parameters_expect>10</Parameters_expect>
+      <Parameters_sc-match>1</Parameters_sc-match>
+      <Parameters_sc-mismatch>-2</Parameters_sc-mismatch>
+      <Parameters_gap-open>0</Parameters_gap-open>
+      <Parameters_gap-extend>0</Parameters_gap-extend>
+      <Parameters_filter>L;m;</Parameters_filter>
+    </Parameters>
+  </BlastOutput_param>
+<BlastOutput_iterations>
+<Iteration>
+  <Iteration_iter-num>1</Iteration_iter-num>
+  <Iteration_query-ID>Query_4454823</Iteration_query-ID>
+  <Iteration_query-def>No definition line</Iteration_query-def>
+  <Iteration_query-len>403</Iteration_query-len>
+<Iteration_hits>
+<Hit>
+  <Hit_num>1</Hit_num>
+  <Hit_id>gi|374305409|gb|JQ236445.1|</Hit_id>
+  <Hit_def>Uncultured marine bacterium clone tc2_f12 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JQ236445</Hit_accession>
+  <Hit_len>428</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>641.908</Hsp_bit-score>
+      <Hsp_score>347</Hsp_score>
+      <Hsp_evalue>2.33563e-179</Hsp_evalue>
+      <Hsp_query-from>6</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>1</Hsp_hit-from>
+      <Hsp_hit-to>398</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>381</Hsp_identity>
+      <Hsp_positive>381</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>398</Hsp_align-len>
+      <Hsp_qseq>AATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>AATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGCAAGGAAAGAGACGTTAGCGGAGGAATAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCGAGCGTTGTTCGGGATTACTGGGCGTAAAGGGTATGTAGGCGGAAAGATAAGCTAGAGGTGAAAGCTTAGGGCTCAACCCTAAAATGGCTTTTGGAACTGTTTTTCTAGAGTCAGTCAGAGGTTAACGGAATTCCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGCGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGAGGTACGAAAGCGTGGGTAGCAAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  |||| ||||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||| ||||||||||||||||||||||||||||||||  ||||||||||||||||| |||||||||||||||||||  |||||| |||||||||||||||||||||||||||||| |||||||| ||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||||| |||||||||| |||||||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>2</Hit_num>
+  <Hit_id>gi|374304849|gb|JQ235885.1|</Hit_id>
+  <Hit_def>Uncultured marine bacterium clone tc2_c02 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JQ235885</Hit_accession>
+  <Hit_len>448</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>466.476</Hsp_bit-score>
+      <Hsp_score>252</Hsp_score>
+      <Hsp_evalue>1.50874e-126</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>16</Hsp_hit-from>
+      <Hsp_hit-to>417</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>352</Hsp_identity>
+      <Hsp_positive>352</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>TAGGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>TAGGGAATCTGGCGCAACCGGGGCAACCCTGAGACAAAGACGCTGCGGGAGTGAAGAAGGTTCTCGGATCGTAAAGCTCTTTATCTCCGCAAGGAAAGAGACGTTAGCGGAGGAATAAGCGCCGCCTAATAACTTGCCAGCAGCCGCGGTAATAATTAGGAGGCGACAGTTGTTAGTAATTATTGGGGGTAAAGGGTATGTAGGAGGAAAGATAAGATAGAGGTGAAAAATTAGGGCTCAACCCTAAAATGGTTTTTGGAAATGTTTTTCTAGAGTCAGTCAGAGGTTAACGGAATTCCCGGTGTAGAGGTGAAATTCGTAGATATTGGGAGGAACACCAGCGGGGAAAGCGGTTGATCGGGGCTGAACTGACGCTGAGGTACGAAAGCGTGGGTAGCAAAC</Hsp_hseq>
+      <Hsp_midline>|||||||||| ||||||  |||||||||||||  ||  || || ||| |||||||||||||| ||||||||||||||||||||||||||  |||| ||||||||||||||||||| |||||||| ||||  || ||||||||||||||||||||  ||||  || |  |||||| | ||||| |||| |||||||||||||||| |||||  |||| |||||||||||  |||||||||||||||||||  | |||| ||| |||||||||||||||||||||||||| |||||||| |||||||||||||||||||||||||||| |||||||||||||| || ||||||||||||  ||||||||||||||||||| |||||||||| ||||||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>3</Hit_num>
+  <Hit_id>gi|378558391|gb|JQ347481.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone QSW16 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JQ347481</Hit_accession>
+  <Hit_len>1470</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>448.01</Hsp_bit-score>
+      <Hsp_score>242</Hsp_score>
+      <Hsp_evalue>5.4649e-121</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>347</Hsp_hit-from>
+      <Hsp_hit-to>747</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>348</Hsp_identity>
+      <Hsp_positive>348</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGGGCAACCCTGACGCAGCAATACCGCGTGAGTGAAGAAGGCCTTCGGGTCGTAAAGCTCTTTATCTCAGGGAAGATAATGACGTTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGCGTGCAGGCTGGAGAGCAAGCTATAGGTGAAATCCTAGAGCTCAACTTTAGAAGTGCTTATAGAACTGCTTTTCTAGAGACAATCAGAGGTTAGCGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGCGGCGAAAGCGGCTAACTGGGGTTGATCTGACGCTGAGGCGCGAAAGCATGGTTAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| ||||||||||||||||||||||||||||| || ||||||||||||||||||  ||||| ||||||||||||||||||| | || || |  ||||||| | |||||| |||| |||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||  || |||| | | || |||||| ||||||||   ||| |||||||  || ||  |||| |||||||| |||||||||| || |||||||||  ||||||| | ||||||||||||||||||||||||||| ||||||||||| | ||||||||||| | ||||||| ||| |||||||||| |  ||||||||||| |||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>4</Hit_num>
+  <Hit_id>gi|284467692|gb|GU319139.1|</Hit_id>
+  <Hit_def>Uncultured marine bacterium clone A3M_UNP0_25 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>GU319139</Hit_accession>
+  <Hit_len>852</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>431.39</Hsp_bit-score>
+      <Hsp_score>233</Hsp_score>
+      <Hsp_evalue>5.5037e-116</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>315</Hsp_hit-from>
+      <Hsp_hit-to>715</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>345</Hsp_identity>
+      <Hsp_positive>345</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCTTCGGGTCGTAAAGCTCTTTATCTCTAGGAAGATAATGACGGTACTAGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGAATCGTAAGCTAGAGGTGAAAGCCTGGAGCTCAACTCCAGAACTGCTTTTAGAACTGCGATTCTCGAGATGGTCAGAGGTTAACAGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAATACCAGTGGCGAAAGCGGTTGACTGGGGCCATTCTGACGCTGAGGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||| | || ||||||||||| |||||||||||||||||||||  ||||| |||||||||||||||||||   || || |  |||| ||   |||||| |||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  |||||||||||  ||||||||||||||||||  | | ||||||| | | ||| |||||||||||||   |||| |||   |||||||||| || ||||| | ||||||||||||||||||||||||||| ||||||| ||||||||||||||||||||||||||||    |||||||||| |  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>5</Hit_num>
+  <Hit_id>gi|519300636|gb|KC527410.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone Thai24_E01 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>KC527410</Hit_accession>
+  <Hit_len>1221</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>424.003</Hsp_bit-score>
+      <Hsp_score>229</Hsp_score>
+      <Hsp_evalue>9.20964e-114</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>112</Hsp_hit-from>
+      <Hsp_hit-to>511</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>344</Hsp_identity>
+      <Hsp_positive>344</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCAATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCTGGGAAGA-AGTTGACGGTACCAGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGAGAAGTAAGCTAGAGGTGAAAGCCCGGGGCTCAACCCCGGAGGTGCTTCTGGAACTGCTTTTCTTGAGAGGGTCAGAGGTTAGCGGAATTCCTGGTGTAGCGGTGAAATGCGTAGATATCAGGAGGAACACCGGAGGCGAAAGCGGCTGACTGGGACCAATCTGACGCTGAGGCGCGAAAGCATGGGGAGCAAAC</Hsp_hseq>
+      <Hsp_midline>|||||| |||| ||||||| |||| ||||| ||||| |||||||||||||||||||||||||||||||||||||||||||||||| | || || ||  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  |||||||||| ||||||||||||||||||||    |||||||||||   |   |||| | |||||| |||||| |||   ||||||||||  ||||||| | ||||||| |||||||| |||||||||| ||||||||||| | ||||||||||| |||||||| |  | |||||||||| |  |||||||||||| |||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>6</Hit_num>
+  <Hit_id>gi|364536946|gb|JN884873.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone NZ_45_Bac_73 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JN884873</Hit_accession>
+  <Hit_len>800</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>416.616</Hsp_bit-score>
+      <Hsp_score>225</Hsp_score>
+      <Hsp_evalue>1.5411e-111</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>286</Hsp_hit-from>
+      <Hsp_hit-to>687</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>344</Hsp_identity>
+      <Hsp_positive>344</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>403</Hsp_align-len>
+      <Hsp_qseq>TAGGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>TAGGGAATATTGCGCAATGGGGGAAACCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCTTTCGGGTCGTAAAGCTCTTTATCTGAGGGAAGA-TGATGACGGTACCTCAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGATAAGTAAGCTAGGGGTGAAAGCCCGGGGCTCAACCCCGGAGGTGCTTCTGGAACTGCTTGTCTAGAGAGGGTCAGAGGCTAACAGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAATACCGGTGGCGAAAGCGGTTAGCTGGGGCCACTCTGACGCTGATGCGCGAAAGCGTGGGGAGCAAAC</Hsp_hseq>
+      <Hsp_midline>|||||||| |||||||||||||| |||||||||||||| ||||||||||||||||||||| |||||| ||||||||||||||||||  | || ||  || |||| || |  ||||| |||| |||||||||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||||||||  |||||||||| ||||||||||| ||||||||    |||||||||||   |   |||| | |||||| || |||||||   |||||||| | || ||||| | ||||||||||||||||||||||||||| ||||||| ||| |||||||||||||||  |||||||    ||||||||||||  ||||||| |||| |||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>7</Hit_num>
+  <Hit_id>gi|329757499|gb|JF747657.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone MT5B16 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JF747657</Hit_accession>
+  <Hit_len>1482</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>414.77</Hsp_bit-score>
+      <Hsp_score>224</Hsp_score>
+      <Hsp_evalue>5.54278e-111</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>350</Hsp_hit-from>
+      <Hsp_hit-to>750</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>343</Hsp_identity>
+      <Hsp_positive>343</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGGGCAACCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCTTTCGGGTCGTAAAGCTCTTTATCTGGGGGAAGA-TGATGACGGTACCCCAGGAAGAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGAGAGGACAGCTAGAGGTGAAAGCCCGGGGCTCAACCCTGGAGGGTCTTTTAGAACTGCCTTTCTTGAGGAGGTCAGAGGTTAGCGGAATTCCTGGTGTAGCGGTGAAATGCGTAGATATCAGGAGGAACACCGGTGGCGAAAGCGGCTAACTGGGGCCATTCTGACGCTGAGGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| ||||||||||||||||||||||||||||| ||||||||||||||||||||| |||||| ||||||||||||||||||  | || ||  || |||| || |  |||||||||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  |||||||||| | |  |||||||||||||||    ||||||||||||  |    ||||||||||||  ||||| |||   ||||||||||  ||||||| | ||||||| |||||||| |||||||||| ||||||||||| ||||||||||||| | ||||||||    |||||||||| |  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>8</Hit_num>
+  <Hit_id>gi|60417889|dbj|AB189349.1|</Hit_id>
+  <Hit_def>Uncultured delta proteobacterium gene for 16S rRNA, partial sequence, clone: JT58-30</Hit_def>
+  <Hit_accession>AB189349</Hit_accession>
+  <Hit_len>1479</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>414.77</Hsp_bit-score>
+      <Hsp_score>224</Hsp_score>
+      <Hsp_evalue>5.54278e-111</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>349</Hsp_hit-from>
+      <Hsp_hit-to>749</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>343</Hsp_identity>
+      <Hsp_positive>343</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCTTAGGGTCGTAAAGCTCTTTATCTCTACGAAGA-TGATGACGGTAGTAGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTGTGTAGGCGGAATGGTCAGCTAGAGGTGAAAGCCCGGGGCTCAACCCCGGAACGGCTTTTAGAACTGCCATTCTAGAGAGGGTCAGAGGCTAGCGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGCGGCGTAAGCGGCTGGCTGGGGCCACTCTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||| | || ||||||||||| |||||||||||||||||||||  || || |||||||||||||||||||   || ||  || |||| |||  |||||| |||| |||||||||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||||||||| |||||||||||  || |||||||||||||||    |||||||||||   ||| |||||||||||||   ||||||||   |||||||| |  ||||||| | ||||||||||||||||||||||||||| ||||||||||| | |||| |||||| || |||||||    |||||||||| | |||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>9</Hit_num>
+  <Hit_id>gi|409193576|gb|JX537764.1|</Hit_id>
+  <Hit_def>Uncultured delta proteobacterium clone WYH-2 16S ribosomal RNA gene, partial sequence &gt;gi|409193592|gb|JX537780.1| Uncultured delta proteobacterium clone WYH-32 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JX537764</Hit_accession>
+  <Hit_len>1475</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>409.23</Hsp_bit-score>
+      <Hsp_score>221</Hsp_score>
+      <Hsp_evalue>2.5788e-109</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>349</Hsp_hit-from>
+      <Hsp_hit-to>749</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>341</Hsp_identity>
+      <Hsp_positive>341</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGCGAAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCTTCGGGTCGTAAAGCTCTTTATCTCAGGGAAGATAATGACGGTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTGTGCAGGCGGACTGATAAGCTAGGGGTGAAAGCCCGGGGCTCAACCCCGGAATTGCTTTTAGAACTGTCAGTCTAGAGAGGGTCAGGGGCTAGTGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGTGGCGAAAGCGGCTGGCTGGGGCCAATCTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| |||||||||||| | || ||||||||||| |||||||||||||||||||||  ||||| ||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||| || |||||||    |||||||| ||||||||    |||||||||||   ||  ||||||||||||||   |||||||   ||||| || |   |||||| | ||||||||||||||||||||||||||| ||||||||||| ||||||||||||| || |||||||  | |||||||||| | |||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>10</Hit_num>
+  <Hit_id>gi|345295852|gb|JN398076.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone SWB0201-08 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JN398076</Hit_accession>
+  <Hit_len>1449</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>409.23</Hsp_bit-score>
+      <Hsp_score>221</Hsp_score>
+      <Hsp_evalue>2.5788e-109</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>338</Hsp_hit-from>
+      <Hsp_hit-to>738</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>341</Hsp_identity>
+      <Hsp_positive>341</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGCGAAAGCCTGACGCAGCGACGCCGCGTGAGCGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCAGGGAAGATAATGACGGTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTGTGTAGGCGGAGCTATAAGCTAGAGGTTAAAGACCGAGGCTCAACCTCGGAGTGGCTTTTAGGACTGTAGGTCTAGAGAGAGTCAGAGGCTAGTGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGTGGCGAAAGCGGCTGGCTGGGGCTTCTCTGACGCTGAGGCACGAAAGCGTGGGGATCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| |||||||||||| | || ||||||||||||| |||||||||| ||||||||||||||||||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||| ||||||||||    |||||||||||| ||||     |||||||||    |   |||||||| |||||   |||||||  ||||||||| |   |||||| | ||||||||||||||||||||||||||| ||||||||||| ||||||||||||| || ||||||||   |||||||||| | |||||||| |||| | ||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>11</Hit_num>
+  <Hit_id>gi|322367706|gb|HQ721437.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone SPG11_H2O_B7 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>HQ721437</Hit_accession>
+  <Hit_len>1444</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>403.69</Hsp_bit-score>
+      <Hsp_score>218</Hsp_score>
+      <Hsp_evalue>1.1998e-107</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>329</Hsp_hit-from>
+      <Hsp_hit-to>729</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>341</Hsp_identity>
+      <Hsp_positive>341</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCTTCGGGTCGTAAAGCTCTTTATCTTTGGGAAGA-TGATGACGGTACCAAAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGATCGGTAAGCTAGGGGTGAAAGCCCGGGGCTCAACCCCGGAATTGCTTCTAGAACTGCCAGTCTAGAGAGGGTCAGAGGTTAGCGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGCGGCGAAAGCGGCTGACTGGGGCCATTCTGACGCTGATGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||| | || ||||||||||| |||||||||||||||||||||  ||||| ||||||||||||||||||  | || ||  || |||| || |  ||||| |||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  ||||||||||   ||||||||| ||||||||    |||||||||||   ||  |||| ||||||||    |||||||   ||||||||||  ||||||| | ||||||||||||||||||||||||||| ||||||||||| | ||||||||||| ||||||||||    ||||||||||||  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>12</Hit_num>
+  <Hit_id>gi|283471951|emb|AM997291.1|</Hit_id>
+  <Hit_def>Uncultured deep-sea bacterium 16S rRNA gene, clone Ucm15292</Hit_def>
+  <Hit_accession>AM997291</Hit_accession>
+  <Hit_len>1473</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>403.69</Hsp_bit-score>
+      <Hsp_score>218</Hsp_score>
+      <Hsp_evalue>1.1998e-107</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>348</Hsp_hit-from>
+      <Hsp_hit-to>748</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>340</Hsp_identity>
+      <Hsp_positive>340</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>401</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGGGCAACCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCCTCGGGTCGTAAAGCTCTTTATCTCAGGGAAGATACTGACGGTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGGACGGTAAGCTAGAGGTGAAAGCCCGGGGCTCAACCCCGGAGGGTCTTTTAGAACTGCCGTTCTTGAGAAGGTCAGAGGTTAGCGGAATTCCTGGTGTAGCGGTGAAATGCGTAGATATCAGGAGGAACACCGGTGGCGAAAGCGGCTAACTGGGGCCATTCTGACGCTGAGGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| ||||||||||||||||||||||||||||| |||||||||||||||||||||   |||| ||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  ||||||||| |  ||||||||||||||||||    |||||||||||   |    ||||||||||||   |||| |||   ||||||||||  ||||||| | ||||||| |||||||| |||||||||| ||||||||||| ||||||||||||| | ||||||||    |||||||||| |  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>13</Hit_num>
+  <Hit_id>gi|229558290|gb|FJ905726.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone V1F77b 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>FJ905726</Hit_accession>
+  <Hit_len>1383</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>403.69</Hsp_bit-score>
+      <Hsp_score>218</Hsp_score>
+      <Hsp_evalue>1.1998e-107</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>300</Hsp_hit-from>
+      <Hsp_hit-to>700</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>341</Hsp_identity>
+      <Hsp_positive>341</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCCTTCGGGTCGTAAAGCTCTTTATCTCCGCGAAGA-TGATGACGGTAGCGGAGGAAGAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGAATGGTCAGCCAGAGGTGAAAGCCCGGAGCTCAACTCCGGAATTGCTTTTGGAACTGCCACTCTAGAGAGGGTCAGAGGCTAGCAGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAATACCAGTGGCGAAAGCGGCTGGCTGGGGCCACTCTGACGCTGAGGCGCGAAAGCGTGGGGAGCGAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||| | || ||||||||||| |||||||||||||||||||||  ||||| ||||||||||||||||||||| || ||  || |||| |||||||||||||||| |||||||||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||||||||  |||||||||||  || ||| |||||||||||    | ||||||| |   ||  |||||| ||||||    |||||||   |||||||| |  | ||||| | ||||||||||||||||||||||||||| ||||||| ||||||||||||||||| || |||||||    |||||||||| |  ||||||| |||| ||| ||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>14</Hit_num>
+  <Hit_id>gi|380841490|gb|JQ041459.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone CRO_C6_GW_16S_Clone_53 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JQ041459</Hit_accession>
+  <Hit_len>896</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>396.303</Hsp_bit-score>
+      <Hsp_score>214</Hsp_score>
+      <Hsp_evalue>2.00769e-105</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>354</Hsp_hit-from>
+      <Hsp_hit-to>753</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>338</Hsp_identity>
+      <Hsp_positive>338</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>400</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>GGGAATTTTGCGCAATGGGCGAAAGCCTGACGCAGCAATACCGCGTGAGTGAAGAAGGACTTCGGTTCGTAAAGCTCTTTATCTCAGGGAAGATAATGACGGTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTGTGTAGGCGGATTGGTAAGCTAGAGGTGAAAGGCCAGGGCTCAACCCTGGGACTGCTTCTGGAACTGCCAATCTAGAGAGGGTCAGGGGCCAGCGGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAACACCGGCGGCGAAAGCGGCTGGCTGGGGCCACTCTGACGCTGAGGCACGAAAGCGTGGGGAGCAAAC</Hsp_hseq>
+      <Hsp_midline>|||||| |||||||||||| | || ||||||||||| || ||||||||||||||||||  ||||| ||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||||||||| ||||||||||   ||||||||||||||||||   |||||||||||||   || |||| | ||||||    |||||||   ||||| ||    ||||||| | ||||||||||||||||||||||||||| ||||||||||| | ||||||||||| || |||||||    |||||||||| | |||||||| |||| |||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>15</Hit_num>
+  <Hit_id>gi|364537029|gb|JN884956.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone NZ_78_Bac_41 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JN884956</Hit_accession>
+  <Hit_len>860</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>396.303</Hsp_bit-score>
+      <Hsp_score>214</Hsp_score>
+      <Hsp_evalue>2.00769e-105</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>294</Hsp_hit-from>
+      <Hsp_hit-to>693</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>338</Hsp_identity>
+      <Hsp_positive>338</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>400</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCGATGCCGCGTGAGTGAAGAAGGCCTTAGGGTCGTAAAGCTCTTTATCTCTGGGAAGATAATGACGGTACCAGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATCACTGGGCGTAAAGGGCGTGTAGGCGGAGAAGTAAGCCAGAGGTGAAAGCCCGGGGCTCAACCCCGGAGGGTCTTTTGGAACTGCTTTTCTTGAGAGGGTTAGAGGTTAGCGGAATTCCTGGTGTAGCGGTGAAATGCGTAGATATCAGGAGGAACACCGGAGGCGAAAGCGGCTAACTGGGGCCAATCTGACGCTGAGGCGCGAAAGCATGGGGAGCAAAC</Hsp_hseq>
+      <Hsp_midline>|||||| |||| ||||||| |||| ||||| |||||||||||||||||||||||||||  || || ||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||| |||||||||||||||  |||||||||| |||||||| |||||||||||    |||||||||||   |    ||||| |||||| |||||| |||   || |||||||  ||||||| | ||||||| |||||||| |||||||||| ||||||||||| | ||||||||||| | ||||||||  | |||||||||| |  |||||||||||| |||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>16</Hit_num>
+  <Hit_id>gi|1475721449|gb|MH879983.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone ASV117 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>MH879983</Hit_accession>
+  <Hit_len>402</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>392.61</Hsp_bit-score>
+      <Hsp_score>212</Hsp_score>
+      <Hsp_evalue>2.59711e-104</Hsp_evalue>
+      <Hsp_query-from>2</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>3</Hsp_hit-from>
+      <Hsp_hit-to>402</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>340</Hsp_identity>
+      <Hsp_positive>340</Hsp_positive>
+      <Hsp_gaps>4</Hsp_gaps>
+      <Hsp_align-len>403</Hsp_align-len>
+      <Hsp_qseq>AGGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTA-GGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>AGGG-ATATTGGGCAATGGGGGAAACCCTGACCCAGCAACGCCGCGTGAGGGAAGACGGTTTTCGGATTGTAAACCTCTGT-CCTCTGTGAAGATAATGACGGTAGCAGAGGAGGAAGCTCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGAGCAAGCGTTGTCCGGATTTACTGGGTGTAAAGGGTGCGTAGGCGGCAAAGCAAGTCAGAAGTGAAA-TCTATGGGCTTAACCCATAAACTGCTTTTGAAACTGTTTTGCTTGAGTAAGGTAGAGGTAGGCGGAATTCCCGGTGTAGCGGTGAAATGCGTAGAGATCGGGAGGAACACCAGTGGCGAAGGCGGCCTACTGGGCCTTAACTGACGCTGAGGCACGAAAGCGTGGGTAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||| || ||| |||||||||| ||||||||| |||| | |||||||||| ||||| ||||||||||| ||||| |||| |  ||| |||| || |  |||| |||| ||||| ||||| |||||||||||||||||||||||||||||||||||||||| ||||||||||| |||| |||||||| |||||||||  |||||||| |||| |||  ||| |||||| | || ||||| |||||  |||| ||||||  ||||||||| || |||| ||  |||||| | ||||||| ||||||||| |||||||| |||||| |||||||||||||||||||||||| ||||   |||||| || |||||||||||| | |||||||| |||||||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>17</Hit_num>
+  <Hit_id>gi|1475721392|gb|MH879926.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone ASV59 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>MH879926</Hit_accession>
+  <Hit_len>402</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>392.61</Hsp_bit-score>
+      <Hsp_score>212</Hsp_score>
+      <Hsp_evalue>2.59711e-104</Hsp_evalue>
+      <Hsp_query-from>2</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>3</Hsp_hit-from>
+      <Hsp_hit-to>402</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>340</Hsp_identity>
+      <Hsp_positive>340</Hsp_positive>
+      <Hsp_gaps>4</Hsp_gaps>
+      <Hsp_align-len>403</Hsp_align-len>
+      <Hsp_qseq>AGGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTA-GGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>AGGG-ATATTGGGCAATGGGGGAAACCCTGACCCAGCAACGCCGCGTGAGGGAAGACGGTTTTCGGATTGTAAACCTCTGT-CCTCTGTGAAGATAATGACGGTAGCAGAGGAGGAAGCTCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGAGCAAGCGTTGTCCGGATTTACTGGGTGTAAAGGGTGCGTAGGCGGCAAAGCAAGTCAGAAGTGAAA-TCTATGGGCTTAACCCATAAACTGCTTTTGAAACTGTTTTGCTTGAGTGAGGTAGAGGTAGGCGGAATTCCCGGTGTAGCGGTGAAATGCGTAGAGATCGGGAGGAACACCAGTGGCGAAGGCGGCCTACTGGGCCTTAACTGACGCTGAGGCACGAAAGCGTGGGTAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||| || ||| |||||||||| ||||||||| |||| | |||||||||| ||||| ||||||||||| ||||| |||| |  ||| |||| || |  |||| |||| ||||| ||||| |||||||||||||||||||||||||||||||||||||||| ||||||||||| |||| |||||||| |||||||||  |||||||| |||| |||  ||| |||||| | || ||||| |||||  |||| ||||||  ||||||||| || |||| ||  |||||| | ||||||| ||||||||| |||||||| |||||| |||||||||||||||||||||||| ||||   |||||| || |||||||||||| | |||||||| |||||||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>18</Hit_num>
+  <Hit_id>gi|329757537|gb|JF747695.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone MT5B124 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>JF747695</Hit_accession>
+  <Hit_len>1476</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>392.61</Hsp_bit-score>
+      <Hsp_score>212</Hsp_score>
+      <Hsp_evalue>2.59711e-104</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>348</Hsp_hit-from>
+      <Hsp_hit-to>748</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>339</Hsp_identity>
+      <Hsp_positive>339</Hsp_positive>
+      <Hsp_gaps>2</Hsp_gaps>
+      <Hsp_align-len>402</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGA-GACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATCTTGCGCAATGGGCGAAAGCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGCTTTCGAGTCGTAAAGCTCTTTATCTGAGGGAAGA-TGATGACGGTACCTCAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGATTAGTAAGCTAGGGGTGAAAGCCCGGGGCTTAACCCCGGAGGTGCTTCTAGAACTGCTAGGCTAGAGAGGGTCAGAGGCTAACAGAATTCCTGGTGTAGAGGTGAAATTCGTAGATATCAGGAGGAATACCGGTGGCAAAAGCGGTTGGCTGGGGCCACTCTGACGCTGATGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>||||||||||||||||||| | || ||||||||||||||||||||||||||||||||| |||||  ||||||||||||||||||  | || ||  || |||| || |  ||||| |||| |||||||||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||||||||  ||||||||||  |||||||||| ||||||||    ||||| |||||   |   |||| |||||||| |   ||||||   |||||||| | || ||||| | ||||||||||||||||||||||||||| ||||||| ||| ||||| |||||||||| |||||||    ||||||||||||  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>19</Hit_num>
+  <Hit_id>gi|213391873|gb|EU847602.1|</Hit_id>
+  <Hit_def>Uncultured marine bacterium clone T-P5 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>EU847602</Hit_accession>
+  <Hit_len>512</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>392.61</Hsp_bit-score>
+      <Hsp_score>212</Hsp_score>
+      <Hsp_evalue>2.59711e-104</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>403</Hsp_query-to>
+      <Hsp_hit-from>3</Hsp_hit-from>
+      <Hsp_hit-to>403</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>340</Hsp_identity>
+      <Hsp_positive>340</Hsp_positive>
+      <Hsp_gaps>4</Hsp_gaps>
+      <Hsp_align-len>403</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGA-GGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAA-CTGACGCTGATGTACGAAAGCATGGGTAGCAAACA</Hsp_qseq>
+      <Hsp_hseq>GGGAATTTTGCGCAATGGGCGCAAGCCTGACGCAGCAATGCCGCGTGAGTGAAGAAGGCTTTCGAGTCGTAAAGCTCTTTATCTTTGGGAAGAAATTGACGGTACCAGGGGAAGAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGCGTGCAGGCGGAAAAGCCAGCG-GAGGGTGAAAGACCGGGGCTCAACCTCGGAAGTGCTTTCCGAACTGTTTTTCTAGAGAGGATCAGAGGCTGACAGAATTCCTGGTGTAGAGGTGAAATTCGTAGAGATCAGGAGGAATATCAGTGGCGAAAGCGGTTGGCTGGGA-TCACTCTGACGCTGAGGCGCGAAAGCGTGGGGAGCAAACA</Hsp_hseq>
+      <Hsp_midline>|||||| |||||||||||| |||| ||||||||||| ||||||||||||||||||||| |||||  ||||||||||||||||||  | || || |  |||| || | | ||||||||| |||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||  || |||||||||||  |||  || ||||||||    ||||||||||    ||  |||||  |||||||||||||||||    ||||||| |||| ||||| | ||||||||||||||||||||||| ||| ||||||| | |||||||||||||||||| |||||  | |  |||||||||| |  ||||||| |||| ||||||||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+<Hit>
+  <Hit_num>20</Hit_num>
+  <Hit_id>gi|1434850703|gb|MG580517.1|</Hit_id>
+  <Hit_def>Uncultured bacterium clone BOTU654 16S ribosomal RNA gene, partial sequence</Hit_def>
+  <Hit_accession>MG580517</Hit_accession>
+  <Hit_len>406</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>390.763</Hsp_bit-score>
+      <Hsp_score>211</Hsp_score>
+      <Hsp_evalue>9.34088e-104</Hsp_evalue>
+      <Hsp_query-from>3</Hsp_query-from>
+      <Hsp_query-to>402</Hsp_query-to>
+      <Hsp_hit-from>4</Hsp_hit-from>
+      <Hsp_hit-to>403</Hsp_hit-to>
+      <Hsp_query-frame>1</Hsp_query-frame>
+      <Hsp_hit-frame>1</Hsp_hit-frame>
+      <Hsp_identity>337</Hsp_identity>
+      <Hsp_positive>337</Hsp_positive>
+      <Hsp_gaps>0</Hsp_gaps>
+      <Hsp_align-len>400</Hsp_align-len>
+      <Hsp_qseq>GGGAATCTTGCGCAATGGGGGCAACCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGTTTTCGGATCGTAAAGCTCTTTATCTCCGTGAGGACAGAGACGTTAGCGGAGGAAGAAGCGCCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGCGCAAGCGTTGTTCGGAATTACTGGGCGTAAAGGGTATGTAGGCGGAAAAGTAAGCTAGAGGTGAAAGTTTAGGGCTCAACCCTAAAACAGCTTTTAGAACTGTTTTTCTAGAGTCAGTCAGAGGTTGACGGAATTTCCGGTGTAGAGGTGAAATTCGTAGATATCGGGAGGAACACCAGTGGCGAAAGCGGTTGACTGGGGCTGAACTGACGCTGATGTACGAAAGCATGGGTAGCAAAC</Hsp_qseq>
+      <Hsp_hseq>GGGAATATTGCGCAATGGGCGAAAGCCTGACGCAGCGATGCCGCGTGAGTGAAGAAGGCTCTTGGGTCGTAAAGCTCTTTATCTCAGGGAAGATAATGACGGTACCTGAGGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTGTTCGGATTTACTGGGCGTAAAGGGTGTCTAGGCGGACTCGTAAGCTAGAGGTTAAAGCCCGGGGCTCAACCCCGGAATCGCTTTTAGAACTGCGGATCTAGAGAGGGTCAGAGGCCAGCGGAATTCCAGGTGTAGAGGTGAAATTCGTAGATATCTGGAGGAACACCGGCGGCGAAAGCGGCTGGCTGGGGCCAATCTGACGCTGAAGCACGAAAGCGTGGGGAGCGAAC</Hsp_hseq>
+      <Hsp_midline>|||||| |||||||||||| | || ||||||||||||||||||||||||||||||||| | | || ||||||||||||||||||| | || || |  |||| || | |||||| |||| |||||||||||||||||||||||||||||||||||||||| || ||||||||||||| |||||||||||||||||| | ||||||||   ||||||||||||| ||||    |||||||||||   ||  |||||||||||||    |||||||   ||||||||    ||||||| | ||||||||||||||||||||||||||| ||||||||||| | ||||||||||| || |||||||  | |||||||||| | |||||||| |||| ||| |||</Hsp_midline>
+    </Hsp>
+  </Hit_hsps>
+</Hit>
+</Iteration_hits>
+  <Iteration_stat>
+    <Statistics>
+      <Statistics_db-num>132660980</Statistics_db-num>
+      <Statistics_db-len>1094251079178</Statistics_db-len>
+      <Statistics_hsp-len>0</Statistics_hsp-len>
+      <Statistics_eff-space>0</Statistics_eff-space>
+      <Statistics_kappa>0.46</Statistics_kappa>
+      <Statistics_lambda>1.28</Statistics_lambda>
+      <Statistics_entropy>0.85</Statistics_entropy>
+    </Statistics>
+  </Iteration_stat>
+</Iteration>
+</BlastOutput_iterations>
+</BlastOutput>

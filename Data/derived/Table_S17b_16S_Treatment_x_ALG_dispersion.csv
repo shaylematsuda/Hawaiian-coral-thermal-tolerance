@@ -1,0 +1,13 @@
+"Host_species","Time_point","Effect","Df","SS","F","N_permutations","P_value"
+"M. capitata","T1","Treatment × ALG (4 groups)",3,0.00627183424331083,0.462062634789073,999,0.687
+"M. capitata","T1","Residuals",15,0.0678677929256696,NA,NA,NA
+"M. capitata","TF","Treatment × ALG (4 groups)",3,0.289697581191256,107.577773275752,999,0.001
+"M. capitata","TF","Residuals",11,0.0098740142319656,NA,NA,NA
+"P. compressa","T1","Treatment × ALG (4 groups)",3,0.0375228367908994,3.39845086144313,999,0.009
+"P. compressa","T1","Residuals",19,0.0699273412204394,NA,NA,NA
+"P. compressa","TF","Treatment × ALG (4 groups)",3,0.0620036807488298,3.31524902593274,999,0.011
+"P. compressa","TF","Residuals",18,0.112215426830059,NA,NA,NA
+"P. varians","T1","Treatment × ALG (4 groups)",3,0.0177203237958476,2.3847151671352,999,0.109
+"P. varians","T1","Residuals",17,0.0421078246829371,NA,NA,NA
+"P. varians","TF","Treatment × ALG (4 groups)",3,0.00149627786483817,0.16967976323213,999,0.898
+"P. varians","TF","Residuals",18,0.0529094749899382,NA,NA,NA

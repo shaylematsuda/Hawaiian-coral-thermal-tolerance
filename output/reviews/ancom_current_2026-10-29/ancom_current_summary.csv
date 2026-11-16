@@ -1,0 +1,9 @@
+"species","time","n_samples","n_taxa","detected_0.6","max_W"
+"Montipora_capitata","T1",19,402,369,Inf
+"Montipora_capitata","TF",15,150,143,Inf
+"Porites_compressa","T1",23,60,52,Inf
+"Porites_compressa","TF",22,38,29,Inf
+"Pavona_varians","T1",21,215,204,Inf
+"Pavona_varians","TF",22,157,140,Inf
+"Pocillopora_acuta","T1",16,338,310,Inf
+"Pocillopora_acuta","TF",15,377,357,Inf

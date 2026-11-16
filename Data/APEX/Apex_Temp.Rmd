@@ -1,0 +1,52 @@
+---
+title: "TT2017_Temp"
+author: "Shayle Matsuda"
+date: "5/3/2017"
+output: html_document
+---
+
+set up space
+```{r}
+rm(list=ls()) #clears workspace 
+
+#Read in required libraries
+##### Include Versions of libraries
+library('plyr')
+library('ggplot2')
+library("sciplot")
+library("reshape2")
+library("nlme") #mixed model, repeated measures ANOVA
+library("lme4")
+library("lattice")
+library("gamm4")
+library("lme4")
+library("effects")
+library(gridExtra)
+#Required Data files
+#"TankXXXX.csv"
+```
+
+## load data files
+
+```{r}
+# Set Working Directory:
+setwd("~/Desktop/Thermal_Tolerance2017/Data/APEX Downloads")
+
+#Load Apex data
+Tank1234 <- read.csv("Tank1234.csv", header=T) #load data
+Tank1234$Date <- as.Date(Tank1234$Date, format="%d-%m-%y H%:M%")
+Tank1234 <- strptime(Tank1234$Date, format="%d/%m/%y %H:%M") #convert date format to characters
+
+Tank5678 <- read.csv("Tank5678.csv", header=T) #load data
+Tank5678 <- strptime(Tank5678$Date, format="%m/%d/%y %H:%M") #convert date format to characters
+
+Tank911 <- read.csv("Tank911.csv", header=T) #load data
+Tank911 <- strptime(Tank911$Date, format="%m/%d/%y %H:%M") #convert date format to characters
+
+
+#combine
+TData<- merge(Tank1234, Tank5678, by= "Date")
+
+Tdata<-rbind(Tdata, Tank911, by="Date")
+```
+

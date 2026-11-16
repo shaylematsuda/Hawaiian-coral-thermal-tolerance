@@ -451,8 +451,8 @@ x = tapply(sum.class$mean, sum.class$Class, function(x) max(x))
 x = sort(x, TRUE) #sort phyla 
 View(x) #add top 10 to code below to set NAs
 
-##Bacteria_Unclassified is not included as top 10 below bc we can't distinguish whether they all come from the same phylum
-#Added # 11 = Verrucomicrobiae, and moved unclassfied to Unassigned
+# Retain Bacteria_unclassified explicitly alongside the ten named classes.
+# This is an unresolved bacterial category, not an assigned class.
 
 sum.class$Class = factor(as.character(sum.class$Class), levels=names(x))
 sum.class$col_class <- sum.class$Class
@@ -472,7 +472,8 @@ sum.class$col_class[sum.class$col_class != "Gammaproteobacteria" &
                       sum.class$col_class != "Actinobacteria" &
                       sum.class$col_class != "Spirochaetia" &
                       sum.class$col_class != "Bacilli" &
-                      sum.class$col_class != "Verrucomicrobiae"] <- NA
+                      sum.class$col_class != "Verrucomicrobiae" &
+                      sum.class$col_class != "Bacteria_unclassified"] <- NA
 
 
 levels(sum.class$col_class)
@@ -480,13 +481,13 @@ levels(sum.class$col_class)
 sum.class$col_class <- factor(sum.class$col_class, levels = c(levels(sum.class$col_class), "Other"))
 # convert NAs to other
 sum.class$col_class[is.na(sum.class$col_class)] = "Other"
-sum.class$col_class <- factor(x = sum.class$col_class, levels = c("Other", "Verrucomicrobiae",
+sum.class$col_class <- factor(x = sum.class$col_class, levels = c("Other", "Bacteria_unclassified", "Verrucomicrobiae",
                                                                   "Bacilli", "Spirochaetia", "Actinobacteria",
                                                                   "Campylobacteria", "Oxyphotobacteria" , "Alphaproteobacteria", 
                                                                   "Bacteroidia", "Deltaproteobacteria","Gammaproteobacteria"))
 #Make a colour scheme
 library(RColorBrewer)
-nb.cols <- 11
+nb.cols <- 12
 mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
 
 #plot!
@@ -511,9 +512,9 @@ pdf(file = "../output/organised_output/6d_Class_bars_ambient_correct_color.pdf")
 p.class <- ggplot(sum.class, aes(x = Species, y = mean, fill = col_class)) +
   geom_bar(stat = "identity", position = "stack") +
   #ggtitle("Communities by Phylum at Ambient Temperatures (T0)") +
-  scale_fill_manual(values = c('#808080','#654522','#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032',
+  scale_fill_manual(values = c('#808080','#9ABCAD','#654522','#F3C300',  '#008856','#875692', '#F38400', '#A1CAF1', '#BE0032',
                                '#C2B280', '#E68FAC', '#0067A5'),  
-                    labels = c("<1% abundance", "Verrucomicrobiae",
+                    labels = c("Other", "Bacteria (unclassified)", "Verrucomicrobiae",
                                "Bacilli", "Spirochaetia", "Actinobacteria",
                                "Campylobacteria", "Oxyphotobacteria" , "Alphaproteobacteria", 
                                "Bacteroidia", "Deltaproteobacteria","Gammaproteobacteria")) +

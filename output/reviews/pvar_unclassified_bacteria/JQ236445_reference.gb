@@ -1,0 +1,46 @@
+LOCUS       JQ236445                 428 bp    DNA     linear   ENV 31-AUG-2012
+DEFINITION  Uncultured marine bacterium clone tc2_f12 16S ribosomal RNA gene,
+            partial sequence.
+ACCESSION   JQ236445
+VERSION     JQ236445.1
+KEYWORDS    ENV.
+SOURCE      uncultured marine bacterium
+  ORGANISM  uncultured marine bacterium
+            Bacteria; environmental samples.
+REFERENCE   1  (bases 1 to 428)
+  AUTHORS   Meron,D., Rodolfo-Metalpa,R., Cunning,R., Baker,A.C., Fine,M. and
+            Banin,E.
+  TITLE     Changes in coral microbial communities in response to a natural pH
+            gradient
+  JOURNAL   ISME J 6 (9), 1775-1785 (2012)
+   PUBMED   22437157
+REFERENCE   2  (bases 1 to 428)
+  AUTHORS   Meron,D., Fine,M. and Banin,E.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (04-DEC-2011) Life Sciences, Bar Ilan University, Ramat
+            Gan, Israel 52900, Israel
+FEATURES             Location/Qualifiers
+     source          1..428
+                     /organism="uncultured marine bacterium"
+                     /mol_type="genomic DNA"
+                     /isolation_source="Balanophyllia europaea tissue naturally
+                     exposed to pH 8.1"
+                     /db_xref="taxon:56765"
+                     /clone="tc2_f12"
+                     /environmental_sample
+                     /geo_loc_name="Mediterranean Sea: Ischia"
+                     /PCR_primers="fwd_name: 8F, fwd_seq: agagtttgatcctggctcag,
+                     rev_name: 1392R, rev_seq: acgggcggtgtgtac"
+     rRNA            <1..>428
+                     /product="16S ribosomal RNA"
+ORIGIN      
+        1 aatcttgcgc aatgggggca accctgacgc agcgatgccg cgtgagtgaa gaaggttttc
+       61 ggatcgtaaa gctctttatc tccgcaagga aagagacgtt agcggaggaa taagcgccgg
+      121 ctaactacgt gccagcagcc gcggtaatac gtagggcgcg agcgttgttc gggattactg
+      181 ggcgtaaagg gtatgtaggc ggaaagataa gctagaggtg aaagcttagg gctcaaccct
+      241 aaaatggctt ttggaactgt ttttctagag tcagtcagag gttaacggaa ttcccggtgt
+      301 agaggtgaaa ttcgtagata tcgggaggaa caccagcggc gaaagcggtt gactggggct
+      361 gaactgacgc tgaggtacga aagcgtgggt agcaaacagg attagatacc ctggtagtcc
+      421 acgctgta
+//
+

@@ -1,0 +1,65 @@
+"Sample.Name","Frag.ID","Concentration","Plate","in_metadata","has_symbiodinium_count"
+"B3","2289","8.455224","A",FALSE,TRUE
+"F1","diH2O","0","A",FALSE,TRUE
+"F2","focus fluid","0","A",FALSE,TRUE
+"G1","Focus fluid","0","A",FALSE,TRUE
+"G2","diH2O","0","A",FALSE,TRUE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"B11","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"","",NA,"A",FALSE,FALSE
+"A6","N86","128.459259","B",FALSE,TRUE
+"D5","N217A","92.246269","B",FALSE,TRUE
+"E1","N217B","253.820896","B",FALSE,TRUE
+"H1","Standard _curve8","170.320896","B",FALSE,TRUE
+"H2","Standard _curve36","50.119403","B",FALSE,TRUE
+"H3","diH20","0.313433","B",FALSE,TRUE
+"H4","diH20","0.014815","B",FALSE,TRUE
+"H5","focusfluid","0.067669","B",FALSE,TRUE
+"H6","focusfluid","0.000000","B",FALSE,TRUE
+"H7","Standard _curve4","85.644444","B",FALSE,TRUE
+"C3","",NA,"B",FALSE,FALSE
+"B3","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"B12","",NA,"B",FALSE,FALSE
+"C1","",NA,"B",FALSE,FALSE
+"C2","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"","",NA,"B",FALSE,FALSE
+"E9","diH20","0.014815","C",FALSE,TRUE
+"E10","diH20","0.000000","C",FALSE,TRUE
+"E11","Focus","0.000000","C",FALSE,TRUE
+"E12","Focus","0.000000","C",FALSE,TRUE
+"F1","",NA,"C",FALSE,FALSE
+"F2","",NA,"C",FALSE,FALSE
+"G1","",NA,"C",FALSE,FALSE
+"A7","","10.385185","E",FALSE,TRUE
+"C3","3322","62.813433","E",FALSE,TRUE
+"C4","3185","124.343284","E",FALSE,TRUE
+"E1","244","190.328358","E",FALSE,TRUE
+"G6","3675","101.238806","E",FALSE,TRUE

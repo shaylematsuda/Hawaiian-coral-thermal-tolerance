@@ -322,6 +322,14 @@ coral_profile2: Profiles
 
 # Visualizations 
 DIVs: Bar plots for high level visualization
+
+# MANUSCRIPT OUTPUT MAP
+# Main Figure 2C: baseline ITS2 Bray-Curtis NMDS by host species/ALG.
+# Main Figure 3A: baseline ITS2 DIV and profile composition.
+# Supplementary Figure S15: treatment NMDS at T1 and TF; Supplementary Figure S19:
+# ITS2 ordinations by ALG; Supplementary Figure S21: ALG stability through time.
+# Table S3: baseline ITS2 community composition; Table S9: ITS2 treatment effects;
+# Table S12: baseline and temporal ALG-community comparisons.
 ```{r}  
 #try glom use raw counts its2.s2
 Mcap_its2.s2<-subset_samples(coral_DIV2_rare, Species=="Montipora_capitata") #use raw counts here
@@ -422,99 +430,26 @@ Pacu.p <- ggplot(Pacu_its2.s2.melt, aes(x = Parent.ID, y = Abundance, fill = DIV
 Pacu.p +  facet_wrap(~ Code, nrow=2)
 ```
 
-#T0 only bar plots: Figure 3A
-```{r}
-#PROFILES coral_profile2 df
-#try glom use raw counts 
-profiles_T0<-subset_samples(coral_profile2, Time.Point=="T0") #use raw counts df here
+# MAIN FIGURE 3A: T0 ITS2 DIV and profile composition by host species and ALG.
+```{r figure-3a-divs-and-profiles, fig.width=8, fig.height=6}
+# Shared sample order: host species, ALG, then recorded sample ID.
+# All DIVs are shown above ITS2 profiles; profile bars are one-quarter the
+# height of the DIV row. Only profiles have a legend. Lines label ALG groups.
+source("scripts/make_its2_figure3a.R")
+Fig3A_components <- make_its2_figure3a(coral_profile2, coral_DIV2_rare)
+Fig3A <- Fig3A_components$plot
+T0_ITS2_samp <- Fig3A_components$profile_plot
+T0_ITS2_DIV_samp <- Fig3A_components$div_plot
 
-T0_its2 <- profiles_T0 %>%  #make relative abundance
-  tax_glom(taxrank = "its2_type_profile", NArm = FALSE) %>% 
-  transform_sample_counts(function(x) {x/sum(x)} ) 
-T0_its2.melt <- psmelt(T0_its2)
-
-#Change so all Cs are shades of Blue and all Ds are shades of orange
-# Define a color palette with 30 shades of blue
-blue_palette <- colorRampPalette(c("lightblue", "blue", "darkblue"))(30)
-orange_palette <- colorRampPalette(c("lightyellow", "orange", "darkorange"))(3)
-
-# Display the colors
-barplot(rep(1, 30), col = blue_palette, border = NA, space = 0, main = "30 Shades of Blue")
-barplot(rep(1, 3), col = orange_palette, border = NA, space = 0, main = "3 Shades of Orange")
-# Combine palettes
-mycolors <- c(blue_palette, orange_palette)
-
-
-# Arrange and create an ordered factor for Sample based on Clade within each Species
-T0_its2.melt1 <- T0_its2.melt %>%
-  arrange(Species, Clade, Sample) %>%
-  mutate(Sample = factor(Sample, levels = unique(Sample)))
-
-T0_its2.melt1 <- T0_its2.melt1 %>%
-  mutate(Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")))  # Adjust order as needed
-
-# Ensure colors are assigned based on Clade groups in `its2_type_profile`
-T0.p <- ggplot(T0_its2.melt1, aes(x = Sample, y = Abundance, fill = its2_type_profile)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = mycolors) +
-  ylab("Relative Abundance") +
-  xlab("") +
-  theme_minimal() +  # Apply minimal theme (white background, no grid)
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
-    panel.grid = element_blank(),  # Remove grid lines
-    plot.background = element_blank(),
-     # legend.position = "none" ,# Remove the outer background
-    axis.line = element_line(color = "black")  # Add black axis lines
-  )
-
-T0_ITS2_samp <- T0.p + facet_wrap(~Species, scales = "free_x", nrow = 1)
-T0_ITS2_samp
-
-#ggsave("Figures/ITS2_T0_samp_leg.pdf", plot = T0_ITS2_samp, device = "pdf", width = 20, height = 6)
-
-
-#Make T0 with DIVs ####
-#try glom use raw counts 
-DIVs_T0<-subset_samples(coral_DIV2_rare, Time.Point=="T0") #filtered rarefied counts
-
-T0_its2DIV <- DIVs_T0 %>%  #make relative abundance
-  tax_glom(taxrank = "DIV", NArm = FALSE) %>% 
-  transform_sample_counts(function(x) {x/sum(x)} ) 
-T0_its2DIV.melt <- psmelt(T0_its2DIV)
-
-# Extract the sample order (should now work) from Clade plot
-sample_order <- levels(T0_its2.melt1$Sample)
-
-# Check if sample_order is not NULL
-print(sample_order)  # Should print a list of sample names in order
-T0_its2DIV.melt$Sample
-T0_its2DIV.melt <- T0_its2DIV.melt %>%
-  mutate(Sample = factor(Sample, levels = sample_order))
-
-T0_its2DIV.melt <- T0_its2DIV.melt %>%
-  mutate(Species = factor(Species, levels = c("Montipora_capitata", "Porites_compressa", "Pavona_varians", "Pocillopora_acuta")))  # Adjust order as needed
-
-# Ensure colors are assigned based on Clade groups in `its2_type_profile`
-T0DIV.p  <- ggplot(T0_its2DIV.melt, aes(x = Sample, y = Abundance, fill = DIV)) +
-  geom_bar(stat = "identity", color = "black", size = 0.2) +  # Add black outlines
-  ylab("Relative Abundance") +
-  xlab("") +
-  theme_minimal() +  # Apply minimal theme (white background, no grid)
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis labels
-    panel.grid = element_blank(),  # Remove grid lines
-    plot.background = element_blank(),  # Remove the outer background
-    axis.line = element_line(color = "black"),  # Add black axis lines
-    legend.position = "none"  # Remove the legend
-  );T0DIV.p
-
-
-T0_ITS2_DIV_samp <- T0DIV.p + facet_wrap(~Species * Clade, scales = "free_x", nrow = 1)
-T0_ITS2_DIV_samp
-
-#ggsave("Figures/ITS2_T0_DIV_samp.pdf", plot = T0_ITS2_DIV_samp, device = "pdf", width = 20, height = 6)
-
+dir.create("Figures", showWarnings = FALSE)
+ggsave("Figures/ITS2_T0_samp_leg.pdf", Fig3A, width = 8, height = 6, bg = "white")
+ggsave("Figures/ITS2_T0_samp_leg.png", Fig3A, width = 8, height = 6, dpi = 300, bg = "white")
+ggsave("Figures/Fig3A_ITS2.pdf", Fig3A, width = 8, height = 6, bg = "white")
+ggsave("Figures/Fig3A_ITS2.png", Fig3A, width = 8, height = 6, dpi = 300, bg = "white")
+saveRDS(Fig3A, "Figures/ITS2_Fig3A_plot.rds")
+write.csv(Fig3A_components$sample_order,
+          "Figures/ITS2_Fig3A_sample_order.csv", row.names = FALSE)
+Fig3A
 ```
 
 #Beta Diversity - All Species
@@ -604,8 +539,7 @@ permanova_design_inventory <- data.frame(
 permanova_design_inventory
 ```
 
-#### T0 only ######
-Figure 2C
+#### MAIN FIGURE 2C / TABLE S3: T0 ITS2 Bray-Curtis community composition ####
 ```{r}
 DIV_RelA_stats.T0<-subset_samples(DIV_RelA_stats, Time.Point=="T0")
   DIV_RelA_stats.T0 = prune_taxa(taxa_sums(DIV_RelA_stats.T0) > 0, DIV_RelA_stats.T0) #this removes any OTU with 0s
@@ -738,8 +672,8 @@ ggplot(scores.ord.DIV_RelA_statsTF, aes(x = NMDS1, y = NMDS2, color = Species, l
     theme_classic()
 ```
 
-#T0 Beta diversiry and dispersion, T0
-Table S17
+# Exploratory T0 ITS2 beta diversity and dispersion by ALG within host species.
+# These diagnostic tests are retained in code; they are not a separate current manuscript table.
 ```{r} 
 #T0 only DIV_RelA_stats.T0
 
@@ -799,9 +733,9 @@ bc.Pacu.T0 <- phyloseq::distance(Pacu.RelRare.T0, method = "bray")
      set.seed(30)
     permutest(betadisper(bc.Pacu.T0, Pacu.DIV.samp.df.T0$Clade, type = "centroid")) #put in distance matrix   
 ```
-#Beta T1, TF, by treatment: 
-Tables S9, S12
-Figure S19
+# TABLE S9: ITS2 treatment effects at T1 and TF.
+# TABLE S12: ITS2 ALG and Treatment × ALG effects at T1 and TF.
+# SUPPLEMENTARY FIGURE S19: ITS2 NMDS by ALG at T1 and TF.
 Montipora
 ```{r}       
 #DIV_RelA_stats.T1F ####
@@ -1173,7 +1107,7 @@ PacuITS2_T1TFplot<-ggplot(scores.pacu.samp.df, aes(x = NMDS1, y = NMDS2)) +
 #ggsave("Figures/PacuT1its2.pdf")
 
 ```
-All plots by lineage: Figure S19
+# SUPPLEMENTARY FIGURE S19: ITS2 NMDS by ALG at T1 and TF.
 ```{r}
 ITS2_lineage_NMDS_panel <- arrangeGrob(McapITS2_T1TF, PcompITS2_T1TF, PvarITS2_T1TF, PacuITS2_T1TF, nrow = 1)
 ggsave("Figures/ITS2_T1_TF_NMDS.pdf", plot = ITS2_lineage_NMDS_panel, width = 16, height = 7, units = "in")
@@ -1221,7 +1155,7 @@ ggsave("Figures/Supplementary_Figure_S21_ITS2_ALG_stability.pdf", Supplementary_
 ggsave("Figures/Supplementary_Figure_S21_ITS2_ALG_stability.png", Supplementary_Figure_S20_ITS2_ALG_stability, width = 10, height = 10, units = "in", dpi = 300, bg = "white")
 ```
 
-# All time points: visual summary for Figure S16
+# Legacy all-time-point ITS2 NMDS visual summary; retained for reference only.
 DIV_RelA_stats.all <- prune_taxa(
   taxa_sums(DIV_RelA_stats) > 0,
   DIV_RelA_stats
@@ -1315,7 +1249,7 @@ sample_id_comparison %>% filter(!same_id)
 erich.tab2its$Time.Point <- factor(erich.tab2its$Time.Point, levels = c("T0", "T1", "TF"))
 ```
 
-# Refactored alpha-diversity models and figures
+# Exploratory ITS2 alpha-diversity models and figures (not currently exported as a manuscript figure or table)
 
 The models below cover observed richness and Pielou evenness using the same design for every species. T0 models use tank as the grouping term. T1/TF models use parent identity because fragments from a parent are measured repeatedly across treatment and time. Model failures and singular fits are retained in the result objects rather than being hidden.
 
@@ -1528,8 +1462,7 @@ ggsave("Figures/ITS2_alpha_evenness_by_clade.pdf", ITS2_evenness_clade_plot, wid
 
 The original repeated model and plotting blocks are retained temporarily for comparison but are not evaluated. The refactored section above replaces them with consistently named results for both metrics and every species.
 
-#Observed Richness 
-Table S9, S17
+# Legacy ITS2 observed-richness workflow (reference only; superseded by the refactored block above)
 ```{r, eval=FALSE}
 library(stats)
 #T0 only ####
